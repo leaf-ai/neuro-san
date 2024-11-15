@@ -32,7 +32,7 @@ RUN pip3 install --upgrade pip==${PIP3_VERSION} --no-cache-dir
 # but we must break the docker cache in the event the
 # requirements change. So copy in the unmodified file
 # before using the secret.
-COPY ./backend/agents/service/requirements.txt ${APP_SOURCE}/backend/agents/service/requirements.txt
+COPY ./neuro_san/service/requirements.txt ${APP_SOURCE}/neuro_san/service/requirements.txt
 
 RUN --mount=type=secret,id=with_creds_requirements \
     pip install --prefix=/install --no-cache-dir -r /run/secrets/with_creds_requirements
@@ -74,13 +74,12 @@ EXPOSE 30001
 COPY --from=builder /install /usr/local
 
 # Copy application code and necessary files
-COPY ./backend ${APP_SOURCE}/backend
-COPY ./framework ${APP_SOURCE}/framework
+COPY ./neuro_sanSOURCE}/neuro_san
 COPY ./proto ${APP_SOURCE}/proto
 
 # Generate gRPC code for the MD service(s)
 WORKDIR ${APP_SOURCE}
-RUN ./backend/grpc/do_generate.sh && \
+RUN ./neuro_san/grpc/do_generate.sh && \
     chmod a+w ${APP_SOURCE}
 
 # Set up the entry point for when the container is run
@@ -88,7 +87,7 @@ USER ${USERNAME}
 WORKDIR ${APP_HOME}
 
 # Service-specific environment variables
-ENV SERVICE_DIR agents/service
+ENV SERVICE_DIR service
 
 # Default is for no vault server present at all
 # Use https://127.0.0.1:8200 when testing locally.
@@ -96,11 +95,7 @@ ENV VAULT_ADDR=""
 ENV VAULT_CACERT=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
 ENV GITHUB_ORG=leaf-ai
 
-ENV APP_ENTRYPOINT backend/${SERVICE_DIR}/entrypoint.sh
-
-# Get the build version as a Docker arg and make it available
-ARG UNILEAF_VERSION
-ENV UNILEAF_VERSION=${UNILEAF_VERSION}
+ENV APP_ENTRYPOINT neuro_san/${SERVICE_DIR}/entrypoint.sh
 
 # Tool registry file environment variable
 ENV TOOL_REGISTRY_FILE=${TOOL_REGISTRY_FILE}
