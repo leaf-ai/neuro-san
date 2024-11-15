@@ -1,0 +1,15 @@
+{
+    # Currently we list each hocon file we want to serve as a key with a boolean value.
+    # Eventually we might have a dictionary value with server specifications for each.
+
+    "esp_decision_assistant.hocon": true,
+    "hello_world.hocon": true,
+    "opportunity_finder_pipeline.hocon": true,
+    "intranet_agents.hocon": true,
+    "telco_network_support.hocon": true,
+    "six_thinking_hats.hocon": true,
+    "insurance_agents.hocon": true,
+    "retail_ops_and_customer_service.hocon": true,
+    "banking_ops.hocon": true,
+    "cpg_agents.hocon": true
+}

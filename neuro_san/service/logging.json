@@ -1,0 +1,36 @@
+{
+    "version": 1,
+    "disable_existing_loggers": false,
+    "formatters": {
+        "structured": {
+            "format": "{\"message\": \"%(message)s\", \"user_id\": \"%(user_id)s\", \"Timestamp\": \"%(iso_timestamp)s\", \"source\": \"%(source)s\", \"message_type\": \"%(message_type)s\", \"run_id\": \"%(run_id)s\", \"experiment_id\": \"%(experiment_id)s\", \"request_id\": \"%(request_id)s\", \"thread_name\": \"%(thread_name)s\"}"
+        }
+    },
+    "handlers": {
+        "null": {
+            "class": "logging.NullHandler",
+            "level": "INFO"
+        },
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "INFO",
+            "formatter": "structured",
+            "stream": "ext://sys.stdout"
+        }
+    },
+    "loggers": {
+        "my_module": {
+            "level": "INFO",
+            "handlers": [
+                "console"
+            ],
+            "propagate": "no"
+        }
+    },
+    "root": {
+        "level": "INFO",
+        "handlers": [
+            "console"
+        ]
+    }
+}

@@ -1,0 +1,146 @@
+version: "1.0"
+
+steps:
+    set_repo_values:
+        description: "Provide repo values that are unavailable in cron-triggered pipelines"
+        type: "freestyle"
+        image: alpine:3.13.1
+        commands:
+            - cf_export REPO_NAME=neuro-san
+            - cf_export REPO_OWNER=leaf-ai
+            # The revision can be overridden from a pipeline variable
+            # when we want to integration test a specific branch.
+            - cf_export REVISION=main
+
+    clone_repo:
+        type: git-clone
+        title: "Clone repo"
+        repo: "${{REPO_OWNER}}/${{REPO_NAME}}"
+        git: github
+        revision: "${{REVISION}}"
+
+    get_git_sha:
+        type: freestyle
+        title: "Get git sha of current codebase"
+        image: alpine/git:2.43.0
+        working_directory: "${{CF_VOLUME_PATH}}/neuro-san"
+        commands:
+          - cf_export GIT_SHA=`git rev-parse --short HEAD`
+
+    prepare_for_build:
+        description: "Do any common preparation for tests"
+        type: "freestyle"
+        image: alpine:3.13.1
+        working_directory: ${{CF_VOLUME_PATH}}/${{REPO_NAME}}
+        commands:
+            # Set up some variables
+
+            # It's our experience the the CF_VOLUME can leak between builds
+            # Attempt to do some isolation.
+            - export TEMP_DIR_OUTSIDE_CONTAINER=${{CF_VOLUME_PATH}}/tmp/${{CF_BUILD_ID}}
+            - mkdir -p ${TEMP_DIR_OUTSIDE_CONTAINER}
+
+            - export APP_HOME=/home/${{REPO_OWNER}}
+            - export APP_SOURCE=${APP_HOME}/${{REPO_NAME}}
+
+            # cf_export these variables so these vars can be used in later build steps
+            - cf_export TEMP_DIR_OUTSIDE_CONTAINER APP_HOME APP_SOURCE
+
+    create_temp_git_creds_from_vault:
+        title: "Get ephemeral GitHub creds"
+        description: "Get temporary git credentials from vault server.
+                      Create credential for use in docker secret with_creds_requirements"
+        type: "freestyle"
+        image: "vault:1.12.0"
+        commands:
+            # Login into Vault only once
+            - >-
+                vault login -address=${{VAULT}} -method=github token=${{VAULT_LOGIN}}
+                | grep -Ev "(token |token_accessor)"
+
+            # Get the ephemeral token for public repos
+            - EPHEMERAL_TOKEN=$(vault read -address=${{VAULT}} -field=token /github-secrets/token/repo-read)
+            - cf_export EPHEMERAL_LEAF_SOURCE_CREDENTIALS="x-access-token:${EPHEMERAL_TOKEN}"
+
+            # Get other keys from vault needed below
+            - export OPENAI_API_KEY=$(vault kv get -address=${{VAULT}} -field=key /secret/open-ai/api)
+            - cf_export OPENAI_API_KEY --mask
+
+    create_req_files_with_git_creds:
+        title: "Create credentialed requirements files for secret build steps"
+        type: "freestyle"
+        image: python:3.10-slim
+        working_directory: ${{CF_VOLUME_PATH}}/${{REPO_NAME}}
+        commands:
+            - python build_scripts/requirements_handler.py
+
+    repo_build:
+        title: "Building Docker image for python tests"
+        type: "build"
+        image_name: "leaf/${{REPO_NAME}}"
+        # Tag is required attribute for build step
+        # but since we don't push this image to a registry
+        # we can ignore it.
+        tag: "not-used"
+        disable_push: true
+        working_directory: ${{CF_VOLUME_PATH}}/${{REPO_NAME}}
+        dockerfile: "build_scripts/Dockerfile"
+        buildkit: true
+        # Docker BuildKit has different output. This progress plain allows
+        # us to see the "old" style output which is useful.
+        progress: "plain"
+        # The src refers to our secret file on the host system. Within the
+        # dockerfile we refer to the secret by id. By not providing a dst
+        # the file ends up at the docker default of /run/secrets/<id>
+        secrets:
+            - id=with_creds_requirements,src=${{INTEGRATION_TESTS_WITH_CREDS_REQUIREMENTS}}
+        build_arguments:
+            - REPO=${{REPO_NAME}}
+            - USERNAME=${{REPO_OWNER}}
+            - APP_HOME=${{APP_HOME}}
+            - APP_SOURCE=${{APP_SOURCE}}
+
+    run_all_tests:
+        type: parallel
+        title: Run all tests
+        fail_fast: false
+        steps:
+           run_python_integration_tests:
+               title: Run python integration tests
+               # Use the image created by the repo_build step above
+               # See: https://codefresh.io/docs/docs/codefresh-yaml/variables/
+               image: ${{repo_build}}
+               description: Run integration tests
+               # Specifically run in the APP_SOURCE directory inside the container,
+               # *not* in the CF_VOLUME as we had erroneously done before.
+               working_directory: ${{APP_SOURCE}}
+               fail_fast: false
+               commands:
+                   - pip3 freeze
+                   # These were used with nose, but currently pytest-timer
+                   # does not allow configuration of colors like nose did.
+                   # Still useful to document our desired thresholds:
+                   #   --timer-ok 60s --timer-warning 120s
+                   - pytest --verbose -m "integration" --timer-top-n 100
+
+    clean_up:
+        description: "Clean up after ourselves"
+        type: "freestyle"
+        image: alpine:3.13.1
+        working_directory: ${{CF_VOLUME_PATH}}/${{REPO_NAME}}
+        commands:
+            # Clean up anything senstive we do not want to leak between builds
+            - rm -rf ${{TEMP_DIR_OUTSIDE_CONTAINER}}
+
+    all_test_status:
+        title: Check For Failed Tests
+        description: "Handle any fail cases that may have occurred"
+        image: alpine:3.13.1
+        commands:
+            - exit 1
+        when:
+            condition:
+                any:
+                    static_test_fail:
+                        steps.run_python_integration_tests.result == "failure" ||
+                        steps.run_all_tests.result == "failure"

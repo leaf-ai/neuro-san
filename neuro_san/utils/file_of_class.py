@@ -1,0 +1,60 @@
+from pathlib import Path
+
+
+class FileOfClass:
+    """
+    Class which assists in getting absolute paths from a starting source file.
+    Clients are expected to invoke with something like:
+            FileOfClass(__file__, path_to_basis="../reacharound").
+    """
+
+    def __init__(self, source_file: str, path_to_basis: str = "."):
+        """
+        Constructor
+
+        :param source_file: The source file which will be the starting point for relative paths.
+        :param path_to_basis: An optional path to a relative basis, so as to be
+                        able to find other relevant files in an absolute manner.
+                        This is expected to be a single string of multiple degrees of
+                        ".." (or "../..", etc).
+                        The default is the directory of the source_file.
+        """
+
+        self.source_file: str = source_file
+        self.path_to_basis: str = path_to_basis
+
+    def get_file_path(self) -> Path:
+        """
+        :return: A pathlib Path pointing to the file of the source_file
+        """
+        return Path(self.source_file)
+
+    def get_file(self) -> str:
+        """
+        :return: A string pointing to the absolute file path of the source_file
+        """
+        return str(self.get_file_path().resolve())
+
+    def get_dir_path(self) -> Path:
+        """
+        :return: A pathlib Path pointing to the directory of the source_file
+        """
+        return Path(self.source_file).parent
+
+    def get_basis_path(self) -> Path:
+        """
+        :return: The pathlib Path of the provided basis.
+        """
+        return self.get_dir_path() / self.path_to_basis
+
+    def get_basis(self) -> str:
+        """
+        :return: The absolute file path of the provided basis.
+        """
+        return str(self.get_basis_path().resolve())
+
+    def get_file_in_basis(self, filename: str) -> str:
+        """
+        :return: An absolute path to a file that resides within the basis.
+        """
+        return str((self.get_basis_path() / filename).resolve())

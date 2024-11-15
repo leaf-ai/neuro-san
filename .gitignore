@@ -1,0 +1,21 @@
+# virtualenv folders
+venv/
+venv3/
+
+# Python byte code
+*.pyc
+neuro_san.egg-info/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyCharm env
+.idea/
+
+# Vim editor restore files
+*.swp
+
+# Documentation created by mkdocs which may harbor security vulnerabilities
+site/

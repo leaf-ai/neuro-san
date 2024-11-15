@@ -1,0 +1,58 @@
+import asyncio
+from typing import Any
+from typing import Dict
+
+
+# pylint: disable=too-few-public-methods
+class CodedTool:
+    """
+    Interface contract for a coded tool to squelch the anti-pattern of
+    Static Cling.
+
+    Upon activation by the agent hierarchy, a CodedTool will have its
+    invoke() call called by the system.
+
+    Implementations are expected to clean up after themselves.
+    """
+
+    def invoke(self, args: Dict[str, Any], sly_data: Dict[str, Any]) -> Any:
+        """
+        Called when the coded tool is invoked by the agent hierarchy.
+
+        :param args: An argument dictionary whose keys are the parameters
+                to the coded tool and whose values are the values passed for them
+                by the calling agent.  This dictionary is to be treated as read-only.
+        :param sly_data: A dictionary whose keys are defined by the agent hierarchy,
+                but whose values are meant to be kept out of the chat stream.
+
+                This dictionary is largely to be treated as read-only.
+                It is possible to add key/value pairs to this dict that do not
+                yet exist as a bulletin board, as long as the responsibility
+                for which coded_tool publishes new entries is well understood
+                by the agent chain implementation and the coded_tool implementation
+                adding the data is not invoke()-ed more than once.
+        :return: A return value that goes into the chat stream.
+        """
+        raise NotImplementedError
+
+    async def async_invoke(self, args: Dict[str, Any], sly_data: Dict[str, Any]) -> Any:
+        """
+        Called when the coded tool is invoked asynchronously  by the agent hierarchy.
+
+        :param args: An argument dictionary whose keys are the parameters
+                to the coded tool and whose values are the values passed for them
+                by the calling agent.  This dictionary is to be treated as read-only.
+        :param sly_data: A dictionary whose keys are defined by the agent hierarchy,
+                but whose values are meant to be kept out of the chat stream.
+
+                This dictionary is largely to be treated as read-only.
+                It is possible to add key/value pairs to this dict that do not
+                yet exist as a bulletin board, as long as the responsibility
+                for which coded_tool publishes new entries is well understood
+                by the agent chain implementation and the coded_tool implementation
+                adding the data is not invoke()-ed more than once.
+        :return: A return value that goes into the chat stream.
+        """
+        loop = asyncio.get_running_loop()
+        result = await loop.run_in_executor(None, self.invoke, args, sly_data)
+        return result

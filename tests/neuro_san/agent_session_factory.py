@@ -1,0 +1,36 @@
+
+from neuro_san.session.agent_session import AgentSession
+from neuro_san.session.service_agent_session import ServiceAgentSession
+from tests.neuro_san.direct_agent_session_factory import DirectAgentSessionFactory
+
+
+# pylint: disable=too-few-public-methods
+class AgentSessionFactory:
+    """
+    Factory class for agent sessions.
+    """
+
+    @staticmethod
+    def create_session(session_type: str,
+                       agent_name: str,
+                       hostname: str = None,
+                       port: int = None,
+                       login: str = None) -> AgentSession:
+        """
+        :param session_type: The type of session to create
+        :param agent_name: The name of the agent to use for the session.
+        :param hostname: The name of the host to connect to (if applicable)
+        :param port: The port on the host to connect to (if applicable)
+        :param login: The user login information on the host to connect to (if applicable)
+        """
+        session: AgentSession = None
+
+        if session_type == "direct":
+            factory = DirectAgentSessionFactory()
+            session = factory.create_session(agent_name)
+        elif session_type == "service":
+            session = ServiceAgentSession(host=hostname, port=port, agent_name=agent_name)
+        else:
+            raise ValueError(f"session_type {session_type} is not understood")
+
+        return session

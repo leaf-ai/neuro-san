@@ -1,0 +1,249 @@
+{
+    "llm_config": {
+        "model_name": "gpt-4o",
+        # "model_name": "gpt-4-turbo",
+        "verbose": true
+    },
+    "commondefs": {
+        "replacement_values": {
+            "cao_item": {
+                "type": "string",
+                "properties": {
+                    "attribute_name": {
+                        "type": "string"
+                    },
+                    "attribute_type": {
+                        "type": "string",
+                        "enum": ["categories", "FREE_RESPONSE"],
+                    },
+                    "choices": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                },
+                "required": ["attribute_name"]
+            }
+        }
+    },
+    "tools": [
+        # These tool definitions do not have to be in any particular order
+        # How they are linked and call each other is defined within their
+        # own specs.  This could be a graph, potentially even with cycles.
+
+        # This first guy is the "Front Man".  He is identified as such because
+        # he is the only one with no paramaters in his function definition,
+        # and therefore he needs to talk to the outside world to get things rolling.
+        {
+            "name": "decision_making_assistant",
+
+            # Note that there are no parameters defined for this guy's "function" key.
+            # This is the primary way to identify this tool as a front-man,
+            # distinguishing it from the rest of the tools.
+
+            "function": {
+
+                # When there are no function parameters to the front-man,
+                # its description acts as an initial prompt. 
+
+                "description": """
+I can help you with your basic decision making.
+What decision are you trying to make?
+"""
+            },
+            "instructions": """
+You are a decision assistant.
+You will be asked to help with a decision and you need to pretend
+you are an expert in the field, and establish the pertinent context
+attributes within which the decision is to be made.
+You also need to establish the various action attributes that are
+relevant to the decision.
+You also need to find out what outcomes need to be optimized with the decision.
+Context, action and outcome attributes can be numerical or categorical.
+You need to determine whether each outcome needs to be minimized or maximized.
+First guess, confirm or ask the user for the values of the context
+attributes through a series of questions.
+Make sure the user is not overwhelmed and ask them for values of unknown
+context elements one at a time.
+Then, to help with the decision making, you will call a prescriptor function.
+As part of your query, you will declare the needed expertise, and the
+type and values of the context as well as defining the action and outcome
+attributes.
+The prescriptor function will return the list of action values for the given context.
+""",
+            "tools": [
+                "prescriptor"
+            ]
+        },
+
+        # The prescriptor is a tool that is called by the "Front Man" above.
+        # He also has the ability to call one or more predictor agent sessions
+        # below as tools to use in getting his job done.
+        {
+            "name": "prescriptor",
+            "attributions": {
+                "context_defs": "The context attributes are",
+                "actions_defs": "The actions attributes are",
+                "outcomes_defs": "The outcome attributes are",
+                "context_vals": "The context values are"
+            },
+            "function": {
+                "description": """
+Creates a prescriptor assistant by taking the list of context, actions, and outcomes attributes, "
+then, by taking the context values, returns its recommended action values.
+""",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "A unique name for the current decision dialog"
+                        },
+                        "description": {
+                            "type": "string",
+                            "description": "A brief description of the current decision"
+                        },
+                        "context_defs": {
+                            "type": "array",
+                            "description": """
+An array of context attributes,
+each with an attribute name and type, as int or categorical, with possible categories.
+""",
+                            "items": "cao_item"
+                        },
+                        "actions_defs": {
+                            "type": "array",
+                            "description": """
+An array of action attributes,
+each with an attribute name and type, as int or categorical, with possible categories.
+""",
+                            "items": "cao_item"
+                        },
+                        "outcomes_defs": {
+                            "type": "array",
+                            "description": """
+An array of outcome attributes,
+each with an attribute name and type, as int or categorical, with possible categories.
+""",
+                            "items": "cao_item"
+                        },
+                        "context_vals": {
+                            "type": "array",
+                            "description": "An array of context attribute values for a specific decision we need to make.",
+                            "items": "cao_item"
+                        },
+                    },
+                    "required": ["name", "description",
+                                 "context_defs", "actions_defs", "outcomes_defs",
+                                 "context_vals"],
+                },
+            },
+            "instructions": """
+You are a system that, given the values of the given context attributes,
+suggests values for the given action attributes in a manner
+that would optimize the given outcome attributes.
+The system will deliver precise and straightforward responses,
+comprising only the prescribed action values.
+There will be no elaboration or additional commentary.
+You will consult a predictor expert by calling the predictor function in order to
+generate your answers.
+The predictor function takes context and action attributes and values, and predicts the outcomes.
+For each outcome, a certainty value between 0 and 1 will also be returned.
+""",
+            "command": "Suggest actions to optimize the outcomes given the context values.",
+            "tools": [
+                "predictor"
+            ]
+        },
+
+        # The predictor is the lowest level tool and does not call anyone else.
+        # He is called by the prescriptor.
+        {
+            "name": "predictor",
+            "attributions": {
+                "expertise": "You are an expert in",
+                "context_defs": "The context attributes are",
+                "actions_defs": "The actions attributes are",
+                "outcomes_defs": "The outcome attributes are",
+                "context_vals": "The context values are",
+                "actions_vals": "The actions values we are considering are"
+            },
+            "function": {
+                "description": """
+Creates a predictor assistant with a specific expertise,
+by taking the domain of expertise, and the list of context, actions, and outcomes attributes,
+then, given the context and
+actions values, returns its prediction of the outcome values.
+""",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "A unique name for the current decision dialog"
+                        },
+                        "description": {
+                            "type": "string",
+                            "description": "A brief description of the current decision"
+                        },
+                        "expertise": {
+                            "type": "string",
+                            "description": "The domain of expertise of the assistant",
+                        },
+                        "context_defs": {
+                            "type": "array",
+                            "description": """
+An array of context attributes,
+each with an attribute name and type, as int or categorical, with possible categories.
+""",
+                            "items": "cao_item"
+                        },
+                        "actions_defs": {
+                            "type": "array",
+                            "description": """
+An array of action attributes,
+each with an attribute name and type, as int or categorical, with possible categories.
+""",
+                            "items": "cao_item"
+                        },
+                        "outcomes_defs": {
+                            "type": "array",
+                            "description": """
+An array of outcome attributes,
+each with an attribute name and type, as int or categorical, with possible categories.
+""",
+                            "items": "cao_item"
+                        },
+                        "context_vals": {
+                            "type": "array",
+                            "description": "An array of context attribute values for a specific decision we need to make.",
+                            "items": "cao_item"
+                        },
+                        "actions_vals": {
+                            "type": "array",
+                            "description": "An array of action attribute values for a specific case we are considering.",
+                            "items": "cao_item"
+                        },
+                    },
+                    "required": ["name", "description", "expertise",
+                                "context_defs", "actions_defs", "outcomes_defs",
+                                "context_vals", "actions_vals"],
+                },
+            },
+            "instructions": """
+As an expert in the field, you are a system that predicts outcomes of a decision.
+The decision is being made in a certain context, which is defined by the context attributes.
+The decision is defined by some actions being taken within this context.
+A decision consists of values for context and action attributes, and can result in
+values for predefined outcome attributes.
+The system will consider the context and action values, and predict the resulting outcome attribute values.
+The system is programmed to focus solely on providing predictions without any additional text.
+It will deliver precise and straightforward responses, comprising only the predicted outcome values
+and a certainty score between 0 and 1.
+There will be no elaboration or additional commentary.
+""",
+            "command": "Predict the outcomes given the context values and action values."
+        }
+    ]
+}
