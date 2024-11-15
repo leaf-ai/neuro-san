@@ -97,15 +97,6 @@ In some order of complexity, they are:
     This is Hormoz's example of the six colored thinking hats
     approach to solving a problem.
 
-*   opportunity_finder_pipeline
-
-    A practical example used by the NeuroAI system.
-    It demostrates an agent pipeline taking natural language input,
-    which extracts information out of that to compile
-    a complex JSON structure.  Along the way it calls
-    several coded-tools which each call web services to get
-    pieces of the job done.
-
 *   intranet_agents
 
     This is Babak's "18-wheeler". A complex and abstract agent network
