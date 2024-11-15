@@ -13,8 +13,8 @@ In a new virtual environment:
 
 Generate the gRPC code:
 
-    ./backend/grpc/do_generate.sh
-    ./backend/grpc/do_mdserver_generate.sh
+    ./neuro_san/grpc/do_generate.sh
+    ./neuro_san/grpc/do_mdserver_generate.sh
 
 ### Direct Setup
 
@@ -25,7 +25,7 @@ In a terminal window, set at least OPENAI_API_KEY to a valid access key for Chat
 
 From the top-level:
 
-    python ./tests/backend/agents/agent_cli.py --connection direct --agent hello_world
+    python ./tests/neuro_san/agent_cli.py --connection direct --agent hello_world
 
 Type in this input to the chat client:
 
@@ -46,13 +46,13 @@ In one terminal window, set at least OPENAI_API_KEY to a valid access key for Ch
 
 Build and run the docker container for the hosting agent service:
 
-    ./backend/agents/service/build.sh ; ./backend/agents/service/run.sh
+    ./neuro_san/service/build.sh ; ./neuro_san/service/run.sh
 
 #### Client
 
 In another terminal start the chat client:
 
-    python ./tests/backend/agents/agent_cli.py --connection service --agent hello_world
+    python ./tests/neuro_san/agent_cli.py --connection service --agent hello_world
 
 
 ### Extra info about agent_cli.py
@@ -72,7 +72,7 @@ string of a JSON dictionary. For example:
 
 ## Creating a new agent network
 
-Look at the example hocon files in ./backend/agents/registries
+Look at the example hocon files in ./neuro_san/registries
 
 Here are some descriptions of the example hocon files.
 To play with them, specify their stem as the argument for --agent on the agent_cli.py chat client.
@@ -157,14 +157,6 @@ It has 4 methods:
 
 # Adding agents that are UI-visible
 
-1. Be sure your agent is added to the ./backend/agents/registries/manifest.hocon
-2. Add an enum entry in proto/metadata.proto to the AgentType enum
-    Be sure it is spelled the same as your agent hocon file's stem, but in all upper case.
-    Note that while more agents might be listed in the manifest.hocon, it is this enum that controls
-    what is available to the UI.
-3. In backend/pmdserver/service/forwarded_agent_session.py, add 2 separate entries to the ENUM_TO_AGENT map:
-    a. One will be a mapping from the AGENT_TYPE.<enum_value> integer to the all-smalls agent name string
-    b. One will be a mapping from the all-caps enum name string to the all-smalls agent name string
-4. Get with a UI guy to allow the UI to access the new agent
+1. Be sure your agent is added to the ./neuro_san/registries/manifest.hocon
 
 Your agent should now be available for public consumption.
