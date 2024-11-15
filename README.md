@@ -1,4 +1,4 @@
-# Data-Driven Agents
+# Neuro-San Data-Driven Agents
 
 ## Running client and server
 
