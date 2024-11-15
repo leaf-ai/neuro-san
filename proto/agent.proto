@@ -1,0 +1,181 @@
+
+// Copyright © 2024 Cognizant Digital Business, Evolutionary AI. All rights reserved.
+
+// To obtain information concerning the code generation that is used by this Interface Definition Language
+// please see the following:
+//
+// Go - https://developers.google.com/protocol-buffers/docs/reference/go-generated
+// Python - https://developers.google.com/protocol-buffers/docs/reference/python-generated
+//
+syntax = "proto3";
+
+package dev.cognizant_ai.neuro_san.agent;
+
+import "google/protobuf/struct.proto";
+
+option go_package = "github.com/leaf-ai/neuro_san/internal/gen/dev.cognizant_dev.ai/genproto/neuro_san/agent/v1;agent";
+
+
+// The service comprises all the exchanges to the backend in support of a single agent's
+// services.  Routing is done by way of agent name on the grpc service hosting the agent,
+// so as to keep info about which agents are hosted private (grpc gives the hand when a
+// particular agent is unknown.
+//
+// Note that as of 3/21/24, this is *not* yet a REST-ful service due to constraints
+// with OpenAI service and/or linux socket timeouts used behind the scenes.
+service AgentService {
+
+    // Called when a client needs the function description of an agent.
+    rpc Function (FunctionRequest) returns (FunctionResponse) {}
+
+    // Called when the user needs to initialize a new chat request
+    // or respond to an LLM's request during an already initialized chat.
+    rpc Chat (ChatRequest) returns (ChatResponse) {}
+
+    // Polls for chat results which are processed asynchronously from Chat() above.
+    rpc Logs (LogsRequest) returns (LogsResponse) {}
+
+    // Resets the chat initiated with Chat() above.
+    rpc Reset (ResetRequest) returns (ResetResponse) {}
+}
+
+enum AgentStatus {
+    // The status is unknown.  Very rare.
+    UNKNOWN = 0;
+
+    // The given session_id is alive and well
+    // on this service instance and the gRPC method
+    // can functionally proceed with a valid result.
+    FOUND = 1;
+
+    // Returned if the service instance does not find
+    // the session_id given in the request.
+    // For continuing chat streams, this could imply
+    // a series of client-side retries as multiple
+    // service instances will not keep track of the same
+    // assistants.
+    NOT_FOUND = 2;
+
+    // Returned when no session_id was given (initiation
+    // of new chat by client) and a new assistant is created.
+    // This is only ever returned by Chat()
+    // and this is an indication that the client should retain
+    // the returned session_id to pursue further conversation.
+    CREATED = 3;
+}
+
+// Request structure for Function gRPC method
+message FunctionRequest {
+}
+
+// Description of an agent's function
+message Function {
+
+    // Outward-facing description of what the agent does.
+    string description = 1 [json_name="description"];
+
+    // Optional map of parameters that the agent needs in order to work.
+    // This is really a pydantic/OpenAI function description, which is
+    // a bit too complex to specify directly in protobuf.
+    google.protobuf.Struct parameters = 2 [json_name="parameters"];
+}
+
+// Response structure for Function gRPC method
+message FunctionResponse {
+
+    // The functional description of the agent.
+    // Any initial chat prompt is obtained from the Function's description.
+    Function function = 1 [json_name="function"];
+
+    // Enum describing the status
+    // See the definition of the Status enum above for details
+    // on how to respond.
+    AgentStatus status = 2;
+}
+
+// Request structure for Chat gRPC method
+message ChatRequest {
+
+    // A string UUID identifying the root ownership of the chat assistant's resources.
+    // Upon first contact this can be blank, as the client does not yet possess
+    // the right information.
+    string session_id = 1 [json_name="session_id"];
+
+    // User input to initiate or continue the chat
+    string user_input = 2 [json_name="user_input"];
+
+    // This is an entirely optional map whose keys refer to data that is better
+    // left out of the LLM chat stream.  The keys themselves might appear in the
+    // chat stream, referring to the data, but the data itself does not.
+    // The intent is for the key references to be passed to tools,
+    // which then grab the values by programmatic means.
+    google.protobuf.Struct sly_data = 3 [json_name="sly_data"];
+}
+
+// Response structure for Chat gRPC method
+message ChatResponse {
+
+    // The request that generated this response
+    ChatRequest request = 1;
+
+    // A string UUID identifying the root ownership of the chat assistant's resources.
+    string session_id = 2 [json_name="session_id"];
+
+    // Enum describing the status of the given session_id
+    // See the definition of the AgentStatus enum above for details
+    // on how to respond.
+    AgentStatus status = 3;
+}
+
+// Request structure for Logs gRPC method
+message LogsRequest {
+
+    // A string UUID identifying the root ownership of the chat assistant's resources.
+    // When calling Logs(), this cannot be blank.
+    string session_id = 1 [json_name="session_id"];
+}
+
+// Response structure for Logs gRPC method
+message LogsResponse {
+
+    // The request that generated this response
+    LogsRequest request = 1;
+
+    // A string UUID identifying the root ownership of the chat assistant's resources.
+    string session_id = 2 [json_name="session_id"];
+
+    // Enum describing the status of the given session_id
+    // See the definition of the AgentStatus enum above for details
+    // on how to respond.
+    AgentStatus status = 3;
+
+    // A single string representing the most recent chat response
+    string chat_response = 4 [json_name="chat_response"];
+
+    // A list of strings representing the "thought process" logs thus far.
+    repeated string logs = 5;
+}
+
+
+// Request structure for Reset gRPC method
+message ResetRequest {
+
+    // A string UUID identifying the root ownership of the chat assistant's resources.
+    // When calling Reset(), this cannot be blank.
+    string session_id = 1 [json_name="session_id"];
+}
+
+// Response structure for Reset gRPC method
+message ResetResponse {
+
+    // The request that generated this response
+    ResetRequest request = 1;
+
+    // A string UUID identifying the root ownership of the chat assistant's resources.
+    string session_id = 2 [json_name="session_id"];
+
+    // Enum describing the status of the given session_id
+    // See the definition of the AgentStatus enum above for details
+    // on how to respond.
+    AgentStatus status = 3;
+}

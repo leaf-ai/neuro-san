@@ -14,7 +14,6 @@ In a new virtual environment:
 Generate the gRPC code:
 
     ./neuro_san/grpc/do_generate.sh
-    ./neuro_san/grpc/do_mdserver_generate.sh
 
 ### Direct Setup
 

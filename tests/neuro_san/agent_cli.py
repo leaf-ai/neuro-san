@@ -110,16 +110,13 @@ class AgentCli:
                                 help="JSON string containing data that is out-of-band to the chat stream, "
                                      "but is still essential to agent function")
         arg_parser.add_argument("--connection", default="service",
-                                choices=["service", "mdserver", "direct"],
+                                choices=["service", "direct"],
                                 help="""
 The type of connection to initiate. Choices are to connect to:
     "service"   - an agent service via gRPC. (The default).  Needs host and port.
-    "mdserver"  - an md server instance set up to forward requests to an agent service. Also needs login.
     "direct"    - a session via library.
 All choices require an agent name.
 """)
-        arg_parser.add_argument("--login", type=str, default=os.environ.get("USER"),
-                                help="User login for use with --connection mdserver")
         self.args = arg_parser.parse_args()
 
     def open_session(self):
