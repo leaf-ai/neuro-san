@@ -19,3 +19,6 @@ __pycache__/
 
 # Documentation created by mkdocs which may harbor security vulnerabilities
 site/
+
+# Generated files
+**/generated/*
