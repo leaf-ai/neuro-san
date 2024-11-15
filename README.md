@@ -117,7 +117,7 @@ you specify your agent correctly (per the hocon file stem).
 The agent infrastructure is run as a gRPC service.
 That gRPC service is implemented (client and server) using this interface:
 
-https://github.com/neuro-san/blob/main/neuro_san/session/agent_session.py
+https://github.com/leaf-ai/neuro-san/blob/main/neuro_san/session/agent_session.py
 
 It has 4 methods:
 
