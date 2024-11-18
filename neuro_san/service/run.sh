@@ -77,7 +77,7 @@ function run() {
         -e VAULT_CACERT='/usr/local/leaf/vault/ca_bundle.pem' \
         -e TOOL_REGISTRY_FILE=$1 \
         -p $SERVICE_PORT:$SERVICE_PORT \
-            leaf/agents:$CONTAINER_VERSION"
+            leaf/neuro-san:$CONTAINER_VERSION"
 
     if [ "${OS}" == "Darwin" ];then
         # Host networking does not work for non-Linux operating systems

@@ -13,8 +13,8 @@
 
 # Script used to build the container that runs the Decision Assistant Service
 
-export SERVICE_DIR=agents/service
-export SERVICE_TAG=agents
+export SERVICE_DIR=service
+export SERVICE_TAG=neuro-san
 export SERVICE_VERSION=0.0.1
 export SERVICE_REQUIREMENTS_TXT=neuro_san/${SERVICE_DIR}/requirements.txt
 

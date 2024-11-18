@@ -43,7 +43,7 @@ RUN pip3 install --upgrade pip==${PIP3_VERSION} --no-cache-dir
 # but we must break the docker cache in the event the
 # requirements change. So copy in the unmodified file
 # before using the secret.
-COPY ./neuro_san/service/requirements.txt ${APP_SOURCE}/neuro_san/service/requirements.txt
+COPY ./requirements.txt ${APP_SOURCE}/neuro_san/service/requirements.txt
 
 RUN --mount=type=secret,id=with_creds_requirements \
     pip install --prefix=/install --no-cache-dir -r /run/secrets/with_creds_requirements
@@ -85,7 +85,7 @@ EXPOSE 30001
 COPY --from=builder /install /usr/local
 
 # Copy application code and necessary files
-COPY ./neuro_san/${APP_SOURCE}/neuro_san
+COPY ./neuro_san ${APP_SOURCE}/neuro_san
 COPY ./proto ${APP_SOURCE}/proto
 
 # Generate gRPC code for the MD service(s)
