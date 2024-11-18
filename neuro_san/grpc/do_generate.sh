@@ -36,7 +36,7 @@ PROTO_PATH="--proto_path=${GENERATED_DIR} \
 echo "PROTO_PATH is ${PROTO_PATH}"
 
 # Inputs to the script
-LOCAL_PROTO_FILES=$(< "${PROTOS_DIR}"/backend_shared_proto.txt)
+LOCAL_PROTO_FILES=$(< "${PROTOS_DIR}"/protobuf_manifest.txt)
 
 PACKAGE="neuro_san.grpc.generated"
 

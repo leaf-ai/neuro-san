@@ -33,6 +33,6 @@ ${PIP} --version
 ${PIP} freeze
 
 echo "Starting grpc service with args '$1'..."
-${PYTHON} backend/agents/service/agent_main_loop.py "$@"
+${PYTHON} neuro_san/service/agent_main_loop.py "$@"
 
 echo "Done."

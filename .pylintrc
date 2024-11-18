@@ -12,7 +12,7 @@
 ignore=.git
 
 # Directories from top level that should be ignored.
-ignore-paths=backend/grpc/generated,serving/adapter/grpc_gen/generated
+ignore-paths=neuro_san/grpc/generated
 
 # Add files or directories matching the regex patterns to the blacklist. The
 # regex matches against base names, not paths.

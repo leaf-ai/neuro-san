@@ -16,7 +16,7 @@
 export SERVICE_DIR=agents/service
 export SERVICE_TAG=agents
 export SERVICE_VERSION=0.0.1
-export SERVICE_REQUIREMENTS_TXT=backend/${SERVICE_DIR}/requirements.txt
+export SERVICE_REQUIREMENTS_TXT=neuro_san/${SERVICE_DIR}/requirements.txt
 
 
 function check_run_directory() {
@@ -125,7 +125,7 @@ function build_main() {
         --platform ${TARGET_PLATFORM} \
         --secret id=with_creds_requirements,src=${WITH_CREDS_REQUIREMENTS} \
         --build-arg="UNILEAF_VERSION=${USER}-$(date +'%Y-%m-%d-%H-%M')" \
-        -f ./backend/${SERVICE_DIR}/Dockerfile \
+        -f ./neuro_san/${SERVICE_DIR}/Dockerfile \
         ${CACHE_OR_NO_CACHE} \
         .
 

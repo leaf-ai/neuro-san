@@ -1,8 +1,6 @@
  
 # These requirements are for the Python that is run in the
-# backend/agents container.  As of 03/20/2024, this 
-# container needs far fewer dependencies than most others,
-# so these requirements are down at the service-code level.
+# neuro_san/service container.
 #
 # Requirements for tests, code style and other build stuff reside in
 # requirements-build.txt
