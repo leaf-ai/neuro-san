@@ -1,4 +1,15 @@
 
+# Copyright (C) 2023-2024 Cognizant Digital Business, Evolutionary AI.
+# All Rights Reserved.
+# Issued under the Academic Public License.
+#
+# You can be released from the terms, and requirements of the Academic Public
+# License by purchasing a commercial license.
+# Purchase of a commercial license is mandatory for any use of the
+# neuro-san SDK Software in commercial settings.
+#
+# END COPYRIGHT
+
 from neuro_san.session.agent_session import AgentSession
 from neuro_san.session.service_agent_session import ServiceAgentSession
 from tests.neuro_san.direct_agent_session_factory import DirectAgentSessionFactory

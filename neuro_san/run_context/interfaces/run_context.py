@@ -1,3 +1,14 @@
+
+# Copyright (C) 2023-2024 Cognizant Digital Business, Evolutionary AI.
+# All Rights Reserved.
+# Issued under the Academic Public License.
+#
+# You can be released from the terms, and requirements of the Academic Public
+# License by purchasing a commercial license.
+# Purchase of a commercial license is mandatory for any use of the
+# neuro-san SDK Software in commercial settings.
+#
+# END COPYRIGHT
 # Needed for method referencing different instance of the same class
 # See https://stackoverflow.com/questions/33533148/how-do-i-type-hint-a-method-with-the-type-of-the-enclosing-class
 from __future__ import annotations

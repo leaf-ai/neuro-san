@@ -1,13 +1,12 @@
 
-
-# Copyright (C) 2019-2023 Cognizant Digital Business, Evolutionary AI.
+# Copyright (C) 2023-2024 Cognizant Digital Business, Evolutionary AI.
 # All Rights Reserved.
+# Issued under the Academic Public License.
 #
-# This software is a trade secret, and contains proprietary and confidential
-# materials of Cognizant Digital Business Evolutionary AI.
-# Cognizant Digital Business prohibits the use, transmission, copying,
-# distribution, or modification of this software outside of the
-# Cognizant Digital Business EAI organization.
+# You can be released from the terms, and requirements of the Academic Public
+# License by purchasing a commercial license.
+# Purchase of a commercial license is mandatory for any use of the
+# neuro-san SDK Software in commercial settings.
 #
 # END COPYRIGHT
 

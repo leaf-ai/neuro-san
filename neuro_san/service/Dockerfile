@@ -1,3 +1,14 @@
+
+# Copyright (C) 2023-2024 Cognizant Digital Business, Evolutionary AI.
+# All Rights Reserved.
+# Issued under the Academic Public License.
+#
+# You can be released from the terms, and requirements of the Academic Public
+# License by purchasing a commercial license.
+# Purchase of a commercial license is mandatory for any use of the
+# neuro-san SDK Software in commercial settings.
+#
+# END COPYRIGHT
 # This Dockerfile is expected to be run from the top-level of neuro-san.
 
 # Stage 1: Builder Stage - Use our python and git base image for installations
