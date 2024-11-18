@@ -23,8 +23,8 @@ from google.protobuf.json_format import Parse
 from leaf_server_common.server.grpc_metadata_forwarder import GrpcMetadataForwarder
 from leaf_server_common.server.request_logger import RequestLogger
 
-from neuro_sanenerated import agent_pb2 as service_messages
-from neuro_sanenerated import agent_pb2_grpc
+from neuro_san.grpc.generated import agent_pb2 as service_messages
+from neuro_san.grpc.generated import agent_pb2_grpc
 
 from neuro_san.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.session.chat_session_map import ChatSessionMap
