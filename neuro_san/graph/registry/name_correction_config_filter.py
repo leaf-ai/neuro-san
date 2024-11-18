@@ -6,7 +6,7 @@
 # You can be released from the terms, and requirements of the Academic Public
 # License by purchasing a commercial license.
 # Purchase of a commercial license is mandatory for any use of the
-# leaf-common SDK Software in commercial settings.
+# neuro-san SDK Software in commercial settings.
 #
 # END COPYRIGHT
 """
