@@ -25,14 +25,12 @@ class AgentSessionFactory:
     def create_session(session_type: str,
                        agent_name: str,
                        hostname: str = None,
-                       port: int = None,
-                       login: str = None) -> AgentSession:
+                       port: int = None) -> AgentSession:
         """
         :param session_type: The type of session to create
         :param agent_name: The name of the agent to use for the session.
         :param hostname: The name of the host to connect to (if applicable)
         :param port: The port on the host to connect to (if applicable)
-        :param login: The user login information on the host to connect to (if applicable)
         """
         session: AgentSession = None
 

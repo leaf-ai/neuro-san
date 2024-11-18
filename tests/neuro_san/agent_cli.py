@@ -140,8 +140,7 @@ All choices require an agent name.
 
         # Open a session
         self.session = AgentSessionFactory.create_session(self.args.connection, self.args.agent,
-                                                          hostname, self.args.port,
-                                                          self.args.login)
+                                                          hostname, self.args.port)
 
         # Clear out the previous thinking file
         with open(self.args.thinking_file, "w", encoding="utf-8") as thinking:
