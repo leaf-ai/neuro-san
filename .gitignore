@@ -22,3 +22,6 @@ site/
 
 # Generated files
 **/generated/*
+
+# build files
+dist/

@@ -26,9 +26,9 @@ classifiers = [
 
     # "License :: XXX :: XXX"
 ]
-[tool.setuptools.dynamic]
 dynamic = ["version", "dependencies"]
 
+[tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
 # optional-dependencies = {dev = {file = ["requirements-dev.txt"]}}
 
@@ -38,6 +38,9 @@ where = ["neuro_san", "proto"]
 [tool.setuptools.package-data]
 neuro_san = ["*.sh"]
 proto = ["*.proto", "*.txt"]
+
+[tool.setuptools-git-versioning]
+enabled = true
 
 [project.urls]
 Homepage = "https://github.com/leaf-ai/neuro-san"
