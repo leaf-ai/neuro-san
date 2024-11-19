@@ -33,11 +33,7 @@ dependencies = {file = ["requirements.txt"]}
 optional-dependencies = {dev = {file = ["requirements-private.txt"]}}
 
 [tool.setuptools.packages.find]
-where = ["neuro_san", "proto"]
-
-[tool.setuptools.package-data]
-neuro_san = ["*.sh"]
-proto = ["*.proto", "*.txt"]
+where = ["neuro_san"]
 
 [tool.setuptools-git-versioning]
 enabled = true

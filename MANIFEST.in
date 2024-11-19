@@ -1,0 +1,2 @@
+include neuro_san/grpc/do_generate.sh
+recursive-include proto *

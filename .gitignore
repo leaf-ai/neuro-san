@@ -4,7 +4,11 @@ venv3/
 
 # Python byte code
 *.pyc
+
+# build files
+dist/
 neuro_san.egg-info/
+neuro_san-*/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -23,5 +27,3 @@ site/
 # Generated files
 **/generated/*
 
-# build files
-dist/
