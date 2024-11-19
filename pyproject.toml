@@ -4,17 +4,41 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "neuro_san"
-version = "0.0.1"
 authors = [
     { name="Dan Fink", email="Daniel.Fink@cognizant.com" }
 ]
 description = "NeuroAI data-driven System for multi-Agent Networks"
+keywords = ["LLM", "langchain", "agent", "multi-agent"]
 readme = "README.md"
+license = {file = "LICENSE.txt"}
 requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
+
+    # How mature is this project? Common values are
+    #   3 - Alpha
+    #   4 - Beta
+    #   5 - Production/Stable
+    "Development Status "" 3 - Alpha",
+
+    "Intended Audience :: Developers",
+
+    # "License :: XXX :: XXX"
 ]
+[tool.setuptools.dynamic]
+dynamic = ["version", "dependencies"]
+
+dependencies = {file = ["requirements.txt"]}
+# optional-dependencies = {dev = {file = ["requirements-dev.txt"]}}
+
+[tool.setuptools.packages.find]
+where = ["neuro_san", "proto"]
+
+[tool.setuptools.package-data]
+neuro_san = ["*.sh"]
+proto = ["*.proto", "*.txt"]
 
 [project.urls]
 Homepage = "https://github.com/leaf-ai/neuro-san"
+Repository = "https://github.com/leaf-ai/neuro-san"
