@@ -52,7 +52,7 @@ steps:
             # Specifically use the temp directory outside the container we want to build
             # so as not to accidentally copy sensitive credentials inside of it.
             - export WITH_CREDS_REQUIREMENTS=${{TEMP_DIR_OUTSIDE_CONTAINER}}/with_creds_requirements.txt
-            - cp requirements.txt ${WITH_CREDS_REQUIREMENTS}
+            - cp requirements-private.txt ${WITH_CREDS_REQUIREMENTS}
             - cf_export WITH_CREDS_REQUIREMENTS
 
             # Login into Vault only once

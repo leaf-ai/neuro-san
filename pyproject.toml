@@ -30,7 +30,7 @@ dynamic = ["version", "dependencies"]
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
-# optional-dependencies = {dev = {file = ["requirements-dev.txt"]}}
+optional-dependencies = {dev = {file = ["requirements-private.txt"]}}
 
 [tool.setuptools.packages.find]
 where = ["neuro_san", "proto"]

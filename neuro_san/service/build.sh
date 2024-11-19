@@ -16,7 +16,7 @@
 export SERVICE_DIR=service
 export SERVICE_TAG=neuro-san
 export SERVICE_VERSION=0.0.1
-export SERVICE_REQUIREMENTS_TXT=neuro_san/${SERVICE_DIR}/requirements.txt
+export SERVICE_REQUIREMENTS_TXT=neuro_san/${SERVICE_DIR}/requirements-private.txt
 
 
 function check_run_directory() {
@@ -70,7 +70,7 @@ function create_git_creds_requirements() {
     # Get rid of any turds from any previous attempts with a fresh copy
     # of the base requirements file.
     WITH_CREDS_REQUIREMENTS=/tmp/.git_creds_requirements.txt
-    cp requirements.txt ${WITH_CREDS_REQUIREMENTS}
+    cp requirements-private.txt ${WITH_CREDS_REQUIREMENTS}
 
     # If there are any service requirements use those instead as a complete
     # list.
