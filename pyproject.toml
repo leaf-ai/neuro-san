@@ -1,3 +1,6 @@
+# These bits are assembled from (largely) following the guidance here:
+# https://packaging.python.org/en/latest/overview/
+
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
