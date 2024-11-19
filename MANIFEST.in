@@ -1,0 +1,6 @@
+# Per https://stackoverflow.com/questions/7522250/how-to-include-package-data-with-setuptools-distutils
+# We cannot use package_data and expect data files to get into the source distribution.
+# So we use a MANIFEST.in file to specify the non-python files that go into the library.
+
+include neuro_san/grpc/do_generate.sh
+recursive-include proto *
