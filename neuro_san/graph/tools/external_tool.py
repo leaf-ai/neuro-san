@@ -102,6 +102,12 @@ class ExternalTool(CallableTool):
         # Parse the logs response for the last thing the assistant said
         response_split: List[str] = response.split("assistant: ")
         content: str = response_split[-1]
+        if len(response_split) < 2:
+            # The assistant marker not being in the logs is a very uncommon situation,
+            # but still it would be nice to have some idea of the frequency if it
+            # actually does arise.  It's not really an error as far as we know.
+            # Let the upstream agent figure it out for now until we know what to do.
+            print(f"Response from {self.agent_url} contains no indentifying marker")
 
         # Prepare the output
         message: Dict[str, Any] = {
