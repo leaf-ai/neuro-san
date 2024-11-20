@@ -52,6 +52,7 @@ class AgentToolRegistry(AgentToolFactory):
         self.agent_spec_map: Dict[str, Dict[str, Any]] = {}
 
         self.agent_tool_path = self.determine_agent_tool_path(agent_tool_path)
+        self.first_agent: str = None
 
         agent_specs = self.config.get("tools")
         if agent_specs is not None:
@@ -126,6 +127,9 @@ class AgentToolRegistry(AgentToolFactory):
         name = extractor.get_field(agent_spec, "function.name")
         if name is None:
             name = agent_spec.get("name")
+
+        if self.first_agent is None:
+            self.first_agent = name
 
         self.agent_spec_map[name] = agent_spec
 
@@ -202,6 +206,10 @@ class AgentToolRegistry(AgentToolFactory):
             function: Dict[str, Any] = agent_spec.get("function")
             if function.get("parameters") is None:
                 front_men.append(name)
+
+        if len(front_men) == 0:
+            # The next way to find a front man is to see which agent was registered first
+            front_men.append(self.first_agent)
 
         if len(front_men) == 0:
             raise ValueError("No front man for chat found. "

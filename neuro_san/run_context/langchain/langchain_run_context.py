@@ -134,7 +134,7 @@ class LangChainRunContext(RunContext):
         if agent_spec is None:
 
             # See if the agent name given could reference an external agent.
-            if ExternalToolAdapter.is_external_agent(name):
+            if not ExternalToolAdapter.is_external_agent(name):
                 return None
 
             # Use the ExternalToolAdapter to get the function specification

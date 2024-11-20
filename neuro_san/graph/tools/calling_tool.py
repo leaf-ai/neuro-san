@@ -24,6 +24,7 @@ from neuro_san.run_context.interfaces.run import Run
 from neuro_san.run_context.interfaces.run_context import RunContext
 from neuro_san.run_context.interfaces.tool_call import ToolCall
 from neuro_san.run_context.interfaces.tool_caller import ToolCaller
+from neuro_san.run_context.utils.external_tool_adapter import ExternalToolAdapter
 from neuro_san.utils.stream_to_logger import StreamToLogger
 
 
@@ -136,6 +137,26 @@ class CallingTool(ToolCaller):
 
         return tool_list
 
+    def get_callable_tool_dict(self) -> Dict[str, str]:
+        """
+        :return: A dictionary of name -> name, where the keys are what the tool has been
+                called in the framework (e.g. langchain) and the value is what the tool
+                has been called in the agent_spec itself.  This is often a reflexive
+                mapping, except in the case of external tools where a safer name is
+                needed for internal framework reference.
+        """
+        tool_dict: Dict[str, str] = {}
+
+        tool_list: List[str] = self.get_callable_tool_names(self.agent_tool_spec)
+        if tool_list is None:
+            return tool_dict
+
+        for tool in tool_list:
+            safe_name: str = ExternalToolAdapter.get_safe_agent_name(tool)
+            tool_dict[safe_name] = tool
+
+        return tool_dict
+
     async def make_tool_function_calls(self, component_run: Run) -> Run:
         """
         Calls all of the callable_components' functions
@@ -182,15 +203,18 @@ class CallingTool(ToolCaller):
         tool_arguments: Dict[str, Any] = component_tool_call.get_function_arguments()
 
         # Create a new instance of a JSON-speced tool using the supplied callable_tool_name.
-        callable_tool_names: List[str] = self.get_callable_tool_names(self.agent_tool_spec)
-        if tool_name not in callable_tool_names:
-            raise ValueError(f"{tool_name} is not in tools {callable_tool_names}")
+        # At this point tool_name might be an internal reference to an external tool,
+        # so we need to check a mapping.
+        callable_tool_dict: Dict[str, str] = self.get_callable_tool_dict()
+        use_tool_name: str = callable_tool_dict.get(tool_name)
+        if use_tool_name is None:
+            raise ValueError(f"{tool_name} is not in tools {list(callable_tool_dict.keys())}")
 
         # Note: This is not a BaseTool. This is our own construct within graph
         #       that we can build().
         callable_component: CallableTool = \
             self.factory.create_agent_tool(self.run_context, self.logger,
-                                           tool_name, self.sly_data, tool_arguments)
+                                           use_tool_name, self.sly_data, tool_arguments)
         callable_component_response: List[Any] = await callable_component.build()
 
         output: str = json.dumps(callable_component_response)

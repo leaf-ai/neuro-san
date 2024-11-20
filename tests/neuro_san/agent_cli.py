@@ -15,7 +15,6 @@ from time import sleep
 
 import argparse
 import json
-import os
 
 from timedinput import timedinput
 
