@@ -99,11 +99,16 @@ class ExternalTool(CallableTool):
             # not exist on all replications of a single service pod.
             response = logs_response.get("chat_response")
 
+        # Parse the logs response for the last thing the assistant said
+        response_split: List[str] = response.split("assistant: ")
+        content: str = response_split[-1]
+
         # Prepare the output
         message: Dict[str, Any] = {
             "role": "assistant",
-            "content": response
+            "content": content
         }
+
         message_list.append(message)
         messages_str: str = json.dumps(message_list)
 

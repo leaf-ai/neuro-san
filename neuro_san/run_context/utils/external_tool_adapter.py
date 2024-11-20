@@ -13,6 +13,8 @@ from typing import Any
 from typing import Dict
 from typing import List
 
+import logging
+
 from urllib.parse import ParseResult
 from urllib.parse import urlparse
 
@@ -124,7 +126,27 @@ class ExternalToolAdapter:
                 (without actually connecting to it).  False otherwise.
         """
         agent_location: Dict[str, str] = ExternalToolAdapter.parse_external_agent(agent_url)
-        return agent_location is not None
+        is_external: bool = agent_location is not None
+        return is_external
+
+    @staticmethod
+    def get_safe_agent_name(agent_url: str) -> str:
+        """
+        :param agent_url: The URL describing where to find the desired agent.
+        :return: A name that is suitable for using within agent toolkits (like langchain)
+                for internal tool reference.
+        """
+        safe_name: str = agent_url
+        if ExternalToolAdapter.is_external_agent(agent_url):
+
+            agent_location: Dict[str, str] = ExternalToolAdapter.parse_external_agent(agent_url)
+
+            # FWIW: langchain internal tool references must satisfy the regex: "^[a-zA-Z0-9_-]+$"
+            # It's possible that more complex external references might have the agent_name
+            # needing futher mangling.  Cross that bridge when we have a real example.
+            safe_name = "__" + agent_location.get("agent_name")
+
+        return safe_name
 
     @staticmethod
     def create_session(agent_location: Dict[str, str]) -> AgentSession:
@@ -145,4 +167,9 @@ class ExternalToolAdapter:
         #   to minimize socket usage, but for now use the ServiceAgentSession
         #   so as to ensure proper logging even on the same server (localhost).
         session = ServiceAgentSession(host, port, agent_name=agent_name)
+
+        # Quiet any logging from leaf-common grpc stuff.
+        quiet_please = logging.getLogger("leaf_common.session.grpc_client_retry")
+        quiet_please.setLevel(logging.WARNING)
+
         return session
