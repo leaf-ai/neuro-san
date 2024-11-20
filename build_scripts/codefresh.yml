@@ -69,9 +69,9 @@ steps:
 
             # Get the ephemeral token for private repos
             - EPHEMERAL_TOKEN=$(vault read -address=${{VAULT}} -field=token /github-private-secrets/token/repo-read)
-            - cf_export EPHEMERAL_LEAF_PRIVATE_SOURCE_CREDENTIALS="x-access-token:${EPHEMERAL_TOKEN}"
+            - EPHEMERAL_LEAF_PRIVATE_SOURCE_CREDENTIALS="x-access-token:${EPHEMERAL_TOKEN}"
             - >-
-                sed -i "s/\${LEAF_PRIVATE_SOURCE_CREDENTIALS}/${EPHEMERAL_LEAF_SOURCE_CREDENTIALS}/g"
+                sed -i "s/\${LEAF_PRIVATE_SOURCE_CREDENTIALS}/${EPHEMERAL_LEAF_PRIVATE_SOURCE_CREDENTIALS}/g"
                 ${WITH_CREDS_REQUIREMENTS}
 
     repo_build:
