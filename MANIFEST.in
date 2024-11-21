@@ -3,4 +3,5 @@
 # So we use a MANIFEST.in file to specify the non-python files that go into the library.
 
 include neuro_san/grpc/do_generate.sh
+recursive-include neuro_san/registries *
 recursive-include proto *

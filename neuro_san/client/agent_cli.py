@@ -18,8 +18,8 @@ import json
 
 from timedinput import timedinput
 
+from neuro_san.client.agent_session_factory import AgentSessionFactory
 from neuro_san.session.agent_session import AgentSession
-from tests.neuro_san.agent_session_factory import AgentSessionFactory
 
 
 class AgentCli:

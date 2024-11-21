@@ -24,7 +24,7 @@ In a terminal window, set at least OPENAI_API_KEY to a valid access key for Chat
 
 From the top-level:
 
-    python ./tests/neuro_san/agent_cli.py --connection direct --agent hello_world
+    python ./neuro_san/client/agent_cli.py --connection direct --agent hello_world
 
 Type in this input to the chat client:
 
@@ -51,7 +51,7 @@ Build and run the docker container for the hosting agent service:
 
 In another terminal start the chat client:
 
-    python ./tests/neuro_san/agent_cli.py --connection service --agent hello_world
+    python ./neuro_san/client/agent_cli.py --connection service --agent hello_world
 
 
 ### Extra info about agent_cli.py
