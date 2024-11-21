@@ -27,11 +27,10 @@ COMMON_PARENT_DIR=${ONE_LEVEL_UP}
 # Up on more directory is the top level
 TOP_LEVEL=${COMMON_PARENT_DIR%/*}
 GENERATED_DIR=${DIR}/generated
-PROTOS_DIR=${TOP_LEVEL}/proto
+PROTOS_DIR=${TOP_LEVEL}/neuro_san/proto
 
 # Ordering matters w/rt where generated file is output
 PROTO_PATH="--proto_path=${GENERATED_DIR} \
-            --proto_path=proto \
             --proto_path=${PROTOS_DIR}"
 echo "PROTO_PATH is ${PROTO_PATH}"
 

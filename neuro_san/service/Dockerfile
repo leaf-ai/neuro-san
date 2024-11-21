@@ -88,7 +88,6 @@ COPY --from=builder /install /usr/local
 
 # Copy application code and necessary files
 COPY ./neuro_san ${APP_SOURCE}/neuro_san
-COPY ./proto ${APP_SOURCE}/proto
 
 # Generate gRPC code for the MD service(s)
 WORKDIR ${APP_SOURCE}

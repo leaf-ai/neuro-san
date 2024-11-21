@@ -7,6 +7,7 @@ venv3/
 
 # build files
 dist/
+build/
 neuro_san.egg-info/
 neuro_san-*/
 

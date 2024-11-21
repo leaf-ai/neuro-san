@@ -46,7 +46,8 @@ optional-dependencies = {dev = {file = ["requirements-private.txt"]}}
 [tool.setuptools.packages.find]
 # Standard setup has source existing under /src directory.
 # That's not what we tend to do.
-where = ["neuro_san"]
+where = ["."]
+# namespaces = false
 # Note: package_data is not useful here for packaging up non-python files.
 #       See MANIFEST.in instead.
 

@@ -4,4 +4,5 @@
 
 include neuro_san/grpc/do_generate.sh
 recursive-include neuro_san/registries *
-recursive-include proto *
+recursive-include neuro_san/proto *
+recursive-exclude tests *
