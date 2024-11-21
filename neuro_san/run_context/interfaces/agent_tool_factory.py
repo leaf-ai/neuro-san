@@ -23,7 +23,7 @@ class AgentToolFactory:
     Having this interface breaks some circular dependencies.
     """
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def create_agent_tool(self,
                           parent_run_context: RunContext,
                           logger: StreamToLogger,
