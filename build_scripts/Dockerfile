@@ -73,7 +73,7 @@ RUN --mount=type=secret,id=with_creds_requirements \
 COPY --chown=${USERNAME}:${USERNAME} . ${APP_SOURCE}
 
 # Generate any grc
-
 USER ${USERNAME}
+RUN cd ${APP_SOURCE} ; ./neuro_san/grpc/do_generate.sh
+
 WORKDIR ${APP_HOME}
-RUN ./neuro_san/grpc/do_generate.sh
