@@ -29,7 +29,7 @@ class DirectAgentSession(AgentSession):
     This could be used by a Flask/Quart app or a gRPC service.
     """
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self,
                  chat_session_map: ChatSessionMap,
                  tool_registry: AgentToolRegistry,

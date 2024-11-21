@@ -29,7 +29,7 @@ class ClassTool(CallableTool):
     CallableTool which can invoke a CodedTool by its class name.
     """
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, parent_run_context: RunContext,
                  logger: StreamToLogger,
                  factory: AgentToolFactory,

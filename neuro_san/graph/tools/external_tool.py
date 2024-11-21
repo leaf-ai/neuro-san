@@ -31,7 +31,7 @@ class ExternalTool(CallableTool):
 
     DEFAULT_SLEEP_SECONDS: int = 5
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, parent_run_context: RunContext,
                  logger: StreamToLogger,
                  agent_url: str,

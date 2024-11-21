@@ -29,7 +29,7 @@ class ServiceAgentSession(AbstractServiceSession, AgentSession):
 
     DEFAULT_AGENT_NAME: str = "esp_decision_assistant"
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, host: str = None,
                  port: str = None,
                  timeout_in_seconds: int = 30,

@@ -39,7 +39,7 @@ class CallingTool(ToolCaller):
             logic for interacting with user input, it being the root node of a tool graph.
     """
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, parent_run_context: RunContext,
                  logger: StreamToLogger,
                  factory: AgentToolFactory,

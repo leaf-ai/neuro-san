@@ -30,7 +30,7 @@ class MethodTool(CallableTool):
     when invoking LLM function calls.
     """
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, parent_run_context: RunContext,
                  logger: StreamToLogger,
                  factory: AgentToolFactory,
