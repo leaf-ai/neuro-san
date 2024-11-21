@@ -10,9 +10,9 @@
 #
 # END COPYRIGHT
 
+from neuro_san.client.direct_agent_session_factory import DirectAgentSessionFactory
 from neuro_san.session.agent_session import AgentSession
 from neuro_san.session.service_agent_session import ServiceAgentSession
-from neuro_san.direct_agent_session_factory import DirectAgentSessionFactory
 
 
 # pylint: disable=too-few-public-methods
