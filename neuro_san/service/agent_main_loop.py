@@ -16,7 +16,7 @@ from typing import Dict
 
 import logging
 
-from os import environ
+import os
 
 from argparse import ArgumentParser
 from pathlib import Path
@@ -73,8 +73,7 @@ class AgentMainLoop(ServerLoopCallbacks):
                                 default=self.DEFAULT_TOOL_REGISTRY_FILE,
                                 help=".hocon or .json file defining the AgentToolRegistry for the service")
         arg_parser.add_argument("--port", type=int,
-                                default=int(environ.get("DECISION_ASSISTANT_PORT",
-                                                        AgentSession.DEFAULT_PORT)),
+                                default=int(os.environ.get("AGENT_PORT", AgentSession.DEFAULT_PORT)),
                                 help="Port number for the service")
 
         # Actually parse the args into class variables
@@ -88,6 +87,8 @@ class AgentMainLoop(ServerLoopCallbacks):
         tool_registry: AgentToolRegistry = None
         tool_registry_file: str = args.tool_registry_file
         if tool_registry_file is not None and len(tool_registry_file) > 0:
+            # Check the path to avoid Path Traversal issues from scans.
+            tool_registry_file = self._check_path(tool_registry_file)
             registry_name = Path(tool_registry_file).stem
             tool_registry = manifest_tool_registries.get(registry_name)
 
@@ -143,6 +144,19 @@ class AgentMainLoop(ServerLoopCallbacks):
 
         logger.info("Shutdown: shutting down AsyncioExecutor")
         self.asyncio_executor.shutdown()
+
+    def _check_path(self, file_path: str) -> str:
+        """
+        Checks path to be sure its in-bounds for Checkmarx Path Traversal
+        :param file_path: The file path to check
+        :return: True if the file_path is in bounds.  False if not.
+        """
+        bounds_dir: str = os.path.expanduser("~")
+        abs_file_path: str = os.path.abspath(file_path)
+        if not abs_file_path.startswith(bounds_dir):
+            # Appeases Checkmarx
+            raise ValueError(f"file_path {file_path} must be under {bounds_dir}")
+        return abs_file_path
 
 
 if __name__ == '__main__':
