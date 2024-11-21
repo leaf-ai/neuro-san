@@ -81,6 +81,7 @@ steps:
         tag: ${{CF_BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}
         working_directory: ${{CF_VOLUME_PATH}}/${{CF_REPO_NAME}}
         dockerfile: "build_scripts/Dockerfile"
+        disable_push: true
         buildkit: true
         # Docker BuildKit has different output. This progress plain allows
         # us to see the "old" style output which is useful.
