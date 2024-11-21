@@ -67,6 +67,13 @@ steps:
                 sed -i "s/\${LEAF_SOURCE_CREDENTIALS}/${EPHEMERAL_LEAF_SOURCE_CREDENTIALS}/g"
                 ${WITH_CREDS_REQUIREMENTS}
 
+            # Get the ephemeral token for private repos
+            - EPHEMERAL_TOKEN=$(vault read -address=${{VAULT}} -field=token /github-private-secrets/token/repo-read)
+            - EPHEMERAL_LEAF_PRIVATE_SOURCE_CREDENTIALS="x-access-token:${EPHEMERAL_TOKEN}"
+            - >-
+                sed -i "s/\${LEAF_PRIVATE_SOURCE_CREDENTIALS}/${EPHEMERAL_LEAF_PRIVATE_SOURCE_CREDENTIALS}/g"
+                ${WITH_CREDS_REQUIREMENTS}
+
     repo_build:
         title: "Building Docker image for ${{CF_REPO_NAME}}"
         type: "build"
