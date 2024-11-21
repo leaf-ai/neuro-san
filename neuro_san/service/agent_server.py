@@ -43,7 +43,7 @@ class AgentServer:
     Server implementation for the Agent gRPC Service.
     """
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, port: int,
                  server_loop_callbacks: ServerLoopCallbacks,
                  chat_session_map: ChatSessionMap,
