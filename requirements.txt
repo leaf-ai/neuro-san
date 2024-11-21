@@ -43,3 +43,6 @@ pydantic==2.9.2
 
 # For input validation
 validators==0.22.0
+
+# For chat-based cli tools not used in deployment
+timedinput

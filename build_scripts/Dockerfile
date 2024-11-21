@@ -72,5 +72,8 @@ RUN --mount=type=secret,id=with_creds_requirements \
 # We do this after all the requirements are installed as code changes more often than requirements
 COPY --chown=${USERNAME}:${USERNAME} . ${APP_SOURCE}
 
+# Generate any grc
+
 USER ${USERNAME}
 WORKDIR ${APP_HOME}
+RUN ./neuro_san/grpc/do_generate.sh
