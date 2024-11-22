@@ -18,6 +18,7 @@ steps:
         commands:
           - cd ${{CF_VOLUME_PATH}}/neuro-san
           - cf_export UNILEAF_VERSION=`git rev-parse HEAD`
+          - git tag --sort=-v:refname | head -n 1
           - exit 1
 
     prepare_for_build:
