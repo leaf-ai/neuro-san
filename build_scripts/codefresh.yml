@@ -8,6 +8,8 @@ steps:
         repo: "${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}"
         git: github
         revision: "${{CF_REVISION}}"
+        depth: 0  # Fetch full history, not a shallow clone
+        tags: true  # Ensure Git tags are fetched
 
     determine_latest_git_sha:
         title: "Determine Latest Git Sha"
