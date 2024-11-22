@@ -59,7 +59,6 @@ fallback_version = "0.0.1"
 # Allows for getting the version of the library from github tags.
 # See https://setuptools-git-versioning.readthedocs.io/en/stable/runtime_version.html
 ### enabled = true
-### fallback_version = "0.0.1"
 
 [project.urls]
 Homepage = "https://github.com/leaf-ai/neuro-san"
