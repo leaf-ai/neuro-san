@@ -56,7 +56,6 @@ where = ["."]
 # Allows for getting the version of the library from github tags.
 # See https://setuptools-git-versioning.readthedocs.io/en/stable/runtime_version.html
 enabled = true
-tag_regex = "^v?(?P<version>.*)$"
 version_scheme = "post-release"
 distance_dev_scheme = "0"
 
