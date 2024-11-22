@@ -27,7 +27,7 @@ steps:
 
             # cf_export these variables so these vars can be used in later build steps
             - cf_export TEMP_DIR_OUTSIDE_CONTAINER APP_HOME APP_SOURCE
- 
+
             # set the wheel package name which is the
             # the repo name, but with underscores instead of dashes
             - cf_export PACKAGE_NAME=`echo ${{CF_REPO_NAME}} | sed s/-/_/`
@@ -165,7 +165,7 @@ steps:
                       -m "not integration"
                       --timer-top-n 10
                       --cov=neuro_san
-    
+
     clean_up:
         description: "Clean up after ourselves"
         type: "freestyle"
@@ -199,7 +199,6 @@ steps:
         description: Build wheel file for distribution
         working_directory: ${{APP_SOURCE}}
         commands:
-            - pip install build wheel
             - python -m build --wheel
             - mkdir -p ${{CF_VOLUME_PATH}}/${{CF_BUILD_ID}}
             - cd dist && mv ${PACKAGE_NAME}*.whl ${{CF_VOLUME_PATH}}/${{CF_BUILD_ID}}
