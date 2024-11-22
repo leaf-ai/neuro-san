@@ -13,6 +13,7 @@ steps:
         title: Get git tags for proper versioning
         image: alpine/git:latest
         commands:
+            - git init
             - git fetch --tags
 
     prepare_for_build:
