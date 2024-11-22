@@ -9,6 +9,17 @@ steps:
         git: github
         revision: "${{CF_REVISION}}"
 
+    determine_latest_git_sha:
+        title: "Determine Latest Git Sha"
+        description: "Find the current git sha for use later in pipeline"
+        type: "freestyle"
+        image: alpine/git:v2.30.0
+        working_directory: ${{CF_VOLUME_PATH}}
+        commands:
+          - cd ${{CF_VOLUME_PATH}}/neuro-san
+          - cf_export UNILEAF_VERSION=`git rev-parse HEAD`
+          - exit 1
+
     prepare_for_build:
         description: "Do any common preparation for tests"
         type: "freestyle"
@@ -201,6 +212,7 @@ steps:
         commands:
             - python -m build --wheel
             - mkdir -p ${{CF_VOLUME_PATH}}/${{CF_BUILD_ID}}
+            - cd dist && ls
             - cd dist && mv ${PACKAGE_NAME}*.whl ${{CF_VOLUME_PATH}}/${{CF_BUILD_ID}}
 
     upload-to-S3:
