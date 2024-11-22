@@ -209,7 +209,7 @@ steps:
         description: Build wheel file for distribution
         working_directory: ${{APP_SOURCE}}
         commands:
-            - sed -i "s/fallback_version = \"0.0.1\"/fallback_version = \"${LATEST_TAG}\"/" pyproject.toml
+            - sed -i "s/fallback_version = \"0.0.1\"/fallback_version = \"0.0.2\"" pyproject.toml
             - grep fallback pyproject.toml
             - python -m build --wheel
             - mkdir -p ${{CF_VOLUME_PATH}}/${{CF_BUILD_ID}}
