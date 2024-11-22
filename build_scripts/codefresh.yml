@@ -199,8 +199,6 @@ steps:
         description: Build wheel file for distribution
         working_directory: ${{APP_SOURCE}}
         commands:
-            # Use the requirements-build.txt to include all the extra packaging goodies needed.
-            - pip install -r requirements-build.txt
             - python -m build --wheel
             - mkdir -p ${{CF_VOLUME_PATH}}/${{CF_BUILD_ID}}
             - cd dist && mv ${PACKAGE_NAME}*.whl ${{CF_VOLUME_PATH}}/${{CF_BUILD_ID}}
