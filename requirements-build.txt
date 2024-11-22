@@ -14,3 +14,8 @@ pylint==3.3.1
 
 # Special pylint extensions
 pylint-protobuf==0.22.0
+
+# packaging
+setuptools>=61.0
+wheel
+setuptools-git-versioning>=2.0.<3
