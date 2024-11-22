@@ -16,6 +16,7 @@ pylint==3.3.1
 pylint-protobuf==0.22.0
 
 # packaging
+build
 setuptools>=61.0
 wheel
 setuptools-git-versioning>=2.0.<3
