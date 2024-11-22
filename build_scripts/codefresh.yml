@@ -17,7 +17,7 @@ steps:
         image: alpine/git:v2.30.0
         working_directory: ${{CF_VOLUME_PATH}}/${{CF_REPO_NAME}}
         commands:
-          - cf_export LATEST_TAG=`git tag --sort=-v:refname | head -n 1`
+          - cf_export SETUPTOOLS_SCM_PRETEND_VERSION=`git tag --sort=-v:refname | head -n 1`
 
     prepare_for_build:
         description: "Do any common preparation for tests"
