@@ -18,6 +18,7 @@ import os
 from leaf_server_common.logging.logging_setup import setup_logging
 from leaf_server_common.server.server_lifetime import ServerLifetime
 from leaf_server_common.server.server_loop_callbacks import ServerLoopCallbacks
+from leaf_server_common.utils.asyncio_executor import AsyncioExecutor
 
 from neuro_san.grpc.generated import agent_pb2
 
@@ -25,7 +26,6 @@ from neuro_san.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.service.agent_servicer_to_server import AgentServicerToServer
 from neuro_san.service.agent_service import AgentService
 from neuro_san.session.chat_session_map import ChatSessionMap
-from neuro_san.session.asyncio_executor import AsyncioExecutor
 
 
 SERVER_NAME = 'neuro-san.Agent'
