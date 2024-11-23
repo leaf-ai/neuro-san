@@ -22,13 +22,13 @@ from google.protobuf.json_format import Parse
 
 from leaf_server_common.server.grpc_metadata_forwarder import GrpcMetadataForwarder
 from leaf_server_common.server.request_logger import RequestLogger
+from leaf_server_common.utils.asyncio_executor import AsyncioExecutor
 
 from neuro_san.grpc.generated import agent_pb2 as service_messages
 from neuro_san.grpc.generated import agent_pb2_grpc
 
 from neuro_san.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.session.chat_session_map import ChatSessionMap
-from neuro_san.session.asyncio_executor import AsyncioExecutor
 from neuro_san.session.direct_agent_session import DirectAgentSession
 
 # A list of methods to not log requests for
