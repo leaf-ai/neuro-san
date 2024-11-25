@@ -210,11 +210,11 @@ steps:
         working_directory: ${{APP_SOURCE}}
         commands:
             - echo ${SETUPTOOLS_SCM_PRETEND_VERSION}
-            - pwd
-            - ls
-            - exit 1
+            - export SETUPTOOLS_SCM_DEBUG=true
             - python -m build --wheel
             - mkdir -p ${{CF_VOLUME_PATH}}/${{CF_BUILD_ID}}
+            - ls
+            - exit 1
             - cd dist && ls
             - echo ${LATEST_TAG}
             - cd dist && mv ${PACKAGE_NAME}*.whl ${{CF_VOLUME_PATH}}/${{CF_BUILD_ID}}
