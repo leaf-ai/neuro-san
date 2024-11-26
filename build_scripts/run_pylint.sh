@@ -45,7 +45,7 @@ done
 
 echo "Running pylint on directories '${use_dirs}':"
 # shellcheck disable=2086
-pylint --load-plugins=pylint_protobuf -j 0 -rn --rcfile=${RCFILE} ${use_dirs}
+pylint --load-plugins=pylint_protobuf -j 6 -rn --rcfile=${RCFILE} ${use_dirs}
 retval=$?
 
 if [ ${retval} == 0 ]
