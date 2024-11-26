@@ -51,6 +51,7 @@ where = ["."]
 # namespaces = false
 # Note: package_data is not useful here for packaging up non-python files.
 #       See MANIFEST.in instead.
+exclude = ["tests*"]
 
 [tool.setuptools-git-versioning]
 # Allows for getting the version of the library from github tags.
