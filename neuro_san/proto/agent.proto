@@ -9,7 +9,7 @@
 //
 syntax = "proto3";
 
-package dev.cognizant_ai.neuro_san.agent;
+package dev.cognizant_ai.neuro_san.proto.agent;
 
 import "google/protobuf/struct.proto";
 

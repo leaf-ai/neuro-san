@@ -26,22 +26,22 @@ class AgentServiceStub(object):
             channel: A grpc.Channel.
         """
         self.Function = channel.unary_unary(
-                '/dev.cognizant_ai.neuro_san.agent.AgentService/Function',
+                '/dev.cognizant_ai.neuro_san.proto.agent.AgentService/Function',
                 request_serializer=agent__pb2.FunctionRequest.SerializeToString,
                 response_deserializer=agent__pb2.FunctionResponse.FromString,
                 )
         self.Chat = channel.unary_unary(
-                '/dev.cognizant_ai.neuro_san.agent.AgentService/Chat',
+                '/dev.cognizant_ai.neuro_san.proto.agent.AgentService/Chat',
                 request_serializer=agent__pb2.ChatRequest.SerializeToString,
                 response_deserializer=agent__pb2.ChatResponse.FromString,
                 )
         self.Logs = channel.unary_unary(
-                '/dev.cognizant_ai.neuro_san.agent.AgentService/Logs',
+                '/dev.cognizant_ai.neuro_san.proto.agent.AgentService/Logs',
                 request_serializer=agent__pb2.LogsRequest.SerializeToString,
                 response_deserializer=agent__pb2.LogsResponse.FromString,
                 )
         self.Reset = channel.unary_unary(
-                '/dev.cognizant_ai.neuro_san.agent.AgentService/Reset',
+                '/dev.cognizant_ai.neuro_san.proto.agent.AgentService/Reset',
                 request_serializer=agent__pb2.ResetRequest.SerializeToString,
                 response_deserializer=agent__pb2.ResetResponse.FromString,
                 )
@@ -111,7 +111,7 @@ def add_AgentServiceServicer_to_server(servicer, server):
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'dev.cognizant_ai.neuro_san.agent.AgentService', rpc_method_handlers)
+            'dev.cognizant_ai.neuro_san.proto.agent.AgentService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
@@ -137,7 +137,7 @@ class AgentService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/dev.cognizant_ai.neuro_san.agent.AgentService/Function',
+        return grpc.experimental.unary_unary(request, target, '/dev.cognizant_ai.neuro_san.proto.agent.AgentService/Function',
             agent__pb2.FunctionRequest.SerializeToString,
             agent__pb2.FunctionResponse.FromString,
             options, channel_credentials,
@@ -154,7 +154,7 @@ class AgentService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/dev.cognizant_ai.neuro_san.agent.AgentService/Chat',
+        return grpc.experimental.unary_unary(request, target, '/dev.cognizant_ai.neuro_san.proto.agent.AgentService/Chat',
             agent__pb2.ChatRequest.SerializeToString,
             agent__pb2.ChatResponse.FromString,
             options, channel_credentials,
@@ -171,7 +171,7 @@ class AgentService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/dev.cognizant_ai.neuro_san.agent.AgentService/Logs',
+        return grpc.experimental.unary_unary(request, target, '/dev.cognizant_ai.neuro_san.proto.agent.AgentService/Logs',
             agent__pb2.LogsRequest.SerializeToString,
             agent__pb2.LogsResponse.FromString,
             options, channel_credentials,
@@ -188,7 +188,7 @@ class AgentService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/dev.cognizant_ai.neuro_san.agent.AgentService/Reset',
+        return grpc.experimental.unary_unary(request, target, '/dev.cognizant_ai.neuro_san.proto.agent.AgentService/Reset',
             agent__pb2.ResetRequest.SerializeToString,
             agent__pb2.ResetResponse.FromString,
             options, channel_credentials,
