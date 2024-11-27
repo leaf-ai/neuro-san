@@ -24,7 +24,6 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 #       So we pick absolute paths.
 ONE_LEVEL_UP=${DIR%/*}
 ANOTHER_LEVEL_UP=${ONE_LEVEL_UP%/*}
-COMMON_PARENT_DIR=${ANOTHER_LEVEL_UP}
 # Up one more directory is the top level
 TOP_LEVEL=${ANOTHER_LEVEL_UP%/*}
 
