@@ -28,7 +28,6 @@ ANOTHER_LEVEL_UP=${ONE_LEVEL_UP%/*}
 TOP_LEVEL=${ANOTHER_LEVEL_UP%/*}
 
 GENERATED_DIR=neuro_san/api/grpc
-PACKAGE="neuro_san.api.grpc"
 
 # Ordering matters w/rt where generated file is output
 PROTO_PATH="--proto_path=${TOP_LEVEL}"
