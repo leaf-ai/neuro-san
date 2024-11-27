@@ -86,7 +86,6 @@ CHANGE_IMPORTS="agent_pb2 \
                 chat_pb2 \
                 image_data_pb2"
 
-
 echo "Generating gRPC code in ${GENERATED_DIR}..."
 
 # Create the generated directory if it doesn't exist already
@@ -112,81 +111,4 @@ do
         --python_out="${PYTHON_OUT}" \
         --grpc_python_out="${PYTHON_OUT}" \
         "${PROTO_FILE}"
-
-    echo "Modifying gRPC code for Python 3 for ${PROTO_FILE}"
-
-    # 3) Modify the generated code for fully specified python 3 packages.
-    # Derive the file names and import we are looking for from the PROTO_FILE
-    GRPC_FILE=${PROTO_BASE/.proto/_pb2_grpc.py}
-    PY3_GRPC_FILE=${PROTO_BASE/.proto/_pb2_grpc_py3.py}
-    PB2_FILE=${PROTO_BASE/.proto/_pb2.py}
-    PY3_PB2_FILE=${PROTO_BASE/.proto/_pb2_py3.py}
-
-    #
-    # Change the import of the _pb2 file to have a full python package path.
-    #
-    IMPORT=${PROTO_BASE/.proto/_pb2}
-
-    # Find the line we want to change with local imports which are no good
-    # for py3 and create a new line we want to use with fully-specified imports.
-    import_line=$(grep "import ${IMPORT}" < "${GENERATED_DIR}"/"${GRPC_FILE}")
-    new_import_line=${import_line/${IMPORT}/${PACKAGE}.${IMPORT}}
-
-    # Create a new file with the new import lines.
-    # Note this does not preserve the order of imports,
-    # but that's ok.
-    echo "$new_import_line" > "${GENERATED_DIR}"/"${PY3_GRPC_FILE}"
-    grep -v " ${IMPORT} " < "${GENERATED_DIR}"/"${GRPC_FILE}" >> \
-         "${GENERATED_DIR}"/"${PY3_GRPC_FILE}"
-
-    # Move the python3 file into replace the generated file
-    mv "${GENERATED_DIR}"/"${PY3_GRPC_FILE}" "${GENERATED_DIR}"/"${GRPC_FILE}"
-
-    for CHANGE_IMPORT in ${CHANGE_IMPORTS}
-    do
-        #
-        # Change the import of the CHANGE_IMPORT file
-        # to have a full python package path.
-        #
-        if [ "${IMPORT}" != "${CHANGE_IMPORT}" ]
-        then
-            IMPORT=${CHANGE_IMPORT}
-
-            # Find the line we want to change with local imports which are no good
-            # for py3 and create a new line we want to use with fully-specified imports.
-            import_line=$(grep "import ${IMPORT}" < "${GENERATED_DIR}"/"${GRPC_FILE}")
-            new_import_line=${import_line/${IMPORT}/${PACKAGE}.${IMPORT}}
-
-            # Create a new file with the new import lines.
-            # Note this does not preserve the order of imports,
-            # but that's ok.
-            echo "$new_import_line" > "${GENERATED_DIR}"/"${PY3_GRPC_FILE}"
-            grep -v " ${IMPORT} " < "${GENERATED_DIR}"/"${GRPC_FILE}" >> \
-                "${GENERATED_DIR}"/"${PY3_GRPC_FILE}"
-
-            # Move the python3 file into replace the generated file
-            mv "${GENERATED_DIR}"/"${PY3_GRPC_FILE}" "${GENERATED_DIR}"/"${GRPC_FILE}"
-        fi
-
-        #
-        # Change the import of the CHANGE_IMPORT file
-        # to have a full python package path.
-        #
-        IMPORT=${CHANGE_IMPORT}
-
-        # Find the line we want to change with local imports which are no good
-        # for py3 and create a new line we want to use with fully-specified imports.
-        import_line=$(grep "import ${IMPORT}" < "${GENERATED_DIR}"/"${PB2_FILE}")
-        new_import_line=${import_line/${IMPORT}/${PACKAGE}.${IMPORT}}
-
-        # Create a new file with the new import lines.
-        # Note this does not preserve the order of imports,
-        # but that's ok.
-        echo "$new_import_line" > "${GENERATED_DIR}"/"${PY3_PB2_FILE}"
-        grep -v " ${IMPORT} " < "${GENERATED_DIR}"/"${PB2_FILE}" >> \
-             "${GENERATED_DIR}"/"${PY3_PB2_FILE}"
-
-        # Move the python3 file into replace the generated file
-         mv "${GENERATED_DIR}"/"${PY3_PB2_FILE}" "${GENERATED_DIR}"/"${PB2_FILE}"
-    done
 done
