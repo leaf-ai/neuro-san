@@ -18,7 +18,7 @@ from leaf_common.time.timeout import Timeout
 
 from neuro_san.session.agent_service_stub import AgentServiceStub
 from neuro_san.session.agent_session import AgentSession
-from neuro_san.grpc.generated import agent_pb2 as service_messages
+from neuro_san.api.grpc import agent_pb2 as service_messages
 
 
 class ServiceAgentSession(AbstractServiceSession, AgentSession):

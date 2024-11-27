@@ -23,29 +23,69 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # Note: All the protobuf guides say to not mix absolute and relative paths
 #       So we pick absolute paths.
 ONE_LEVEL_UP=${DIR%/*}
-COMMON_PARENT_DIR=${ONE_LEVEL_UP}
-# Up on more directory is the top level
-TOP_LEVEL=${COMMON_PARENT_DIR%/*}
-GENERATED_DIR=${DIR}/generated
-PROTOS_DIR=${TOP_LEVEL}/neuro_san/proto
+ANOTHER_LEVEL_UP=${ONE_LEVEL_UP%/*}
+COMMON_PARENT_DIR=${ANOTHER_LEVEL_UP}
+# Up one more directory is the top level
+TOP_LEVEL=${ANOTHER_LEVEL_UP%/*}
+
+GENERATED_DIR=neuro_san/api/grpc
+PACKAGE="neuro_san.api.grpc"
 
 # Ordering matters w/rt where generated file is output
-PROTO_PATH="--proto_path=${GENERATED_DIR} \
-            --proto_path=${PROTOS_DIR}"
+PROTO_PATH="--proto_path=${TOP_LEVEL}"
 echo "PROTO_PATH is ${PROTO_PATH}"
 
 # Inputs to the script
-LOCAL_PROTO_FILES=$(< "${PROTOS_DIR}"/protobuf_manifest.txt)
+LOCAL_PROTO_FILES=$(< "${DIR}"/protobuf_manifest.txt)
 
-PACKAGE="neuro_san.grpc.generated"
+# Where output files go.
+PYTHON_OUT=${TOP_LEVEL}
+
+
+# Requirements:
+#   We need to be able to export .proto files from here so they can be
+#   protoc-compiled into external projects.
+#   We also need to be able to run code in here that references pre-built
+#   *_pb2*.py as a standalone library.
+#
+# Constraints:
+#   When exported .proto files from here are used in external projects,
+#   protoc-generated python there creates *another* local set of *_pb2*.py files
+#   with a serialized version of a *copy* of the original .proto file in
+#   its call to _descriptor_pool.Default().AddSerializedFile. When files
+#   from both neuro-san and the external project are mixed, this sometimes
+#   causes errors in the form of one of 2 errors:
+#
+#       1)  TypeError: Couldn't build proto file into descriptor pool:
+#               Depends on file 'neuro_san/grpc/generated/agent.proto',
+#               but it has not been loaded
+#       2)  TypeError: Couldn't build proto file into descriptor pool:
+#               duplicate symbol 'neuro_san.grpc.generated.agent.AgentStatus'
+#
+#   These errors arise due to unforgiving naming in the .proto here and unforgiving
+#   placement constraints in the directory/package hierarchy.
+#   When compiling the .proto file copy, it includes in the description sent to
+#   AddSerializedFile() a file path that needs to be both relative to the
+#   copied version of the .proto file and the external .proto file that is including
+#   it for definitions.
+#
+#   Because of all this, we end up having to do a couple of things in this repo:
+#       1)  .proto files need to live in the same place as where
+#           the generated python files end up.
+#       2)  Path/package/file names need to be specified from the top level of this repo.
+#
+#   In the end, any .proto file that is protoc-compiled here needs to come out
+#   with the exact same contents of what is passed to AddSerializedFile()
+#   when the external project's protoc operation copies and recompiles the .proto
+#   file for its own purposes.  Though this isn't really documented anywhere AFAICT,
+#   file placement and package naming is tweaked here so that kind of thing can happen
+#   more easily in other external repos.
 
 # Note that these files cannot have a service defined in them, otherwise there
 # will be problems with references from the _pb2_grpc.py file.
 CHANGE_IMPORTS="agent_pb2 \
                 chat_pb2 \
-                common_structs_pb2 \
-                image_data_pb2 \
-                user_pb2"
+                image_data_pb2"
 
 
 echo "Generating gRPC code in ${GENERATED_DIR}..."
@@ -70,8 +110,8 @@ do
     echo "generating gRPC code for ${PROTO_FILE}."
     # shellcheck disable=SC2086    # PROTO_PATH is compilation of cmd line args
     python -m grpc_tools.protoc ${PROTO_PATH} \
-        --python_out="${GENERATED_DIR}" \
-        --grpc_python_out="${GENERATED_DIR}" \
+        --python_out="${PYTHON_OUT}" \
+        --grpc_python_out="${PYTHON_OUT}" \
         "${PROTO_FILE}"
 
     echo "Modifying gRPC code for Python 3 for ${PROTO_FILE}"

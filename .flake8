@@ -2,5 +2,5 @@
 max-line-length = 120
 exclude =
     dist,
-    neuro_san/grpc/generated,
+    neuro_san/api/grpc,
     proto,
