@@ -91,7 +91,7 @@ COPY ./neuro_san ${APP_SOURCE}/neuro_san
 
 # Generate gRPC code for the MD service(s)
 WORKDIR ${APP_SOURCE}
-RUN ./neuro_san/grpc/do_generate.sh && \
+RUN ./neuro_san/api/scripts/do_generate.sh && \
     chmod a+w ${APP_SOURCE}
 
 # Set up the entry point for when the container is run

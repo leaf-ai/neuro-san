@@ -20,7 +20,7 @@ from leaf_server_common.server.server_lifetime import ServerLifetime
 from leaf_server_common.server.server_loop_callbacks import ServerLoopCallbacks
 from leaf_server_common.utils.asyncio_executor import AsyncioExecutor
 
-from neuro_san.grpc.generated import agent_pb2
+from neuro_san.api.grpc import agent_pb2
 
 from neuro_san.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.service.agent_servicer_to_server import AgentServicerToServer

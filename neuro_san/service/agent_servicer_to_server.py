@@ -19,8 +19,8 @@ from grpc import unary_unary_rpc_method_handler
 
 from neuro_san.session.agent_service_stub import DEFAULT_SERVICE_PREFIX
 from neuro_san.session.agent_service_stub import AgentServiceStub
-import neuro_san.grpc.generated.agent_pb2 as agent__pb2
-from neuro_san.grpc.generated.agent_pb2_grpc import AgentServiceServicer
+import neuro_san.api.grpc.agent_pb2 as agent__pb2
+from neuro_san.api.grpc.agent_pb2_grpc import AgentServiceServicer
 
 
 # pylint: disable=too-few-public-methods

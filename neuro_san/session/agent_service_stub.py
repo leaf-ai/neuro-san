@@ -13,7 +13,7 @@
 from grpc import Channel
 from grpc import UnaryUnaryMultiCallable
 
-import neuro_san.grpc.generated.agent_pb2 as agent__pb2
+import neuro_san.api.grpc.agent_pb2 as agent__pb2
 
 
 # This comes from the 'package' definition in the agent.proto

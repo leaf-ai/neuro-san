@@ -2,7 +2,8 @@
 # We cannot use package_data and expect data files to get into the source distribution.
 # So we use a MANIFEST.in file to specify the non-python files that go into the library.
 
-include neuro_san/grpc/do_generate.sh
+recursive-include neuro_san/api/grpc *
+recursive-include neuro_san/api/scripts *
 recursive-include neuro_san/registries *
-recursive-include neuro_san/proto *
 recursive-exclude tests *
+recursive-exclude neuro_san/api/grpc/__pycache__ *
