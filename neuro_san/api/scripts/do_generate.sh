@@ -96,9 +96,7 @@ ALL_PROTO_FILES="${ALL_PROTO_FILES} ${LOCAL_PROTO_FILES}"
 # Generate the python files and make them happy w/rt Python 3
 for PROTO_FILE in ${ALL_PROTO_FILES}
 do
-    PROTO_BASE=$(basename "${PROTO_FILE}")
-
-    # 2) Generate the GRPC code for a single service proto file.
+    # Generate the GRPC code for a single service proto file.
     echo "generating gRPC code for ${PROTO_FILE}."
     # shellcheck disable=SC2086    # PROTO_PATH is compilation of cmd line args
     python -m grpc_tools.protoc ${PROTO_PATH} \
