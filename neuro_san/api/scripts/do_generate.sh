@@ -80,12 +80,6 @@ PYTHON_OUT=${TOP_LEVEL}
 #   file placement and package naming is tweaked here so that kind of thing can happen
 #   more easily in other external repos.
 
-# Note that these files cannot have a service defined in them, otherwise there
-# will be problems with references from the _pb2_grpc.py file.
-CHANGE_IMPORTS="agent_pb2 \
-                chat_pb2 \
-                image_data_pb2"
-
 echo "Generating gRPC code in ${GENERATED_DIR}..."
 
 # Create the generated directory if it doesn't exist already
