@@ -28,20 +28,16 @@ class ExternalToolAdapter:
     so that its agents can be used as tools.
     """
 
-    def __init__(self, agent_url: str, default_service_prefix: str = None):
+    def __init__(self, agent_url: str):
         """
         Constructor
 
         :param agent_url: The URL describing where to find the desired agent.
-        :param default_service_prefix: The service prefix to use by default.
-                        Default is None, implying deeper policy in ServiceAgentSession
-                        will drive what will be used.
         """
 
         self.agent_url: str = agent_url
         self.session: AgentSession = None
         self.function_json: Dict[str, Any] = None
-        self.default_service_prefix: str = default_service_prefix
 
     async def get_function_json(self) -> Dict[str, Any]:
         """
@@ -120,7 +116,7 @@ class ExternalToolAdapter:
             "port": port,
             "agent_name": agent_name,
             # DEF: At some point, get this from the parsing and/or config/defaults.
-            "service_prefix": self.default_service_prefix
+            "service_prefix": None
         }
         return return_dict
 

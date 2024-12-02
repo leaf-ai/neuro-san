@@ -10,10 +10,10 @@
 #
 # END COPYRIGHT
 
+import os
+
 from grpc import Channel
 from grpc import UnaryUnaryMultiCallable
-
-import os
 
 import neuro_san.api.grpc.agent_pb2 as agent__pb2
 

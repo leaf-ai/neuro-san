@@ -36,7 +36,7 @@ DEFAULT_SERVER_NAME_FOR_LOGS: str = 'Agent Server'
 DEFAULT_REQUEST_LIMIT: int = 1000 * 1000
 
 
-# pylint: disable=too-few-public-methods
+# pylint: disable=too-few-public-methods,too-many-instance-attributes
 class AgentServer:
     """
     Server implementation for the Agent gRPC Service.
