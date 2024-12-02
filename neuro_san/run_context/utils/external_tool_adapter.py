@@ -28,16 +28,20 @@ class ExternalToolAdapter:
     so that its agents can be used as tools.
     """
 
-    def __init__(self, agent_url: str):
+    def __init__(self, agent_url: str, default_service_prefix: str = None):
         """
         Constructor
 
         :param agent_url: The URL describing where to find the desired agent.
+        :param default_service_prefix: The service prefix to use by default.
+                        Default is None, implying deeper policy in ServiceAgentSession
+                        will drive what will be used.
         """
 
         self.agent_url: str = agent_url
         self.session: AgentSession = None
         self.function_json: Dict[str, Any] = None
+        self.default_service_prefix: str = default_service_prefix
 
     async def get_function_json(self) -> Dict[str, Any]:
         """
@@ -114,7 +118,9 @@ class ExternalToolAdapter:
         return_dict = {
             "host": host,
             "port": port,
-            "agent_name": agent_name
+            "agent_name": agent_name,
+            # DEF: At some point, get this from the parsing and/or config/defaults.
+            "service_prefix": self.default_service_prefix
         }
         return return_dict
 
@@ -161,12 +167,14 @@ class ExternalToolAdapter:
         host = agent_location.get("host")
         port = agent_location.get("port")
         agent_name = agent_location.get("agent_name")
+        service_prefix = agent_location.get("service_prefix")
 
         # Optimization:
         #   It's possible we might want to create a different kind of session
         #   to minimize socket usage, but for now use the ServiceAgentSession
         #   so as to ensure proper logging even on the same server (localhost).
-        session = ServiceAgentSession(host, port, agent_name=agent_name)
+        session = ServiceAgentSession(host, port, agent_name=agent_name,
+                                      service_prefix=service_prefix)
 
         # Quiet any logging from leaf-common grpc stuff.
         quiet_please = logging.getLogger("leaf_common.session.grpc_client_retry")

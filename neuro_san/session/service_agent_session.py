@@ -37,7 +37,7 @@ class ServiceAgentSession(AbstractServiceSession, AgentSession):
                  security_cfg: Dict[str, Any] = None,
                  umbrella_timeout: Timeout = None,
                  agent_name: str = DEFAULT_AGENT_NAME,
-                 service_prefix: str = AgentServiceStub.DEFAULT_SERVICE_PREFIX):
+                 service_prefix: str = None):
         """
         Creates a AgentSession that connects to the
         Agent Service and delegates its implementations to the service.
@@ -58,7 +58,8 @@ class ServiceAgentSession(AbstractServiceSession, AgentSession):
         :param umbrella_timeout: A Timeout object under which the length of all
                         looping and retries should be considered
         :param agent_name: The name of the agent to talk to
-        :param service_prefix: The service prefix to use.
+        :param service_prefix: The service prefix to use. Default is None,
+                        implying the policy in AgentServiceStub takes over.
         """
         use_host: str = "localhost"
         if host is not None:
