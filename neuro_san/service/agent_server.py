@@ -116,7 +116,8 @@ class AgentServer:
                                    self.asyncio_executor,
                                    agent_name,
                                    tool_registry)
-            servicer_to_server = AgentServicerToServer(service, agent_name=agent_name)
+            servicer_to_server = AgentServicerToServer(service, agent_name=agent_name,
+                                                       service_prefix=self.service_prefix)
             servicer_to_server.add_rpc_handlers(server)
 
         server_lifetime.run()
