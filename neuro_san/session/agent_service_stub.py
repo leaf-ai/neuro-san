@@ -113,7 +113,7 @@ class AgentServiceStub:
         # Prepare the service name on a per-agent basis
         service_name: str = ""
         if service_prefix is not None and len(service_prefix) > 0:
-            service_name = "{service_prefix}"
+            service_name = f"{service_prefix}"
 
         # The agent name adds the voodoo to handle the request routing for each
         # agent on the same server.
