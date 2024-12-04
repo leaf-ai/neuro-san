@@ -224,7 +224,7 @@ steps:
             SOURCE: ${{CF_VOLUME_PATH}}/${{CF_BUILD_ID}}
         when:
             condition:
-            all:
+                all:
                 # This is idiomatic Codefresh for detecting if ${{CF_RELEASE_TAG}} has a value. We only want to deploy
                 # on Github release triggers, and this variable gets populated only for Github releases.
-                deploy_tagged_builds_only: 'includes("${{CF_RELEASE_TAG}}", "{{CF_RELEASE_TAG}}") == false'
+                    deploy_tagged_builds_only: 'includes("${{CF_RELEASE_TAG}}", "{{CF_RELEASE_TAG}}") == false'
