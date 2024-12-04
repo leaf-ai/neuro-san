@@ -8,6 +8,16 @@ steps:
         repo: "${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}"
         git: github
         revision: "${{CF_REVISION}}"
+        depth: 0  # Fetch full history, not a shallow clone
+
+    determine_latest_git_tag:
+        title: "Determine Latest Git tag"
+        description: "Find the current git tag for use later in pipeline"
+        type: "freestyle"
+        image: alpine/git:v2.30.0
+        working_directory: ${{CF_VOLUME_PATH}}/${{CF_REPO_NAME}}
+        commands:
+          - cf_export SETUPTOOLS_SCM_PRETEND_VERSION=`git tag --sort=-v:refname | head -n 1`
 
     prepare_for_build:
         description: "Do any common preparation for tests"
@@ -212,3 +222,9 @@ steps:
             S3_INTEGRATION: amazon
             S3_PREFIX: ${{PACKAGE_NAME}}/
             SOURCE: ${{CF_VOLUME_PATH}}/${{CF_BUILD_ID}}
+        when:
+            condition:
+                all:
+                # This is idiomatic Codefresh for detecting if ${{CF_RELEASE_TAG}} has a value. We only want to deploy
+                # on Github release triggers, and this variable gets populated only for Github releases.
+                    deploy_tagged_builds_only: 'includes("${{CF_RELEASE_TAG}}", "{{CF_RELEASE_TAG}}") == false'

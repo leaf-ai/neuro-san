@@ -2,9 +2,9 @@
 # https://packaging.python.org/en/latest/overview/
 
 [build-system]
-requires = ["setuptools>=61.0", "wheel", "setuptools-git-versioning>=2.0,<3"]
+requires = ["setuptools>=61.0", "wheel","setuptools-scm==8.1.0"]
 build-backend = "setuptools.build_meta"
-
+ 
 [project]
 name = "neuro-san"
 authors = [
@@ -53,10 +53,8 @@ where = ["."]
 #       See MANIFEST.in instead.
 exclude = ["tests*"]
 
-[tool.setuptools-git-versioning]
-# Allows for getting the version of the library from github tags.
-# See https://setuptools-git-versioning.readthedocs.io/en/stable/runtime_version.html
-enabled = true
+[tool.setuptools_scm]
+fallback_version = "0.0.1"
 
 [project.urls]
 Homepage = "https://github.com/leaf-ai/neuro-san"
