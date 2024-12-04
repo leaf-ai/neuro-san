@@ -10,9 +10,9 @@ steps:
         revision: "${{CF_REVISION}}"
         depth: 0  # Fetch full history, not a shallow clone
 
-    determine_latest_git_sha:
-        title: "Determine Latest Git Sha"
-        description: "Find the current git sha for use later in pipeline"
+    determine_latest_git_tag:
+        title: "Determine Latest Git tag"
+        description: "Find the current git tag for use later in pipeline"
         type: "freestyle"
         image: alpine/git:v2.30.0
         working_directory: ${{CF_VOLUME_PATH}}/${{CF_REPO_NAME}}
@@ -209,7 +209,7 @@ steps:
         description: Build wheel file for distribution
         working_directory: ${{APP_SOURCE}}
         commands:
-            - SETUPTOOLS_SCM_PRETEND_VERSION=${SETUP_SCM_PRETEND_VERSION} python -m build --wheel
+            - python -m build --wheel
             - mkdir -p ${{CF_VOLUME_PATH}}/${{CF_BUILD_ID}}
             - cd dist && mv ${PACKAGE_NAME}*.whl ${{CF_VOLUME_PATH}}/${{CF_BUILD_ID}}
 
