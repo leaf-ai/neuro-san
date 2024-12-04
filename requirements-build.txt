@@ -19,4 +19,4 @@ pylint-protobuf==0.22.0
 build
 setuptools>=61.0
 wheel
-setuptools-git-versioning>=2.0.<3
+setuptools-scm==8.1.0
