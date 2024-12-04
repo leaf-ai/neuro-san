@@ -21,17 +21,20 @@ import os
 from argparse import ArgumentParser
 from pathlib import Path
 
-from leaf_server_common.server.server_loop_callbacks \
-    import ServerLoopCallbacks
+from leaf_server_common.server.server_loop_callbacks import ServerLoopCallbacks
+from leaf_server_common.utils.asyncio_executor import AsyncioExecutor
 
 from neuro_san.chat.chat_session import ChatSession
 from neuro_san.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.graph.registry.agent_tool_registry_restorer import AgentToolRegistryRestorer
 from neuro_san.service.agent_server import AgentServer
+from neuro_san.service.agent_server import DEFAULT_SERVER_NAME
+from neuro_san.service.agent_server import DEFAULT_SERVER_NAME_FOR_LOGS
+from neuro_san.service.agent_server import DEFAULT_REQUEST_LIMIT
 from neuro_san.service.registry_manifest_restorer import RegistryManifestRestorer
-from neuro_san.session.asyncio_executor import AsyncioExecutor
-from neuro_san.session.chat_session_map import ChatSessionMap
+from neuro_san.session.agent_service_stub import DEFAULT_SERVICE_PREFIX
 from neuro_san.session.agent_session import AgentSession
+from neuro_san.session.chat_session_map import ChatSessionMap
 
 # A *single* global variable which contains a mapping of
 # string keys -> ChatSession implementations
@@ -41,6 +44,7 @@ CHAT_SESSIONS: Dict[str, ChatSession] = {}
 ASYNCIO_EXECUTOR: AsyncioExecutor = AsyncioExecutor()
 
 
+# pylint: disable=too-many-instance-attributes
 class AgentMainLoop(ServerLoopCallbacks):
     """
     This class handles the service main loop.
@@ -63,6 +67,11 @@ class AgentMainLoop(ServerLoopCallbacks):
         self.chat_session_map = ChatSessionMap(init_arguments)
         self.tool_registries: Dict[str, AgentToolRegistry] = {}
 
+        self.server_name: str = None
+        self.server_name_for_logs: str = None
+        self.request_limit: int = -1
+        self.service_prefix: str = None
+
     def parse_args(self):
         """
         Parse command-line arguments into member variables
@@ -75,10 +84,29 @@ class AgentMainLoop(ServerLoopCallbacks):
         arg_parser.add_argument("--port", type=int,
                                 default=int(os.environ.get("AGENT_PORT", AgentSession.DEFAULT_PORT)),
                                 help="Port number for the service")
+        arg_parser.add_argument("--server_name", type=str,
+                                default=str(os.environ.get("AGENT_SERVER_NAME", DEFAULT_SERVER_NAME)),
+                                help="Name of the service")
+        arg_parser.add_argument("--server_name_for_logs", type=str,
+                                default=str(os.environ.get("AGENT_SERVER_NAME_FOR_LOGS",
+                                                           DEFAULT_SERVER_NAME_FOR_LOGS)),
+                                help="Name of the service as seen in logs")
+        arg_parser.add_argument("--service_prefix", type=str,
+                                default=str(os.environ.get("AGENT_SERVICE_PREFIX",
+                                                           DEFAULT_SERVICE_PREFIX)),
+                                help="Name of the service as seen in logs")
+        arg_parser.add_argument("--request_limit", type=int,
+                                default=int(os.environ.get("AGENT_REQUEST_LIMIT",
+                                                           DEFAULT_REQUEST_LIMIT)),
+                                help="Number of requests served before the server shuts down in an orderly fashion")
 
         # Actually parse the args into class variables
         args = arg_parser.parse_args()
         self.port = args.port
+        self.server_name = args.server_name
+        self.server_name_for_logs = args.server_name_for_logs
+        self.service_prefix = args.service_prefix
+        self.request_limit = args.request_limit
 
         manifest_restorer = RegistryManifestRestorer()
         manifest_tool_registries: Dict[str, AgentToolRegistry] = manifest_restorer.restore()
@@ -124,7 +152,11 @@ class AgentMainLoop(ServerLoopCallbacks):
                                   server_loop_callbacks=self,
                                   chat_session_map=self.chat_session_map,
                                   tool_registries=self.tool_registries,
-                                  asyncio_executor=self.asyncio_executor)
+                                  asyncio_executor=self.asyncio_executor,
+                                  server_name=self.server_name,
+                                  server_name_for_logs=self.server_name_for_logs,
+                                  request_limit=self.request_limit,
+                                  service_prefix=self.service_prefix)
         grpc_server.serve()
 
     def loop_callback(self):

@@ -43,9 +43,13 @@ In one terminal window, set at least OPENAI_API_KEY to a valid access key for Ch
 
     export OPENAI_API_KEY="XXX"
 
-Build and run the docker container for the hosting agent service:
+Option 1: Build and run the docker container for the hosting agent service:
 
     ./neuro_san/service/build.sh ; ./neuro_san/service/run.sh
+
+Option 2: Run the service directly for a specific agent network:
+
+    python ./neuro_san/service/agent_main_loop.py --tool_registry_file hello_world
 
 #### Client
 

@@ -14,6 +14,7 @@ from typing import Dict
 from typing import List
 from typing import Union
 
+import os
 import json
 import logging
 
@@ -44,9 +45,17 @@ class RegistryManifestRestorer(Restorer):
             * None (the default) which gets a single manifest file from a known source.
         """
         self.manifest_files: List[str] = []
+
         if manifest_files is None:
-            file_of_class = FileOfClass(__file__, path_to_basis="../registries")
-            self.manifest_files.append(file_of_class.get_file_in_basis("manifest.hocon"))
+            # We have no manifest list coming in, so check an env variable for a definition.
+            manifest_file: str = os.environ.get("AGENT_MANIFEST_FILE")
+            if manifest_file is None:
+                # No env var, so fallback to whatis coded in this repo.
+                file_of_class = FileOfClass(__file__, path_to_basis="../registries")
+                manifest_file = file_of_class.get_file_in_basis("manifest.hocon")
+
+            # Add what was found above
+            self.manifest_files.append(manifest_file)
         elif isinstance(manifest_files, str):
             self.manifest_files.append(manifest_files)
         else:

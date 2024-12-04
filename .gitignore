@@ -26,5 +26,7 @@ __pycache__/
 site/
 
 # Generated files
-**/generated/*
+# Note: We actually want to check-in the generated files so they can be properly
+#       exported via GitHub zip/tar.gz and wheel file mechanisms.
+# **/grpc/generated/*
 

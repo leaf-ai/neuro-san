@@ -114,7 +114,9 @@ class ExternalToolAdapter:
         return_dict = {
             "host": host,
             "port": port,
-            "agent_name": agent_name
+            "agent_name": agent_name,
+            # DEF: At some point, get this from the parsing and/or config/defaults.
+            "service_prefix": None
         }
         return return_dict
 
@@ -161,12 +163,14 @@ class ExternalToolAdapter:
         host = agent_location.get("host")
         port = agent_location.get("port")
         agent_name = agent_location.get("agent_name")
+        service_prefix = agent_location.get("service_prefix")
 
         # Optimization:
         #   It's possible we might want to create a different kind of session
         #   to minimize socket usage, but for now use the ServiceAgentSession
         #   so as to ensure proper logging even on the same server (localhost).
-        session = ServiceAgentSession(host, port, agent_name=agent_name)
+        session = ServiceAgentSession(host, port, agent_name=agent_name,
+                                      service_prefix=service_prefix)
 
         # Quiet any logging from leaf-common grpc stuff.
         quiet_please = logging.getLogger("leaf_common.session.grpc_client_retry")
