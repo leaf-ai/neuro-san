@@ -10,13 +10,15 @@
 #
 # END COPYRIGHT
 
+import os
+
 from grpc import Channel
 from grpc import UnaryUnaryMultiCallable
 
 import neuro_san.api.grpc.agent_pb2 as agent__pb2
 
 
-# This comes from the 'package' definition in the agent.proto
+# DEF: Not sure of the utility of this localhost value in library
 DEFAULT_SERVICE_PREFIX: str = "localhost"
 
 
@@ -28,7 +30,7 @@ class AgentServiceStub:
     """
 
     def __init__(self, agent_name: str = "",
-                 service_prefix: str = DEFAULT_SERVICE_PREFIX):
+                 service_prefix: str = None):
         """
         Constructor.
         """
@@ -96,7 +98,7 @@ class AgentServiceStub:
         return self
 
     @staticmethod
-    def prepare_service_name(agent_name: str, service_prefix: str) -> str:
+    def prepare_service_name(agent_name: str, service_prefix: str = None) -> str:
         """
         Prepares the full grpc service name given the name of the agent
         :param agent_name: The string agent name
@@ -105,13 +107,20 @@ class AgentServiceStub:
         :return: A service name that specifies the agent name as part of the routing.
         """
 
+        if service_prefix is None:
+            service_prefix = os.environ.get("AGENT_SERVICE_PREFIX", DEFAULT_SERVICE_PREFIX)
+
         # Prepare the service name on a per-agent basis
-        service_name: str = f"{service_prefix}"
+        service_name: str = ""
+        if service_prefix is not None and len(service_prefix) > 0:
+            service_name = f"{service_prefix}"
 
         # The agent name adds the voodoo to handle the request routing for each
         # agent on the same server.
         if agent_name is not None and len(agent_name) > 0:
-            service_name += f".{agent_name}"
+            if len(service_name) > 0:
+                service_name += "."
+            service_name += f"{agent_name}"
 
         # This string comes from the service definition within agent.proto
         service_name += ".AgentService"

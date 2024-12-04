@@ -27,17 +27,16 @@ from neuro_san.service.agent_servicer_to_server import AgentServicerToServer
 from neuro_san.service.agent_service import AgentService
 from neuro_san.session.chat_session_map import ChatSessionMap
 
-
-SERVER_NAME = 'neuro-san.Agent'
-SERVER_NAME_FOR_LOGS = 'Agent Server'
+DEFAULT_SERVER_NAME: str = 'neuro-san.Agent'
+DEFAULT_SERVER_NAME_FOR_LOGS: str = 'Agent Server'
 
 # Better that we kill ourselves than kubernetes doing it for us
 # in the middle of a request if there are resource leaks.
 # This is per the lifetime of the server (before it kills itself).
-REQUEST_LIMIT = 1000 * 1000
+DEFAULT_REQUEST_LIMIT: int = 1000 * 1000
 
 
-# pylint: disable=too-few-public-methods
+# pylint: disable=too-few-public-methods,too-many-instance-attributes
 class AgentServer:
     """
     Server implementation for the Agent gRPC Service.
@@ -48,7 +47,11 @@ class AgentServer:
                  server_loop_callbacks: ServerLoopCallbacks,
                  chat_session_map: ChatSessionMap,
                  tool_registries: Dict[str, AgentToolRegistry],
-                 asyncio_executor: AsyncioExecutor):
+                 asyncio_executor: AsyncioExecutor,
+                 server_name: str = DEFAULT_SERVER_NAME,
+                 server_name_for_logs: str = DEFAULT_SERVER_NAME_FOR_LOGS,
+                 request_limit: int = DEFAULT_REQUEST_LIMIT,
+                 service_prefix: str = None):
         """
         Constructor
 
@@ -60,12 +63,18 @@ class AgentServer:
         :param tool_registries: A dictionary of agent name to AgentToolRegistry to use for the session.
         :param asyncio_executor: The global AsyncioExecutor for running
                         stuff in the background.
+        :param server_name: The name of the service
+        :param server_name_for_logs: The name of the service for log files
+        :param request_limit: The number of requests to service before shutting down.
+                        This is useful to be sure production environments can handle
+                        a service occasionally going down.
+        :param service_prefix: A prefix for grpc routing.
         """
         self.port = port
         self.server_loop_callbacks = server_loop_callbacks
         current_dir = os.path.dirname(os.path.abspath(__file__))
 
-        setup_logging(SERVER_NAME_FOR_LOGS, current_dir,
+        setup_logging(server_name_for_logs, current_dir,
                       'AGENT_SERVICE_LOG_JSON',
                       'AGENT_SERVICE_LOG_LEVEL')
         # This module within openai library can be quite chatty w/rt http requests
@@ -76,16 +85,20 @@ class AgentServer:
         self.chat_session_map: ChatSessionMap = chat_session_map
         self.tool_registries: Dict[str, AgentToolRegistry] = tool_registries
         self.asyncio_executor: AsyncioExecutor = asyncio_executor
+        self.server_name: str = server_name
+        self.server_name_for_logs: str = server_name_for_logs
+        self.request_limit: int = request_limit
+        self.service_prefix: str = service_prefix
 
     def serve(self):
         """
         Start serving gRPC requests
         """
         values = agent_pb2.DESCRIPTOR.services_by_name.values()
-        server_lifetime = ServerLifetime(SERVER_NAME,
-                                         SERVER_NAME_FOR_LOGS,
+        server_lifetime = ServerLifetime(self.server_name,
+                                         self.server_name_for_logs,
                                          self.port, self.logger,
-                                         request_limit=REQUEST_LIMIT,
+                                         request_limit=self.request_limit,
                                          # Used for health checking. Probably needs agent-specific love.
                                          protocol_services_by_name_values=values,
                                          loop_sleep_seconds=5,
@@ -103,7 +116,8 @@ class AgentServer:
                                    self.asyncio_executor,
                                    agent_name,
                                    tool_registry)
-            servicer_to_server = AgentServicerToServer(service, agent_name=agent_name)
+            servicer_to_server = AgentServicerToServer(service, agent_name=agent_name,
+                                                       service_prefix=self.service_prefix)
             servicer_to_server.add_rpc_handlers(server)
 
         server_lifetime.run()
