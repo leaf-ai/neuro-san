@@ -99,7 +99,7 @@ USER ${USERNAME}
 WORKDIR ${APP_HOME}
 
 # Service-specific environment variables
-ENV SERVICE_DIR service
+ENV DEPLOY_DIR deploy
 
 # Default is for no vault server present at all
 # Use https://127.0.0.1:8200 when testing locally.
@@ -107,10 +107,11 @@ ENV VAULT_ADDR=""
 ENV VAULT_CACERT=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
 ENV GITHUB_ORG=leaf-ai
 
-ENV APP_ENTRYPOINT neuro_san/${SERVICE_DIR}/entrypoint.sh
+ENV APP_ENTRYPOINT neuro_san/${DEPLOY_DIR}/entrypoint.sh
 
 # Tool registry file environment variable
 ENV TOOL_REGISTRY_FILE=${TOOL_REGISTRY_FILE}
+ENV AGENT_SERVICE_LOG_JSON=${APP_SOURCE}/neuro_san/deploy/logging.json
 
 ENTRYPOINT ["bash", "-c", "${APP_SOURCE}/${APP_ENTRYPOINT} --tool_registry_file=${TOOL_REGISTRY_FILE}"]
 

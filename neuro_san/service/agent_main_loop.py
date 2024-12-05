@@ -52,9 +52,14 @@ class AgentMainLoop(ServerLoopCallbacks):
 
     DEFAULT_TOOL_REGISTRY_FILE: str = "esp_decision_assistant.hocon"
 
-    def __init__(self):
+    def __init__(self, service_prefix: str = DEFAULT_SERVICE_PREFIX):
         """
         Constructor
+
+        :param service_prefix: An optional prefix that gets prepended to all gRPC request/response
+                        handling for this instance of the server. Note that this can be
+                        passed in by argument (as opposed to env var) because this is the
+                        one configurable item that is likely to be shared with other code.
         """
         self.port: int = 0
         self.asyncio_executor = ASYNCIO_EXECUTOR
@@ -67,10 +72,10 @@ class AgentMainLoop(ServerLoopCallbacks):
         self.chat_session_map = ChatSessionMap(init_arguments)
         self.tool_registries: Dict[str, AgentToolRegistry] = {}
 
-        self.server_name: str = None
-        self.server_name_for_logs: str = None
-        self.request_limit: int = -1
-        self.service_prefix: str = None
+        self.server_name: str = DEFAULT_SERVER_NAME
+        self.server_name_for_logs: str = DEFAULT_SERVER_NAME_FOR_LOGS
+        self.request_limit: int = DEFAULT_REQUEST_LIMIT
+        self.service_prefix: str = service_prefix
 
     def parse_args(self):
         """
@@ -85,19 +90,16 @@ class AgentMainLoop(ServerLoopCallbacks):
                                 default=int(os.environ.get("AGENT_PORT", AgentSession.DEFAULT_PORT)),
                                 help="Port number for the service")
         arg_parser.add_argument("--server_name", type=str,
-                                default=str(os.environ.get("AGENT_SERVER_NAME", DEFAULT_SERVER_NAME)),
+                                default=str(os.environ.get("AGENT_SERVER_NAME", self.server_name)),
                                 help="Name of the service")
         arg_parser.add_argument("--server_name_for_logs", type=str,
-                                default=str(os.environ.get("AGENT_SERVER_NAME_FOR_LOGS",
-                                                           DEFAULT_SERVER_NAME_FOR_LOGS)),
+                                default=str(os.environ.get("AGENT_SERVER_NAME_FOR_LOGS", self.server_name_for_logs)),
                                 help="Name of the service as seen in logs")
         arg_parser.add_argument("--service_prefix", type=str,
-                                default=str(os.environ.get("AGENT_SERVICE_PREFIX",
-                                                           DEFAULT_SERVICE_PREFIX)),
+                                default=str(os.environ.get("AGENT_SERVICE_PREFIX", self.service_prefix)),
                                 help="Name of the service as seen in logs")
         arg_parser.add_argument("--request_limit", type=int,
-                                default=int(os.environ.get("AGENT_REQUEST_LIMIT",
-                                                           DEFAULT_REQUEST_LIMIT)),
+                                default=int(os.environ.get("AGENT_REQUEST_LIMIT", self.request_limit)),
                                 help="Number of requests served before the server shuts down in an orderly fashion")
 
         # Actually parse the args into class variables
