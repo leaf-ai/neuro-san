@@ -50,7 +50,7 @@ function run() {
 
     SERVICE_NAME="DecisionAssistant"
     # Assume the first port EXPOSEd in the Dockerfile is the input port
-    SERVICE_PORT=$(grep EXPOSE < neuro_san/service/Dockerfile | head -1 | awk '{ print $2 }')
+    SERVICE_PORT=$(grep EXPOSE < neuro_san/deploy/Dockerfile | head -1 | awk '{ print $2 }')
     echo "SERVICE_PORT: ${SERVICE_PORT}"
 
     # Run the docker container in interactive mode
