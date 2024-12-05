@@ -41,6 +41,9 @@ tiktoken==0.8.0
 bs4==0.0.2
 pydantic==2.9.2
 
+# httpx pinned only for this reason: https://github.com/openai/openai-python/issues/1903
+httpx==0.27.2
+
 # For input validation
 validators==0.22.0
 
