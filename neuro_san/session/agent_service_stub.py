@@ -18,8 +18,8 @@ from grpc import UnaryUnaryMultiCallable
 import neuro_san.api.grpc.agent_pb2 as agent__pb2
 
 
-# DEF: Not sure of the utility of this localhost value in library
-DEFAULT_SERVICE_PREFIX: str = "localhost"
+# Effectively no service prefix for the default
+DEFAULT_SERVICE_PREFIX: str = ""
 
 
 class AgentServiceStub:
