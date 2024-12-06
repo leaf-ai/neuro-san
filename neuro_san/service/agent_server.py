@@ -26,6 +26,7 @@ from neuro_san.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.service.agent_servicer_to_server import AgentServicerToServer
 from neuro_san.service.agent_service import AgentService
 from neuro_san.session.chat_session_map import ChatSessionMap
+from neuro_san.utils.file_of_class import FileOfClass
 
 DEFAULT_SERVER_NAME: str = 'neuro-san.Agent'
 DEFAULT_SERVER_NAME_FOR_LOGS: str = 'Agent Server'
@@ -73,6 +74,12 @@ class AgentServer:
         self.port = port
         self.server_loop_callbacks = server_loop_callbacks
         current_dir = os.path.dirname(os.path.abspath(__file__))
+
+        # Make for easy running from the neuro-san repo
+        if os.environ.get("AGENT_SERVICE_LOG_JSON") is None:
+            # Use the log file that is local to the repo
+            file_of_class = FileOfClass(__file__, path_to_basis="../deploy")
+            os.environ["AGENT_SERVICE_LOG_JSON"] = file_of_class.get_file_in_basis("logging.json")
 
         setup_logging(server_name_for_logs, current_dir,
                       'AGENT_SERVICE_LOG_JSON',
