@@ -99,5 +99,5 @@ ENV APP_ENTRYPOINT neuro_san/deploy/entrypoint.sh
 ENV TOOL_REGISTRY_FILE=${TOOL_REGISTRY_FILE}
 ENV AGENT_SERVICE_LOG_JSON=${APP_SOURCE}/neuro_san/deploy/logging.json
 
-ENTRYPOINT ["bash", "-c", "${APP_SOURCE}/${APP_ENTRYPOINT} --tool_registry_file=${TOOL_REGISTRY_FILE}"]
+ENTRYPOINT "${APP_SOURCE}/${APP_ENTRYPOINT}" --tool_registry_file="${TOOL_REGISTRY_FILE}"
 
