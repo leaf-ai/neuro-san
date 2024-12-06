@@ -89,25 +89,11 @@ COPY --from=builder /install /usr/local
 # Copy application code and necessary files
 COPY ./neuro_san ${APP_SOURCE}/neuro_san
 
-# Generate gRPC code for the MD service(s)
-WORKDIR ${APP_SOURCE}
-RUN ./neuro_san/api/scripts/do_generate.sh && \
-    chmod a+w ${APP_SOURCE}
-
 # Set up the entry point for when the container is run
 USER ${USERNAME}
-WORKDIR ${APP_HOME}
+WORKDIR ${APP_SOURCE}
 
-# Service-specific environment variables
-ENV DEPLOY_DIR deploy
-
-# Default is for no vault server present at all
-# Use https://127.0.0.1:8200 when testing locally.
-ENV VAULT_ADDR=""
-ENV VAULT_CACERT=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-ENV GITHUB_ORG=leaf-ai
-
-ENV APP_ENTRYPOINT neuro_san/${DEPLOY_DIR}/entrypoint.sh
+ENV APP_ENTRYPOINT neuro_san/deploy/entrypoint.sh
 
 # Tool registry file environment variable
 ENV TOOL_REGISTRY_FILE=${TOOL_REGISTRY_FILE}
