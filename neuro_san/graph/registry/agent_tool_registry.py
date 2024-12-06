@@ -87,6 +87,9 @@ class AgentToolRegistry(AgentToolFactory):
                         len(resolved_path) > len(best_path):
                     best_path = resolved_path
 
+            if len(best_path) == 0:
+                raise ValueError("No reasonable agent tool path found in PYTHONPATH for {agent_tool_path}")
+
             # Find the path beneath the python path
             resolve_path = agent_tool_path.split(best_path)[1]
 
