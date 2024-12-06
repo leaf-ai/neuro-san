@@ -83,8 +83,15 @@ class AgentMainLoop(ServerLoopCallbacks):
         """
         # Set up the CLI parser
         arg_parser = ArgumentParser()
+
+        # If we are using a manifest file, allow all the tools in the manifest
+        default_tool_registry_file: str = ""
+        if os.environ.get("AGENT_MANIFEST_FILE") is None:
+            # If there is no manifest, then fall back to a default
+            default_tool_registry_file = self.DEFAULT_TOOL_REGISTRY_FILE
+
         arg_parser.add_argument("--tool_registry_file", type=str,
-                                default=self.DEFAULT_TOOL_REGISTRY_FILE,
+                                default=default_tool_registry_file,
                                 help=".hocon or .json file defining the AgentToolRegistry for the service")
         arg_parser.add_argument("--port", type=int,
                                 default=int(os.environ.get("AGENT_PORT", AgentSession.DEFAULT_PORT)),

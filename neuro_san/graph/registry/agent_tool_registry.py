@@ -79,19 +79,21 @@ class AgentToolRegistry(AgentToolFactory):
         if agent_tool_path.find(os.sep) >= 0:
 
             # Find the best of many resolution paths in the PYTHONPATH
+            resolved_tool_path: str = str(Path(agent_tool_path).resolve())
             best_path = ""
             pythonpath_split = os.environ.get("PYTHONPATH").split(":")
             for one_path in pythonpath_split:
                 resolved_path: str = str(Path(one_path).resolve())
-                if agent_tool_path.startswith(resolved_path) and \
+                if resolved_tool_path.startswith(resolved_path) and \
                         len(resolved_path) > len(best_path):
                     best_path = resolved_path
 
             if len(best_path) == 0:
-                raise ValueError("No reasonable agent tool path found in PYTHONPATH for {agent_tool_path}")
+                raise ValueError(f"No reasonable agent tool path found in PYTHONPATH for {agent_tool_path}")
 
             # Find the path beneath the python path
-            resolve_path = agent_tool_path.split(best_path)[1]
+            path_split = resolved_tool_path.split(best_path)
+            resolve_path = path_split[1]
 
             # Replace separators with python delimiters for later resolution
             agent_tool_path = resolve_path.replace(os.sep, ".")
