@@ -61,7 +61,7 @@ Option 1: Build and run the docker container for the hosting agent service:
 
 Option 2: Run the service directly for a specific agent network:
 
-    python ./neuro_san/service/agent_main_loop.py --tool_registry_file hello_world
+    python -m neuro_san.service.agent_main_loop --tool_registry_file hello_world
 
 #### Client
 
