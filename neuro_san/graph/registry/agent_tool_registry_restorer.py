@@ -60,8 +60,8 @@ class AgentToolRegistryRestorer(Restorer):
         if file_reference is None or len(file_reference) == 0:
             raise ValueError(f"file_reference {file_reference} cannot be None or empty string")
 
-        if file_reference.startswith("/") and self.registry_dir is not None:
-            raise ValueError(f"file_reference {file_reference} cannot be an absolute path")
+        # if file_reference.startswith("/") and self.registry_dir is not None:
+        #     raise ValueError(f"file_reference {file_reference} cannot be an absolute path")
 
         use_file: str = file_reference
         if self.registry_dir is not None:
