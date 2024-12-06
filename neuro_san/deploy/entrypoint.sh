@@ -23,8 +23,10 @@ PIP=pip3
 echo "Using pip ${PIP}"
 
 echo "Preparing app..."
-cd myapp || exit
-PYTHONPATH=$(pwd)
+if [ -z "${PYTHONPATH}" ]
+then
+    PYTHONPATH=$(pwd)
+fi
 export PYTHONPATH
 
 echo "Toolchain:"

@@ -11,9 +11,21 @@ In a new virtual environment:
     pip install -r requirements.txt
     pip install -r requirements-build.txt
 
-Generate the gRPC code:
 
-    ./neuro_san/grpc/do_generate.sh
+Most common:
+If the dependency wheel files are available, install the wheel files for leaf-common
+and leaf-server-common:
+
+    pip install leaf-common.whl
+    pip install leaf-server-common.whl
+
+Less common:
+If they are directly available via git, install the semi-private libraries
+(like leaf-common and leaf-server-common):
+
+    export LEAF_SOURCE_CREDENTIALS=<Your GitHub Personal Access Token>
+    export LEAF_PRIVATE_SOURCE_CREDENTIALS=<Your GitHub Personal Access Token>
+    pip install -r requirements-private.txt
 
 ### Direct Setup
 
@@ -45,7 +57,7 @@ In one terminal window, set at least OPENAI_API_KEY to a valid access key for Ch
 
 Option 1: Build and run the docker container for the hosting agent service:
 
-    ./neuro_san/service/build.sh ; ./neuro_san/service/run.sh
+    ./neuro_san/deploy/build.sh ; ./neuro_san/deploy/run.sh
 
 Option 2: Run the service directly for a specific agent network:
 
