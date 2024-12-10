@@ -1,0 +1,24 @@
+
+// Copyright © 2023 Cognizant Digital Business, Evolutionary AI. All rights reserved.
+
+// To obtain information concerning the code generation that is used by this Interface Definition Language
+// please see the following:
+//
+// Go - https://developers.google.com/protocol-buffers/docs/reference/go-generated
+// Python - https://developers.google.com/protocol-buffers/docs/reference/python-generated
+//
+syntax = "proto3";
+
+package dev.cognizant_ai.neuro_san.api.grpc.mime_data;
+
+option go_package = "github.com/leaf-ai/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/mime_data/v1;mime_data";
+
+// A Message identifying image data
+message MimeData {
+
+    // MIME type of the image data
+    string mime_type = 1 [json_name="mime_type"];
+
+    // Raw bytes of the image
+    bytes mime_bytes = 2 [json_name="mime_bytes"];
+}

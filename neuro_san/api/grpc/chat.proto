@@ -1,0 +1,58 @@
+
+// Copyright © 2023 Cognizant Digital Business, Evolutionary AI. All rights reserved.
+
+// To obtain information concerning the code generation that is used by this Interface Definition Language
+// please see the following:
+//
+// Go - https://developers.google.com/protocol-buffers/docs/reference/go-generated
+// Python - https://developers.google.com/protocol-buffers/docs/reference/python-generated
+//
+syntax = "proto3";
+
+package dev.cognizant_ai.neuro_san.api.grpc.chat;
+
+option go_package = "github.com/leaf-ai/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/chat/v1;chat";
+
+import "mime_data.proto";
+
+
+// Structure describing a single chat message.
+// This could be a single response, or a list of these might comprise
+// a chat history.
+message ChatMessage {
+
+    // Type of message corresponding to basic langchain message types
+    // that are in common usage.
+    enum ChatMessageType {
+        UNKNOWN = 0;    // Note: UNKNOWN is not a langchain thing.
+        HUMAN = 1;
+        AI = 2;
+        SYSTEM = 3;
+    }
+
+    // The type of chat message
+    ChatMessageType type = 1;
+
+    // String contents of any chat message
+    string text = 2;
+
+    // Optional bytes for any non-text media referenced by this message.
+    // For some chat sources, the string text field might also be populated as a
+    // reference for how the data was created.  If this happens, then
+    // it should be safe to assume that the text is enough to represent the
+    // message in any history carried forward.
+    mime_data.MimeData mime_data = 3 [json_name="mime_data"];
+
+    // Optional string describing the origin of the chat message.
+    // The intent here is to be able to distiguish responses from nested agents.
+    // Each string is returned in a URI format:
+    //
+    //          [host:]/agent1/agent2/...
+    //
+    // ... where the host is optional and each agent name represents an agent
+    // in a single agent hierarchy.
+    //
+    // For each top-level agent/front-man (perhaps on another server) that is called,
+    // an extra string is added to the list.
+    repeated string origin = 4 [json_name="origin"];
+}
