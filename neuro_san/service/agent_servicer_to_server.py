@@ -71,6 +71,11 @@ class AgentServicerToServer:
                     request_deserializer=agent__pb2.ResetRequest.FromString,
                     response_serializer=agent__pb2.ResetResponse.SerializeToString,
             ),
+            'StreamingChat': grpc.unary_stream_rpc_method_handler(
+                    servicer.StreamingChat,
+                    request_deserializer=neuro__san_dot_api_dot_grpc_dot_agent__pb2.ChatRequest.FromString,
+                    response_serializer=neuro__san_dot_api_dot_grpc_dot_agent__pb2.ChatResponse.SerializeToString,
+            ),
         }
 
         # Prepare the service name on a per-agent basis
