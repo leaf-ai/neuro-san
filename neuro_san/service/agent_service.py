@@ -252,3 +252,47 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
             self.request_logger.finish_request(f"{self.agent_name}.Reset", log_marker, request_log)
 
         return response
+
+    # pylint: disable=no-member
+    def StreamingChat(self, request: service_messages.ChatRequest,
+                      context: grpc.ServicerContext) \
+            -> service_messages.ChatResponse:
+        """
+        Initiates or continues the agent chat with the session_id
+        context in the request.
+
+        :param request: a ChatRequest
+        :param context: a grpc.ServicerContext
+        :return: a ChatResponse which indicates that the request
+                 was successful
+        """
+        request_log = None
+        log_marker = f"'{request.user_input}' on assistant {request.session_id}"
+        if "Chat" not in DO_NOT_LOG_REQUESTS:
+            request_log = self.request_logger.start_request(f"{self.agent_name}.StreamingChat",
+                                                            log_marker, context)
+
+        # Get the metadata to forward on to another service
+        metadata = self.forwarder.forward(context)
+
+        # Get our args in order to pass to grpc-free session level
+        request_dict: Dict[str, Any] = MessageToDict(request)
+
+        # Delegate to Direct*Session
+        session = DirectAgentSession(chat_session_map=self.chat_session_map,
+                                     tool_registry=self.tool_registry,
+                                     asyncio_executor=self.asyncio_executor,
+                                     metadata=metadata,
+                                     security_cfg=self.security_cfg)
+        response_dict = session.streaming_chat(request_dict)
+        response_dict["request"] = request_dict
+
+        # Convert the response dictionary to a grpc message
+        response_string = json.dumps(response_dict)
+        response = service_messages.ChatResponse()
+        Parse(response_string, response)
+
+        if request_log is not None:
+            self.request_logger.finish_request(f"{self.agent_name}.StreamingChat", log_marker, request_log)
+
+        return response

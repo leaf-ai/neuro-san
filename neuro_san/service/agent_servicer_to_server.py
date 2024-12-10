@@ -15,6 +15,7 @@ from grpc import GenericRpcHandler
 from grpc import RpcMethodHandler
 from grpc import Server
 from grpc import method_handlers_generic_handler
+from grpc import unary_stream_rpc_method_handler
 from grpc import unary_unary_rpc_method_handler
 
 from neuro_san.session.agent_service_stub import AgentServiceStub
@@ -71,10 +72,10 @@ class AgentServicerToServer:
                     request_deserializer=agent__pb2.ResetRequest.FromString,
                     response_serializer=agent__pb2.ResetResponse.SerializeToString,
             ),
-            'StreamingChat': grpc.unary_stream_rpc_method_handler(
-                    servicer.StreamingChat,
-                    request_deserializer=neuro__san_dot_api_dot_grpc_dot_agent__pb2.ChatRequest.FromString,
-                    response_serializer=neuro__san_dot_api_dot_grpc_dot_agent__pb2.ChatResponse.SerializeToString,
+            'StreamingChat': unary_stream_rpc_method_handler(
+                    self.servicer.StreamingChat,
+                    request_deserializer=agent__pb2.ChatRequest.FromString,
+                    response_serializer=agent__pb2.ChatResponse.SerializeToString,
             ),
         }
 

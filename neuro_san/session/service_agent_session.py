@@ -199,6 +199,44 @@ class ServiceAgentSession(AbstractServiceSession, AgentSession):
             request_dict,
             service_messages.ResetRequest())
 
+    def streaming_chat(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        :param request_dict: A dictionary version of the ChatRequest
+                    protobufs structure. Has the following keys:
+            "session_id"  - A string UUID identifying the root ownership of the
+                              chat session's resources.
+                              Upon first contact this can be blank.
+            "user_input"    - A string representing the user input to the chat stream
+
+        :return: A dictionary version of the ChatResponse
+                    protobufs structure. Has the following keys:
+            "session_id"  - A string UUID identifying the root ownership of the
+                              chat session's resources.
+                              This will always be filled upon response.
+            "status"        - An int representing the chat session's status. Can be one of:
+                              FOUND     - The given session_id is alive and well
+                                          on this service instance and the user_input
+                                          has been registered in the chat stream.
+                              NOT_FOUND - Returned if the service instance does not find
+                                          the session_id given in the request.
+                                          For continuing chat streams, this could imply
+                                          a series of client-side retries as multiple
+                                          service instances will not keep track of the same
+                                          chat sessions.
+                              CREATED   - Returned when no session_id was given (initiation
+                                          of new chat by client) and a new chat session is created.
+            "response"      - An optional ChatMessage dictionary.  See chat.proto for details.
+
+            Note that responses to the chat input are asynchronous and come by polling the
+            logs() method below.
+        """
+        # pylint: disable=no-member
+        return self.call_grpc_method(
+            "streaming_chat",
+            self._streaming_chat_from_stub,
+            request_dict,
+            service_messages.ChatRequest())
+
     @staticmethod
     def _function_from_stub(stub, timeout_in_seconds,
                             metadata, credentials, *args):
@@ -245,4 +283,16 @@ class ServiceAgentSession(AbstractServiceSession, AgentSession):
         response = stub.Reset(*args, timeout=timeout_in_seconds,
                               metadata=metadata,
                               credentials=credentials)
+        return response
+
+    @staticmethod
+    def _streaming_chat_from_stub(stub, timeout_in_seconds,
+                                  metadata, credentials, *args):
+        """
+        Global method associated with the session that calls StreamingChat
+        given a grpc Stub already set up with a channel (socket) to call with.
+        """
+        response = stub.StreamingChat(*args, timeout=timeout_in_seconds,
+                                      metadata=metadata,
+                                      credentials=credentials)
         return response
