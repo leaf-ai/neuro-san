@@ -8,8 +8,7 @@ venv3/
 # build files
 dist/
 build/
-neuro_san.egg-info/
-neuro_san-*/
+*.egg-info/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
