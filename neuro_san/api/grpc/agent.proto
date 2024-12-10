@@ -12,7 +12,7 @@ syntax = "proto3";
 package dev.cognizant_ai.neuro_san.api.grpc.agent;
 
 import "google/protobuf/struct.proto";
-import "chat.proto";
+import "neuro_san/api/grpc/chat.proto";
 
 option go_package = "github.com/leaf-ai/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/agent/v1;agent";
 

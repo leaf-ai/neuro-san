@@ -13,7 +13,7 @@ package dev.cognizant_ai.neuro_san.api.grpc.chat;
 
 option go_package = "github.com/leaf-ai/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/chat/v1;chat";
 
-import "mime_data.proto";
+import "neuro_san/api/grpc/mime_data.proto";
 
 
 // Structure describing a single chat message.
