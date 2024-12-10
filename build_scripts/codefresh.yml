@@ -40,7 +40,7 @@ steps:
 
             # set the wheel package name which is the
             # the repo name, but with underscores instead of dashes
-            - cf_export PACKAGE_NAME=`echo ${{CF_REPO_NAME}} | sed s/-/_/`
+            - cf_export PACKAGE_NAME=`echo ${{CF_REPO_NAME}} | sed s/-/_/g`
 
     create-temp-git-creds-from-vault:
         title: "Get ephemeral GitHub creds"
@@ -174,7 +174,7 @@ steps:
                       --verbose
                       -m "not integration"
                       --timer-top-n 10
-                      --cov=neuro_san
+                      --cov=${PACKAGE_NAME}
 
     clean_up:
         description: "Clean up after ourselves"
