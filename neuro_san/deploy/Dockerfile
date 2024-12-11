@@ -12,7 +12,45 @@
 # This Dockerfile is expected to be run from the top-level of neuro-san.
 
 # Stage 1: Builder Stage - Use our python and git base image for installations
-FROM public.ecr.aws/q0i6b0q4/python-and-git:3.10-2.46.0 AS builder
+# Set python image as base image
+FROM python:3.10-slim as builder
+
+# Define the build argument for the Git version, no default provided by design
+ARG GIT_VERSION=2.46.0
+
+# Set the Git version as an environment variable
+ENV GIT_VERSION=${GIT_VERSION}
+
+# Set the shell and options per hadolint recommendations
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# Set the temporary working directory for downloading and building Git
+WORKDIR /tmp
+
+# Install dependencies required to build Git from source
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get install --yes \
+    build-essential \
+    dh-autoreconf \
+    libcurl4-gnutls-dev \
+    libexpat1-dev \
+    gettext \
+    libz-dev \
+    libssl-dev \
+    curl \
+    --no-install-recommends && \
+    curl -LO https://github.com/git/git/archive/refs/tags/v${GIT_VERSION}.tar.gz && \
+    tar -zxf v${GIT_VERSION}.tar.gz && \ 
+    rm -rf /var/lib/apt/lists/*
+
+# Change to the Git source directory to build and install Git
+WORKDIR /tmp/git-${GIT_VERSION}
+
+RUN make prefix=/usr/local all && \
+    make prefix=/usr/local install
+
+# Reset to the root directory
+WORKDIR /
 
 # Set the shell and options in each FROM section per hadolint recommendations
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
