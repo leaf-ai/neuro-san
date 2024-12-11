@@ -64,17 +64,8 @@ function run() {
     docker_cmd="docker run --rm -it \
         --name=$SERVICE_NAME \
         --network=$network \
-        -v $HOME/.aws:/usr/local/leaf/.aws \
-        -v $vault_cert_dir:/usr/local/leaf/vault \
-        -e AWS_ACCESS_KEY_ID \
-        -e AWS_SECRET_ACCESS_KEY \
-        -e AWS_DEFAULT_REGION \
         -e OPENAI_API_KEY \
         -e ANTHROPIC_API_KEY \
-        -e MD_ARTIFACTS_BUCKET \
-        -e VAULT_ADDR \
-        -e VAULT_GITHUB_AUTH_TOKEN \
-        -e VAULT_CACERT='/usr/local/leaf/vault/ca_bundle.pem' \
         -e TOOL_REGISTRY_FILE=$1 \
         -p $SERVICE_PORT:$SERVICE_PORT \
             leaf/neuro-san:$CONTAINER_VERSION"
