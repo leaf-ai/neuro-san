@@ -10,6 +10,7 @@
 #
 # END COPYRIGHT
 from pathlib import Path
+import os
 
 
 class FileOfClass:
@@ -87,6 +88,10 @@ class FileOfClass:
 
         # Resolve full paths
         test_abs_path: str = str(Path(filepath).resolve())
+
+        if basis == "~":
+            # Special case if we are looking under user's home directory
+            basis = os.path.expanduser("~")
         basis_abs_path: str = str(Path(basis).resolve())
 
         if not test_abs_path.startswith(basis_abs_path):
