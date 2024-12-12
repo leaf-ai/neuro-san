@@ -54,12 +54,8 @@ function run() {
     echo "SERVICE_PORT: ${SERVICE_PORT}"
 
     # Run the docker container in interactive mode
-    #   Mount the current user's aws credentials in the container
     #   Mount the 1st command line arg as the place where input files come from
-    #   Mount the directory where the vault certs live. In production this would be
-    #       set up to what kubernetes does natively.
     #   Slurp in the rest as environment variables, all of which are optional.
-    vault_cert_dir="${VAULT_CERT_DIR:=/home/${USER}/certs/vault/localhost}"
 
     docker_cmd="docker run --rm -it \
         --name=$SERVICE_NAME \
