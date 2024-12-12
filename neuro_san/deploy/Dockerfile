@@ -52,9 +52,6 @@ RUN make prefix=/usr/local all && \
 # Reset to the root directory
 WORKDIR /
 
-# Set the shell and options in each FROM section per hadolint recommendations
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
 # App-specific constants
 ENV USERNAME leaf-ai
 ENV APP_HOME /usr/local/${USERNAME}
