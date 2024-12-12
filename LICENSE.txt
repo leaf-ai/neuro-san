@@ -25,7 +25,7 @@ about commercial licenses.
 
 What are the rights given to noncommercial users? Similarly to GPL, you have the
 right to use the software, to distribute copies, to receive source code, to
-ehange the software and distribute your modifications or the modified software.
+change the software and distribute your modifications or the modified software.
 Also similarly to the GPL, if you distribute verbatim or modified copies of
 this software, they must be distributed under this license.
 
