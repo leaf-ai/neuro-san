@@ -90,6 +90,6 @@ class FileOfClass:
         basis_abs_path: str = str(Path(basis).resolve())
 
         if not test_abs_path.startswith(basis_abs_path):
-            raise ValueError("{test_abs_path} must be under {basis_abs_path}")
+            raise ValueError(f"{test_abs_path} must be under {basis_abs_path}")
 
         return test_abs_path
