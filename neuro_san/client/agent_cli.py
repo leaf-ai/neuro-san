@@ -20,6 +20,7 @@ from timedinput import timedinput
 
 from neuro_san.client.agent_session_factory import AgentSessionFactory
 from neuro_san.session.agent_session import AgentSession
+from neuro_san.utils.file_of_class import FileOfClass
 
 
 class AgentCli:
@@ -119,7 +120,7 @@ class AgentCli:
         arg_parser.add_argument("--sly_data", type=str,
                                 help="JSON string containing data that is out-of-band to the chat stream, "
                                      "but is still essential to agent function")
-        arg_parser.add_argument("--connection", default="direct",
+        arg_parser.add_argument("--connection", default="direct", type=str,
                                 choices=["service", "direct"],
                                 help="""
 The type of connection to initiate. Choices are to connect to:
@@ -128,6 +129,13 @@ The type of connection to initiate. Choices are to connect to:
 All choices require an agent name.
 """)
         self.args = arg_parser.parse_args()
+
+        # Check some arguments to prevent PathTraversal scans lighting up.
+        # Since this is a command-line tool not intended to be used inside a
+        # Dockerfile service, we don't really care where these files come from.
+        # Check anyway to give warm fuzzies to scans.
+        self.args.thinking_file = FileOfClass.check_file(self.args.thinking_file, "/")
+        self.args.first_prompt_file = FileOfClass.check_file(self.args.first_prompt_file, "/")
 
     def open_session(self):
         """

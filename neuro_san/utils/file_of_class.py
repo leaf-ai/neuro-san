@@ -10,6 +10,7 @@
 #
 # END COPYRIGHT
 from pathlib import Path
+import os
 
 
 class FileOfClass:
@@ -69,3 +70,31 @@ class FileOfClass:
         :return: An absolute path to a file that resides within the basis.
         """
         return str((self.get_basis_path() / filename).resolve())
+
+    @staticmethod
+    def check_file(filepath: str, basis: str = "/") -> str:
+        """
+        Used to quell Path Traversal vulnerabilities
+        :param filepath: The filepath to verify
+        :param basis: The directory under which the file must reside
+        :return: A fully resolved path if successful.
+                Otherwise a ValueError will be thrown.
+        """
+        if filepath is None:
+            return filepath
+
+        if basis is None:
+            raise ValueError("basis for file checking is None")
+
+        # Resolve full paths
+        test_abs_path: str = str(Path(filepath).resolve())
+
+        if basis == "~":
+            # Special case if we are looking under user's home directory
+            basis = os.path.expanduser("~")
+        basis_abs_path: str = str(Path(basis).resolve())
+
+        if not test_abs_path.startswith(basis_abs_path):
+            raise ValueError(f"{test_abs_path} must be under {basis_abs_path}")
+
+        return test_abs_path
