@@ -35,6 +35,7 @@ from neuro_san.service.registry_manifest_restorer import RegistryManifestRestore
 from neuro_san.session.agent_service_stub import DEFAULT_SERVICE_PREFIX
 from neuro_san.session.agent_session import AgentSession
 from neuro_san.session.chat_session_map import ChatSessionMap
+from neuro_san.utils.file_of_class import FileOfClass
 
 # A *single* global variable which contains a mapping of
 # string keys -> ChatSession implementations
@@ -125,7 +126,7 @@ class AgentMainLoop(ServerLoopCallbacks):
         tool_registry_file: str = args.tool_registry_file
         if tool_registry_file is not None and len(tool_registry_file) > 0:
             # Check the path to avoid Path Traversal issues from scans.
-            tool_registry_file = self._check_path(tool_registry_file)
+            tool_registry_file = FileOfClass.check_file(tool_registry_file, basis="~")
             registry_name = Path(tool_registry_file).stem
             tool_registry = manifest_tool_registries.get(registry_name)
 
@@ -136,6 +137,7 @@ class AgentMainLoop(ServerLoopCallbacks):
             this_file_dir: str = Path(__file__).parent.resolve()
             registry_dir: str = (Path(this_file_dir) / ".." / "registries").resolve()
             registry_restorer = AgentToolRegistryRestorer(registry_dir)
+            tool_registry_file = FileOfClass.check_file(tool_registry_file, basis=registry_dir)
             tool_registry = registry_restorer.restore(file_reference=tool_registry_file)
 
         if tool_registry is not None:
@@ -185,19 +187,6 @@ class AgentMainLoop(ServerLoopCallbacks):
 
         logger.info("Shutdown: shutting down AsyncioExecutor")
         self.asyncio_executor.shutdown()
-
-    def _check_path(self, file_path: str) -> str:
-        """
-        Checks path to be sure its in-bounds for Checkmarx Path Traversal
-        :param file_path: The file path to check
-        :return: True if the file_path is in bounds.  False if not.
-        """
-        bounds_dir: str = os.path.expanduser("~")
-        abs_file_path: str = os.path.abspath(file_path)
-        if not abs_file_path.startswith(bounds_dir):
-            # Appeases Checkmarx
-            raise ValueError(f"file_path {file_path} must be under {bounds_dir}")
-        return abs_file_path
 
 
 if __name__ == '__main__':
