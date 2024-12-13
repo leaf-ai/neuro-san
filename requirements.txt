@@ -18,7 +18,6 @@ protobuf>=4.25.3
 pyhocon>=0.3.60
 pyOpenSSL>=24.0.0
 
-# These guys use >= to allow for conflicts between kserve and s3fs
 boto3>=1.34.51
 botocore>=1.34.51
 idna>=3.6
@@ -32,17 +31,19 @@ ruamel.yaml>=0.18.6
 hvac>=1.1.0
 
 # For LLM access
-langchain>=0.3.7
-langchain-anthropic>=0.2.4
-langchain-community>=0.3.5
-langchain-openai>=0.2.5
-openai>=1.54.1
-tiktoken>=0.8.0
-bs4>=0.0.2
-pydantic>=2.9.2
+# Keep all these guys pinned for now, as it is the wild wild west out there
+# and we don't want to be on a dependencies treadmill with timing not of our choosing.
+langchain==0.3.7
+langchain-anthropic==0.2.4
+langchain-community==0.3.5
+langchain-openai==0.2.5
+openai==1.54.1
+tiktoken==0.8.0
+bs4==0.0.2
+pydantic==2.9.2
 
 # httpx pinned only for this reason: https://github.com/openai/openai-python/issues/1903
-httpx>=0.27.2
+httpx==0.27.2
 
 # For input validation
 validators>=0.22.0
