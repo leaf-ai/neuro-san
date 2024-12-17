@@ -76,7 +76,8 @@ COPY --from=builder /install /usr/local
 # Copy application code and necessary files
 # Note: The registries directory where agent definitions live is mandatory
 #       The coded_tools directory where agent code lives is optional
-COPY ./registries ./coded_tools* ${APP_SOURCE}
+COPY ./registries ${APP_SOURCE}/registries
+COPY ./coded_tool[s] ${APP_SOURCE}/coded_tools
 
 # Set up the entry point for when the container is run
 USER ${USERNAME}
@@ -90,8 +91,10 @@ ENV APP_ENTRYPOINT ${PACKAGE_DEPLOY}/entrypoint.sh
 
 # Tool registry file environment variable
 ENV AGENT_MANIFEST_FILE=${APP_SOURCE}/registries/manifest.hocon
+ENV AGENT_TOOL_PATH=${APP_SOURCE}/coded_tools
 ENV TOOL_REGISTRY_FILE=${TOOL_REGISTRY_FILE}
 ENV AGENT_SERVICE_LOG_JSON=${PACKAGE_DEPLOY}/logging.json
 
+# ENTRYPOINT ls ${APP_SOURCE}
 ENTRYPOINT "${APP_ENTRYPOINT}" --tool_registry_file="${TOOL_REGISTRY_FILE}"
 

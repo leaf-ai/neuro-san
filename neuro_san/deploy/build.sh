@@ -11,9 +11,9 @@
 #
 # END COPYRIGHT
 
-# Script used to build the container that runs the Neuro-San Agent Service
+# Script used to build the container that runs the Decision Assistant Service
 # Usage:
-#   build.sh [--no-cache] <path-to-Dockerfile>
+#   build.sh [--no-cache]
 #
 # The script must be run from the top-level directory of where your
 # registries and code lives so as to properly import them into the Dockerfile.
@@ -32,12 +32,14 @@ function gather_wheels() {
     # 3. Only use the local file location of the wheel file from the pip output (print $3)
     # 4. Strip off the file:// beginning to get a local path
     # 5. Strip off the end #<sha> information
+    # 6. Replace any %2B occurrence with + - this allows for local builds of neuro-san wheels for testing
     # This should give us the local file where the wheel was installed from.
     local_wheels=$(pip freeze | \
                     grep file: | \
                     awk '{ print $3 }' | \
                     sed "s/file:\/\///g" | \
-                    awk 'BEGIN { FS = "#" } ; { print $1 }')
+                    awk 'BEGIN { FS = "#" } ; { print $1 }' | \
+                    sed "s/%2B/+/g") 
 
     # If you change this, the Dockerfile needs to match
     export INSTALL_WHEELS="./.requirements-wheels"
@@ -46,7 +48,7 @@ function gather_wheels() {
     rm -rf ${INSTALL_WHEELS}
     mkdir -p ${INSTALL_WHEELS}
 
-    echo "Copying local installed wheels to ${install_wheels}"
+    echo "Copying local installed wheels to ${INSTALL_WHEELS}"
     for wheel_file in ${local_wheels}
     do
         dest_file=$(basename ${wheel_file})
@@ -75,6 +77,8 @@ function build_main() {
 
     gather_wheels
 
+    DOCKERFILE=$(find -name Dockerfile | sort | head -1)
+
     # Build the docker image
     # The last argument given is the Dockerfile we want to compile
     # DOCKER_BUILDKIT needed for secrets
@@ -83,7 +87,7 @@ function build_main() {
         -t neuro-san/${SERVICE_TAG}:${SERVICE_VERSION} \
         --platform ${TARGET_PLATFORM} \
         --build-arg="NEURO_SAN_VERSION=${USER}-$(date +'%Y-%m-%d-%H-%M')" \
-        -f "${@: -1}" \
+        -f "${DOCKERFILE}" \
         ${CACHE_OR_NO_CACHE} \
         .
 
