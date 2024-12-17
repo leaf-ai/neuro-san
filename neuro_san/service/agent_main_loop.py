@@ -111,6 +111,9 @@ class AgentMainLoop(ServerLoopCallbacks):
                                 help="Number of requests served before the server shuts down in an orderly fashion")
 
         # Actually parse the args into class variables
+
+        # Incorrectly flagged as Path Traversal 3, 7
+        # See destination below ~ line 139, 154 for explanation.
         args = arg_parser.parse_args()
         self.port = args.port
         self.server_name = args.server_name
@@ -127,6 +130,12 @@ class AgentMainLoop(ServerLoopCallbacks):
         if tool_registry_file is not None and len(tool_registry_file) > 0:
             # Check the path to avoid Path Traversal issues from scans.
             tool_registry_file = FileOfClass.check_file(tool_registry_file, basis="~")
+
+            # Incorrectly flagged as destination of Path Traversal 3
+            #   Reason: This is the method in which we are actually trying to do
+            #           the path traversal check itself. CheckMarx does not recognize
+            #           the call to check_file as a valid means to resolve these kinds
+            #           of issues.
             registry_name = Path(tool_registry_file).stem
             tool_registry = manifest_tool_registries.get(registry_name)
 
@@ -136,6 +145,12 @@ class AgentMainLoop(ServerLoopCallbacks):
             # Look for the file in the registries area.
             this_file_dir: str = Path(__file__).parent.resolve()
             registry_dir: str = (Path(this_file_dir) / ".." / "registries").resolve()
+
+            # Inside here is incorrectly flagged as destination of Path Traversal 7
+            #   Reason: The lines above ensure that the path of registry_dir is within
+            #           this source base. CheckMarx does not recognize
+            #           the calls to Pathlib/__file__  as a valid means to resolve
+            #           these kinds of issues.
             registry_restorer = AgentToolRegistryRestorer(registry_dir)
             tool_registry_file = FileOfClass.check_file(tool_registry_file, basis=registry_dir)
             tool_registry = registry_restorer.restore(file_reference=tool_registry_file)
