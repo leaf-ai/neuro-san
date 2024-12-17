@@ -43,13 +43,6 @@ class FrontMan(CallingTool):
             self.logger.show_json(decision_run)
 
             if decision_run.requires_action():
-                # This call is made when the decision assistant has scoped the
-                # problem and knows the CAO. It's first task then is to set up
-                # and call a prescriptor and pass it the CAO definitions as well
-                # as the values for the Context attributes. The prescriptor,
-                # in turn, will set up and call one or more predictors in its
-                # process of working out what the values of the actions should be,
-                # before it returns those values to the Decision Assistant.
                 decision_run = await self.make_tool_function_calls(decision_run)
             else:
                 # Needs to get more information from the user on the basic task

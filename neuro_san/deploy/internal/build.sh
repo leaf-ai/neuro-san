@@ -11,7 +11,7 @@
 #
 # END COPYRIGHT
 
-# Script used to build the container that runs the Decision Assistant Service
+# Script used to build the container that runs the Neuro-San Agent Service
 
 export SERVICE_DIR=deploy/internal
 export SERVICE_TAG=neuro-san

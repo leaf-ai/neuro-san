@@ -11,7 +11,7 @@
 #
 # END COPYRIGHT
 
-# Script used to build the container that runs the Decision Assistant Service
+# Script used to build the container that runs the Neuro-San Agent Service
 # Usage:
 #   build.sh [--no-cache] <path-to-Dockerfile>
 #

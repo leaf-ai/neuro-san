@@ -48,7 +48,7 @@ function run() {
     network=${NETWORK:="host"}
     echo "Network is ${network}"
 
-    SERVICE_NAME="DecisionAssistant"
+    SERVICE_NAME="NeuroSanAgents"
     # Assume the first port EXPOSEd in the Dockerfile is the input port
     SERVICE_PORT=$(grep EXPOSE < neuro_san/deploy/internal/Dockerfile | head -1 | awk '{ print $2 }')
     echo "SERVICE_PORT: ${SERVICE_PORT}"
