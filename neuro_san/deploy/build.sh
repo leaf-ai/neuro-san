@@ -89,7 +89,6 @@ function build_main() {
     DOCKERFILE=$(find . -name Dockerfile | sort | head -1)
 
     # Build the docker image
-    # The last argument given is the Dockerfile we want to compile
     # DOCKER_BUILDKIT needed for secrets
     # shellcheck disable=SC2086
     DOCKER_BUILDKIT=1 docker build \
