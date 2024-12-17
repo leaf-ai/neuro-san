@@ -17,11 +17,11 @@
 
 function check_directory() {
     working_dir=$(pwd)
-    if [ "neuro-san" == "$(basename ${working_dir})" ]
+    if [ "neuro-san" == "$(basename "${working_dir}")" ]
     then
         # We are in the neuro-san repo.
         # Change directories so that the rest of the script will work OK.
-        cd neuro_san
+        cd neuro_san || exit 1
     fi
 }
 
