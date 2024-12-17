@@ -34,12 +34,18 @@ class AgentSessionFactory:
         """
         session: AgentSession = None
 
+        # Incorrectly flagged as destination of Trust Boundary Violation 1
+        #   Reason: This is the place where the session_type enforced-string argument is
+        #           actually checked for positive use.
         if session_type == "direct":
             factory = DirectAgentSessionFactory()
             session = factory.create_session(agent_name)
         elif session_type == "service":
             session = ServiceAgentSession(host=hostname, port=port, agent_name=agent_name)
         else:
+            # Incorrectly flagged as destination of Trust Boundary Violation 2
+            #   Reason: This is the place where the session_type enforced-string argument is
+            #           actually checked for negative use.
             raise ValueError(f"session_type {session_type} is not understood")
 
         return session

@@ -87,6 +87,11 @@ class FileOfClass:
             raise ValueError("basis for file checking is None")
 
         # Resolve full paths
+        # Incorrectly flagged as destination of Path Traversal 1, 2
+        #   Reason: This is the method in which we are actually trying to do
+        #           the path traversal check itself. CheckMarx does not recognize
+        #           pathlib as a valid library with which to resolve these kinds
+        #           of issues.
         test_abs_path: str = str(Path(filepath).resolve())
 
         if basis == "~":

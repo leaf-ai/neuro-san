@@ -52,6 +52,12 @@ class AgentCli:
         # Get initial user input
         user_input: str = None
         if self.args.first_prompt_file is not None:
+            # Incorrectly flagged as destination of Path Traversal 4
+            #   Reason: thinking_file was previously checked with FileOfClass.check_file()
+            #           which actually does the path traversal check. CheckMarx does not
+            #           recognize pathlib as a valid library with which to resolve these kinds
+            #           of issues.  Furthermore, this is a client command line tool that is never
+            #           used inside servers which just happens to be part of a library offering.
             with open(self.args.first_prompt_file, 'r', encoding="utf-8") as prompt_file:
                 user_input = prompt_file.read()
 
@@ -128,6 +134,11 @@ The type of connection to initiate. Choices are to connect to:
     "direct"    - a session via library.
 All choices require an agent name.
 """)
+
+        # Incorrectly flagged as source of Path Traversal 1, 2, 4, 5, 6
+        # See destination in file_of_class.py for exception explanation.
+        # Incorrectly flagged as source of Trust Boundary Violation 1, 2
+        # See destination in agent_session_Factory.py for exception explanation.
         self.args = arg_parser.parse_args()
 
         # Check some arguments to prevent PathTraversal scans lighting up.
@@ -150,6 +161,13 @@ All choices require an agent name.
                                                           hostname, self.args.port)
 
         # Clear out the previous thinking file
+        #
+        # Incorrectly flagged as destination of Path Traversal 5
+        #   Reason: thinking_file was previously checked with FileOfClass.check_file()
+        #           which actually does the path traversal check. CheckMarx does not
+        #           recognize pathlib as a valid library with which to resolve these kinds
+        #           of issues.  Furthermore, this is a client command line tool that is never
+        #           used inside servers which just happens to be part of a library offering.
         with open(self.args.thinking_file, "w", encoding="utf-8") as thinking:
             thinking.write("\n")
 
@@ -195,6 +213,12 @@ All choices require an agent name.
 
         # Update logs
         if logs is not None and logs != last_logs:
+            # Incorrectly flagged as destination of Path Traversal 6
+            #   Reason: thinking_file was previously checked with FileOfClass.check_file()
+            #           which actually does the path traversal check. CheckMarx does not
+            #           recognize pathlib as a valid library with which to resolve these kinds
+            #           of issues.  Furthermore, this is a client command line tool that is never
+            #           used inside servers which just happens to be part of a library offering.
             with open(self.args.thinking_file, "a", encoding="utf-8") as thinking:
                 # Write out the latest logs
                 # Might be more than 1
