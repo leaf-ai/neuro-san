@@ -112,11 +112,8 @@ RUN mkdir -p ${APP_HOME}/certs/aws \
 # This is the port the service will accept requests on
 # This should be consistent with the main port for the service as described
 # in the <service>.yaml file
-# This port number is also mentioned as DecisionAssistantSession.DEFAULT_PORT
+# This port number is also mentioned as ServiceAgentSession.DEFAULT_PORT
 EXPOSE 30011
-
-# MD server
-EXPOSE 30001
 
 # Copy installed dependencies from the builder stage
 COPY --from=builder /install /usr/local

@@ -57,7 +57,11 @@ In one terminal window, set at least OPENAI_API_KEY to a valid access key for Ch
 
 Option 1: Build and run the docker container for the hosting agent service:
 
-    ./neuro_san/deploy/build.sh ; ./neuro_san/deploy/run.sh
+    cd neuro_san
+    ./deploy/build.sh deploy/Dockerfile ; ./neuro_san/deploy/run.sh
+
+    These build.sh / Dockerfile / run.sh scripts are portable so they can be used with
+    your own projects' registries and coded_tools work.
 
 Option 2: Run the service directly for a specific agent network:
 
