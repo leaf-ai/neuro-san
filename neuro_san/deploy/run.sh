@@ -14,9 +14,20 @@
 # Script that runs the docker file locally with proper mounts
 # Usage: run.sh <CONTAINER_VERSION>
 #
-# This needs to be run from the top-level directory
+
+function check_directory() {
+    working_dir=$(pwd)
+    if [ "neuro-san" == "$(basename ${working_dir})" ]
+    then
+        # We are in the neuro-san repo.
+        # Change directories so that the rest of the script will work OK.
+        cd neuro_san
+    fi
+}
 
 function run() {
+
+    check_directory
 
     # RUN_JSON_INPUT_DIR will go away when an actual GRPC service exists
     # for receiving the input. For now it's a mounted directory.
