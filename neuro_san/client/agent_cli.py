@@ -138,7 +138,7 @@ All choices require an agent name.
         # Incorrectly flagged as source of Path Traversal 1, 2, 4, 5, 6
         # See destination in file_of_class.py for exception explanation.
         # Incorrectly flagged as source of Trust Boundary Violation 1, 2
-        # See destination in agent_session_Factory.py for exception explanation.
+        # See destination in agent_session_factory.py for exception explanation.
         self.args = arg_parser.parse_args()
 
         # Check some arguments to prevent PathTraversal scans lighting up.
