@@ -113,7 +113,7 @@ class AgentMainLoop(ServerLoopCallbacks):
         # Actually parse the args into class variables
 
         # Incorrectly flagged as Path Traversal 3, 7
-        # See destination below ~ line 139, 154 for explanation. 
+        # See destination below ~ line 139, 154 for explanation.
         args = arg_parser.parse_args()
         self.port = args.port
         self.server_name = args.server_name
