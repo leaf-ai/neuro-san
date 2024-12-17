@@ -30,9 +30,12 @@ ENV PIP3_VERSION 23.3.1
 # Explicitly get the desired pip version
 RUN pip3 install --upgrade pip==${PIP3_VERSION} --no-cache-dir
 
-# Uncomment this line if you have local requirements.txt for your coded tools
-# COPY ./requirements.txt ${APP_SOURCE}/requirements.txt
-# RUN pip install --prefix=/install --no-cache-dir -r ${APP_SOURCE}/requirements.txt
+# Having a requirements.txt file for your coded_tool dependencies is optional
+COPY ./requirement[s].txt ${APP_SOURCE}/requirements.txt
+RUN if [ -f ${APP_SOURCE}/requirements.txt ]; \
+    then \
+        pip install --prefix=/install --no-cache-dir -r ${APP_SOURCE}/requirements.txt ; \
+    fi
 
 # Copy in the wheel files to include in the Dockerfile
 ENV WHEEL_DIR .requirements-wheels

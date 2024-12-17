@@ -51,15 +51,13 @@ function gather_wheels() {
     echo "Copying local installed wheels to ${INSTALL_WHEELS}"
     for wheel_file in ${local_wheels}
     do
-        dest_file=$(basename ${wheel_file})
-        cp ${wheel_file} ${INSTALL_WHEELS}/${dest_file}
+        dest_file=$(basename "${wheel_file}")
+        cp "${wheel_file}" "${INSTALL_WHEELS}/${dest_file}"
     done
 }
 
 
 function build_main() {
-    working_dir=$(pwd)
-
     # Outline function which delegates most work to other functions
 
     # Parse for a specific arg when debugging
@@ -77,7 +75,7 @@ function build_main() {
 
     gather_wheels
 
-    DOCKERFILE=$(find -name Dockerfile | sort | head -1)
+    DOCKERFILE=$(find . -name Dockerfile | sort | head -1)
 
     # Build the docker image
     # The last argument given is the Dockerfile we want to compile
