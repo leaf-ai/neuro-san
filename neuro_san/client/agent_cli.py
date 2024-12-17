@@ -53,7 +53,7 @@ class AgentCli:
         user_input: str = None
         if self.args.first_prompt_file is not None:
             # Incorrectly flagged as destination of Path Traversal 4
-            #   Reason: thinking_file was previously checked with FileOfClass.check_file()
+            #   Reason: first_prompt_file was previously checked with FileOfClass.check_file()
             #           which actually does the path traversal check. CheckMarx does not
             #           recognize pathlib as a valid library with which to resolve these kinds
             #           of issues.  Furthermore, this is a client command line tool that is never
