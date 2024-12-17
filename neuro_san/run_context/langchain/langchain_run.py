@@ -63,7 +63,7 @@ class LangChainRun(Run):
         :return: True if the status of the run requires external action.
                  False otherwise
         """
-        # This allows the higher level check in DecisionMakingAssistant
+        # This allows the higher level check in branch tools
         # to know that we are doing something.
         return False
 

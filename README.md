@@ -59,6 +59,9 @@ Option 1: Build and run the docker container for the hosting agent service:
 
     ./neuro_san/deploy/build.sh ; ./neuro_san/deploy/run.sh
 
+    These build.sh / Dockerfile / run.sh scripts are portable so they can be used with
+    your own projects' registries and coded_tools work.
+
 Option 2: Run the service directly for a specific agent network:
 
     python -m neuro_san.service.agent_main_loop --tool_registry_file hello_world

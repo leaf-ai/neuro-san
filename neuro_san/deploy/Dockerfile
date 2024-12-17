@@ -15,45 +15,14 @@
 # Set python image as base image
 FROM python:3.10-slim as builder
 
-# Define the build argument for the Git version, no default provided by design
-ARG GIT_VERSION=2.46.0
-
-# Set the Git version as an environment variable
-ENV GIT_VERSION=${GIT_VERSION}
-
 # Set the shell and options per hadolint recommendations
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
-# Set the temporary working directory for downloading and building Git
-WORKDIR /tmp
-
-# Install dependencies required to build Git from source
-# hadolint ignore=DL3008
-RUN apt-get update && apt-get install --yes \
-    build-essential \
-    dh-autoreconf \
-    libcurl4-gnutls-dev \
-    libexpat1-dev \
-    gettext \
-    libz-dev \
-    libssl-dev \
-    curl \
-    --no-install-recommends && \
-    curl -LO https://github.com/git/git/archive/refs/tags/v${GIT_VERSION}.tar.gz && \
-    tar -zxf v${GIT_VERSION}.tar.gz && \ 
-    rm -rf /var/lib/apt/lists/*
-
-# Change to the Git source directory to build and install Git
-WORKDIR /tmp/git-${GIT_VERSION}
-
-RUN make prefix=/usr/local all && \
-    make prefix=/usr/local install
 
 # Reset to the root directory
 WORKDIR /
 
 # App-specific constants
-ENV USERNAME leaf-ai
+ENV USERNAME neuro-san
 ENV APP_HOME /usr/local/${USERNAME}
 ENV APP_SOURCE ${APP_HOME}/myapp
 ENV PIP3_VERSION 23.3.1
@@ -61,29 +30,17 @@ ENV PIP3_VERSION 23.3.1
 # Explicitly get the desired pip version
 RUN pip3 install --upgrade pip==${PIP3_VERSION} --no-cache-dir
 
-COPY ./requirements.txt ${APP_SOURCE}/requirements.txt
-RUN pip install --prefix=/install --no-cache-dir -r ${APP_SOURCE}/requirements.txt
+# Having a requirements.txt file for your coded_tool dependencies is optional
+COPY ./requirement[s].txt ${APP_SOURCE}/requirements.txt
+RUN if [ -f ${APP_SOURCE}/requirements.txt ]; \
+    then \
+        pip install --prefix=/install --no-cache-dir -r ${APP_SOURCE}/requirements.txt ; \
+    fi
 
-# The id with_creds_requirements refers to our requirements.txt file re-written with
-# the necessary credential. That file is mounted in the codefresh docker build
-# step. By not supplying a dst, we use dockers default secret location
-# of /runs/secrets/<id>
-#
-# This Dockerfile for the Data Profiling service does not need:
-#   kserve
-#   tensorflow
-# ... which drags in a lot of extra unnecessary stuff for the Data Profiling
-# service and as of 3/01/2022 also drags in some dependency conflicts which are
-# resolved differently for services that require kserve. Among these conflicts:
-#   numpy
-
-# We use a modified requirements file as a Docker secret,
-# but we must break the docker cache in the event the
-# requirements change. So copy in the unmodified file
-# before using the secret.
-COPY ./requirements-private.txt ${APP_SOURCE}/requirements-private.txt
-RUN --mount=type=secret,id=with_creds_requirements \
-    pip install --prefix=/install --no-cache-dir -r /run/secrets/with_creds_requirements
+# Copy in the wheel files to include in the Dockerfile
+ENV WHEEL_DIR .requirements-wheels
+COPY ./${WHEEL_DIR} ${APP_SOURCE}/${WHEEL_DIR}
+RUN pip install --prefix=/install --no-cache-dir ${APP_SOURCE}/${WHEEL_DIR}/*.whl
 
 # Stage 2: Final Stage - Use a slim Python image
 FROM python:3.10-slim AS final
@@ -91,12 +48,11 @@ FROM python:3.10-slim AS final
 # Set the shell and options in each FROM section per hadolint recommendations
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# App-specific constants
-ENV USERNAME leaf-ai
+# Set up user for app running in container
+ENV USERNAME neuro-san
 ENV APP_HOME /usr/local/${USERNAME}
 ENV APP_SOURCE ${APP_HOME}/myapp
 
-# Set up user for app running in container
 RUN \
     useradd -ms /bin/bash -d ${APP_HOME} -u 1001 ${USERNAME} \
     && echo ${USERNAME}:pw | chpasswd \
@@ -112,27 +68,36 @@ RUN mkdir -p ${APP_HOME}/certs/aws \
 # This is the port the service will accept requests on
 # This should be consistent with the main port for the service as described
 # in the <service>.yaml file
-# This port number is also mentioned as DecisionAssistantSession.DEFAULT_PORT
+# This port number is also mentioned as ServiceAgentSession.DEFAULT_PORT
+# In order to be self-discovered by supporting build/run scripts this must
+# be the first port exposed in the Dockerfile.
 EXPOSE 30011
-
-# MD server
-EXPOSE 30001
 
 # Copy installed dependencies from the builder stage
 COPY --from=builder /install /usr/local
 
 # Copy application code and necessary files
-COPY ./neuro_san ${APP_SOURCE}/neuro_san
+# Note: The registries directory where agent definitions live is mandatory
+#       The coded_tools directory where agent code lives is optional
+COPY ./registries ${APP_SOURCE}/registries
+COPY ./coded_tool[s] ${APP_SOURCE}/coded_tools
 
 # Set up the entry point for when the container is run
 USER ${USERNAME}
 WORKDIR ${APP_SOURCE}
 
-ENV APP_ENTRYPOINT neuro_san/deploy/entrypoint.sh
+# RUN echo "$(pip show neuro-san | grep Location | awk '{print $2}')"
+# This value below comes from the above RUN command. Cannot set ENV vars in Dockerfiles based on shell output.
+ENV PACKAGE_INSTALL /usr/local/lib/python3.10/site-packages
+ENV PACKAGE_DEPLOY ${PACKAGE_INSTALL}/neuro_san/deploy
+ENV APP_ENTRYPOINT ${PACKAGE_DEPLOY}/entrypoint.sh
 
 # Tool registry file environment variable
+ENV AGENT_MANIFEST_FILE=${APP_SOURCE}/registries/manifest.hocon
+ENV AGENT_TOOL_PATH=${APP_SOURCE}/coded_tools
 ENV TOOL_REGISTRY_FILE=${TOOL_REGISTRY_FILE}
-ENV AGENT_SERVICE_LOG_JSON=${APP_SOURCE}/neuro_san/deploy/logging.json
+ENV AGENT_SERVICE_LOG_JSON=${PACKAGE_DEPLOY}/logging.json
 
-ENTRYPOINT "${APP_SOURCE}/${APP_ENTRYPOINT}" --tool_registry_file="${TOOL_REGISTRY_FILE}"
+# ENTRYPOINT ls ${APP_SOURCE}
+ENTRYPOINT "${APP_ENTRYPOINT}" --tool_registry_file="${TOOL_REGISTRY_FILE}"
 
