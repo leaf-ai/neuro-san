@@ -7,4 +7,5 @@ recursive-include neuro_san/api/scripts *
 recursive-include neuro_san/deploy *
 recursive-include neuro_san/registries *
 recursive-exclude tests *
+recursive-include neuro_san/deploy/internal *
 recursive-exclude neuro_san/api/grpc/__pycache__ *
