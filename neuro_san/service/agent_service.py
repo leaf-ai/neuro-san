@@ -40,7 +40,7 @@ DO_NOT_LOG_REQUESTS = [
 
 class AgentService(agent_pb2_grpc.AgentServiceServicer):
     """
-    A gRPC implementation of the Decision Assistant Service.
+    A gRPC implementation of the Neuro-San Agent Service.
     """
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments

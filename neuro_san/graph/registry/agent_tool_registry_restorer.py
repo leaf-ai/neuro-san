@@ -81,6 +81,11 @@ class AgentToolRegistryRestorer(Restorer):
         config = filter_chain.filter_config(config)
 
         # Now create the AgentToolRegistry
+        # Inside here is incorrectly flagged as destination of Path Traversal 7
+        #   Reason: The lines above ensure that the path of registry_dir is within
+        #           this source base. CheckMarx does not recognize
+        #           the calls to Pathlib/__file__ as a valid means to resolve
+        #           these kinds of issues.
         name = Path(use_file).stem
         tool_registry = AgentToolRegistry(config, name)
 

@@ -14,20 +14,21 @@
 # Script that runs the docker file locally with proper mounts
 # Usage: run.sh <CONTAINER_VERSION>
 #
+# This needs to be run from the top-level directory
 
-function check_directory() {
+function check_run_directory() {
+
+    # Everything here needs to be done from the top-level directory for the repo
     working_dir=$(pwd)
-    if [ "neuro-san" == "$(basename "${working_dir}")" ]
+    exec_dir=$(basename "${working_dir}")
+    if [ "$exec_dir" != "neuro-san" ]
     then
-        # We are in the neuro-san repo.
-        # Change directories so that the rest of the script will work OK.
-        cd neuro_san || exit 1
+        echo "This script must be run from the top-level directory for the repo"
+        exit 1
     fi
 }
 
 function run() {
-
-    check_directory
 
     # RUN_JSON_INPUT_DIR will go away when an actual GRPC service exists
     # for receiving the input. For now it's a mounted directory.
@@ -49,8 +50,7 @@ function run() {
 
     SERVICE_NAME="NeuroSanAgents"
     # Assume the first port EXPOSEd in the Dockerfile is the input port
-    DOCKERFILE=$(find . -name Dockerfile | sort | head -1)
-    SERVICE_PORT=$(grep EXPOSE < "${DOCKERFILE}" | head -1 | awk '{ print $2 }')
+    SERVICE_PORT=$(grep EXPOSE < neuro_san/deploy/internal/Dockerfile | head -1 | awk '{ print $2 }')
     echo "SERVICE_PORT: ${SERVICE_PORT}"
 
     # Run the docker container in interactive mode
@@ -64,7 +64,7 @@ function run() {
         -e ANTHROPIC_API_KEY \
         -e TOOL_REGISTRY_FILE=$1 \
         -p $SERVICE_PORT:$SERVICE_PORT \
-            neuro-san/neuro-san:$CONTAINER_VERSION"
+            leaf/neuro-san:$CONTAINER_VERSION"
 
     if [ "${OS}" == "Darwin" ];then
         # Host networking does not work for non-Linux operating systems
@@ -77,6 +77,7 @@ function run() {
 }
 
 function main() {
+    check_run_directory
     run "$@"
 }
 

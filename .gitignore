@@ -9,6 +9,8 @@ venv3/
 dist/
 build/
 *.egg-info/
+.requirements-wheels/
+neuro_san/.requirements-wheels/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
