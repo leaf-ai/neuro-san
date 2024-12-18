@@ -8,3 +8,8 @@ recursive-include neuro_san/registries *
 recursive-exclude tests *
 recursive-exclude neuro_san/api/grpc/__pycache__ *
 recursive-exclude neuro_san/deploy/internal *
+include neuro_san/deploy/build.sh
+include neuro_san/deploy/Dockerfile
+include neuro_san/deploy/entrypoint.sh
+include neuro_san/deploy/logging.json
+include neuro_san/deploy/run.sh
