@@ -194,12 +194,8 @@ class BranchTool(CallingTool, CallableTool):
         while run.requires_action():
             # The tool we just called requires more information
             new_run = await self.make_tool_function_calls(run)
-
             new_run = await self.run_context.wait_on_run(new_run, self.logger)
-            self.logger.show_json(run)
-
             new_messages = await self.run_context.get_response()
-            self.logger.show_json(messages)
 
         return new_messages
 
@@ -227,13 +223,9 @@ class BranchTool(CallingTool, CallableTool):
 
         command = self.get_command()
         run: Run = await self.run_context.submit_message(command)
-
-        self.logger.show_json(run)
         run = await self.run_context.wait_on_run(run, self.logger)
-        self.logger.show_json(run)
 
         messages = await self.run_context.get_response()
-        self.logger.show_json(messages)
 
         messages = await self.integrate_callable_response(run, messages)
 

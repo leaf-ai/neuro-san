@@ -39,8 +39,8 @@ class FrontMan(CallingTool):
                 # Breaking from inside a container during cleanup can yield a None
                 # run_context
                 break
+
             decision_run = await self.run_context.wait_on_run(decision_run, self.logger)
-            self.logger.show_json(decision_run)
 
             if decision_run.requires_action():
                 decision_run = await self.make_tool_function_calls(decision_run)

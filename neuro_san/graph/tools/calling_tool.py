@@ -182,7 +182,6 @@ class CallingTool(ToolCaller):
         # Submit all tool outputs at once after the loop has gathered all
         # outputs of all CallableTool' functions.
         component_run = await self.run_context.submit_tool_outputs(component_run, tool_outputs)
-        self.logger.show_json(component_run)
 
         return component_run
 
