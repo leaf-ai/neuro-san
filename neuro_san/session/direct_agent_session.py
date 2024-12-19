@@ -150,7 +150,8 @@ class DirectAgentSession(AgentSession):
             # Create an asynchronous background task to process the user input.
             # This might take a few minutes, which can be longer than some
             # sockets stay open.
-            future: Future = self.asyncio_executor.submit(session_id, chat_session.chat, user_input, sly_data)
+            future: Future = self.asyncio_executor.submit(session_id, chat_session.chat,
+                                                          user_input, sly_data)
             _ = future
 
             # Allow the task to be scheduled. Let the client poll via logs().
@@ -320,7 +321,8 @@ class DirectAgentSession(AgentSession):
         # Create an asynchronous background task to process the user input.
         # This might take a few minutes, which can be longer than some
         # sockets stay open.
-        future: Future = self.asyncio_executor.submit(session_id, chat_session.chat, user_input, sly_data)
+        future: Future = self.asyncio_executor.submit(session_id, chat_session.streaming_chat,
+                                                      user_input, sly_data)
 
         # We are assuming that the iterator returned by the result() of the Future
         # will hang out waiting for chat.ChatMessage dictionaries to come back

@@ -11,6 +11,7 @@
 # END COPYRIGHT
 from typing import Any
 from typing import Dict
+from typing import Iterator
 
 from neuro_san.utils.stream_to_logger import StreamToLogger
 
@@ -28,7 +29,7 @@ class ChatSession:
         """
         raise NotImplementedError
 
-    async def chat(self, user_input: str, sly_data: Dict[str, Any]):
+    async def chat(self, user_input: str, sly_data: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
         """
         Main entry-point method for accepting new user input
 
@@ -40,6 +41,17 @@ class ChatSession:
         the chat happens asynchronously and might take longer
         than the lifetime of a socket.  Results are polled from
         get_latest_response() below.
+        """
+        raise NotImplementedError
+
+    async def streaming_chat(self, user_input: str, sly_data: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
+        """
+        Main entry-point method for accepting new user input
+
+        :param user_input: A string with the user's input
+        :param sly_data: A mapping whose keys might be referenceable by agents, but whose
+                 values should not appear in agent chat text. Can be None.
+        :return: An Iterator of chat.ChatMessage dictionaries
         """
         raise NotImplementedError
 

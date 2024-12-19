@@ -87,11 +87,10 @@ class DataDrivenChatSession(ChatSession):
         :param user_input: A string with the user's input
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be None.
+        :return: An Iterator of chat.ChatMessage dictionaries
 
-        Note that nothing is returned immediately as processing
-        the chat happens asynchronously and might take longer
-        than the lifetime of a socket.  Results are polled from
-        get_latest_response() below.
+        Results are polled from get_latest_response() below, as this non-streaming
+        version can take longer than the lifetime of a socket.
         """
         if self.front_man is None:
             await self.set_up()
@@ -130,8 +129,25 @@ class DataDrivenChatSession(ChatSession):
         prettied_messages = pretty_the_messages(raw_messages)
         self.latest_response = prettied_messages
 
+        chat_messages: List[Dict[str, Any]] = []
         for raw_message in raw_messages:
             chat_message: Dict[str, Any] = convert_to_chat_message(raw_message)
+            chat_messages.append(chat_message)
+
+        return iter(chat_messages)
+
+    async def streaming_chat(self, user_input: str, sly_data: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
+        """
+        Main streaming entry-point method for accepting new user input
+
+        :param user_input: A string with the user's input
+        :param sly_data: A mapping whose keys might be referenceable by agents, but whose
+                 values should not appear in agent chat text. Can be None.
+        :return: An Iterator of chat.ChatMessage dictionaries
+        """
+
+        chat_messages: Iterator[Dict[str, Any]] = self.chat(user_input, sly_data)
+        for chat_message in chat_messages:
             yield chat_message
 
     def get_logger(self) -> StreamToLogger:
