@@ -231,7 +231,7 @@ class ServiceAgentSession(AbstractServiceSession, AgentSession):
             Note that responses to the chat input might be numerous and will come as they
             are produced until the system decides there are no more messages to be sent.
         """
-        # XXX Not exactly sure if this is correct yet for streaming.
+        # DEF - Not exactly sure if this is correct yet for streaming.
 
         # pylint: disable=no-member
         return self.call_grpc_method(

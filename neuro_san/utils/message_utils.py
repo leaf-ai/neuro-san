@@ -22,7 +22,7 @@ from langchain_core.messages.human import HumanMessage
 from langchain_core.messages.system import SystemMessage
 from langchain_core.messages.tool import ToolMessage
 
-from neuro_san.util.neuro_san_message import NeuroSanMessage
+from neuro_san.utils.neuro_san_message import NeuroSanMessage
 
 
 def pretty_the_messages(messages: List[Any]) -> str:
@@ -152,9 +152,9 @@ def convert_to_chat_message(message: BaseMessage) -> Dict[str, Any]:
     :return: The ChatMessage in dictionary form
     """
 
-    UNKNOWN: int = 0
+    unknown: int = 0
     chat_message: Dict[str, Any] = {
-        "type": MESSAGE_TYPE_TO_CHAT_MESSAGE_TYPE.get(type(message), UNKNOWN),
+        "type": MESSAGE_TYPE_TO_CHAT_MESSAGE_TYPE.get(type(message), unknown),
         "text": message.content,
         # No mime_data for now
         # No origin for now
