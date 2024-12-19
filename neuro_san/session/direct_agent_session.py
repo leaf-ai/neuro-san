@@ -153,7 +153,7 @@ class DirectAgentSession(AgentSession):
             future: Future = self.asyncio_executor.submit(session_id, chat_session.chat, user_input, sly_data)
             _ = future
 
-            # Allow the task to be scheduled
+            # Allow the task to be scheduled. Let the client poll via logs().
 
         # Prepare the response dictionary
         response_dict = {

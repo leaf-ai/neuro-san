@@ -116,6 +116,7 @@ class DataDrivenChatSession(ChatSession):
             # DEF - drill further down for iterator from here to enable getting
             #       messages from downstream agents.
             raw_messages: List[Any] = await self.front_man.submit_message(user_input)
+
         except BadRequestError:
             # This can happen if the user is trying to send a new message
             # while it is still working on a previous message that has not
