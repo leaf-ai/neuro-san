@@ -15,6 +15,7 @@ from typing import Dict
 from typing import Iterator
 from typing import List
 
+from copy import copy
 from asyncio import Future
 
 from leaf_server_common.utils.asyncio_executor import AsyncioExecutor
@@ -282,10 +283,55 @@ class DirectAgentSession(AgentSession):
                                           of new chat by client) and a new chat session is created.
             "response"      - An optional ChatMessage dictionary.  See chat.proto for details.
 
-            Note that responses to the chat input are asynchronous and come by polling the
-            logs() method below.
+            Note that responses to the chat input might be numerous and will come as they
+            are produced until the system decides there are no more messages to be sent.
         """
-        raise NotImplementedError
+        user_input: str = request_dict.get("user_input")
+        session_id: str = request_dict.get("session_id")
+        sly_data: Dict[str, Any] = request_dict.get("sly_data")
+        status: int = self.NOT_FOUND
+
+        chat_session: ChatSession = self.chat_session_map.get_chat_session(session_id)
+        if chat_session is None:
+            if session_id is None:
+                # Initiate a new conversation.
+                status = self.CREATED
+                chat_session = DataDrivenChatSession(registry=self.tool_registry)
+                session_id = self.chat_session_map.register_chat_session(chat_session)
+            else:
+                # We got an session_id, but this service instance has no knowledge
+                # of it.
+                status = self.NOT_FOUND
+        else:
+            # We have seen this session_id before and can register new user input.
+            status = self.FOUND
+
+        # Prepare the response dictionary
+        template_response_dict = {
+            "session_id": session_id,
+            "status": status
+        }
+
+        if chat_session is None or user_input is None:
+            # Can't go on to chat, so report back early with a single value.
+            # There is no ChatMessage response in the dictionary in this case
+            yield template_response_dict
+
+        # Create an asynchronous background task to process the user input.
+        # This might take a few minutes, which can be longer than some
+        # sockets stay open.
+        future: Future = self.asyncio_executor.submit(session_id, chat_session.chat, user_input, sly_data)
+
+        # We are assuming that the iterator returned by the result() of the Future
+        # will hang out waiting for chat.ChatMessage dictionaries to come back
+        # asynchronously from the submit() above.
+        message_iterator: Iterator[Dict[str, Any]] = future.results()
+        for message in message_iterator:
+
+            # We expect the message to be a dictionary form of chat.ChatMessage
+            response_dict: Dict[str, Any] = copy(template_response_dict)
+            response_dict["response"] = message
+            yield response_dict
 
     def close(self):
         """

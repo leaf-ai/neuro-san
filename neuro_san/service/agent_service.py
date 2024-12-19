@@ -12,6 +12,7 @@
 
 from typing import Any
 from typing import Dict
+from typing import Iterator
 
 import json
 
@@ -256,15 +257,14 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
     # pylint: disable=no-member
     def StreamingChat(self, request: service_messages.ChatRequest,
                       context: grpc.ServicerContext) \
-            -> service_messages.ChatResponse:
+            -> Iterator[service_messages.ChatResponse]:
         """
         Initiates or continues the agent chat with the session_id
         context in the request.
 
         :param request: a ChatRequest
         :param context: a grpc.ServicerContext
-        :return: a ChatResponse which indicates that the request
-                 was successful
+        :return: an iterator for (eventually) returned ChatResponses
         """
         request_log = None
         log_marker = f"'{request.user_input}' on assistant {request.session_id}"
@@ -284,15 +284,23 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
                                      asyncio_executor=self.asyncio_executor,
                                      metadata=metadata,
                                      security_cfg=self.security_cfg)
-        response_dict = session.streaming_chat(request_dict)
-        response_dict["request"] = request_dict
+        response_dict_iterator: Iterator[Dict[str, Any]] = session.streaming_chat(request_dict)
 
-        # Convert the response dictionary to a grpc message
-        response_string = json.dumps(response_dict)
-        response = service_messages.ChatResponse()
-        Parse(response_string, response)
+        for response_dict in response_dict_iterator:
+            response_dict["request"] = request_dict
 
+            # Convert the response dictionary to a grpc message
+            response_string = json.dumps(response_dict)
+            response = service_messages.ChatResponse()
+            Parse(response_string, response)
+
+            # Yield-ing a single response allows one response to be returned
+            # over the connection while keeping it open to wait for more.
+            # Grpc client code handling response streaming knows to construct an
+            # iterator on its side to do said waiting over there.
+            yield response
+
+        # Iterator has finally signaled that there are no more responses to be had.
+        # Log that we are done.
         if request_log is not None:
             self.request_logger.finish_request(f"{self.agent_name}.StreamingChat", log_marker, request_log)
-
-        return response

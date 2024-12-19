@@ -157,7 +157,7 @@ class AgentSession:
                                           of new chat by client) and a new chat session is created.
             "response"      - An optional ChatMessage dictionary.  See chat.proto for details.
 
-            Note that responses to the chat input are asynchronous and come by polling the
-            logs() method below.
+            Note that responses to the chat input might be numerous and will come as they
+            are produced until the system decides there are no more messages to be sent.
         """
         raise NotImplementedError
