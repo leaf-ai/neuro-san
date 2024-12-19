@@ -20,8 +20,6 @@ class StreamToLogger:
     Class for capturing output stream to a list of strings
     """
 
-    VERBOSE: bool = False
-
     def __init__(self):
         """
         Constructor
@@ -38,17 +36,8 @@ class StreamToLogger:
             message = message.decode('utf-8')
         self.log_content.append(message)
 
-    def show_json(self, obj: object):
-        """
-        Add JSON from an object to the logs if VERBOSE is on.
-        :param obj: Unclear what the typing expectation is here.
-        """
-        if self.VERBOSE:
-            self.write(json.loads(obj.model_dump_json()))
-
     def get_logs(self) -> List[str]:
         """
-        :return: A list of strings corresponding to log entries written
-                with write() or show_json().
+        :return: A list of strings corresponding to log entries written with write()
         """
         return self.log_content
