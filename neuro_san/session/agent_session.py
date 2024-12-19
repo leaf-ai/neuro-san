@@ -12,6 +12,7 @@
 
 from typing import Any
 from typing import Dict
+from typing import Iterator
 
 
 class AgentSession:
@@ -128,7 +129,7 @@ class AgentSession:
         """
         raise NotImplementedError
 
-    def streaming_chat(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
+    def streaming_chat(self, request_dict: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
         """
         :param request_dict: A dictionary version of the ChatRequest
                     protobufs structure. Has the following keys:
@@ -137,7 +138,7 @@ class AgentSession:
                               Upon first contact this can be blank.
             "user_input"    - A string representing the user input to the chat stream
 
-        :return: A dictionary version of the ChatResponse
+        :return: An iterator of dictionary versions of the ChatResponse
                     protobufs structure. Has the following keys:
             "session_id"  - A string UUID identifying the root ownership of the
                               chat session's resources.

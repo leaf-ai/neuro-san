@@ -12,7 +12,10 @@
 
 from typing import Any
 from typing import Dict
+from typing import Iterator
 from typing import List
+
+from asyncio import Future
 
 from leaf_server_common.utils.asyncio_executor import AsyncioExecutor
 
@@ -146,7 +149,8 @@ class DirectAgentSession(AgentSession):
             # Create an asynchronous background task to process the user input.
             # This might take a few minutes, which can be longer than some
             # sockets stay open.
-            self.asyncio_executor.submit(session_id, chat_session.chat, user_input, sly_data)
+            future: Future = self.asyncio_executor.submit(session_id, chat_session.chat, user_input, sly_data)
+            _ = future
 
             # Allow the task to be scheduled
 
@@ -241,7 +245,8 @@ class DirectAgentSession(AgentSession):
         if chat_session is not None:
             # We have seen this session_id before and can poll for a new response.
             status = self.FOUND
-            self.asyncio_executor.submit(session_id, chat_session.set_up)
+            future: Future = self.asyncio_executor.submit(session_id, chat_session.set_up)
+            _ = future
 
         response_dict = {
             "session_id": session_id,
@@ -249,7 +254,7 @@ class DirectAgentSession(AgentSession):
         }
         return response_dict
 
-    def streaming_chat(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
+    def streaming_chat(self, request_dict: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
         """
         :param request_dict: A dictionary version of the ChatRequest
                     protobufs structure. Has the following keys:
@@ -258,7 +263,7 @@ class DirectAgentSession(AgentSession):
                               Upon first contact this can be blank.
             "user_input"    - A string representing the user input to the chat stream
 
-        :return: A dictionary version of the ChatResponse
+        :return: An iterator of dictionary versions of the ChatResponse
                     protobufs structure. Has the following keys:
             "session_id"  - A string UUID identifying the root ownership of the
                               chat session's resources.
