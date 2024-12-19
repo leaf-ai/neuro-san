@@ -28,6 +28,8 @@ message ChatMessage {
         HUMAN = 1;
         AI = 2;
         SYSTEM = 3;
+        TOOL = 4;
+        NEURO_SAN = 5;  // Note: NEURO_SAN is not a lanchain thing
     }
 
     // The type of chat message

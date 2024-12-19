@@ -11,6 +11,7 @@
 # END COPYRIGHT
 from typing import Any
 from typing import Dict
+from typing import Iterator
 from typing import List
 
 import traceback
@@ -22,7 +23,9 @@ from openai import BadRequestError
 from neuro_san.chat.chat_session import ChatSession
 from neuro_san.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.graph.tools.front_man import FrontMan
+from neuro_san.utils.message_utils import convert_to_chat_message
 from neuro_san.utils.message_utils import pretty_the_messages
+from neuro_san.utils.neuro_san_message import NeuroSanMessage
 from neuro_san.utils.stream_to_logger import StreamToLogger
 
 
@@ -77,7 +80,7 @@ class DataDrivenChatSession(ChatSession):
         self.front_man = self.registry.create_front_man(self.logger, self.sly_data)
         await self.front_man.create_resources()
 
-    async def chat(self, user_input: str, sly_data: Dict[str, Any]):
+    async def chat(self, user_input: str, sly_data: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
         """
         Main entry-point method for accepting new user input
 
@@ -96,7 +99,7 @@ class DataDrivenChatSession(ChatSession):
         # Remember when we were last given input
         self.last_input_timestamp = datetime.now()
 
-        # While deciding how to respond, there is no response
+        # While deciding how to respond, there is no response yet
         self.clear_latest_response()
 
         # Update sly data, if any.
@@ -109,17 +112,26 @@ class DataDrivenChatSession(ChatSession):
 
         try:
             self.logger.write("consulting chat agent(s)...")
+
+            # DEF - drill further down for iterator from here to enable getting
+            #       messages from downstream agents.
             raw_messages: List[Any] = await self.front_man.submit_message(user_input)
-            decision_messages = pretty_the_messages(raw_messages)
         except BadRequestError:
             # This can happen if the user is trying to send a new message
             # while it is still working on a previous message that has not
             # yet returned.
-            decision_messages = "Patience, please. I'm working on it."
+            raw_messages: List[Any] = [
+                NeuroSanMessage(content="Patience, please. I'm working on it.")
+            ]
             print(traceback.format_exc())
 
-        # Decision has been made. Update the response.
-        self.latest_response = decision_messages
+        # Update the polling response.
+        prettied_messages = pretty_the_messages(raw_messages)
+        self.latest_response = prettied_messages
+
+        for raw_message in raw_messages:
+            chat_message: Dict[str, Any] = convert_to_chat_message(raw_message)
+            yield chat_message
 
     def get_logger(self) -> StreamToLogger:
         """
