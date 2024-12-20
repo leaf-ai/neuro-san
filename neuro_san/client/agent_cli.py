@@ -66,44 +66,10 @@ class AgentCli:
             sly_data = json.loads(self.args.sly_data)
             print(f"sly_data is {sly_data}")
 
-        state: Dict[str, Any] = {
-            "last_logs": [],
-            "last_chat_response": None,
-            "prompt": self.default_prompt,
-            "timeout": self.input_timeout_seconds
-        }
-
-        print("To see the thinking involved with the agent:\n"
-              f"    tail -f {self.args.thinking_file}\n")
-
-        empty: Dict[str, Any] = {}
-        response: Dict[str, Any] = self.session.function(empty)
-        function: Dict[str, Any] = response.get("function", empty)
-        initial_prompt: str = function.get("description")
-        print(f"\n{initial_prompt}\n")
-
-        while user_input != "quit":
-
-            prompt = state.get("prompt")
-            timeout = state.get("timeout")
-            if user_input is None:
-                if prompt is not None and len(prompt) > 0:
-                    user_input = timedinput(prompt, timeout=timeout,
-                                            default=self.default_input)
-                else:
-                    user_input = None
-
-            if user_input == "quit":
-                break
-
-            if user_input is not None and user_input != self.default_input:
-                print(f"Sending user_input {user_input}")
-                self.send_user_input(user_input, sly_data)
-                user_input = None
-            else:
-                sleep(self.poll_timeout_seconds)
-
-            state = self.get_responses(state)
+        if self.args.stream:
+            self.streaming_loop(user_input, sly_data)
+        else:
+            self.polling_loop(user_input, sly_data)
 
     def parse_args(self):
         """
@@ -198,6 +164,52 @@ All choices require an agent name.
         """
         return AgentSessionFactory()
 
+    def polling_loop(self, user_input: str, sly_data: Dict[str, Any]):
+        """
+        Use polling strategy to communicate with agent.
+        :param user_input: The initial (string) user input to the loop.
+        :param sly_data: The initial dictionary of private sly_data to send.
+        """
+
+        state: Dict[str, Any] = {
+            "last_logs": [],
+            "last_chat_response": None,
+            "prompt": self.default_prompt,
+            "timeout": self.input_timeout_seconds
+        }
+
+        print("To see the thinking involved with the agent:\n"
+              f"    tail -f {self.args.thinking_file}\n")
+
+        empty: Dict[str, Any] = {}
+        response: Dict[str, Any] = self.session.function(empty)
+        function: Dict[str, Any] = response.get("function", empty)
+        initial_prompt: str = function.get("description")
+        print(f"\n{initial_prompt}\n")
+
+        while user_input != "quit":
+
+            prompt = state.get("prompt")
+            timeout = state.get("timeout")
+            if user_input is None:
+                if prompt is not None and len(prompt) > 0:
+                    user_input = timedinput(prompt, timeout=timeout,
+                                            default=self.default_input)
+                else:
+                    user_input = None
+
+            if user_input == "quit":
+                break
+
+            if user_input is not None and user_input != self.default_input:
+                print(f"Sending user_input {user_input}")
+                self.send_user_input(user_input, sly_data)
+                user_input = None
+            else:
+                sleep(self.poll_timeout_seconds)
+
+            state = self.get_responses(state)
+
     def send_user_input(self, user_input: str, sly_data: Dict[str, Any]):
         """
         Sends user input to Agent service
@@ -270,6 +282,12 @@ All choices require an agent name.
         }
         return return_state
 
+    def streaming_loop(self, user_input: str, sly_data: Dict[str, Any]):
+        """
+        Use polling strategy to communicate with agent.
+        :param user_input: The initial (string) user input to the loop.
+        :param sly_data: The initial dictionary of private sly_data to send.
+        """
 
 if __name__ == '__main__':
     AgentCli().main()
