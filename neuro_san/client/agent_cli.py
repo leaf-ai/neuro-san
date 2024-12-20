@@ -9,8 +9,11 @@
 # neuro-san SDK Software in commercial settings.
 #
 # END COPYRIGHT
+
 from typing import Any
 from typing import Dict
+from typing import Tuple
+
 from time import sleep
 
 import argparse
@@ -66,10 +69,44 @@ class AgentCli:
             sly_data = json.loads(self.args.sly_data)
             print(f"sly_data is {sly_data}")
 
-        if self.args.stream:
-            self.streaming_loop(user_input, sly_data)
-        else:
-            self.polling_loop(user_input, sly_data)
+        empty: Dict[str, Any] = {}
+        response: Dict[str, Any] = self.session.function(empty)
+        function: Dict[str, Any] = response.get("function", empty)
+        initial_prompt: str = function.get("description")
+        print(f"\n{initial_prompt}\n")
+
+        print("To see the thinking involved with the agent:\n"
+              f"    tail -f {self.args.thinking_file}\n")
+
+        state: Dict[str, Any] = {
+            "last_logs": [],
+            "last_chat_response": None,
+            "prompt": self.default_prompt,
+            "timeout": self.input_timeout_seconds,
+            "user_input": user_input,
+            "sly_data": sly_data,
+        }
+
+        while state.get("user_input") != "quit":
+
+            prompt = state.get("prompt")
+            timeout = state.get("timeout")
+            user_input = state.get("user_input")
+            if user_input is None:
+                if prompt is not None and len(prompt) > 0:
+                    user_input = timedinput(prompt, timeout=timeout,
+                                            default=self.default_input)
+                else:
+                    user_input = None
+
+            if user_input == "quit":
+                break
+
+            state["user_input"] = user_input
+            if self.args.stream:
+                state = self.stream_once(state)
+            else:
+                state = self.poll_once(state)
 
     def parse_args(self):
         """
@@ -164,51 +201,24 @@ All choices require an agent name.
         """
         return AgentSessionFactory()
 
-    def polling_loop(self, user_input: str, sly_data: Dict[str, Any]):
+    def poll_once(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """
         Use polling strategy to communicate with agent.
         :param user_input: The initial (string) user input to the loop.
         :param sly_data: The initial dictionary of private sly_data to send.
         """
+        user_input: str = state.get("user_input")
+        sly_data: Dict[str, Any] = state.get("sly_data")
 
-        state: Dict[str, Any] = {
-            "last_logs": [],
-            "last_chat_response": None,
-            "prompt": self.default_prompt,
-            "timeout": self.input_timeout_seconds
-        }
+        if user_input is not None and user_input != self.default_input:
+            print(f"Sending user_input {user_input}")
+            self.send_user_input(user_input, sly_data)
+            state["user_input"] = None
+        else:
+            sleep(self.poll_timeout_seconds)
 
-        print("To see the thinking involved with the agent:\n"
-              f"    tail -f {self.args.thinking_file}\n")
-
-        empty: Dict[str, Any] = {}
-        response: Dict[str, Any] = self.session.function(empty)
-        function: Dict[str, Any] = response.get("function", empty)
-        initial_prompt: str = function.get("description")
-        print(f"\n{initial_prompt}\n")
-
-        while user_input != "quit":
-
-            prompt = state.get("prompt")
-            timeout = state.get("timeout")
-            if user_input is None:
-                if prompt is not None and len(prompt) > 0:
-                    user_input = timedinput(prompt, timeout=timeout,
-                                            default=self.default_input)
-                else:
-                    user_input = None
-
-            if user_input == "quit":
-                break
-
-            if user_input is not None and user_input != self.default_input:
-                print(f"Sending user_input {user_input}")
-                self.send_user_input(user_input, sly_data)
-                user_input = None
-            else:
-                sleep(self.poll_timeout_seconds)
-
-            state = self.get_responses(state)
+        state: Dict[str, Any]  = self.get_responses(state)
+        return state
 
     def send_user_input(self, user_input: str, sly_data: Dict[str, Any]):
         """
@@ -282,12 +292,16 @@ All choices require an agent name.
         }
         return return_state
 
-    def streaming_loop(self, user_input: str, sly_data: Dict[str, Any]):
+    def stream_once(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """
         Use polling strategy to communicate with agent.
         :param user_input: The initial (string) user input to the loop.
         :param sly_data: The initial dictionary of private sly_data to send.
         """
+        user_input: str = state.get("user_input")
+        sly_data: Dict[str, Any] = state.get("sly_data")
+
+        return state
 
 if __name__ == '__main__':
     AgentCli().main()
