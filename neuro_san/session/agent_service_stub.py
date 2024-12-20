@@ -94,6 +94,11 @@ class AgentServiceStub:
                 request_serializer=agent__pb2.ResetRequest.SerializeToString,
                 response_deserializer=agent__pb2.ResetResponse.FromString,
                 )
+        self.StreamingChat = channel.unary_stream(
+                f"/{service_name}/StreamingChat",
+                request_serializer=agent__pb2.ChatRequest.SerializeToString,
+                response_deserializer=agent__pb2.ChatResponse.FromString,
+                )
 
         return self
 

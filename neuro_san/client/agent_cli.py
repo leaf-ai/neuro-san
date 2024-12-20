@@ -12,7 +12,7 @@
 
 from typing import Any
 from typing import Dict
-from typing import Tuple
+from typing import List
 
 from time import sleep
 
@@ -217,7 +217,7 @@ All choices require an agent name.
         else:
             sleep(self.poll_timeout_seconds)
 
-        state: Dict[str, Any]  = self.get_responses(state)
+        state: Dict[str, Any] = self.get_responses(state)
         return state
 
     def send_user_input(self, user_input: str, sly_data: Dict[str, Any]):
@@ -299,9 +299,51 @@ All choices require an agent name.
         :param sly_data: The initial dictionary of private sly_data to send.
         """
         user_input: str = state.get("user_input")
-        sly_data: Dict[str, Any] = state.get("sly_data")
+        last_logs = state.get("last_logs")
+        last_chat_response = state.get("last_chat_response")
+        prompt = state.get("prompt")
 
-        return state
+        if user_input is None or user_input == self.default_input:
+            return state
+
+        print(f"Sending user_input {user_input}")
+        chat_request = {
+            "session_id": self.session_id,
+            "user_input": user_input
+        }
+
+        sly_data: Dict[str, Any] = state.get("sly_data")
+        if sly_data is not None and len(sly_data.keys()) > 0:
+            chat_request["sly_data"] = sly_data
+
+        empty = {}
+        chat_responses: List[Dict[str, Any]] = self.session.streaming_chat(chat_request)
+        for chat_response in chat_responses:
+
+            session_id: str = chat_response.get("session_id")
+            response: Dict[str, Any] = chat_response.get("response", empty)
+
+            if session_id is not None:
+                self.session_id = session_id
+
+            text: str = response.get("text")
+
+            # Update chat response and maybe prompt.
+            prompt = ""
+            if text is not None:
+                print(f"Response: {text}")
+                prompt = self.default_prompt
+                last_chat_response = text
+
+            return_state: Dict[str, Any] = {
+                "last_logs": last_logs,
+                "last_chat_response": last_chat_response,
+                "prompt": prompt,
+                "timeout": self.input_timeout_seconds
+            }
+
+        return return_state
+
 
 if __name__ == '__main__':
     AgentCli().main()

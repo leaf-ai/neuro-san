@@ -16,6 +16,9 @@ from typing import List
 
 import traceback
 
+from asyncio.tasks import wait_for
+from asyncio.queues import Queue
+from collections.abc import AsyncIterator
 from datetime import datetime
 
 from openai import BadRequestError
@@ -57,6 +60,7 @@ class DataDrivenChatSession(ChatSession):
         self.latest_response = None
         self.last_input_timestamp = datetime.now()
         self.sly_data: Dict[str, Any] = {}
+        self.queue: Queue[Dict[str, Any]] = Queue()
 
         if setup:
             self.set_up()
@@ -136,19 +140,52 @@ class DataDrivenChatSession(ChatSession):
 
         return iter(chat_messages)
 
-    async def streaming_chat(self, user_input: str, sly_data: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
+    async def streaming_chat(self, user_input: str, sly_data: Dict[str, Any]):
         """
         Main streaming entry-point method for accepting new user input
 
         :param user_input: A string with the user's input
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be None.
-        :return: An Iterator of chat.ChatMessage dictionaries
         """
-
-        chat_messages: Iterator[Dict[str, Any]] = self.chat(user_input, sly_data)
+        # Queue Producer from this:
+        #   https://stackoverflow.com/questions/74130544/asyncio-yielding-results-from-multiple-futures-as-they-arrive
+        # DEF - These put()s will eventually be pushed down into the library.
+        chat_messages: Iterator[Dict[str, Any]] = await self.chat(user_input, sly_data)
         for chat_message in chat_messages:
-            yield chat_message
+            # The consumer await-s for self.queue.get()
+            await self.queue.put(chat_message)
+
+        end_dict = {"end": True}
+        await self.queue.put(end_dict)
+
+    async def queue_consumer(self, timeout_in_seconds: float = 0.0) -> AsyncIterator[Dict[str, Any]]:
+        """
+        Queue Consumer from this:
+            https://stackoverflow.com/questions/74130544/asyncio-yielding-results-from-multiple-futures-as-they-arrive
+
+        Loops until either the timeout is met or the end marker is seen.
+
+        :param timeout_in_seconds: Amount of time to wait until the last message comes in
+                    Default value of 0.0 waits indefinitely.
+        :return: An AsyncIterator over the messages from the agent(s).
+        """
+        done: bool = False
+        while not done:
+            try:
+                message: Dict[str, Any] = await wait_for(self.queue.get(), timeout_in_seconds)
+                done = message.get("end") is not None
+                if not done:
+                    # yield all messages except the end marker
+                    yield message
+            except TimeoutError:
+                done = True
+
+    def get_async_queue(self) -> Queue[Dict[str, Any]]:
+        """
+        :return: The asynchronous queue of chat messages from streaming_chat()
+        """
+        return self.queue
 
     def get_logger(self) -> StreamToLogger:
         """

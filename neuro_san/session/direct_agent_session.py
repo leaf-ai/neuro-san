@@ -17,6 +17,7 @@ from typing import List
 
 from copy import copy
 from asyncio import Future
+from asgiref.sync import async_to_sync
 
 from leaf_server_common.utils.asyncio_executor import AsyncioExecutor
 
@@ -323,12 +324,14 @@ class DirectAgentSession(AgentSession):
         # sockets stay open.
         future: Future = self.asyncio_executor.submit(session_id, chat_session.streaming_chat,
                                                       user_input, sly_data)
+        # Ignore the future. Live in the now.
+        _ = future
 
-        # We are assuming that the iterator returned by the result() of the Future
-        # will hang out waiting for chat.ChatMessage dictionaries to come back
-        # asynchronously from the submit() above.
-        message_iterator: Iterator[Dict[str, Any]] = future.results()
-        for message in message_iterator:
+        # The chat_session.queue_consumer() method will hang out waiting for chat.ChatMessage
+        # dictionaries to come back asynchronously from the submit() above until there
+        # are no more from the input.
+        # The async_to_sync() aspect converts the asynchronous method to a synchronous one.
+        for message in async_to_sync(chat_session.queue_consumer)():
 
             # We expect the message to be a dictionary form of chat.ChatMessage
             response_dict: Dict[str, Any] = copy(template_response_dict)
