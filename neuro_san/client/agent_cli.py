@@ -109,31 +109,10 @@ class AgentCli:
         """
         Parse command line arguments into member variables
         """
+
         arg_parser = argparse.ArgumentParser()
-        arg_parser.add_argument("--local", type=bool, default=True,
-                                help="If True (the default), assume we are running against local container")
-        arg_parser.add_argument("--host", type=str, default=None,
-                                help="hostname setting if not running locally")
-        arg_parser.add_argument("--port", type=int, default=AgentSession.DEFAULT_PORT,
-                                help="TCP/IP port to run the Agent gRPC service on")
-        arg_parser.add_argument("--agent", type=str, default="esp_decision_assistant",
-                                help="Name of the agent to talk to on the server")
-        arg_parser.add_argument("--thinking_file", type=str, default="/tmp/agent_thinking.txt",
-                                help="File that captures agent thinking. "
-                                     "This is a separate text stream from the user/assistant chat")
-        arg_parser.add_argument("--first_prompt_file", type=str,
-                                help="File that captures the first response to the input prompt")
-        arg_parser.add_argument("--sly_data", type=str,
-                                help="JSON string containing data that is out-of-band to the chat stream, "
-                                     "but is still essential to agent function")
-        arg_parser.add_argument("--connection", default="direct", type=str,
-                                choices=["service", "direct"],
-                                help="""
-The type of connection to initiate. Choices are to connect to:
-    "service"   - an agent service via gRPC. (The default).  Needs host and port.
-    "direct"    - a session via library.
-All choices require an agent name.
-""")
+
+        self.add_args(arg_parser)
 
         # Incorrectly flagged as source of Path Traversal 1, 2, 4, 5, 6
         # See destination in file_of_class.py for exception explanation.
@@ -148,6 +127,44 @@ All choices require an agent name.
         self.args.thinking_file = FileOfClass.check_file(self.args.thinking_file, "/")
         self.args.first_prompt_file = FileOfClass.check_file(self.args.first_prompt_file, "/")
 
+    def add_args(self, arg_parser: argparse.ArgumentParser):
+        """
+        Adds arguments.  Allows subclasses a chance to add their own.
+        :param arg_parser: The argparse.ArgumentParser to add.
+        """
+        arg_parser.add_argument("--local", type=bool, default=True,
+                                help="If True (the default), assume we are running against local container")
+        arg_parser.add_argument("--host", type=str, default=None,
+                                help="hostname setting if not running locally")
+        arg_parser.add_argument("--port", type=int, default=AgentSession.DEFAULT_PORT,
+                                help="TCP/IP port to run the Agent gRPC service on")
+        arg_parser.add_argument("--agent", type=str, default="esp_decision_assistant",
+                                help="Name of the agent to talk to")
+        arg_parser.add_argument("--thinking_file", type=str, default="/tmp/agent_thinking.txt",
+                                help="File that captures agent thinking. "
+                                     "This is a separate text stream from the user/assistant chat")
+        arg_parser.add_argument("--first_prompt_file", type=str,
+                                help="File that captures the first response to the input prompt")
+        arg_parser.add_argument("--sly_data", type=str,
+                                help="JSON string containing data that is out-of-band to the chat stream, "
+                                     "but is still essential to agent function")
+        arg_parser.add_argument("--stream", default=False, action="store_true",
+                                help="Use streaming chat instead of polling")
+        arg_parser.add_argument("--poll", dest="stream", action="store_false",
+                                help="Use polling chat instead of streaming")
+        arg_parser.add_argument("--connection", default="direct", type=str,
+                                choices=["service", "direct"],
+                                help="""
+The type of connection to initiate. Choices are to connect to:
+    "service"   - an agent service via gRPC. (The default).  Needs host and port.
+    "direct"    - a session via library.
+All choices require an agent name.
+""")
+        arg_parser.add_argument("--service", dest="connection", action="store_const", const="service",
+                                help="Use a service connection")
+        arg_parser.add_argument("--direct", dest="connection", action="store_const", const="direct",
+                                help="Use a direct/library call for the chat")
+
     def open_session(self):
         """
         Opens a session based on the parsed command line arguments
@@ -156,9 +173,10 @@ All choices require an agent name.
         if self.args.host is not None or not self.args.local:
             hostname = self.args.host
 
-        # Open a session
-        self.session = AgentSessionFactory.create_session(self.args.connection, self.args.agent,
-                                                          hostname, self.args.port)
+        # Open a session with the factory
+        factory: AgentSessionFactory = self.get_agent_session_factory()
+        self.session = factory.create_session(self.args.connection, self.args.agent,
+                                              hostname, self.args.port)
 
         # Clear out the previous thinking file
         #
@@ -170,6 +188,15 @@ All choices require an agent name.
         #           used inside servers which just happens to be part of a library offering.
         with open(self.args.thinking_file, "w", encoding="utf-8") as thinking:
             thinking.write("\n")
+
+    def get_agent_session_factory(self) -> AgentSessionFactory:
+        """
+        This allows subclasses to add different kinds of connections.
+
+        :return: An AgentSessionFactory instance that will allow creation of the
+                 session with the agent network.
+        """
+        return AgentSessionFactory()
 
     def send_user_input(self, user_input: str, sly_data: Dict[str, Any]):
         """
