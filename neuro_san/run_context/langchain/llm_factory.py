@@ -307,6 +307,8 @@ class LlmFactory:
                             temperature=use_config.get("temperature", DEFAULT_TEMPERATURE),
                             openai_api_key=LlmFactory.get_value_or_env(use_config, api_key,
                                                                        "OPENAI_API_KEY"),
+                            azure_endpoint=LlmFactory.get_value_or_env(use_config, "azure_endpoint",
+                                                                        "AZURE_OPENAI_ENDPOINT"),
                             openai_api_base=LlmFactory.get_value_or_env(use_config, "openai_api_base",
                                                                         "OPENAI_API_BASE"),
                             openai_api_version=LlmFactory.get_value_or_env(use_config, "openai_api_version",
