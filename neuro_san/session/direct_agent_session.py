@@ -259,6 +259,7 @@ class DirectAgentSession(AgentSession):
         }
         return response_dict
 
+    # pylint: disable=too-many-locals,too-many-statements,too-many-branches
     def streaming_chat(self, request_dict: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
         """
         :param request_dict: A dictionary version of the ChatRequest
@@ -355,7 +356,6 @@ class DirectAgentSession(AgentSession):
         if not isinstance(async_gen, AsyncIterator):
             print(f"Type of future.result() is {async_gen.__class__.__name__}")
 
-
         while not done:
             try:
 
@@ -373,6 +373,7 @@ class DirectAgentSession(AgentSession):
                 if not isinstance(awaitable, Awaitable):
                     print(f"2nd Type of future.result() is {awaitable.__class__.__name__}")
 
+                # pylint: disable=protected-access
                 future = self.asyncio_executor._loop.create_task(awaitable)
 
                 # Blocks until the future has arrived

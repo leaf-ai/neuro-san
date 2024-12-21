@@ -14,6 +14,7 @@ import os
 
 from grpc import Channel
 from grpc import UnaryUnaryMultiCallable
+from grpc import UnaryStreamMultiCallable
 
 import neuro_san.api.grpc.agent_pb2 as agent__pb2
 
@@ -44,6 +45,7 @@ class AgentServiceStub:
         self.Chat: UnaryUnaryMultiCallable = None
         self.Logs: UnaryUnaryMultiCallable = None
         self.Reset: UnaryUnaryMultiCallable = None
+        self.StreamingChat: UnaryStreamMultiCallable = None
 
     def set_agent_name(self, agent_name: str):
         """

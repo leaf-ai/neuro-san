@@ -16,7 +16,6 @@ from typing import List
 
 import traceback
 
-from asyncio.tasks import wait_for
 from asyncio.queues import Queue
 from collections.abc import AsyncIterator
 from datetime import datetime
@@ -175,10 +174,10 @@ class DataDrivenChatSession(ChatSession):
         :return: An AsyncIterator over the messages from the agent(s).
         """
         print("In queue_consumer()")
-        timeout_in_seconds: float = None
         done: bool = False
         while not done:
             try:
+                # DEF - we once called asyncio.wait_for() here to get a timeout behavior.
                 message: Dict[str, Any] = await self.queue.get()
                 if not isinstance(message, Dict):
                     print(f"object on queue is of type {message.__class__.__name__}")
