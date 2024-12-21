@@ -151,15 +151,19 @@ class DataDrivenChatSession(ChatSession):
         # Queue Producer from this:
         #   https://stackoverflow.com/questions/74130544/asyncio-yielding-results-from-multiple-futures-as-they-arrive
         # DEF - These put()s will eventually be pushed down into the library.
+        print("Calling chat()")
         chat_messages: Iterator[Dict[str, Any]] = await self.chat(user_input, sly_data)
+        print("Done Calling chat()")
         for chat_message in chat_messages:
             # The consumer await-s for self.queue.get()
+            print(f"put()ing {chat_message}")
             await self.queue.put(chat_message)
 
+        print("put()ing end message")
         end_dict = {"end": True}
         await self.queue.put(end_dict)
 
-    async def queue_consumer(self, timeout_in_seconds: float = 0.0) -> AsyncIterator[Dict[str, Any]]:
+    async def queue_consumer(self) -> AsyncIterator[Dict[str, Any]]:
         """
         Queue Consumer from this:
             https://stackoverflow.com/questions/74130544/asyncio-yielding-results-from-multiple-futures-as-they-arrive
@@ -167,19 +171,28 @@ class DataDrivenChatSession(ChatSession):
         Loops until either the timeout is met or the end marker is seen.
 
         :param timeout_in_seconds: Amount of time to wait until the last message comes in
-                    Default value of 0.0 waits indefinitely.
+                    Default value of None waits indefinitely.
         :return: An AsyncIterator over the messages from the agent(s).
         """
+        print("In queue_consumer()")
+        timeout_in_seconds: float = None
         done: bool = False
         while not done:
             try:
-                message: Dict[str, Any] = await wait_for(self.queue.get(), timeout_in_seconds)
+                message: Dict[str, Any] = await self.queue.get()
+                if not isinstance(message, Dict):
+                    print(f"object on queue is of type {message.__class__.__name__}")
+                    message = {"end": True}
+
                 done = message.get("end") is not None
                 if not done:
                     # yield all messages except the end marker
                     yield message
+
             except TimeoutError:
+                print("Timeout in waiting to consume")
                 done = True
+        print("Out queue_consumer()")
 
     def get_async_queue(self) -> Queue[Dict[str, Any]]:
         """

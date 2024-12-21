@@ -11,13 +11,15 @@
 # END COPYRIGHT
 
 from typing import Any
+from typing import AsyncIterator
+from typing import Awaitable
 from typing import Dict
 from typing import Iterator
 from typing import List
 
-from copy import copy
 from asyncio import Future
-from asgiref.sync import async_to_sync
+from copy import copy
+from time import sleep
 
 from leaf_server_common.utils.asyncio_executor import AsyncioExecutor
 
@@ -318,6 +320,7 @@ class DirectAgentSession(AgentSession):
             # Can't go on to chat, so report back early with a single value.
             # There is no ChatMessage response in the dictionary in this case
             yield template_response_dict
+            return
 
         # Create an asynchronous background task to process the user input.
         # This might take a few minutes, which can be longer than some
@@ -330,13 +333,73 @@ class DirectAgentSession(AgentSession):
         # The chat_session.queue_consumer() method will hang out waiting for chat.ChatMessage
         # dictionaries to come back asynchronously from the submit() above until there
         # are no more from the input.
-        # The async_to_sync() aspect converts the asynchronous method to a synchronous one.
-        for message in async_to_sync(chat_session.queue_consumer)():
+        # This pattern of converting results from an AsyncIterator in a synchronous
+        # method is riffed from:
+        #   https://stackoverflow.com/questions/71580727/translating-async-generator-into-sync-one
+        future: Future = None
+        done: bool = False
+        sleep_seconds: float = 0.01
 
-            # We expect the message to be a dictionary form of chat.ChatMessage
-            response_dict: Dict[str, Any] = copy(template_response_dict)
-            response_dict["response"] = message
-            yield response_dict
+        future = self.asyncio_executor.submit(session_id, chat_session.queue_consumer)
+
+        # Blocks until the future has arrived
+        while not future.done():
+            sleep(sleep_seconds)
+
+        exception = future.exception()
+        if exception is not None:
+            print(f"EXCEPTION: {exception}")
+
+        # We expect the type of the result from queue_consumer() to be an async_generator
+        async_gen: AsyncIterator = future.result()
+        if not isinstance(async_gen, AsyncIterator):
+            print(f"Type of future.result() is {async_gen.__class__.__name__}")
+
+
+        while not done:
+            try:
+
+                empty = {}
+                future = self.asyncio_executor.submit(session_id, anext, async_gen, empty)
+
+                # Blocks until the future has arrived
+                while not future.done():
+                    sleep(sleep_seconds)
+
+                exception = future.exception()
+                if exception is not None:
+                    print(f"EXCEPTION: {exception}")
+                awaitable: Awaitable = future.result()
+                if not isinstance(awaitable, Awaitable):
+                    print(f"2nd Type of future.result() is {awaitable.__class__.__name__}")
+
+                future = self.asyncio_executor._loop.create_task(awaitable)
+
+                # Blocks until the future has arrived
+                while not future.done():
+                    sleep(sleep_seconds)
+
+                exception = future.exception()
+                if exception is not None:
+                    print(f"EXCEPTION: {exception}")
+                message: Dict[str, Any] = future.result()
+                if not isinstance(message, Dict):
+                    print(f"3rd Type of future.result() is {message.__class__.__name__}")
+                    continue
+
+                if any(message):
+                    response_dict: Dict[str, Any] = copy(template_response_dict)
+                    response_dict["response"] = message
+
+                    # We expect the message to be a dictionary form of chat.ChatMessage
+                    print(f"yielding {response_dict}")
+                    yield response_dict
+                else:
+                    done = True
+
+            except StopAsyncIteration:
+                print("Stopping on StopAsyncIteration")
+                done = True
 
     def close(self):
         """
