@@ -21,7 +21,7 @@ from asyncio import Future
 from copy import copy
 from time import sleep
 
-from leaf_server_common.utils.asyncio_executor import AsyncioExecutor
+from leaf_server_common.asyncio.asyncio_executor import AsyncioExecutor
 
 from neuro_san.chat.chat_session import ChatSession
 from neuro_san.chat.data_driven_chat_session import DataDrivenChatSession

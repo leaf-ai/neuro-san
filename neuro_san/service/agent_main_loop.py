@@ -21,8 +21,8 @@ import os
 from argparse import ArgumentParser
 from pathlib import Path
 
+from leaf_server_common.asyncio.asyncio_executor import AsyncioExecutor
 from leaf_server_common.server.server_loop_callbacks import ServerLoopCallbacks
-from leaf_server_common.utils.asyncio_executor import AsyncioExecutor
 
 from neuro_san.chat.chat_session import ChatSession
 from neuro_san.graph.registry.agent_tool_registry import AgentToolRegistry

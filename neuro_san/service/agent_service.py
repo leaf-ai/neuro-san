@@ -21,9 +21,9 @@ import grpc
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.json_format import Parse
 
+from leaf_server_common.asyncio.asyncio_executor import AsyncioExecutor
 from leaf_server_common.server.grpc_metadata_forwarder import GrpcMetadataForwarder
 from leaf_server_common.server.request_logger import RequestLogger
-from leaf_server_common.utils.asyncio_executor import AsyncioExecutor
 
 from neuro_san.api.grpc import agent_pb2 as service_messages
 from neuro_san.api.grpc import agent_pb2_grpc
