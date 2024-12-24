@@ -108,6 +108,8 @@ class AgentServer:
                                          request_limit=self.request_limit,
                                          # Used for health checking. Probably needs agent-specific love.
                                          protocol_services_by_name_values=values,
+                                         # This loop_sleep_seconds somehow effects how quickly streamed
+                                         # responses come back over the wire.
                                          loop_sleep_seconds=0.5,
                                          server_loop_callbacks=self.server_loop_callbacks)
 
