@@ -196,8 +196,6 @@ class DataDrivenChatSession(ChatSession):
 
         Loops until either the timeout is met or the end marker is seen.
 
-        :param timeout_in_seconds: Amount of time to wait until the last message comes in
-                    Default value of None waits indefinitely.
         :return: An AsyncIterator over the messages from the agent(s).
         """
         done: bool = False

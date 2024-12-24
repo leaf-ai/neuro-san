@@ -58,13 +58,6 @@ class ChatSession:
 
     async def queue_consumer(self) -> AsyncIterator[Dict[str, Any]]:
         """
-        Queue Consumer from this:
-            https://stackoverflow.com/questions/74130544/asyncio-yielding-results-from-multiple-futures-as-they-arrive
-
-        Loops until either the timeout is met or the end marker is seen.
-
-        :param timeout_in_seconds: Amount of time to wait until the last message comes in
-                    Default value of None waits indefinitely.
         :return: An AsyncIterator over the messages from the agent(s).
         """
         raise NotImplementedError
