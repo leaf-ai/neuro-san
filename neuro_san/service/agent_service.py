@@ -29,6 +29,7 @@ from neuro_san.api.grpc import agent_pb2 as service_messages
 from neuro_san.api.grpc import agent_pb2_grpc
 
 from neuro_san.graph.registry.agent_tool_registry import AgentToolRegistry
+from neuro_san.service.atomic_counter import AtomicCounter
 from neuro_san.session.chat_session_map import ChatSessionMap
 from neuro_san.session.direct_agent_session import DirectAgentSession
 
@@ -80,6 +81,13 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         self.asyncio_executor: AsyncioExecutor = asyncio_executor
         self.tool_registry: AgentToolRegistry = tool_registry
         self.agent_name: str = agent_name
+        self.request_counter = AtomicCounter()
+
+    def get_request_count(self) -> int:
+        """
+        :return: The number of currently active requests
+        """
+        return self.request_counter.get_count()
 
     # pylint: disable=no-member
     def Function(self, request: service_messages.FunctionRequest,
@@ -93,6 +101,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         :param context: a grpc.ServicerContext
         :return: a FunctionResponse
         """
+        self.request_counter.increment()
         request_log = None
         log_marker: str = "function request"
         if "Function" not in DO_NOT_LOG_REQUESTS:
@@ -121,6 +130,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         if request_log is not None:
             self.request_logger.finish_request(f"{self.agent_name}.Function", log_marker, request_log)
 
+        self.request_counter.decrement()
         return response
 
     # pylint: disable=no-member
@@ -136,6 +146,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         :return: a ChatResponse which indicates that the request
                  was successful
         """
+        self.request_counter.increment()
         request_log = None
         log_marker = f"'{request.user_input}' on assistant {request.session_id}"
         if "Chat" not in DO_NOT_LOG_REQUESTS:
@@ -165,6 +176,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         if request_log is not None:
             self.request_logger.finish_request(f"{self.agent_name}.Chat", log_marker, request_log)
 
+        self.request_counter.decrement()
         return response
 
     # pylint: disable=no-member
@@ -180,6 +192,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         :return: a LogsResponse which indicates that the request
                  was successful
         """
+        self.request_counter.increment()
         request_log = None
         log_marker = f"Polling for logs on assistant {request.session_id}"
         if "Logs" not in DO_NOT_LOG_REQUESTS:
@@ -209,6 +222,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         if request_log is not None:
             self.request_logger.finish_request(f"{self.agent_name}.Logs", log_marker, request_log)
 
+        self.request_counter.decrement()
         return response
 
     # pylint: disable=no-member
@@ -223,6 +237,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         :return: a ResetResponse which indicates that the request
                  was successful
         """
+        self.request_counter.increment()
         request_log = None
         log_marker = f"Reset assistant {request.session_id}"
         if "Reset" not in DO_NOT_LOG_REQUESTS:
@@ -252,6 +267,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         if request_log is not None:
             self.request_logger.finish_request(f"{self.agent_name}.Reset", log_marker, request_log)
 
+        self.request_counter.decrement()
         return response
 
     # pylint: disable=no-member
@@ -266,6 +282,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         :param context: a grpc.ServicerContext
         :return: an iterator for (eventually) returned ChatResponses
         """
+        self.request_counter.increment()
         request_log = None
         log_marker = f"'{request.user_input}' on assistant {request.session_id}"
         if "Chat" not in DO_NOT_LOG_REQUESTS:
@@ -304,3 +321,5 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         # Log that we are done.
         if request_log is not None:
             self.request_logger.finish_request(f"{self.agent_name}.StreamingChat", log_marker, request_log)
+
+        self.request_counter.decrement()

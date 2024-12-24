@@ -11,6 +11,7 @@
 # END COPYRIGHT
 
 from typing import Dict
+from typing import List
 
 import logging
 import os
@@ -96,6 +97,10 @@ class AgentServer:
         self.server_name_for_logs: str = server_name_for_logs
         self.request_limit: int = request_limit
         self.service_prefix: str = service_prefix
+        self.services: List[AgentService] = []
+
+    def get_services(self) -> List[AgentService]:
+        return self.services
 
     def serve(self):
         """
@@ -110,7 +115,7 @@ class AgentServer:
                                          protocol_services_by_name_values=values,
                                          # This loop_sleep_seconds somehow effects how quickly streamed
                                          # responses come back over the wire.
-                                         loop_sleep_seconds=0.5,
+                                         loop_sleep_seconds=5.0,
                                          server_loop_callbacks=self.server_loop_callbacks)
 
         server = server_lifetime.create_server()
@@ -125,6 +130,8 @@ class AgentServer:
                                    self.asyncio_executor,
                                    agent_name,
                                    tool_registry)
+            self.services.append(service)
+
             servicer_to_server = AgentServicerToServer(service, agent_name=agent_name,
                                                        service_prefix=self.service_prefix)
             servicer_to_server.add_rpc_handlers(server)
