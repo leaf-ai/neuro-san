@@ -26,10 +26,13 @@ message ChatMessage {
     enum ChatMessageType {
         UNKNOWN = 0;    // Note: UNKNOWN is not a langchain thing.
         HUMAN = 1;
-        AI = 2;
-        SYSTEM = 3;
+        SYSTEM = 2;
+        AI = 3;
         TOOL = 4;
-        NEURO_SAN = 5;  // Note: NEURO_SAN is not a lanchain thing
+
+        // These are not out-of-the-box langchain messages
+        AGENT = 100;
+        AGENT_FRAMEWORK = 101;
     }
 
     // The type of chat message

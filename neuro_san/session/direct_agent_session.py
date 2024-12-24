@@ -12,7 +12,7 @@
 
 from typing import Any
 from typing import Dict
-from typing import Iterator
+from typing import Generator
 from typing import List
 
 from copy import copy
@@ -256,7 +256,7 @@ class DirectAgentSession(AgentSession):
         }
         return response_dict
 
-    def streaming_chat(self, request_dict: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
+    def streaming_chat(self, request_dict: Dict[str, Any]) -> Generator[Dict[str, Any], None, None]:
         """
         :param request_dict: A dictionary version of the ChatRequest
                     protobufs structure. Has the following keys:
