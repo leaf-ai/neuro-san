@@ -157,7 +157,7 @@ class DataDrivenChatSession(ChatSession):
         for index, chat_message in enumerate(chat_messages):
 
             # For now filter what we send in the service.
-            # This responsibility will eventually largely move to the client. 
+            # This responsibility will eventually largely move to the client.
             if self.is_streamable_message(chat_message, index):
                 # The consumer await-s for self.queue.get()
                 await self.queue.put(chat_message)
@@ -211,6 +211,8 @@ class DataDrivenChatSession(ChatSession):
                     print(f"object on queue is of type {message.__class__.__name__}")
                     message = {"end": True}
 
+                # Look for a special end-marker dictionary in the queue that signals
+                # there will be no more messages.
                 done = message.get("end") is not None
                 if not done:
                     # yield all messages except the end marker
