@@ -231,7 +231,7 @@ All choices require an agent name.
                 "session_id": self.session_id,
                 "user_message": {
                     "type": 1,      # HUMAN from chat.proto
-                    "test": user_input
+                    "text": user_input
                 }
             }
 
