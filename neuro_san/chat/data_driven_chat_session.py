@@ -216,12 +216,6 @@ class DataDrivenChatSession(ChatSession):
                 print("Timeout in waiting to consume")
                 done = True
 
-    def get_async_queue(self) -> Queue[Dict[str, Any]]:
-        """
-        :return: The asynchronous queue of chat messages from streaming_chat()
-        """
-        return self.queue
-
     def get_logger(self) -> StreamToLogger:
         """
         :return: The StreamToLogger which has been capturing all the "thinking" messages.
