@@ -315,6 +315,11 @@ class LlmFactory:
                                                                      "OPENAI_PROXY"),
                             openai_api_type=LlmFactory.get_value_or_env(use_config, "openai_api_type",
                                                                         "OPENAI_API_TYPE"),
+                            azure_endpoint=LlmFactory.get_value_or_env(use_config, "azure_endpoint",
+                                                                       "AZURE_OPENAI_ENDPOINT"),
+                            # AD here means "ActiveDirectory"
+                            azure_ad_token=LlmFactory.get_value_or_env(use_config, "azure_ad_token",
+                                                                       "AZURE_OPENAI_AD_TOKEN"),
                             max_tokens=use_max_tokens,
                             model_name=use_model_name)
         elif base_class == ChatAnthropic:
