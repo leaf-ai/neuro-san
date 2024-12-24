@@ -108,7 +108,7 @@ class AgentServer:
                                          request_limit=self.request_limit,
                                          # Used for health checking. Probably needs agent-specific love.
                                          protocol_services_by_name_values=values,
-                                         loop_sleep_seconds=5,
+                                         loop_sleep_seconds=0.5,
                                          server_loop_callbacks=self.server_loop_callbacks)
 
         server = server_lifetime.create_server()
