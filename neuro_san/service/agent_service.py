@@ -40,6 +40,7 @@ DO_NOT_LOG_REQUESTS = [
 ]
 
 
+# pylint: disable=too-many-instance-attributes
 class AgentService(agent_pb2_grpc.AgentServiceServicer):
     """
     A gRPC implementation of the Neuro-San Agent Service.

@@ -100,6 +100,9 @@ class AgentServer:
         self.services: List[AgentService] = []
 
     def get_services(self) -> List[AgentService]:
+        """
+        :return: A list of the AgentServices being served up by this instance
+        """
         return self.services
 
     def serve(self):

@@ -31,6 +31,7 @@ from neuro_san.utils.agent_framework_message import AgentFrameworkMessage
 from neuro_san.utils.stream_to_logger import StreamToLogger
 
 
+# pylint: disable=too-many-instance-attributes
 class DataDrivenChatSession(ChatSession):
     """
     ChatSession implementation that consolidates policy
