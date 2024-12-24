@@ -7,12 +7,12 @@ from typing import Union
 from langchain_core.messages.base import BaseMessage
 
 
-class NeuroSanMessage(BaseMessage):
+class AgentFrameworkMessage(BaseMessage):
     """
-    BaseMessage implementation of a message from neuro-san
+    BaseMessage implementation of a message from the agent framework
     """
 
-    type: Literal["neuro-san"] = "neuro-san"
+    type: Literal["agent-framework"] = "agent-framework"
 
     def __init__(self, content: Union[str, List[Union[str, Dict]]], **kwargs: Any) -> None:
         """

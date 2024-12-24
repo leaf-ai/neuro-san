@@ -27,7 +27,7 @@ from neuro_san.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.graph.tools.front_man import FrontMan
 from neuro_san.utils.message_utils import convert_to_chat_message
 from neuro_san.utils.message_utils import pretty_the_messages
-from neuro_san.utils.neuro_san_message import NeuroSanMessage
+from neuro_san.utils.agent_framework_message import AgentFrameworkMessage
 from neuro_san.utils.stream_to_logger import StreamToLogger
 
 
@@ -124,7 +124,7 @@ class DataDrivenChatSession(ChatSession):
             # while it is still working on a previous message that has not
             # yet returned.
             raw_messages: List[Any] = [
-                NeuroSanMessage(content="Patience, please. I'm working on it.")
+                AgentFrameworkMessage(content="Patience, please. I'm working on it.")
             ]
             print(traceback.format_exc())
 
