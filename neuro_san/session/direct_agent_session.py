@@ -344,10 +344,7 @@ class DirectAgentSession(AgentSession):
                 response_dict["response"] = message
 
             # We expect the message to be a dictionary form of chat.ChatMessage
-            print(f"yielding {response_dict}")
             yield response_dict
-
-        print("Done with streaming_chat()")
 
     def close(self):
         """
