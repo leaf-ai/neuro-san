@@ -12,6 +12,7 @@
 
 from typing import Any
 from typing import Dict
+from typing import Generator
 from typing import List
 
 from leaf_server_common.utils.asyncio_executor import AsyncioExecutor
@@ -249,7 +250,7 @@ class DirectAgentSession(AgentSession):
         }
         return response_dict
 
-    def streaming_chat(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
+    def streaming_chat(self, request_dict: Dict[str, Any]) -> Generator[Dict[str, Any], None, None]:
         """
         :param request_dict: A dictionary version of the ChatRequest
                     protobufs structure. Has the following keys:
@@ -258,7 +259,7 @@ class DirectAgentSession(AgentSession):
                               Upon first contact this can be blank.
             "user_input"    - A string representing the user input to the chat stream
 
-        :return: A dictionary version of the ChatResponse
+        :return: An iterator of dictionary versions of the ChatResponse
                     protobufs structure. Has the following keys:
             "session_id"  - A string UUID identifying the root ownership of the
                               chat session's resources.
@@ -277,8 +278,8 @@ class DirectAgentSession(AgentSession):
                                           of new chat by client) and a new chat session is created.
             "response"      - An optional ChatMessage dictionary.  See chat.proto for details.
 
-            Note that responses to the chat input are asynchronous and come by polling the
-            logs() method below.
+            Note that responses to the chat input might be numerous and will come as they
+            are produced until the system decides there are no more messages to be sent.
         """
         raise NotImplementedError
 
