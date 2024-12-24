@@ -10,6 +10,7 @@
 #
 # END COPYRIGHT
 from typing import Any
+from typing import AsyncIterator
 from typing import Dict
 from typing import Iterator
 
@@ -44,14 +45,27 @@ class ChatSession:
         """
         raise NotImplementedError
 
-    async def streaming_chat(self, user_input: str, sly_data: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
+    async def streaming_chat(self, user_input: str, sly_data: Dict[str, Any]):
         """
         Main entry-point method for accepting new user input
 
         :param user_input: A string with the user's input
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be None.
-        :return: An Iterator of chat.ChatMessage dictionaries
+        :return: Nothing.  Response values are put on a queue to be read by a call to queue_consumer()
+        """
+        raise NotImplementedError
+
+    async def queue_consumer(self) -> AsyncIterator[Dict[str, Any]]:
+        """
+        Queue Consumer from this:
+            https://stackoverflow.com/questions/74130544/asyncio-yielding-results-from-multiple-futures-as-they-arrive
+
+        Loops until either the timeout is met or the end marker is seen.
+
+        :param timeout_in_seconds: Amount of time to wait until the last message comes in
+                    Default value of None waits indefinitely.
+        :return: An AsyncIterator over the messages from the agent(s).
         """
         raise NotImplementedError
 

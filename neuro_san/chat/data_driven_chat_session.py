@@ -148,6 +148,7 @@ class DataDrivenChatSession(ChatSession):
         :param user_input: A string with the user's input
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be None.
+        :return: Nothing.  Response values are put on a queue to be read by a call to queue_consumer()
         """
         # Queue Producer from this:
         #   https://stackoverflow.com/questions/74130544/asyncio-yielding-results-from-multiple-futures-as-they-arrive
