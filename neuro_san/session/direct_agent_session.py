@@ -13,11 +13,12 @@
 from typing import Any
 from typing import Dict
 from typing import Generator
-from typing import Iterator
 from typing import List
 
 from asyncio import Future
 from copy import copy
+
+from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
 from leaf_server_common.asyncio.asyncio_executor import AsyncioExecutor
 from leaf_server_common.asyncio.async_to_sync_generator import AsyncToSyncGenerator
@@ -127,7 +128,12 @@ class DirectAgentSession(AgentSession):
             Note that responses to the chat input are asynchronous and come by polling the
             logs() method below.
         """
+        extractor = DictionaryExtractor(request_dict)
+
+        # Get the user input. Prefer the newer-style from the user_message
         user_input: str = request_dict.get("user_input")
+        user_input = extractor.get("user_message.text", user_input)
+
         session_id: str = request_dict.get("session_id")
         sly_data: Dict[str, Any] = request_dict.get("sly_data")
         status: int = self.NOT_FOUND
@@ -290,7 +296,12 @@ class DirectAgentSession(AgentSession):
             Note that responses to the chat input might be numerous and will come as they
             are produced until the system decides there are no more messages to be sent.
         """
+        extractor = DictionaryExtractor(request_dict)
+
+        # Get the user input. Prefer the newer-style from the user_message
         user_input: str = request_dict.get("user_input")
+        user_input = extractor.get("user_message.text", user_input)
+
         session_id: str = request_dict.get("session_id")
         sly_data: Dict[str, Any] = request_dict.get("sly_data")
         status: int = self.NOT_FOUND

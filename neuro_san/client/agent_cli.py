@@ -229,7 +229,10 @@ All choices require an agent name.
         if user_input != self.default_input:
             chat_request = {
                 "session_id": self.session_id,
-                "user_input": user_input
+                "user_message": {
+                    "type": 1,      # HUMAN from chat.proto
+                    "test": user_input
+                }
             }
 
             if sly_data is not None and len(sly_data.keys()) > 0:
@@ -310,7 +313,10 @@ All choices require an agent name.
         print(f"Sending user_input {user_input}")
         chat_request = {
             "session_id": self.session_id,
-            "user_input": user_input
+            "user_message": {
+                "type": 1,      # HUMAN from chat.proto
+                "text": user_input
+            }
         }
 
         sly_data: Dict[str, Any] = state.get("sly_data")
