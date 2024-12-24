@@ -11,17 +11,15 @@
 # END COPYRIGHT
 
 from typing import Any
-from typing import AsyncIterator
-from typing import Awaitable
 from typing import Dict
 from typing import Iterator
 from typing import List
 
 from asyncio import Future
 from copy import copy
-from time import sleep
 
 from leaf_server_common.asyncio.asyncio_executor import AsyncioExecutor
+from leaf_server_common.asyncio.async_to_sync_generator import AsyncToSyncGenerator
 
 from neuro_san.chat.chat_session import ChatSession
 from neuro_san.chat.data_driven_chat_session import DataDrivenChatSession
@@ -334,73 +332,22 @@ class DirectAgentSession(AgentSession):
         # The chat_session.queue_consumer() method will hang out waiting for chat.ChatMessage
         # dictionaries to come back asynchronously from the submit() above until there
         # are no more from the input.
-        # This pattern of converting results from an AsyncIterator in a synchronous
-        # method is riffed from:
-        #   https://stackoverflow.com/questions/71580727/translating-async-generator-into-sync-one
-        future: Future = None
-        done: bool = False
-        sleep_seconds: float = 0.01
+        empty: Dict[str, Any] = {}
+        generator = AsyncToSyncGenerator(self.asyncio_executor, session_id,
+                                         generated_type=Dict,
+                                         keep_alive_result=empty,
+                                         keep_alive_timeout_seconds=10.0)
+        for message in generator.synchronously_generate(chat_session.queue_consumer):
 
-        future = self.asyncio_executor.submit(session_id, chat_session.queue_consumer)
+            response_dict: Dict[str, Any] = copy(template_response_dict)
+            if any(message):
+                response_dict["response"] = message
 
-        # Blocks until the future has arrived
-        while not future.done():
-            sleep(sleep_seconds)
+            # We expect the message to be a dictionary form of chat.ChatMessage
+            print(f"yielding {response_dict}")
+            yield response_dict
 
-        exception = future.exception()
-        if exception is not None:
-            print(f"EXCEPTION: {exception}")
-
-        # We expect the type of the result from queue_consumer() to be an async_generator
-        async_gen: AsyncIterator = future.result()
-        if not isinstance(async_gen, AsyncIterator):
-            print(f"Type of future.result() is {async_gen.__class__.__name__}")
-
-        while not done:
-            try:
-
-                empty = {}
-                future = self.asyncio_executor.submit(session_id, anext, async_gen, empty)
-
-                # Blocks until the future has arrived
-                while not future.done():
-                    sleep(sleep_seconds)
-
-                exception = future.exception()
-                if exception is not None:
-                    print(f"EXCEPTION: {exception}")
-                awaitable: Awaitable = future.result()
-                if not isinstance(awaitable, Awaitable):
-                    print(f"2nd Type of future.result() is {awaitable.__class__.__name__}")
-
-                # pylint: disable=protected-access
-                future = self.asyncio_executor._loop.create_task(awaitable)
-
-                # Blocks until the future has arrived
-                while not future.done():
-                    sleep(sleep_seconds)
-
-                exception = future.exception()
-                if exception is not None:
-                    print(f"EXCEPTION: {exception}")
-                message: Dict[str, Any] = future.result()
-                if not isinstance(message, Dict):
-                    print(f"3rd Type of future.result() is {message.__class__.__name__}")
-                    continue
-
-                if any(message):
-                    response_dict: Dict[str, Any] = copy(template_response_dict)
-                    response_dict["response"] = message
-
-                    # We expect the message to be a dictionary form of chat.ChatMessage
-                    print(f"yielding {response_dict}")
-                    yield response_dict
-                else:
-                    done = True
-
-            except StopAsyncIteration:
-                print("Stopping on StopAsyncIteration")
-                done = True
+        print("Done with streaming_chat()")
 
     def close(self):
         """

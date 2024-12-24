@@ -12,6 +12,7 @@
 
 from typing import Any
 from typing import Dict
+from typing import Generator
 from typing import List
 
 from time import sleep
@@ -71,6 +72,7 @@ class AgentCli:
 
         empty: Dict[str, Any] = {}
         response: Dict[str, Any] = self.session.function(empty)
+
         function: Dict[str, Any] = response.get("function", empty)
         initial_prompt: str = function.get("description")
         print(f"\n{initial_prompt}\n")
@@ -317,7 +319,7 @@ All choices require an agent name.
             chat_request["sly_data"] = sly_data
 
         empty = {}
-        chat_responses: List[Dict[str, Any]] = self.session.streaming_chat(chat_request)
+        chat_responses: Generator[Dict[str, Any], None, None] = self.session.streaming_chat(chat_request)
         for chat_response in chat_responses:
 
             session_id: str = chat_response.get("session_id")
