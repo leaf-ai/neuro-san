@@ -12,6 +12,7 @@
 
 from typing import Any
 from typing import Dict
+from typing import Iterator
 
 import json
 
@@ -256,7 +257,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
     # pylint: disable=no-member
     def StreamingChat(self, request: service_messages.ChatRequest,
                       context: grpc.ServicerContext) \
-            -> service_messages.ChatResponse:
+            -> Iterator[service_messages.ChatResponse]:
         """
         Initiates or continues the agent chat with the session_id
         context in the request.
@@ -268,7 +269,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         """
         request_log = None
         log_marker = f"'{request.user_input}' on assistant {request.session_id}"
-        if "Chat" not in DO_NOT_LOG_REQUESTS:
+        if "StreamingChat" not in DO_NOT_LOG_REQUESTS:
             request_log = self.request_logger.start_request(f"{self.agent_name}.StreamingChat",
                                                             log_marker, context)
 
@@ -288,6 +289,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         response_dict["request"] = request_dict
 
         # Convert the response dictionary to a grpc message
+        # DEF - this will get better
         response_string = json.dumps(response_dict)
         response = service_messages.ChatResponse()
         Parse(response_string, response)
