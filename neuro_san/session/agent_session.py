@@ -12,7 +12,7 @@
 
 from typing import Any
 from typing import Dict
-from typing import Iterator
+from typing import Generator
 
 
 class AgentSession:
@@ -129,7 +129,7 @@ class AgentSession:
         """
         raise NotImplementedError
 
-    def streaming_chat(self, request_dict: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
+    def streaming_chat(self, request_dict: Dict[str, Any]) -> Generator[Dict[str, Any], None, None]:
         """
         :param request_dict: A dictionary version of the ChatRequest
                     protobufs structure. Has the following keys:
