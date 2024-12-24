@@ -26,8 +26,8 @@ message ChatMessage {
     enum ChatMessageType {
         UNKNOWN = 0;    // Note: UNKNOWN is not a langchain thing.
         HUMAN = 1;
-        AI = 2;
-        SYSTEM = 3;
+        SYSTEM = 2;
+        AI = 3;
         TOOL = 4;
 
         // These are not out-of-the-box langchain messages

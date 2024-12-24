@@ -60,6 +60,7 @@ class DataDrivenChatSession(ChatSession):
         self.last_input_timestamp = datetime.now()
         self.sly_data: Dict[str, Any] = {}
         self.queue: Queue[Dict[str, Any]] = Queue()
+        self.last_streamed_index: int = 0
 
         if setup:
             self.set_up()
@@ -150,17 +151,41 @@ class DataDrivenChatSession(ChatSession):
         # Queue Producer from this:
         #   https://stackoverflow.com/questions/74130544/asyncio-yielding-results-from-multiple-futures-as-they-arrive
         # DEF - These put()s will eventually be pushed down into the library.
-        print("Calling chat()")
         chat_messages: Iterator[Dict[str, Any]] = await self.chat(user_input, sly_data)
-        print("Done Calling chat()")
-        for chat_message in chat_messages:
-            # The consumer await-s for self.queue.get()
-            print(f"put()ing {chat_message}")
-            await self.queue.put(chat_message)
+        for index, chat_message in enumerate(chat_messages):
 
-        print("put()ing end message")
+            if self.is_streamable_message(chat_message, index):
+                # The consumer await-s for self.queue.get()
+                await self.queue.put(chat_message)
+                self.last_streamed_index = index
+
         end_dict = {"end": True}
         await self.queue.put(end_dict)
+
+    def is_streamable_message(self, chat_message: Dict[str, Any], index: int) -> bool:
+        """
+        Filter chat messages from the full logs that are in/appropriate for streaming.
+
+        :param chat_message: A Chat message dictionary of the form in chat.ChatMessage proto
+        :param index: The place in the chat history the message has
+        :return: True if the given message should be streamed back. False if not.
+        """
+
+        # This comes from definitions in chat.proto
+        ai_message_type: int = 3
+
+        message_type: int = chat_message.get("type")
+
+        # Only report messages that are important enough to send back as part of chat
+        # (for now).  This includes any response for an AI (read: LLM), a tool, or
+        # agent or framework messages.
+        if message_type is None or message_type < ai_message_type:
+            return False
+
+        if index <= self.last_streamed_index:
+            return False
+
+        return True
 
     async def queue_consumer(self) -> AsyncIterator[Dict[str, Any]]:
         """
@@ -173,7 +198,6 @@ class DataDrivenChatSession(ChatSession):
                     Default value of None waits indefinitely.
         :return: An AsyncIterator over the messages from the agent(s).
         """
-        print("In queue_consumer()")
         done: bool = False
         while not done:
             try:
@@ -191,7 +215,6 @@ class DataDrivenChatSession(ChatSession):
             except TimeoutError:
                 print("Timeout in waiting to consume")
                 done = True
-        print("Out queue_consumer()")
 
     def get_async_queue(self) -> Queue[Dict[str, Any]]:
         """

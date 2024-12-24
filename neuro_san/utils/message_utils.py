@@ -139,8 +139,8 @@ def get_content(message: Any) -> str:
 MESSAGE_TYPE_TO_CHAT_MESSAGE_TYPE: Dict[Type[BaseMessage], int] = {
     # Needs to match chat.proto
     HumanMessage: 1,
-    AIMessage: 2,
-    SystemMessage: 3,
+    SystemMessage: 2,
+    AIMessage: 3,
     ToolMessage: 4,
 
     AgentMessage: 100,
