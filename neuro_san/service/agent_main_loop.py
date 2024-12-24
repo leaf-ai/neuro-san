@@ -194,10 +194,14 @@ class AgentMainLoop(ServerLoopCallbacks):
         """
         self.chat_session_map.prune()
 
+        # Report back on service activity so the ServerLifetime that calls
+        # this method can properly yield/sleep depending on how many requests
+        # are in motion.
         agent_services: List[AgentService] = self.server.get_services()
         for agent_service in agent_services:
             if agent_service.get_request_count() > 0:
                 return True
+
         return False
 
     def shutdown_callback(self):
