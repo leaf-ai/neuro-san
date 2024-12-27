@@ -52,7 +52,8 @@ class ChatSession:
         :param user_input: A string with the user's input
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be None.
-        :return: Nothing.  Response values are put on a queue to be read by a call to queue_consumer()
+        :return: Nothing.  Response values are put on a queue whose consumtion is
+                managed by AsyncQueueIterator returned by get_queue_iterator().
         """
         raise NotImplementedError
 
