@@ -14,6 +14,7 @@ from typing import Any
 from typing import Dict
 from typing import Generator
 
+from copy import copy
 from time import sleep
 
 import argparse
@@ -277,7 +278,7 @@ All choices require an agent name.
                 # Might be more than 1
                 for i in range(len(last_logs), len(logs)-1):
                     thinking.write(logs[i])
-            last_logs = logs
+            last_logs = copy(logs)
 
         # Update chat response and maybe prompt.
         prompt = ""
