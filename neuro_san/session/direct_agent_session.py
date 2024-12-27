@@ -23,6 +23,7 @@ from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 from leaf_server_common.asyncio.asyncio_executor import AsyncioExecutor
 from leaf_server_common.asyncio.async_to_sync_generator import AsyncToSyncGenerator
 
+from neuro_san.chat.async_queue_iterator import AsyncQueueIterator
 from neuro_san.chat.chat_session import ChatSession
 from neuro_san.chat.data_driven_chat_session import DataDrivenChatSession
 from neuro_san.graph.registry.agent_tool_registry import AgentToolRegistry
@@ -349,7 +350,8 @@ class DirectAgentSession(AgentSession):
                                          generated_type=Dict,
                                          keep_alive_result=empty,
                                          keep_alive_timeout_seconds=10.0)
-        for message in generator.synchronously_generate(chat_session.queue_consumer):
+        queue_iterator: AsyncQueueIterator = chat_session.get_queue_iterator()
+        for message in generator.synchronously_iterate(queue_iterator):
 
             response_dict: Dict[str, Any] = copy(template_response_dict)
             if any(message):

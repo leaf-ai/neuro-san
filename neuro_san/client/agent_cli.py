@@ -305,7 +305,6 @@ All choices require an agent name.
         user_input: str = state.get("user_input")
         last_logs = state.get("last_logs")
         last_chat_response = state.get("last_chat_response")
-        prompt = state.get("prompt")
 
         if user_input is None or user_input == self.default_input:
             return state
@@ -323,6 +322,7 @@ All choices require an agent name.
         if sly_data is not None and len(sly_data.keys()) > 0:
             chat_request["sly_data"] = sly_data
 
+        return_state: Dict[str, Any] = {}
         empty = {}
         chat_responses: Generator[Dict[str, Any], None, None] = self.session.streaming_chat(chat_request)
         for chat_response in chat_responses:
@@ -336,16 +336,14 @@ All choices require an agent name.
             text: str = response.get("text")
 
             # Update chat response and maybe prompt.
-            prompt = ""
             if text is not None:
                 print(f"Response: {text}")
-                prompt = self.default_prompt
                 last_chat_response = text
 
-            return_state: Dict[str, Any] = {
+            return_state = {
                 "last_logs": last_logs,
                 "last_chat_response": last_chat_response,
-                "prompt": prompt,
+                "prompt": self.default_prompt,
                 "timeout": self.input_timeout_seconds
             }
 

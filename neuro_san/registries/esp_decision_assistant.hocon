@@ -82,6 +82,7 @@ As part of your query, you will declare the needed expertise, and the
 type and values of the context as well as defining the action and outcome
 attributes.
 The prescriptor function will return the list of action values for the given context.
+When communicating to tools, never use curly braces to describe choices.
 """,
             "tools": [
                 "prescriptor"

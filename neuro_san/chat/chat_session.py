@@ -10,10 +10,10 @@
 #
 # END COPYRIGHT
 from typing import Any
-from typing import AsyncIterator
 from typing import Dict
 from typing import Iterator
 
+from neuro_san.chat.async_queue_iterator import AsyncQueueIterator
 from neuro_san.utils.stream_to_logger import StreamToLogger
 
 
@@ -56,9 +56,9 @@ class ChatSession:
         """
         raise NotImplementedError
 
-    async def queue_consumer(self) -> AsyncIterator[Dict[str, Any]]:
+    def get_queue_iterator(self) -> AsyncQueueIterator:
         """
-        :return: An AsyncIterator over the messages from the agent(s).
+        :return: The AsyncQueueIterator associated with this ChatSession instance.
         """
         raise NotImplementedError
 
