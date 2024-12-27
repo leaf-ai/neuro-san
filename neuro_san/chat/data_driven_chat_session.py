@@ -75,9 +75,6 @@ class DataDrivenChatSession(ChatSession):
         """
         Resets or sets the instance up for the first time.
         """
-        # Reset the queue
-        self.queue: AsyncCollatingQueue = AsyncCollatingQueue()
-
         # Reset the journal
         self.journal = CompatibilityJournal(self.queue)
         await self.journal.write("setting up chat agent(s)...")
