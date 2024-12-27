@@ -5,8 +5,10 @@ from typing import Dict
 
 from asyncio.queues import Queue
 
+from neuro_san.interfaces.async_hopper import AsyncHopper
 
-class AsyncCollatingQueue(AsyncIterator):
+
+class AsyncCollatingQueue(AsyncIterator, QueueInput):
     """
     AsyncIterator instance to asynchronously iterate over/consume the contents of
     a Queue as they come in.
@@ -55,6 +57,8 @@ class AsyncCollatingQueue(AsyncIterator):
 
     async def put(self, item: Any):
         """
+        Fulfills AsyncHopper interface
+
         :param item: The item to put on the queue.
         """
         await self.queue.put(item)
