@@ -9,12 +9,15 @@
 # neuro-san SDK Software in commercial settings.
 #
 # END COPYRIGHT
+from typing import Any
+from typing import Dict
 from typing import List
 from typing import Union
 
 from neuro_san.interfaces.async_hopper import AsyncHopper
 from neuro_san.journals.journal import Journal
 from neuro_san.messages.legacy_logs_message import LegacyLogsMessage
+from neuro_san.utils.message_utils import convert_to_chat_message
 
 
 class MessageJournal(Journal):
@@ -41,7 +44,8 @@ class MessageJournal(Journal):
             message = message.decode('utf-8')
 
         legacy = LegacyLogsMessage(content=message)
-        await self.hopper.put(legacy)
+        message_dict: Dict[str, Any] = convert_to_chat_message(legacy)
+        await self.hopper.put(message_dict)
 
     def get_logs(self) -> List[str]:
         """
