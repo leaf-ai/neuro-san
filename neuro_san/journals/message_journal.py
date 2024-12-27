@@ -12,19 +12,24 @@
 from typing import List
 from typing import Union
 
+from neuro_san.interfaces.async_hopper import AsyncHopper
 from neuro_san.journals.journal import Journal
+from neuro_san.messages.legacy_logs_message import LegacyLogsMessage
 
 
-class TextJournal(Journal):
+class MessageJournal(Journal):
     """
     Journal implementation for capturing entries as a list of strings
     """
 
-    def __init__(self):
+    def __init__(self, hopper: AsyncHopper):
         """
         Constructor
+
+        :param hopper: A handle to an AsyncHopper implementation, onto which
+                       any message will be put().
         """
-        self.log_content = []
+        self.hopper = hopper
 
     async def write(self, message: Union[str, bytes]):
         """
@@ -34,10 +39,12 @@ class TextJournal(Journal):
         # Decoding bytes to string if necessary
         if isinstance(message, bytes):
             message = message.decode('utf-8')
-        self.log_content.append(message)
+
+        legacy = LegacyLogsMessage(content=message)
+        await self.hopper.put(legacy)
 
     def get_logs(self) -> List[str]:
         """
         :return: A list of strings corresponding to log entries written with write()
         """
-        return self.log_content
+        return None

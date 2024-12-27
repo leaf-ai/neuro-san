@@ -8,7 +8,7 @@ class Journal:
     An interface for journaling chat messages.
     """
 
-    def write(self, entry: Union[str, bytes]):
+    async def write(self, entry: Union[str, bytes]):
         """
         Writes a single string entry into the journal.
         """
