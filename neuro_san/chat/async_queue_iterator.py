@@ -12,15 +12,34 @@ END_KEY: str = "end"
 END_MESSAGE: Dict[str, Any] = {END_KEY: True}
 
 
-class AsyncQueueIterator(AsyncIterator):
+class AsyncQueueIterator(AsyncIterator[Dict[str, Any]]):
+    """
+    AsyncIterator instance to asynchronously iterate over/consume the contents of
+    a Queue as they come in.
+    """
 
     def __init__(self, queue: Queue):
+        """
+        Constructor
+
+        :param queue: The queue we will be iterating over.
+        """
         self.queue: Queue = queue
 
-    def __aiter__(self):
+    def __aiter__(self) -> AsyncIterator[Dict[str, Any]]:
+        """
+        Self-identify as an AsyncIterator when called upon by
+        the Python async framework.
+        """
         return self
 
     async def __anext__(self) -> Dict[str, Any]:
+        """
+        Per the convention, we look for an END_MESSAGE dictionary on the queue
+        that indicates its time to stop the iteration.
+        :return: Blocks waiting to return the next dictionary message on the queue.
+                Will throw StopAsyncIteration when an end queue message is detected.
+        """
         message: Dict[str, Any] = await self.queue.get()
         if message.get(END_KEY) is not None:
             raise StopAsyncIteration
