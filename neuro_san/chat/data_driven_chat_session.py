@@ -154,7 +154,7 @@ class DataDrivenChatSession(ChatSession):
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be None.
         :return: Nothing.  Response values are put on a queue whose consumtion is
-                managed by AsyncQueueIterator returned by get_queue_iterator().
+                managed by the Iterator aspect of AsyncCollatingQueue returned by get_queue().
         """
         # Queue Producer from this:
         #   https://stackoverflow.com/questions/74130544/asyncio-yielding-results-from-multiple-futures-as-they-arrive
