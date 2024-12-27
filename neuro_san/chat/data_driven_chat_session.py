@@ -176,7 +176,7 @@ class DataDrivenChatSession(ChatSession):
 
         # Put an end-marker on the queue to tell the consumer we truly are done
         # and it doesn't need to wait for any more messages.
-        end_dict = {"end": True}
+        end_dict = AsyncQueueIterator.END_MESSAGE
         async with self.lock:
             await self.queue.put(end_dict)
 
