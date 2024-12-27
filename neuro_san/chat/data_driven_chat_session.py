@@ -24,10 +24,11 @@ from neuro_san.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.chat.chat_session import ChatSession
 from neuro_san.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.graph.tools.front_man import FrontMan
+from neuro_san.journals.journal import Journal
+from neuro_san.journals.text_journal import TextJournal
 from neuro_san.messages.agent_framework_message import AgentFrameworkMessage
 from neuro_san.utils.message_utils import convert_to_chat_message
 from neuro_san.utils.message_utils import pretty_the_messages
-from neuro_san.utils.stream_to_logger import StreamToLogger
 
 
 # pylint: disable=too-many-instance-attributes
@@ -38,21 +39,21 @@ class DataDrivenChatSession(ChatSession):
     """
 
     def __init__(self, registry: AgentToolRegistry,
-                 logger: StreamToLogger = None,
+                 journal: Journal = None,
                  setup: bool = False):
         """
         Constructor
 
         :param registry: The AgentToolRegistry to use.
-        :param logger: The StreamToLogger that captures messages for user output
+        :param journal: The Journal that captures messages for user output
         :param setup: Whether or not set_up() should be called
                     by the constructor. Default is False.
         """
 
-        use_logger: StreamToLogger = logger
-        if logger is None:
-            use_logger = StreamToLogger()
-        self.logger: StreamToLogger = use_logger
+        use_journal: Journal = journal
+        if journal is None:
+            use_journal = TextJournal()
+        self.journal: Journal = use_journal
 
         self.registry: AgentToolRegistry = registry
         self.front_man: FrontMan = None
@@ -75,9 +76,9 @@ class DataDrivenChatSession(ChatSession):
         """
         Resets or sets the instance up for the first time.
         """
-        # Reset the logger
-        self.logger = StreamToLogger()
-        self.logger.write("setting up chat agent(s)...")
+        # Reset the journal
+        self.journal = TextJournal()
+        self.journal.write("setting up chat agent(s)...")
 
         # Reset any sly data
         # This ends up being the one reference to the sly_data that gets passed around
@@ -87,7 +88,7 @@ class DataDrivenChatSession(ChatSession):
         # Reset what we might have created before.
         await self.delete_resources()
 
-        self.front_man = self.registry.create_front_man(self.logger, self.sly_data)
+        self.front_man = self.registry.create_front_man(self.journal, self.sly_data)
         await self.front_man.create_resources()
 
     async def chat(self, user_input: str, sly_data: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
@@ -120,7 +121,7 @@ class DataDrivenChatSession(ChatSession):
             self.sly_data.update(sly_data)
 
         try:
-            self.logger.write("consulting chat agent(s)...")
+            self.journal.write("consulting chat agent(s)...")
 
             # DEF - drill further down for iterator from here to enable getting
             #       messages from downstream agents.
@@ -198,11 +199,11 @@ class DataDrivenChatSession(ChatSession):
 
         return True
 
-    def get_logger(self) -> StreamToLogger:
+    def get_journal(self) -> Journal:
         """
-        :return: The StreamToLogger which has been capturing all the "thinking" messages.
+        :return: The Journal which has been capturing all the "thinking" messages.
         """
-        return self.logger
+        return self.journal
 
     def get_latest_response(self) -> str:
         """

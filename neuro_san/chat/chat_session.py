@@ -14,7 +14,7 @@ from typing import Dict
 from typing import Iterator
 
 from neuro_san.chat.async_collating_queue import AsyncCollatingQueue
-from neuro_san.utils.stream_to_logger import StreamToLogger
+from neuro_san.journals.journal import Journal
 
 
 class ChatSession:
@@ -63,9 +63,9 @@ class ChatSession:
         """
         raise NotImplementedError
 
-    def get_logger(self) -> StreamToLogger:
+    def get_journal(self) -> Journal:
         """
-        :return: The StreamToLogger which has been capturing all the "thinking" messages.
+        :return: The Journal which has been capturing all the "thinking" messages.
         """
         raise NotImplementedError
 

@@ -8,7 +8,7 @@ from asyncio.queues import Queue
 from neuro_san.interfaces.async_hopper import AsyncHopper
 
 
-class AsyncCollatingQueue(AsyncIterator, QueueInput):
+class AsyncCollatingQueue(AsyncIterator, AsyncHopper):
     """
     AsyncIterator instance to asynchronously iterate over/consume the contents of
     a Queue as they come in.

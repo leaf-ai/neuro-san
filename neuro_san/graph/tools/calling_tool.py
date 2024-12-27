@@ -17,6 +17,7 @@ import json
 
 from leaf_common.config.dictionary_overlay import DictionaryOverlay
 
+from neuro_san.journals.journal import Journal
 from neuro_san.run_context.factory.run_context_factory import RunContextFactory
 from neuro_san.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.run_context.interfaces.callable_tool import CallableTool
@@ -25,7 +26,6 @@ from neuro_san.run_context.interfaces.run_context import RunContext
 from neuro_san.run_context.interfaces.tool_call import ToolCall
 from neuro_san.run_context.interfaces.tool_caller import ToolCaller
 from neuro_san.run_context.utils.external_tool_adapter import ExternalToolAdapter
-from neuro_san.utils.stream_to_logger import StreamToLogger
 
 
 class CallingTool(ToolCaller):
@@ -41,7 +41,7 @@ class CallingTool(ToolCaller):
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, parent_run_context: RunContext,
-                 logger: StreamToLogger,
+                 journal: Journal,
                  factory: AgentToolFactory,
                  agent_tool_spec: Dict[str, Any],
                  sly_data: Dict[str, Any]):
@@ -51,14 +51,14 @@ class CallingTool(ToolCaller):
         :param parent_run_context: The parent RunContext (if any) to pass
                              down its resources to a new RunContext created by
                              this call.
-        :param logger: The StreamToLogger that captures messages for user output
+        :param journal: The Journal that captures messages for user output
         :param factory: The factory for Agent Tools.
         :param agent_tool_spec: The dictionary describing the JSON agent tool
                             to be used by the instance
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be an empty dictionary.
         """
-        self.logger: StreamToLogger = logger
+        self.journal: Journal = journal
         self.factory: AgentToolFactory = factory
         self.agent_tool_spec: Dict[str, Any] = agent_tool_spec
         self.sly_data: Dict[str, Any] = sly_data
@@ -212,7 +212,7 @@ class CallingTool(ToolCaller):
         # Note: This is not a BaseTool. This is our own construct within graph
         #       that we can build().
         callable_component: CallableTool = \
-            self.factory.create_agent_tool(self.run_context, self.logger,
+            self.factory.create_agent_tool(self.run_context, self.journal,
                                            use_tool_name, self.sly_data, tool_arguments)
         callable_component_response: List[Any] = await callable_component.build()
 

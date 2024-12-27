@@ -32,6 +32,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.tools import BaseTool
 
 from neuro_san.errors.error_detector import ErrorDetector
+from neuro_san.journals.journal import Journal
 from neuro_san.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.run_context.interfaces.run import Run
 from neuro_san.run_context.interfaces.run_context import RunContext
@@ -41,7 +42,6 @@ from neuro_san.run_context.langchain.langchain_openai_function_tool \
     import LangChainOpenAIFunctionTool
 from neuro_san.run_context.langchain.llm_factory import LlmFactory
 from neuro_san.run_context.utils.external_tool_adapter import ExternalToolAdapter
-from neuro_san.utils.stream_to_logger import StreamToLogger
 
 
 MINUTES: float = 60.0
@@ -207,14 +207,14 @@ class LangChainRunContext(RunContext):
         return run
 
     # pylint: disable=too-many-locals
-    async def wait_on_run(self, run: Run, logger: StreamToLogger = None) -> Run:
+    async def wait_on_run(self, run: Run, journal: Journal = None) -> Run:
         """
         Loops on the given run's status for model invokation.
 
         This truly is an asynchronous method.
 
         :param run: The run to wait on
-        :param logger: The StreamToLogger which captures the "thinking" messages.
+        :param journal: The Journal which captures the "thinking" messages.
         :return: An potentially updated run
         """
 

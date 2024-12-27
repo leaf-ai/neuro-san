@@ -12,10 +12,12 @@
 from typing import List
 from typing import Union
 
+from neuro_san.journals.journal import Journal
 
-class StreamToLogger:
+
+class TextJournal(Journal):
     """
-    Class for capturing output stream to a list of strings
+    Journal implementation for capturing entries as a list of strings
     """
 
     def __init__(self):

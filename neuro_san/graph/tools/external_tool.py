@@ -16,11 +16,11 @@ from typing import List
 import asyncio
 import json
 
+from neuro_san.journals.journal import Journal
 from neuro_san.run_context.interfaces.callable_tool import CallableTool
 from neuro_san.run_context.interfaces.run_context import RunContext
 from neuro_san.run_context.utils.external_tool_adapter import ExternalToolAdapter
 from neuro_san.session.agent_session import AgentSession
-from neuro_san.utils.stream_to_logger import StreamToLogger
 
 
 class ExternalTool(CallableTool):
@@ -33,7 +33,7 @@ class ExternalTool(CallableTool):
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, parent_run_context: RunContext,
-                 logger: StreamToLogger,
+                 journal: Journal,
                  agent_url: str,
                  arguments: Dict[str, Any],
                  sly_data: Dict[str, Any]):
@@ -43,7 +43,7 @@ class ExternalTool(CallableTool):
         :param parent_run_context: The parent RunContext (if any) to pass
                              down its resources to a new RunContext created by
                              this call.
-        :param logger: The StreamToLogger that captures messages for user output
+        :param journal: The Journal that captures messages for user output
         :param agent_url: The string url to find the external agent.
                         Theoretically this has already been verified by use of an
                         ExternalToolAdapter.
@@ -53,7 +53,7 @@ class ExternalTool(CallableTool):
                  This gets passed along as a distinct argument to the referenced python class's
                  invoke() method.
         """
-        _ = parent_run_context, logger
+        _ = parent_run_context, journal
         self.agent_url: str = agent_url
         self.arguments: Dict[str, Any] = arguments
         self.sly_data: Dict[str, Any] = sly_data

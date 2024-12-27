@@ -18,10 +18,10 @@ import json
 
 from leaf_common.config.resolver import Resolver
 
+from neuro_san.journals.journal import Journal
 from neuro_san.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.run_context.interfaces.callable_tool import CallableTool
 from neuro_san.run_context.interfaces.run_context import RunContext
-from neuro_san.utils.stream_to_logger import StreamToLogger
 
 
 class MethodTool(CallableTool):
@@ -32,7 +32,7 @@ class MethodTool(CallableTool):
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, parent_run_context: RunContext,
-                 logger: StreamToLogger,
+                 journal: Journal,
                  factory: AgentToolFactory,
                  arguments: Dict[str, Any],
                  agent_tool_spec: Dict[str, Any],
@@ -43,7 +43,7 @@ class MethodTool(CallableTool):
         :param parent_run_context: The parent RunContext (if any) to pass
                              down its resources to a new RunContext created by
                              this call.
-        :param logger: The StreamToLogger that captures messages for user output
+        :param journal: The Journal that captures messages for user output
         :param factory: The AgentToolFactory used to create tools
         :param arguments: A dictionary of the tool function arguments passed in
         :param agent_tool_spec: The dictionary describing the JSON agent tool
@@ -52,7 +52,7 @@ class MethodTool(CallableTool):
                  values should not appear in agent chat text. Can be an empty dictionary.
                  This gets passed along as a distinct argument to the referenced python method.
         """
-        _ = parent_run_context, logger, factory
+        _ = parent_run_context, journal, factory
         self.agent_tool_spec: Dict[str, Any] = agent_tool_spec
         self.factory: AgentToolFactory = factory
         self.arguments: Dict[str, Any] = arguments

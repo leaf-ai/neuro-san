@@ -16,8 +16,8 @@ from __future__ import annotations
 from typing import Any
 from typing import List
 
+from neuro_san.journals.journal import Journal
 from neuro_san.run_context.interfaces.run import Run
-from neuro_san.utils.stream_to_logger import StreamToLogger
 
 
 class RunContext:
@@ -46,12 +46,12 @@ class RunContext:
         """
         raise NotImplementedError
 
-    async def wait_on_run(self, run: Run, logger: StreamToLogger = None) -> Run:
+    async def wait_on_run(self, run: Run, journal: Journal = None) -> Run:
         """
         Loops on the given run's status for service-side processing
         to be done.
         :param run: The Run instance to wait on
-        :param logger: The StreamToLogger which captures the "thinking" messages.
+        :param journal: The Journal which captures the "thinking" messages.
         :return: An potentially updated Run instance
         """
         raise NotImplementedError
