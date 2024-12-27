@@ -16,7 +16,6 @@ from typing import List
 
 import traceback
 
-from asyncio import Lock
 from asyncio.queues import Queue
 from datetime import datetime
 
@@ -63,7 +62,6 @@ class DataDrivenChatSession(ChatSession):
         self.sly_data: Dict[str, Any] = {}
         self.queue: Queue[Dict[str, Any]] = Queue()
         self.last_streamed_index: int = 0
-        self.lock = Lock()
         self.queue_iterator = AsyncQueueIterator(self.queue)
 
         if setup:
@@ -170,15 +168,13 @@ class DataDrivenChatSession(ChatSession):
             # This responsibility will eventually largely move to the client.
             if self.is_streamable_message(chat_message, index):
                 # The consumer await-s for self.queue.get()
-                async with self.lock:
-                    await self.queue.put(chat_message)
+                await self.queue.put(chat_message)
                 self.last_streamed_index = index
 
         # Put an end-marker on the queue to tell the consumer we truly are done
         # and it doesn't need to wait for any more messages.
         end_dict = AsyncQueueIterator.END_MESSAGE
-        async with self.lock:
-            await self.queue.put(end_dict)
+        await self.queue.put(end_dict)
 
     def is_streamable_message(self, chat_message: Dict[str, Any], index: int) -> bool:
         """
