@@ -22,8 +22,8 @@ from langchain_core.messages.human import HumanMessage
 from langchain_core.messages.system import SystemMessage
 from langchain_core.messages.tool import ToolMessage
 
-from neuro_san.utils.agent_message import AgentMessage
-from neuro_san.utils.agent_framework_message import AgentFrameworkMessage
+from neuro_san.messages.agent_message import AgentMessage
+from neuro_san.messages.agent_framework_message import AgentFrameworkMessage
 
 
 def pretty_the_messages(messages: List[Any]) -> str:

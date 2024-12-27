@@ -24,9 +24,9 @@ from neuro_san.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.chat.chat_session import ChatSession
 from neuro_san.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.graph.tools.front_man import FrontMan
+from neuro_san.messages.agent_framework_message import AgentFrameworkMessage
 from neuro_san.utils.message_utils import convert_to_chat_message
 from neuro_san.utils.message_utils import pretty_the_messages
-from neuro_san.utils.agent_framework_message import AgentFrameworkMessage
 from neuro_san.utils.stream_to_logger import StreamToLogger
 
 
