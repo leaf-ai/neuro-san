@@ -13,7 +13,7 @@ from typing import Any
 from typing import Dict
 from typing import Iterator
 
-from neuro_san.chat.async_queue_iterator import AsyncQueueIterator
+from neuro_san.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.utils.stream_to_logger import StreamToLogger
 
 
@@ -53,13 +53,13 @@ class ChatSession:
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be None.
         :return: Nothing.  Response values are put on a queue whose consumtion is
-                managed by AsyncQueueIterator returned by get_queue_iterator().
+                managed by AsyncCollatingQueue returned by get_queue().
         """
         raise NotImplementedError
 
-    def get_queue_iterator(self) -> AsyncQueueIterator:
+    def get_queue(self) -> AsyncCollatingQueue:
         """
-        :return: The AsyncQueueIterator associated with this ChatSession instance.
+        :return: The AsyncCollatingQueue associated with this ChatSession instance.
         """
         raise NotImplementedError
 

@@ -16,12 +16,11 @@ from typing import List
 
 import traceback
 
-from asyncio.queues import Queue
 from datetime import datetime
 
 from openai import BadRequestError
 
-from neuro_san.chat.async_queue_iterator import AsyncQueueIterator
+from neuro_san.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.chat.chat_session import ChatSession
 from neuro_san.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.graph.tools.front_man import FrontMan
@@ -60,18 +59,17 @@ class DataDrivenChatSession(ChatSession):
         self.latest_response = None
         self.last_input_timestamp = datetime.now()
         self.sly_data: Dict[str, Any] = {}
-        self.queue: Queue[Dict[str, Any]] = Queue()
+        self.queue: AsyncCollatingQueue = AsyncCollatingQueue()
         self.last_streamed_index: int = 0
-        self.queue_iterator = AsyncQueueIterator(self.queue)
 
         if setup:
             self.set_up()
 
-    def get_queue_iterator(self) -> AsyncQueueIterator:
+    def get_queue(self) -> AsyncCollatingQueue:
         """
-        :return: The AsyncQueueIterator associated with this ChatSession instance.
+        :return: The AsyncCollatingQueue associated with this ChatSession instance.
         """
-        return self.queue_iterator
+        return self.queue
 
     async def set_up(self):
         """
@@ -173,8 +171,7 @@ class DataDrivenChatSession(ChatSession):
 
         # Put an end-marker on the queue to tell the consumer we truly are done
         # and it doesn't need to wait for any more messages.
-        end_dict = AsyncQueueIterator.END_MESSAGE
-        await self.queue.put(end_dict)
+        await self.queue.put_final_item()
 
     def is_streamable_message(self, chat_message: Dict[str, Any], index: int) -> bool:
         """
