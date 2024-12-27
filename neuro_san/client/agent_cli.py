@@ -364,7 +364,7 @@ All choices require an agent name.
 
             # Update chat response and maybe prompt.
             if text is not None:
-                if type == 102:     # LEGACY_LOGS from chat.proto
+                if message_type == 102:     # LEGACY_LOGS from chat.proto
                     with open(self.args.thinking_file, "a", encoding="utf-8") as thinking:
                         thinking.write(text)
                         thinking.write("\n")
