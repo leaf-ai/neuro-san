@@ -342,7 +342,7 @@ class DirectAgentSession(AgentSession):
         # Ignore the future. Live in the now.
         _ = future
 
-        # The chat_session.queue_consumer() method will hang out waiting for chat.ChatMessage
+        # The queue_iterator() method below will hang out waiting for chat.ChatMessage
         # dictionaries to come back asynchronously from the submit() above until there
         # are no more from the input.
         empty: Dict[str, Any] = {}
