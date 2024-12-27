@@ -278,6 +278,7 @@ All choices require an agent name.
                 # Might be more than 1
                 for i in range(len(last_logs), len(logs)-1):
                     thinking.write(logs[i])
+                    thinking.write("\n")
             last_logs = copy(logs)
 
         # Update chat response and maybe prompt.
