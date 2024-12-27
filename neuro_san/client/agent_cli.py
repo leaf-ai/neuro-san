@@ -85,11 +85,12 @@ class AgentCli:
             "last_chat_response": None,
             "prompt": self.default_prompt,
             "timeout": self.input_timeout_seconds,
+            "num_input": 0,
             "user_input": user_input,
             "sly_data": sly_data,
         }
 
-        while state.get("user_input") != "quit":
+        while not self.is_done(state):
 
             prompt = state.get("prompt")
             timeout = state.get("timeout")
@@ -169,6 +170,10 @@ All choices require an agent name.
                                 help="Use a service connection")
         arg_parser.add_argument("--direct", dest="connection", action="store_const", const="direct",
                                 help="Use a direct/library call for the chat")
+        arg_parser.add_argument("--max_input", type=int, default=1000000,
+                                help="Maximum rounds of input to go before exiting")
+        arg_parser.add_argument("--one_shot", dest="max_input", action="store_const", const=1,
+                                help="Send one round of input, then exit")
 
     def open_session(self):
         """
@@ -202,6 +207,21 @@ All choices require an agent name.
                  session with the agent network.
         """
         return AgentSessionFactory()
+
+    def is_done(self, state: Dict[str, Any]) -> bool:
+        """
+        :param state: The state dictionary
+        :return: True if the values in the state are considered to be sufficient
+                for terminating further conversation. False otherwise.
+        """
+
+        if state.get("user_input") == "quit":
+            return True
+
+        if state.get("num_input") >= self.args.max_input:
+            return True
+
+        return False
 
     def poll_once(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -253,6 +273,7 @@ All choices require an agent name.
         last_chat_response = state.get("last_chat_response")
         prompt = state.get("prompt")
         timeout = state.get("timeout")
+        num_input = state.get("num_input")
 
         # Get logs so we know what the assistant is thinking
         logs_request = {
@@ -289,12 +310,14 @@ All choices require an agent name.
             prompt = self.default_prompt
             timeout = self.input_timeout_seconds
             last_chat_response = chat_response
+            num_input += 1
 
         return_state: Dict[str, Any] = {
             "last_logs": last_logs,
             "last_chat_response": last_chat_response,
             "prompt": prompt,
-            "timeout": timeout
+            "timeout": timeout,
+            "num_input": num_input
         }
         return return_state
 
@@ -307,6 +330,7 @@ All choices require an agent name.
         user_input: str = state.get("user_input")
         last_logs = state.get("last_logs")
         last_chat_response = state.get("last_chat_response")
+        num_input = state.get("num_input")
 
         if user_input is None or user_input == self.default_input:
             return state
@@ -346,7 +370,8 @@ All choices require an agent name.
                 "last_logs": last_logs,
                 "last_chat_response": last_chat_response,
                 "prompt": self.default_prompt,
-                "timeout": self.input_timeout_seconds
+                "timeout": self.input_timeout_seconds,
+                "num_input": num_input + 1
             }
 
         return return_state
