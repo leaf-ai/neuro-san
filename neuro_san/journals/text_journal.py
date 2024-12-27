@@ -26,15 +26,15 @@ class TextJournal(Journal):
         """
         self.log_content = []
 
-    async def write(self, message: Union[str, bytes]):
+    async def write(self, entry: Union[str, bytes]):
         """
-        :param message: Add a message to the logs.
+        :param entr: Add a string-ish entry to the logs.
                     Can be either a string or bytes.
         """
         # Decoding bytes to string if necessary
-        if isinstance(message, bytes):
-            message = message.decode('utf-8')
-        self.log_content.append(message)
+        if isinstance(entry, bytes):
+            entry = entry.decode('utf-8')
+        self.log_content.append(entry)
 
     def get_logs(self) -> List[str]:
         """

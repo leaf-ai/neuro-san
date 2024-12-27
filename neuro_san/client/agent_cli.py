@@ -321,6 +321,7 @@ All choices require an agent name.
         }
         return return_state
 
+    # pylint: disable=too-many-locals
     def stream_once(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """
         Use polling strategy to communicate with agent.

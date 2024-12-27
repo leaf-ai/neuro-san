@@ -34,16 +34,16 @@ class MessageJournal(Journal):
         """
         self.hopper = hopper
 
-    async def write(self, message: Union[str, bytes]):
+    async def write(self, entry: Union[str, bytes]):
         """
-        :param message: Add a message to the logs.
+        :param entry: Add a string-ish entry to the logs.
                     Can be either a string or bytes.
         """
         # Decoding bytes to string if necessary
-        if isinstance(message, bytes):
-            message = message.decode('utf-8')
+        if isinstance(entry, bytes):
+            entry = entry.decode('utf-8')
 
-        legacy = LegacyLogsMessage(content=message)
+        legacy = LegacyLogsMessage(content=entry)
         message_dict: Dict[str, Any] = convert_to_chat_message(legacy)
         await self.hopper.put(message_dict)
 
