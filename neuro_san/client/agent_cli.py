@@ -359,12 +359,18 @@ All choices require an agent name.
             if session_id is not None:
                 self.session_id = session_id
 
+            message_type: int = response.get("type", 0)
             text: str = response.get("text")
 
             # Update chat response and maybe prompt.
             if text is not None:
-                print(f"Response: {text}")
-                last_chat_response = text
+                if type == 102:     # LEGACY_LOGS from chat.proto
+                    with open(self.args.thinking_file, "a", encoding="utf-8") as thinking:
+                        thinking.write(text)
+                        thinking.write("\n")
+                else:
+                    print(f"Response: {text}")
+                    last_chat_response = text
 
             return_state = {
                 "last_logs": last_logs,
