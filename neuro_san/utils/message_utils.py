@@ -22,8 +22,9 @@ from langchain_core.messages.human import HumanMessage
 from langchain_core.messages.system import SystemMessage
 from langchain_core.messages.tool import ToolMessage
 
-from neuro_san.messages.agent_message import AgentMessage
 from neuro_san.messages.agent_framework_message import AgentFrameworkMessage
+from neuro_san.messages.agent_message import AgentMessage
+from neuro_san.messages.legacy_logs_message import LegacyLogsMessage
 
 
 def pretty_the_messages(messages: List[Any]) -> str:
@@ -99,6 +100,7 @@ MESSAGE_TYPE_TO_ROLE: Dict[Type[BaseMessage], str] = {
     SystemMessage: "system",
     AgentMessage: "agent",
     AgentFrameworkMessage: "agent-framework",
+    LegacyLogsMessage: "legacy-logs",
 }
 
 
@@ -145,6 +147,7 @@ MESSAGE_TYPE_TO_CHAT_MESSAGE_TYPE: Dict[Type[BaseMessage], int] = {
 
     AgentMessage: 100,
     AgentFrameworkMessage: 101,
+    LegacyLogsMessage: 102,
 }
 
 
