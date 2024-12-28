@@ -22,7 +22,8 @@ from neuro_san.messages.message_utils import convert_to_chat_message
 
 class MessageJournal(Journal):
     """
-    Journal implementation for capturing entries as a list of strings
+    Journal implementation for putting entries into a Hopper
+    for storage for later processing.
     """
 
     def __init__(self, hopper: AsyncHopper):
