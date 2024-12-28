@@ -28,7 +28,7 @@ class TextJournal(Journal):
 
     async def write(self, entry: Union[str, bytes]):
         """
-        :param entr: Add a string-ish entry to the logs.
+        :param entry: Add a string-ish entry to the logs.
                     Can be either a string or bytes.
         """
         # Decoding bytes to string if necessary
