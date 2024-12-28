@@ -17,7 +17,7 @@ from typing import Union
 from neuro_san.interfaces.async_hopper import AsyncHopper
 from neuro_san.journals.journal import Journal
 from neuro_san.messages.legacy_logs_message import LegacyLogsMessage
-from neuro_san.utils.message_utils import convert_to_chat_message
+from neuro_san.messages.message_utils import convert_to_chat_message
 
 
 class MessageJournal(Journal):

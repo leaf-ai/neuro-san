@@ -27,8 +27,8 @@ from neuro_san.graph.tools.front_man import FrontMan
 from neuro_san.journals.compatibility_journal import CompatibilityJournal
 from neuro_san.journals.journal import Journal
 from neuro_san.messages.agent_framework_message import AgentFrameworkMessage
-from neuro_san.utils.message_utils import convert_to_chat_message
-from neuro_san.utils.message_utils import pretty_the_messages
+from neuro_san.messages.message_utils import convert_to_chat_message
+from neuro_san.messages.message_utils import pretty_the_messages
 
 
 # pylint: disable=too-many-instance-attributes

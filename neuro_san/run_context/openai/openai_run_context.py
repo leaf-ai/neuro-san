@@ -23,14 +23,14 @@ import time
 from leaf_common.config.dictionary_overlay import DictionaryOverlay
 
 from neuro_san.journals.journal import Journal
+from neuro_san.messages.message_utils import pretty_the_messages
+from neuro_san.messages.message_utils import get_last_message_with_content
 from neuro_san.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.run_context.interfaces.run import Run
 from neuro_san.run_context.interfaces.run_context import RunContext
 from neuro_san.run_context.interfaces.tool_caller import ToolCaller
 from neuro_san.run_context.openai.openai_client import OpenAIClient
 from neuro_san.run_context.openai.openai_run import OpenAIRun
-from neuro_san.utils.message_utils import pretty_the_messages
-from neuro_san.utils.message_utils import get_last_message_with_content
 
 
 class OpenAIRunContext(RunContext):

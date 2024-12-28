@@ -20,11 +20,11 @@ from leaf_common.parsers.field_extractor import FieldExtractor
 
 from neuro_san.graph.tools.calling_tool import CallingTool
 from neuro_san.journals.journal import Journal
+from neuro_san.messages.message_utils import generate_response
 from neuro_san.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.run_context.interfaces.callable_tool import CallableTool
 from neuro_san.run_context.interfaces.run import Run
 from neuro_san.run_context.interfaces.run_context import RunContext
-from neuro_san.utils.message_utils import generate_response
 
 
 class BranchTool(CallingTool, CallableTool):
