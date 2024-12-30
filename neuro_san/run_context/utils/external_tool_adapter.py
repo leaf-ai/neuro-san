@@ -19,7 +19,7 @@ from urllib.parse import ParseResult
 from urllib.parse import urlparse
 
 from neuro_san.session.agent_session import AgentSession
-from neuro_san.session.service_agent_session import ServiceAgentSession
+from neuro_san.session.async_service_agent_session import AsyncServiceAgentSession
 
 
 class ExternalToolAdapter:
@@ -53,7 +53,7 @@ class ExternalToolAdapter:
             request_dict: Dict[str, Any] = {}
 
             # Ideally this guy would be async as well.
-            function_response: Dict[str, Any] = self.session.function(request_dict)
+            function_response: Dict[str, Any] = await self.session.function(request_dict)
             self.function_json = function_response.get("function")
 
         return self.function_json
@@ -167,10 +167,10 @@ class ExternalToolAdapter:
 
         # Optimization:
         #   It's possible we might want to create a different kind of session
-        #   to minimize socket usage, but for now use the ServiceAgentSession
+        #   to minimize socket usage, but for now use the AsyncServiceAgentSession
         #   so as to ensure proper logging even on the same server (localhost).
-        session = ServiceAgentSession(host, port, agent_name=agent_name,
-                                      service_prefix=service_prefix)
+        session = AsyncServiceAgentSession(host, port, agent_name=agent_name,
+                                           service_prefix=service_prefix)
 
         # Quiet any logging from leaf-common grpc stuff.
         quiet_please = logging.getLogger("leaf_common.session.grpc_client_retry")

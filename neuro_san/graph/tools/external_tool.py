@@ -90,7 +90,7 @@ class ExternalTool(CallableTool):
             await asyncio.sleep(self.DEFAULT_SLEEP_SECONDS)
 
             # It'd be nice if there were an async version of this
-            logs_response = self.session.logs(logs_request)
+            logs_response = await self.session.logs(logs_request)
 
             # Right now we don't care about "logs" field in response.
             # Focus on a single answer for now.
@@ -143,7 +143,7 @@ class ExternalTool(CallableTool):
 
         # Send the request and get the session_id against which to query results.
         # It'd be nice if there were an async version of this
-        chat_response = self.session.chat(chat_request)
+        chat_response = await self.session.chat(chat_request)
         if self.session_id is None:
             self.session_id = chat_response.get("session_id")
 
