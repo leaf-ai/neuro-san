@@ -252,7 +252,7 @@ All choices require an agent name.
             chat_request = {
                 "session_id": self.session_id,
                 "user_message": {
-                    "type": 1,      # HUMAN from chat.proto
+                    "type": ChatMessageType.HUMAN.value,
                     "text": user_input
                 }
             }
@@ -341,7 +341,7 @@ All choices require an agent name.
         chat_request = {
             "session_id": self.session_id,
             "user_message": {
-                "type": 1,      # HUMAN from chat.proto
+                "type": ChatMessageType.HUMAN.value,
                 "text": user_input
             }
         }
