@@ -75,6 +75,9 @@ class ExternalTool(CallableTool):
         # Send off the input
         chat_request: Dict[str, Any] = await self.gather_input(f"```json\n{json.dumps(self.arguments)}```",
                                                                self.sly_data)
+
+        # Note that we are not await-ing the response here because what is returned is a generator.
+        # Proper await-ing for generator results is done in the "async for"-loop below.
         chat_responses: Generator[Dict[str, Any], None, None] = self.session.streaming_chat(chat_request)
 
         # The asynchronous generator will wait until the next response is available
