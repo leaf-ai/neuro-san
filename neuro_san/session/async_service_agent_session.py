@@ -22,11 +22,12 @@ from neuro_san.session.agent_session import AgentSession
 from neuro_san.api.grpc import agent_pb2 as service_messages
 
 
-class AsyncServiceAgentSession(AsyncAbstractServiceSession, AgentSession):
+class AsyncServiceAgentSession(AsyncAbstractServiceSession):
     """
     Implementation of AgentSession that talks to a gRPC service asynchronously.
     """
 
+    DEFAULT_PORT: int = AgentSession.DEFAULT_PORT
     DEFAULT_AGENT_NAME: str = "esp_decision_assistant"
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
