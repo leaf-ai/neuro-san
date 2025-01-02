@@ -18,6 +18,7 @@ import json
 
 from langchain_core.messages.base import BaseMessage
 
+from neuro_san.messages.chat_message_type import ChatMessageType
 from neuro_san.messages.chat_message_type import MESSAGE_TYPE_TO_CHAT_MESSAGE_TYPE
 from neuro_san.messages.chat_message_type import MESSAGE_TYPE_TO_ROLE
 
@@ -130,9 +131,10 @@ def convert_to_chat_message(message: BaseMessage) -> Dict[str, Any]:
     :return: The ChatMessage in dictionary form
     """
 
-    unknown: int = 0
+    message_type: ChatMessageType = MESSAGE_TYPE_TO_CHAT_MESSAGE_TYPE.get(type(message),
+                                                                          ChatMessageType.UNKNOWN_MESSAGE_TYPE)
     chat_message: Dict[str, Any] = {
-        "type": MESSAGE_TYPE_TO_CHAT_MESSAGE_TYPE.get(type(message), unknown),
+        "type": message_type.value,
         "text": message.content,
         # No mime_data for now
         # No origin for now
