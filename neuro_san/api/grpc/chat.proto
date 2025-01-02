@@ -25,10 +25,10 @@ message ChatMessage {
     // that are in common usage.
     enum ChatMessageType {
         UNKNOWN = 0;    // Note: UNKNOWN is not a langchain thing.
-        HUMAN = 1;
-        SYSTEM = 2;
-        AI = 3;
-        TOOL = 4;
+        SYSTEM = 1;
+        HUMAN = 2;
+        TOOL = 3;
+        AI = 4;
 
         // These are not out-of-the-box langchain messages
         AGENT = 100;
@@ -47,7 +47,7 @@ message ChatMessage {
     // reference for how the data was created.  If this happens, then
     // it should be safe to assume that the text is enough to represent the
     // message in any history carried forward.
-    mime_data.MimeData mime_data = 3 [json_name="mime_data"];
+    repeated mime_data.MimeData mime_data = 3 [json_name="mime_data"];
 
     // Optional string describing the origin of the chat message.
     // The intent here is to be able to distiguish responses from nested agents.
