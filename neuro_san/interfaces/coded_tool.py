@@ -56,7 +56,6 @@ class CodedTool:
         # Do not raise an exception here, but pass instead.
         # This allows for fully asynchronous CodedTools to not have to worry about
         # the synchronous bits.
-        pass
 
     async def async_invoke(self, args: Dict[str, Any], sly_data: Dict[str, Any]) -> Any:
         """
