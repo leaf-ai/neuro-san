@@ -23,6 +23,7 @@ import json
 from timedinput import timedinput
 
 from neuro_san.client.agent_session_factory import AgentSessionFactory
+from neuro_san.messages.chat_message_type import ChatMessageType
 from neuro_san.session.agent_session import AgentSession
 from neuro_san.utils.file_of_class import FileOfClass
 
@@ -365,7 +366,7 @@ All choices require an agent name.
 
             # Update chat response and maybe prompt.
             if text is not None:
-                if message_type == 102:     # LEGACY_LOGS from chat.proto
+                if message_type == ChatMessageType.LEGACY_LOGS:
                     with open(self.args.thinking_file, "a", encoding="utf-8") as thinking:
                         thinking.write(text)
                         thinking.write("\n")
