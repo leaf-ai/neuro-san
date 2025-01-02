@@ -22,7 +22,8 @@ import "neuro_san/api/grpc/mime_data.proto";
 message ChatMessage {
 
     // Type of message corresponding to basic langchain message types
-    // that are in common usage.
+    // that are in common usage.  This needs to match what is in the
+    // ChatMessageType enum in the neuro-san codebase.
     enum ChatMessageType {
         UNKNOWN = 0;    // Note: UNKNOWN is not a langchain thing.
         SYSTEM = 1;
