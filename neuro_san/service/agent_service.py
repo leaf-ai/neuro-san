@@ -21,7 +21,7 @@ import grpc
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.json_format import Parse
 
-from leaf_server_common.asyncio.asyncio_executor import AsyncioExecutor
+from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 from leaf_server_common.server.atomic_counter import AtomicCounter
 from leaf_server_common.server.grpc_metadata_forwarder import GrpcMetadataForwarder
 from leaf_server_common.server.request_logger import RequestLogger

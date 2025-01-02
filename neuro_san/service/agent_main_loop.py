@@ -22,7 +22,7 @@ import os
 from argparse import ArgumentParser
 from pathlib import Path
 
-from leaf_server_common.asyncio.asyncio_executor import AsyncioExecutor
+from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 from leaf_server_common.server.server_loop_callbacks import ServerLoopCallbacks
 
 from neuro_san.chat.chat_session import ChatSession
