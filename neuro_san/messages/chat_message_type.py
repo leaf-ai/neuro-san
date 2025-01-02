@@ -1,5 +1,5 @@
+from enum import Enum
 from typing import Dict
-from typing import Enum
 from typing import Type
 
 from langchain_core.messages.ai import AIMessage
