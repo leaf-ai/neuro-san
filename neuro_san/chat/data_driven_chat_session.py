@@ -27,6 +27,7 @@ from neuro_san.graph.tools.front_man import FrontMan
 from neuro_san.journals.compatibility_journal import CompatibilityJournal
 from neuro_san.journals.journal import Journal
 from neuro_san.messages.agent_framework_message import AgentFrameworkMessage
+from neuro_san.messages.chat_message_type import ChatMessageType
 from neuro_san.messages.message_utils import convert_to_chat_message
 from neuro_san.messages.message_utils import pretty_the_messages
 
@@ -182,15 +183,12 @@ class DataDrivenChatSession(ChatSession):
         :return: True if the given message should be streamed back. False if not.
         """
 
-        # This comes from definitions in chat.proto
-        ai_message_type: int = 3
-
         message_type: int = chat_message.get("type")
 
         # Only report messages that are important enough to send back as part of chat
         # (for now).  This includes any response for an AI (read: LLM), a tool, or
         # agent or framework messages.
-        if message_type is None or message_type < ai_message_type:
+        if message_type is None or message_type < ChatMessageType.AI.value:
             return False
 
         if index <= self.last_streamed_index:
