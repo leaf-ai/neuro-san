@@ -53,6 +53,9 @@ class CodedTool:
                 adding the data is not invoke()-ed more than once.
         :return: A return value that goes into the chat stream.
         """
+        # Do not raise an exception here, but pass instead.
+        # This allows for fully asynchronous CodedTools to not have to worry about
+        # the synchronous bits.
         pass
 
     async def async_invoke(self, args: Dict[str, Any], sly_data: Dict[str, Any]) -> Any:
