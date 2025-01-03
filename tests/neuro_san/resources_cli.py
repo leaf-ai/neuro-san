@@ -14,7 +14,7 @@ from typing import List
 
 from asyncio import run
 
-from neuro_san.run_context.openai.openai_client import OpenAIClient
+from neuro_san.internals.run_context.openai.openai_client import OpenAIClient
 
 
 class ResourcesCli:
