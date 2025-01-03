@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright (C) 2023-2024 Cognizant Digital Business, Evolutionary AI.
+# Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
 # All Rights Reserved.
 # Issued under the Academic Public License.
 #
