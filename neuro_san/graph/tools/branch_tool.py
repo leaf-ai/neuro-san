@@ -19,12 +19,12 @@ import uuid
 from leaf_common.parsers.field_extractor import FieldExtractor
 
 from neuro_san.graph.tools.calling_tool import CallingTool
+from neuro_san.journals.journal import Journal
+from neuro_san.messages.message_utils import generate_response
 from neuro_san.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.run_context.interfaces.callable_tool import CallableTool
 from neuro_san.run_context.interfaces.run import Run
 from neuro_san.run_context.interfaces.run_context import RunContext
-from neuro_san.utils.message_utils import generate_response
-from neuro_san.utils.stream_to_logger import StreamToLogger
 
 
 class BranchTool(CallingTool, CallableTool):
@@ -37,7 +37,7 @@ class BranchTool(CallingTool, CallableTool):
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, parent_run_context: RunContext,
-                 logger: StreamToLogger,
+                 journal: Journal,
                  factory: AgentToolFactory,
                  arguments: Dict[str, Any],
                  agent_tool_spec: Dict[str, Any],
@@ -48,7 +48,7 @@ class BranchTool(CallingTool, CallableTool):
         :param parent_run_context: The parent RunContext (if any) to pass
                              down its resources to a new RunContext created by
                              this call.
-        :param logger: The StreamToLogger that captures messages for user output
+        :param journal: The Journal that captures messages for user output
         :param factory: The AgentToolFactory used to create tools
         :param arguments: A dictionary of the tool function arguments passed in
         :param agent_tool_spec: The dictionary describing the JSON agent tool
@@ -56,7 +56,7 @@ class BranchTool(CallingTool, CallableTool):
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be an empty dictionary.
         """
-        super().__init__(parent_run_context, logger, factory, agent_tool_spec, sly_data)
+        super().__init__(parent_run_context, journal, factory, agent_tool_spec, sly_data)
         self.arguments: Dict[str, Any] = arguments
 
     def get_decision_name(self) -> str:
@@ -194,7 +194,7 @@ class BranchTool(CallingTool, CallableTool):
         while run.requires_action():
             # The tool we just called requires more information
             new_run = await self.make_tool_function_calls(run)
-            new_run = await self.run_context.wait_on_run(new_run, self.logger)
+            new_run = await self.run_context.wait_on_run(new_run, self.journal)
             new_messages = await self.run_context.get_response()
 
         return new_messages
@@ -212,23 +212,23 @@ class BranchTool(CallingTool, CallableTool):
         decision_name = self.get_decision_name()
         component_name = self.get_component_name()
         assistant_name = f"{decision_name}_{component_name}"
-        self.logger.write(f"setting up {component_name} assistant...")
+        await self.journal.write(f"setting up {component_name} assistant...")
 
         await self.create_resources(assistant_name, instructions)
 
         upper_component = component_name.upper()
-        self.logger.write(f"{upper_component} CALLED>>> {specific_instructions}")
+        await self.journal.write(f"{upper_component} CALLED>>> {specific_instructions}")
         if self.get_takes_awhile():
-            self.logger.write("This may take awhile...")
+            await self.journal.write("This may take awhile...")
 
         command = self.get_command()
         run: Run = await self.run_context.submit_message(command)
-        run = await self.run_context.wait_on_run(run, self.logger)
+        run = await self.run_context.wait_on_run(run, self.journal)
 
         messages = await self.run_context.get_response()
 
         messages = await self.integrate_callable_response(run, messages)
 
         response = generate_response(messages)
-        self.logger.write(f"{upper_component} RETURNED>>> {response}")
+        await self.journal.write(f"{upper_component} RETURNED>>> {response}")
         return response

@@ -12,10 +12,12 @@
 from typing import List
 from typing import Union
 
+from neuro_san.journals.journal import Journal
 
-class StreamToLogger:
+
+class TextJournal(Journal):
     """
-    Class for capturing output stream to a list of strings
+    Journal implementation for capturing entries as a list of strings
     """
 
     def __init__(self):
@@ -24,15 +26,15 @@ class StreamToLogger:
         """
         self.log_content = []
 
-    def write(self, message: Union[str, bytes]):
+    async def write(self, entry: Union[str, bytes]):
         """
-        :param message: Add a message to the logs.
+        :param entry: Add a string-ish entry to the logs.
                     Can be either a string or bytes.
         """
         # Decoding bytes to string if necessary
-        if isinstance(message, bytes):
-            message = message.decode('utf-8')
-        self.log_content.append(message)
+        if isinstance(entry, bytes):
+            entry = entry.decode('utf-8')
+        self.log_content.append(entry)
 
     def get_logs(self) -> List[str]:
         """

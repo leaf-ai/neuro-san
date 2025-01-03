@@ -40,7 +40,7 @@ class FrontMan(CallingTool):
                 # run_context
                 break
 
-            decision_run = await self.run_context.wait_on_run(decision_run, self.logger)
+            decision_run = await self.run_context.wait_on_run(decision_run, self.journal)
 
             if decision_run.requires_action():
                 decision_run = await self.make_tool_function_calls(decision_run)

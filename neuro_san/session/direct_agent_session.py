@@ -211,7 +211,7 @@ class DirectAgentSession(AgentSession):
         if chat_session is not None:
             # We have seen this session_id before and can poll for a new response.
             status = self.FOUND
-            the_logs = chat_session.get_logger().get_logs()
+            the_logs = chat_session.get_journal().get_logs()
             chat_response = chat_session.get_latest_response()
             if chat_response is not None:
                 # So as not to give the same response over multiple polls to logs().

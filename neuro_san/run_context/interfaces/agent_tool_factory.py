@@ -12,9 +12,9 @@
 from typing import Any
 from typing import Dict
 
+from neuro_san.journals.journal import Journal
 from neuro_san.run_context.interfaces.callable_tool import CallableTool
 from neuro_san.run_context.interfaces.run_context import RunContext
-from neuro_san.utils.stream_to_logger import StreamToLogger
 
 
 class AgentToolFactory:
@@ -26,7 +26,7 @@ class AgentToolFactory:
     # pylint: disable=too-many-arguments,too-many-positional-arguments
     def create_agent_tool(self,
                           parent_run_context: RunContext,
-                          logger: StreamToLogger,
+                          journal: Journal,
                           name: str,
                           sly_data: Dict[str, Any],
                           arguments: Dict[str, Any]) -> CallableTool:

@@ -22,15 +22,15 @@ import time
 
 from leaf_common.config.dictionary_overlay import DictionaryOverlay
 
+from neuro_san.journals.journal import Journal
+from neuro_san.messages.message_utils import pretty_the_messages
+from neuro_san.messages.message_utils import get_last_message_with_content
 from neuro_san.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.run_context.interfaces.run import Run
 from neuro_san.run_context.interfaces.run_context import RunContext
 from neuro_san.run_context.interfaces.tool_caller import ToolCaller
 from neuro_san.run_context.openai.openai_client import OpenAIClient
 from neuro_san.run_context.openai.openai_run import OpenAIRun
-from neuro_san.utils.message_utils import pretty_the_messages
-from neuro_san.utils.message_utils import get_last_message_with_content
-from neuro_san.utils.stream_to_logger import StreamToLogger
 
 
 class OpenAIRunContext(RunContext):
@@ -146,12 +146,12 @@ class OpenAIRunContext(RunContext):
         run = OpenAIRun(openai_run)
         return run
 
-    async def wait_on_run(self, run: Run, logger: StreamToLogger = None) -> Run:
+    async def wait_on_run(self, run: Run, journal: Journal = None) -> Run:
         """
         Loops on the given run's status for OpenAI service-side processing
         to be done.
         :param run: The OpenAI run on their servers
-        :param logger: The StreamToLogger which captures the "thinking" messages.
+        :param journal: The Journal which captures the "thinking" messages.
         :return: An potentially updated Run
         """
         messages = await self.openai_client.list_messages(thread_id=self.thread_id)
@@ -177,8 +177,8 @@ class OpenAIRunContext(RunContext):
                         len(last_message_with_content.content[0].text.value)))):
                 number_of_new_messages = len(latest_messages) - len(messages)
                 new_messages = latest_messages[-number_of_new_messages:]
-                if logger is not None:
-                    logger.write(pretty_the_messages(new_messages))
+                if journal is not None:
+                    await journal.write(pretty_the_messages(new_messages))
                 messages = latest_messages
 
             run = OpenAIRun(openai_run)

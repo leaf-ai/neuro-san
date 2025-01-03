@@ -24,11 +24,11 @@ from neuro_san.graph.tools.class_tool import ClassTool
 from neuro_san.graph.tools.external_tool import ExternalTool
 from neuro_san.graph.tools.front_man import FrontMan
 from neuro_san.graph.tools.method_tool import MethodTool
+from neuro_san.journals.journal import Journal
 from neuro_san.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.run_context.interfaces.callable_tool import CallableTool
 from neuro_san.run_context.interfaces.run_context import RunContext
 from neuro_san.run_context.utils.external_tool_adapter import ExternalToolAdapter
-from neuro_san.utils.stream_to_logger import StreamToLogger
 from neuro_san.utils.file_of_class import FileOfClass
 
 
@@ -150,7 +150,7 @@ class AgentToolRegistry(AgentToolFactory):
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
     def create_agent_tool(self, parent_run_context: RunContext,
-                          logger: StreamToLogger,
+                          journal: Journal,
                           name: str,
                           sly_data: Dict[str, Any],
                           arguments: Dict[str, Any] = None) -> CallableTool:
@@ -166,7 +166,7 @@ class AgentToolRegistry(AgentToolFactory):
             if not ExternalToolAdapter.is_external_agent(name):
                 raise ValueError(f"No agent_tool_spec for {name}")
 
-            agent_tool = ExternalTool(parent_run_context, logger, name, arguments, sly_data)
+            agent_tool = ExternalTool(parent_run_context, journal, name, arguments, sly_data)
             return agent_tool
 
         if agent_tool_spec.get("function") is not None:
@@ -174,28 +174,28 @@ class AgentToolRegistry(AgentToolFactory):
             # it wants to be called with.
             if agent_tool_spec.get("class") is not None:
                 # Agent specifically requested a python class to be run.
-                agent_tool = ClassTool(parent_run_context, logger, self, arguments, agent_tool_spec, sly_data)
+                agent_tool = ClassTool(parent_run_context, journal, self, arguments, agent_tool_spec, sly_data)
             elif agent_tool_spec.get("method") is not None:
                 # Agent specifically requested a python method to be run.
                 # NOTE: this usage is deprecaded in favor of ClassTools so as to
                 # discourage tool implementations with Static Cling.
-                agent_tool = MethodTool(parent_run_context, logger, self, arguments, agent_tool_spec, sly_data)
+                agent_tool = MethodTool(parent_run_context, journal, self, arguments, agent_tool_spec, sly_data)
             else:
-                agent_tool = BranchTool(parent_run_context, logger, self, arguments, agent_tool_spec, sly_data)
+                agent_tool = BranchTool(parent_run_context, journal, self, arguments, agent_tool_spec, sly_data)
         else:
             # Get the tool to call from the spec.
-            agent_tool = FrontMan(parent_run_context, logger, self, agent_tool_spec, sly_data)
+            agent_tool = FrontMan(parent_run_context, journal, self, agent_tool_spec, sly_data)
 
         return agent_tool
 
-    def create_front_man(self, logger: StreamToLogger, sly_data: Dict[str, Any]) -> FrontMan:
+    def create_front_man(self, journal: Journal, sly_data: Dict[str, Any]) -> FrontMan:
         """
         Find and create the FrontMan for chat
         """
         front_man_name: str = self.find_front_man()
 
         agent_tool_spec: Dict[str, Any] = self.get_agent_tool_spec(front_man_name)
-        front_man = FrontMan(None, logger, self, agent_tool_spec, sly_data)
+        front_man = FrontMan(None, journal, self, agent_tool_spec, sly_data)
         return front_man
 
     def find_front_man(self) -> str:

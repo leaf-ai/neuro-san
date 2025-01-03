@@ -14,6 +14,7 @@ from typing import Any
 from typing import Dict
 from typing import Generator
 
+from copy import copy
 from time import sleep
 
 import argparse
@@ -84,11 +85,12 @@ class AgentCli:
             "last_chat_response": None,
             "prompt": self.default_prompt,
             "timeout": self.input_timeout_seconds,
+            "num_input": 0,
             "user_input": user_input,
             "sly_data": sly_data,
         }
 
-        while state.get("user_input") != "quit":
+        while not self.is_done(state):
 
             prompt = state.get("prompt")
             timeout = state.get("timeout")
@@ -168,6 +170,10 @@ All choices require an agent name.
                                 help="Use a service connection")
         arg_parser.add_argument("--direct", dest="connection", action="store_const", const="direct",
                                 help="Use a direct/library call for the chat")
+        arg_parser.add_argument("--max_input", type=int, default=1000000,
+                                help="Maximum rounds of input to go before exiting")
+        arg_parser.add_argument("--one_shot", dest="max_input", action="store_const", const=1,
+                                help="Send one round of input, then exit")
 
     def open_session(self):
         """
@@ -201,6 +207,21 @@ All choices require an agent name.
                  session with the agent network.
         """
         return AgentSessionFactory()
+
+    def is_done(self, state: Dict[str, Any]) -> bool:
+        """
+        :param state: The state dictionary
+        :return: True if the values in the state are considered to be sufficient
+                for terminating further conversation. False otherwise.
+        """
+
+        if state.get("user_input") == "quit":
+            return True
+
+        if state.get("num_input") >= self.args.max_input:
+            return True
+
+        return False
 
     def poll_once(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -252,6 +273,7 @@ All choices require an agent name.
         last_chat_response = state.get("last_chat_response")
         prompt = state.get("prompt")
         timeout = state.get("timeout")
+        num_input = state.get("num_input")
 
         # Get logs so we know what the assistant is thinking
         logs_request = {
@@ -277,7 +299,8 @@ All choices require an agent name.
                 # Might be more than 1
                 for i in range(len(last_logs), len(logs)-1):
                     thinking.write(logs[i])
-            last_logs = logs
+                    thinking.write("\n")
+            last_logs = copy(logs)
 
         # Update chat response and maybe prompt.
         prompt = ""
@@ -287,15 +310,18 @@ All choices require an agent name.
             prompt = self.default_prompt
             timeout = self.input_timeout_seconds
             last_chat_response = chat_response
+            num_input += 1
 
         return_state: Dict[str, Any] = {
             "last_logs": last_logs,
             "last_chat_response": last_chat_response,
             "prompt": prompt,
-            "timeout": timeout
+            "timeout": timeout,
+            "num_input": num_input
         }
         return return_state
 
+    # pylint: disable=too-many-locals
     def stream_once(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """
         Use polling strategy to communicate with agent.
@@ -305,6 +331,7 @@ All choices require an agent name.
         user_input: str = state.get("user_input")
         last_logs = state.get("last_logs")
         last_chat_response = state.get("last_chat_response")
+        num_input = state.get("num_input")
 
         if user_input is None or user_input == self.default_input:
             return state
@@ -333,18 +360,25 @@ All choices require an agent name.
             if session_id is not None:
                 self.session_id = session_id
 
+            message_type: int = response.get("type", 0)
             text: str = response.get("text")
 
             # Update chat response and maybe prompt.
             if text is not None:
-                print(f"Response: {text}")
-                last_chat_response = text
+                if message_type == 102:     # LEGACY_LOGS from chat.proto
+                    with open(self.args.thinking_file, "a", encoding="utf-8") as thinking:
+                        thinking.write(text)
+                        thinking.write("\n")
+                else:
+                    print(f"Response: {text}")
+                    last_chat_response = text
 
             return_state = {
                 "last_logs": last_logs,
                 "last_chat_response": last_chat_response,
                 "prompt": self.default_prompt,
-                "timeout": self.input_timeout_seconds
+                "timeout": self.input_timeout_seconds,
+                "num_input": num_input + 1
             }
 
         return return_state

@@ -33,6 +33,7 @@ message ChatMessage {
         // These are not out-of-the-box langchain messages
         AGENT = 100;
         AGENT_FRAMEWORK = 101;
+        LEGACY_LOGS = 102;      // Deprecated. Used for backwards compatibility
     }
 
     // The type of chat message
