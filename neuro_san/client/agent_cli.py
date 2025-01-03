@@ -367,7 +367,7 @@ All choices require an agent name.
             try:
                 # Normal case: We have a 1:1 mapping of ChatMessageType to what is in grpc def
                 message_type = ChatMessageType[response_message_type]
-            except KeyError as error:
+            except KeyError:
                 raise ValueError(f"Got message type {response_message_type}."
                                  " Are ChatMessageType and chat.proto out of sync?")
 
