@@ -25,7 +25,7 @@ from datetime import timedelta
 
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 
-from neuro_san.chat.chat_session import ChatSession
+from neuro_san.internals.chat.chat_session import ChatSession
 
 
 class ChatSessionMap:
