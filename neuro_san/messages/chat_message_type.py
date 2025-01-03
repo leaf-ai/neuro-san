@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from enum import IntEnum
 from typing import Dict
 from typing import Type
@@ -28,27 +30,46 @@ class ChatMessageType(IntEnum):
     AGENT_FRAMEWORK = 101
     LEGACY_LOGS = 102
 
+    # Convenience mappings going between constants and class types
+    _MESSAGE_TYPE_TO_CHAT_MESSAGE_TYPE: Dict[Type[BaseMessage], ChatMessageType] = {
+        # Needs to match chat.proto
+        SystemMessage: SYSTEM,
+        HumanMessage: HUMAN,
+        ToolMessage: TOOL,
+        AIMessage: AI,
 
-# Convenience mappings going between constants and class types
-MESSAGE_TYPE_TO_CHAT_MESSAGE_TYPE: Dict[Type[BaseMessage], int] = {
-    # Needs to match chat.proto
-    SystemMessage: ChatMessageType.SYSTEM,
-    HumanMessage: ChatMessageType.HUMAN,
-    ToolMessage: ChatMessageType.TOOL,
-    AIMessage: ChatMessageType.AI,
+        AgentMessage: AGENT,
+        AgentFrameworkMessage: AGENT_FRAMEWORK,
+        LegacyLogsMessage: LEGACY_LOGS,
+    }
 
-    AgentMessage: ChatMessageType.AGENT,
-    AgentFrameworkMessage: ChatMessageType.AGENT_FRAMEWORK,
-    LegacyLogsMessage: ChatMessageType.LEGACY_LOGS,
-}
+    @classmethod
+    def from_message(cls, base_message: BaseMessage) -> ChatMessageType:
+        """
+        :param base_message: A base message instance
+        :return: The ChatMessageType corresponding to the base_message
+        """
+        base_message_type: Type[BaseMessage] = type(base_message)
+        chat_message_type: ChatMessageType = \
+            cls._MESSAGE_TYPE_TO_CHAT_MESSAGE_TYPE.get(base_message_type, cls.UNKNOWN_MESSAGE_TYPE)
+        return chat_message_type
 
+    _MESSAGE_TYPE_TO_ROLE: Dict[Type[BaseMessage], str] = {
+        AIMessage: "assistant",
+        HumanMessage: "user",
+        ToolMessage: "tool",
+        SystemMessage: "system",
+        AgentMessage: "agent",
+        AgentFrameworkMessage: "agent-framework",
+        LegacyLogsMessage: "legacy-logs",
+    }
 
-MESSAGE_TYPE_TO_ROLE: Dict[Type[BaseMessage], str] = {
-    AIMessage: "assistant",
-    HumanMessage: "user",
-    ToolMessage: "tool",
-    SystemMessage: "system",
-    AgentMessage: "agent",
-    AgentFrameworkMessage: "agent-framework",
-    LegacyLogsMessage: "legacy-logs",
-}
+    @classmethod
+    def message_to_role(cls, base_message: BaseMessage) -> str:
+        """
+        :param base_message: A base message instance
+        :return: The role string corresponding to the base_message
+        """
+        base_message_type: Type[BaseMessage] = type(base_message)
+        role: str = cls._MESSAGE_TYPE_TO_ROLE.get(base_message_type)
+        return role
