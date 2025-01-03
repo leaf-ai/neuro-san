@@ -30,6 +30,8 @@ class ChatMessageType(IntEnum):
     AGENT_FRAMEWORK = 101
     LEGACY_LOGS = 102
 
+    # Adding something? Don't forget to update the maps below.
+
     @classmethod
     def from_message(cls, base_message: BaseMessage) -> ChatMessageType:
         """
