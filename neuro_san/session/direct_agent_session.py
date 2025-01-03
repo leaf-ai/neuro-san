@@ -341,15 +341,15 @@ class DirectAgentSession(AgentSession):
         # Ignore the future. Live in the now.
         _ = future
 
-        # The chat_session.queue_consumer() method will hang out waiting for chat.ChatMessage
-        # dictionaries to come back asynchronously from the submit() above until there
-        # are no more from the input.
+        # The synchronously_iterate() method below will synchronously block waiting for
+        # chat.ChatMessage dictionaries to come back asynchronously from the submit()
+        # above until there are no more from the input.
         empty: Dict[str, Any] = {}
         generator = AsyncToSyncGenerator(self.asyncio_executor, session_id,
                                          generated_type=Dict,
                                          keep_alive_result=empty,
                                          keep_alive_timeout_seconds=10.0)
-        for message in generator.synchronously_generate(chat_session.queue_consumer):
+        for message in generator.synchronously_iterate(chat_session.get_queue()):
 
             response_dict: Dict[str, Any] = copy(template_response_dict)
             if any(message):

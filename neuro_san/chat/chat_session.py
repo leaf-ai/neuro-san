@@ -10,10 +10,10 @@
 #
 # END COPYRIGHT
 from typing import Any
-from typing import AsyncIterator
 from typing import Dict
 from typing import Iterator
 
+from neuro_san.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.utils.stream_to_logger import StreamToLogger
 
 
@@ -52,13 +52,14 @@ class ChatSession:
         :param user_input: A string with the user's input
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be None.
-        :return: Nothing.  Response values are put on a queue to be read by a call to queue_consumer()
+        :return: Nothing.  Response values are put on a queue whose consumtion is
+                managed by AsyncCollatingQueue returned by get_queue().
         """
         raise NotImplementedError
 
-    async def queue_consumer(self) -> AsyncIterator[Dict[str, Any]]:
+    def get_queue(self) -> AsyncCollatingQueue:
         """
-        :return: An AsyncIterator over the messages from the agent(s).
+        :return: The AsyncCollatingQueue associated with this ChatSession instance.
         """
         raise NotImplementedError
 

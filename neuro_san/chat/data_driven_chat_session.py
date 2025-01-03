@@ -16,12 +16,11 @@ from typing import List
 
 import traceback
 
-from asyncio.queues import Queue
-from collections.abc import AsyncIterator
 from datetime import datetime
 
 from openai import BadRequestError
 
+from neuro_san.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.chat.chat_session import ChatSession
 from neuro_san.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.graph.tools.front_man import FrontMan
@@ -60,11 +59,17 @@ class DataDrivenChatSession(ChatSession):
         self.latest_response = None
         self.last_input_timestamp = datetime.now()
         self.sly_data: Dict[str, Any] = {}
-        self.queue: Queue[Dict[str, Any]] = Queue()
+        self.queue: AsyncCollatingQueue = AsyncCollatingQueue()
         self.last_streamed_index: int = 0
 
         if setup:
             self.set_up()
+
+    def get_queue(self) -> AsyncCollatingQueue:
+        """
+        :return: The AsyncCollatingQueue associated with this ChatSession instance.
+        """
+        return self.queue
 
     async def set_up(self):
         """
@@ -148,7 +153,8 @@ class DataDrivenChatSession(ChatSession):
         :param user_input: A string with the user's input
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be None.
-        :return: Nothing.  Response values are put on a queue to be read by a call to queue_consumer()
+        :return: Nothing.  Response values are put on a queue whose consumtion is
+                managed by the Iterator aspect of AsyncCollatingQueue returned by get_queue().
         """
         # Queue Producer from this:
         #   https://stackoverflow.com/questions/74130544/asyncio-yielding-results-from-multiple-futures-as-they-arrive
@@ -165,8 +171,7 @@ class DataDrivenChatSession(ChatSession):
 
         # Put an end-marker on the queue to tell the consumer we truly are done
         # and it doesn't need to wait for any more messages.
-        end_dict = {"end": True}
-        await self.queue.put(end_dict)
+        await self.queue.put_final_item()
 
     def is_streamable_message(self, chat_message: Dict[str, Any], index: int) -> bool:
         """
@@ -192,35 +197,6 @@ class DataDrivenChatSession(ChatSession):
             return False
 
         return True
-
-    async def queue_consumer(self) -> AsyncIterator[Dict[str, Any]]:
-        """
-        Queue Consumer from this:
-            https://stackoverflow.com/questions/74130544/asyncio-yielding-results-from-multiple-futures-as-they-arrive
-
-        Loops until either the timeout is met or the end marker is seen.
-
-        :return: An AsyncIterator over the messages from the agent(s).
-        """
-        done: bool = False
-        while not done:
-            try:
-                # DEF - we once called asyncio.wait_for() here to get a timeout behavior.
-                message: Dict[str, Any] = await self.queue.get()
-                if not isinstance(message, Dict):
-                    print(f"object on queue is of type {message.__class__.__name__}")
-                    message = {"end": True}
-
-                # Look for a special end-marker dictionary in the queue that signals
-                # there will be no more messages.
-                done = message.get("end") is not None
-                if not done:
-                    # yield all messages except the end marker
-                    yield message
-
-            except TimeoutError:
-                print("Timeout in waiting to consume")
-                done = True
 
     def get_logger(self) -> StreamToLogger:
         """
