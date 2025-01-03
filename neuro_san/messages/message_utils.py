@@ -19,8 +19,6 @@ import json
 from langchain_core.messages.base import BaseMessage
 
 from neuro_san.messages.chat_message_type import ChatMessageType
-from neuro_san.messages.chat_message_type import MESSAGE_TYPE_TO_CHAT_MESSAGE_TYPE
-from neuro_san.messages.chat_message_type import MESSAGE_TYPE_TO_ROLE
 
 
 def pretty_the_messages(messages: List[Any]) -> str:
@@ -99,7 +97,7 @@ def get_role(message: Any) -> str:
         return message.role
 
     # Check the look-up table above
-    role: str = MESSAGE_TYPE_TO_ROLE.get(type(message))
+    role: str = ChatMessageType.message_to_role(message)
     if role is not None:
         return role
 
@@ -131,10 +129,9 @@ def convert_to_chat_message(message: BaseMessage) -> Dict[str, Any]:
     :return: The ChatMessage in dictionary form
     """
 
-    message_type: ChatMessageType = MESSAGE_TYPE_TO_CHAT_MESSAGE_TYPE.get(type(message),
-                                                                          ChatMessageType.UNKNOWN_MESSAGE_TYPE)
+    message_type: ChatMessageType = ChatMessageType.from_message(message)
     chat_message: Dict[str, Any] = {
-        "type": message_type.value,
+        "type": message_type,
         "text": message.content,
         # No mime_data for now
         # No origin for now
