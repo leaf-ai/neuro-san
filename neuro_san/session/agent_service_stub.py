@@ -14,6 +14,7 @@ import os
 
 from grpc import Channel
 from grpc import UnaryUnaryMultiCallable
+from grpc import UnaryStreamMultiCallable
 
 import neuro_san.api.grpc.agent_pb2 as agent__pb2
 
@@ -44,6 +45,7 @@ class AgentServiceStub:
         self.Chat: UnaryUnaryMultiCallable = None
         self.Logs: UnaryUnaryMultiCallable = None
         self.Reset: UnaryUnaryMultiCallable = None
+        self.StreamingChat: UnaryStreamMultiCallable = None
 
     def set_agent_name(self, agent_name: str):
         """
@@ -93,6 +95,11 @@ class AgentServiceStub:
                 f"/{service_name}/Reset",
                 request_serializer=agent__pb2.ResetRequest.SerializeToString,
                 response_deserializer=agent__pb2.ResetResponse.FromString,
+                )
+        self.StreamingChat = channel.unary_stream(
+                f"/{service_name}/StreamingChat",
+                request_serializer=agent__pb2.ChatRequest.SerializeToString,
+                response_deserializer=agent__pb2.ChatResponse.FromString,
                 )
 
         return self

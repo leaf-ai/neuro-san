@@ -12,6 +12,7 @@ syntax = "proto3";
 package dev.cognizant_ai.neuro_san.api.grpc.agent;
 
 import "google/protobuf/struct.proto";
+import "neuro_san/api/grpc/chat.proto";
 
 option go_package = "github.com/leaf-ai/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/agent/v1;agent";
 
@@ -37,6 +38,9 @@ service AgentService {
 
     // Resets the chat initiated with Chat() above.
     rpc Reset (ResetRequest) returns (ResetResponse) {}
+
+    // Unidirectional streaming method which would supercede Chat() and Logs() above.
+    rpc StreamingChat(ChatRequest) returns (stream ChatResponse) {}
 }
 
 enum AgentStatus {
@@ -110,6 +114,9 @@ message ChatRequest {
     // The intent is for the key references to be passed to tools,
     // which then grab the values by programmatic means.
     google.protobuf.Struct sly_data = 3 [json_name="sly_data"];
+
+    // Supercedes user_input above
+    chat.ChatMessage user_message = 4 [json_name="user_message"];
 }
 
 // Response structure for Chat gRPC method
@@ -125,6 +132,18 @@ message ChatResponse {
     // See the definition of the AgentStatus enum above for details
     // on how to respond.
     AgentStatus status = 3;
+
+    // Optionally returned.
+    // Idea is that all of the above come back immediately to establish
+    // the connection, but likely the field below would not initially be filled in.
+    // Later on, as messages return from agents, later streamed versions of this
+    // message would have response below filled in with single messages from
+    // specific agents any time any one of them has something new to say.
+    // The origin info on the ChatMessage would allow the client to place
+    // just where in the agent hierarchy the message comes from.
+    // (Think like a URI:
+    //  opportunity_finder_pipeline/opportunity_finder_process_manager/synthetic_data_generator)
+    chat.ChatMessage response = 4 [json_name="response"];
 }
 
 // Request structure for Logs gRPC method
