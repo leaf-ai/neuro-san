@@ -9,8 +9,11 @@
 # neuro-san SDK Software in commercial settings.
 #
 # END COPYRIGHT
+
 from typing import Any
 from typing import Dict
+from typing import Generator
+
 from time import sleep
 
 import argparse
@@ -66,26 +69,30 @@ class AgentCli:
             sly_data = json.loads(self.args.sly_data)
             print(f"sly_data is {sly_data}")
 
-        state: Dict[str, Any] = {
-            "last_logs": [],
-            "last_chat_response": None,
-            "prompt": self.default_prompt,
-            "timeout": self.input_timeout_seconds
-        }
-
-        print("To see the thinking involved with the agent:\n"
-              f"    tail -f {self.args.thinking_file}\n")
-
         empty: Dict[str, Any] = {}
         response: Dict[str, Any] = self.session.function(empty)
+
         function: Dict[str, Any] = response.get("function", empty)
         initial_prompt: str = function.get("description")
         print(f"\n{initial_prompt}\n")
 
-        while user_input != "quit":
+        print("To see the thinking involved with the agent:\n"
+              f"    tail -f {self.args.thinking_file}\n")
+
+        state: Dict[str, Any] = {
+            "last_logs": [],
+            "last_chat_response": None,
+            "prompt": self.default_prompt,
+            "timeout": self.input_timeout_seconds,
+            "user_input": user_input,
+            "sly_data": sly_data,
+        }
+
+        while state.get("user_input") != "quit":
 
             prompt = state.get("prompt")
             timeout = state.get("timeout")
+            user_input = state.get("user_input")
             if user_input is None:
                 if prompt is not None and len(prompt) > 0:
                     user_input = timedinput(prompt, timeout=timeout,
@@ -96,44 +103,20 @@ class AgentCli:
             if user_input == "quit":
                 break
 
-            if user_input is not None and user_input != self.default_input:
-                print(f"Sending user_input {user_input}")
-                self.send_user_input(user_input, sly_data)
-                user_input = None
+            state["user_input"] = user_input
+            if self.args.stream:
+                state = self.stream_once(state)
             else:
-                sleep(self.poll_timeout_seconds)
-
-            state = self.get_responses(state)
+                state = self.poll_once(state)
 
     def parse_args(self):
         """
         Parse command line arguments into member variables
         """
+
         arg_parser = argparse.ArgumentParser()
-        arg_parser.add_argument("--local", type=bool, default=True,
-                                help="If True (the default), assume we are running against local container")
-        arg_parser.add_argument("--host", type=str, default=None,
-                                help="hostname setting if not running locally")
-        arg_parser.add_argument("--port", type=int, default=AgentSession.DEFAULT_PORT,
-                                help="TCP/IP port to run the Agent gRPC service on")
-        arg_parser.add_argument("--agent", type=str, default="esp_decision_assistant",
-                                help="Name of the agent to talk to on the server")
-        arg_parser.add_argument("--thinking_file", type=str, default="/tmp/agent_thinking.txt",
-                                help="File that captures agent thinking. "
-                                     "This is a separate text stream from the user/assistant chat")
-        arg_parser.add_argument("--first_prompt_file", type=str,
-                                help="File that captures the first response to the input prompt")
-        arg_parser.add_argument("--sly_data", type=str,
-                                help="JSON string containing data that is out-of-band to the chat stream, "
-                                     "but is still essential to agent function")
-        arg_parser.add_argument("--connection", default="direct", type=str,
-                                choices=["service", "direct"],
-                                help="""
-The type of connection to initiate. Choices are to connect to:
-    "service"   - an agent service via gRPC. (The default).  Needs host and port.
-    "direct"    - a session via library.
-All choices require an agent name.
-""")
+
+        self.add_args(arg_parser)
 
         # Incorrectly flagged as source of Path Traversal 1, 2, 4, 5, 6
         # See destination in file_of_class.py for exception explanation.
@@ -148,6 +131,44 @@ All choices require an agent name.
         self.args.thinking_file = FileOfClass.check_file(self.args.thinking_file, "/")
         self.args.first_prompt_file = FileOfClass.check_file(self.args.first_prompt_file, "/")
 
+    def add_args(self, arg_parser: argparse.ArgumentParser):
+        """
+        Adds arguments.  Allows subclasses a chance to add their own.
+        :param arg_parser: The argparse.ArgumentParser to add.
+        """
+        arg_parser.add_argument("--local", type=bool, default=True,
+                                help="If True (the default), assume we are running against local container")
+        arg_parser.add_argument("--host", type=str, default=None,
+                                help="hostname setting if not running locally")
+        arg_parser.add_argument("--port", type=int, default=AgentSession.DEFAULT_PORT,
+                                help="TCP/IP port to run the Agent gRPC service on")
+        arg_parser.add_argument("--agent", type=str, default="esp_decision_assistant",
+                                help="Name of the agent to talk to")
+        arg_parser.add_argument("--thinking_file", type=str, default="/tmp/agent_thinking.txt",
+                                help="File that captures agent thinking. "
+                                     "This is a separate text stream from the user/assistant chat")
+        arg_parser.add_argument("--first_prompt_file", type=str,
+                                help="File that captures the first response to the input prompt")
+        arg_parser.add_argument("--sly_data", type=str,
+                                help="JSON string containing data that is out-of-band to the chat stream, "
+                                     "but is still essential to agent function")
+        arg_parser.add_argument("--stream", default=False, action="store_true",
+                                help="Use streaming chat instead of polling")
+        arg_parser.add_argument("--poll", dest="stream", action="store_false",
+                                help="Use polling chat instead of streaming")
+        arg_parser.add_argument("--connection", default="direct", type=str,
+                                choices=["service", "direct"],
+                                help="""
+The type of connection to initiate. Choices are to connect to:
+    "service"   - an agent service via gRPC. (The default).  Needs host and port.
+    "direct"    - a session via library.
+All choices require an agent name.
+""")
+        arg_parser.add_argument("--service", dest="connection", action="store_const", const="service",
+                                help="Use a service connection")
+        arg_parser.add_argument("--direct", dest="connection", action="store_const", const="direct",
+                                help="Use a direct/library call for the chat")
+
     def open_session(self):
         """
         Opens a session based on the parsed command line arguments
@@ -156,9 +177,10 @@ All choices require an agent name.
         if self.args.host is not None or not self.args.local:
             hostname = self.args.host
 
-        # Open a session
-        self.session = AgentSessionFactory.create_session(self.args.connection, self.args.agent,
-                                                          hostname, self.args.port)
+        # Open a session with the factory
+        factory: AgentSessionFactory = self.get_agent_session_factory()
+        self.session = factory.create_session(self.args.connection, self.args.agent,
+                                              hostname, self.args.port)
 
         # Clear out the previous thinking file
         #
@@ -171,6 +193,34 @@ All choices require an agent name.
         with open(self.args.thinking_file, "w", encoding="utf-8") as thinking:
             thinking.write("\n")
 
+    def get_agent_session_factory(self) -> AgentSessionFactory:
+        """
+        This allows subclasses to add different kinds of connections.
+
+        :return: An AgentSessionFactory instance that will allow creation of the
+                 session with the agent network.
+        """
+        return AgentSessionFactory()
+
+    def poll_once(self, state: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Use polling strategy to communicate with agent.
+        :param user_input: The initial (string) user input to the loop.
+        :param sly_data: The initial dictionary of private sly_data to send.
+        """
+        user_input: str = state.get("user_input")
+        sly_data: Dict[str, Any] = state.get("sly_data")
+
+        if user_input is not None and user_input != self.default_input:
+            print(f"Sending user_input {user_input}")
+            self.send_user_input(user_input, sly_data)
+            state["user_input"] = None
+        else:
+            sleep(self.poll_timeout_seconds)
+
+        state: Dict[str, Any] = self.get_responses(state)
+        return state
+
     def send_user_input(self, user_input: str, sly_data: Dict[str, Any]):
         """
         Sends user input to Agent service
@@ -179,7 +229,10 @@ All choices require an agent name.
         if user_input != self.default_input:
             chat_request = {
                 "session_id": self.session_id,
-                "user_input": user_input
+                "user_message": {
+                    "type": 1,      # HUMAN from chat.proto
+                    "text": user_input
+                }
             }
 
             if sly_data is not None and len(sly_data.keys()) > 0:
@@ -241,6 +294,61 @@ All choices require an agent name.
             "prompt": prompt,
             "timeout": timeout
         }
+        return return_state
+
+    def stream_once(self, state: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Use polling strategy to communicate with agent.
+        :param user_input: The initial (string) user input to the loop.
+        :param sly_data: The initial dictionary of private sly_data to send.
+        """
+        user_input: str = state.get("user_input")
+        last_logs = state.get("last_logs")
+        last_chat_response = state.get("last_chat_response")
+        prompt = state.get("prompt")
+
+        if user_input is None or user_input == self.default_input:
+            return state
+
+        print(f"Sending user_input {user_input}")
+        chat_request = {
+            "session_id": self.session_id,
+            "user_message": {
+                "type": 1,      # HUMAN from chat.proto
+                "text": user_input
+            }
+        }
+
+        sly_data: Dict[str, Any] = state.get("sly_data")
+        if sly_data is not None and len(sly_data.keys()) > 0:
+            chat_request["sly_data"] = sly_data
+
+        empty = {}
+        chat_responses: Generator[Dict[str, Any], None, None] = self.session.streaming_chat(chat_request)
+        for chat_response in chat_responses:
+
+            session_id: str = chat_response.get("session_id")
+            response: Dict[str, Any] = chat_response.get("response", empty)
+
+            if session_id is not None:
+                self.session_id = session_id
+
+            text: str = response.get("text")
+
+            # Update chat response and maybe prompt.
+            prompt = ""
+            if text is not None:
+                print(f"Response: {text}")
+                prompt = self.default_prompt
+                last_chat_response = text
+
+            return_state: Dict[str, Any] = {
+                "last_logs": last_logs,
+                "last_chat_response": last_chat_response,
+                "prompt": prompt,
+                "timeout": self.input_timeout_seconds
+            }
+
         return return_state
 
 

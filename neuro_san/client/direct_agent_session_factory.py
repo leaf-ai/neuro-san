@@ -11,7 +11,7 @@
 # END COPYRIGHT
 from typing import Dict
 
-from leaf_server_common.utils.asyncio_executor import AsyncioExecutor
+from leaf_server_common.asyncio.asyncio_executor import AsyncioExecutor
 
 from neuro_san.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.service.registry_manifest_restorer import RegistryManifestRestorer

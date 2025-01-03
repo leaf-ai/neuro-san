@@ -37,6 +37,7 @@ class ServiceAgentSession(AbstractServiceSession, AgentSession):
                  metadata: Dict[str, str] = None,
                  security_cfg: Dict[str, Any] = None,
                  umbrella_timeout: Timeout = None,
+                 streaming_timeout_in_seconds: int = None,
                  agent_name: str = DEFAULT_AGENT_NAME,
                  service_prefix: str = None):
         """
@@ -78,7 +79,8 @@ class ServiceAgentSession(AbstractServiceSession, AgentSession):
                                         service_stub,
                                         use_host, use_port,
                                         timeout_in_seconds, metadata,
-                                        security_cfg, umbrella_timeout)
+                                        security_cfg, umbrella_timeout,
+                                        streaming_timeout_in_seconds)
 
     def function(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -236,7 +238,7 @@ class ServiceAgentSession(AbstractServiceSession, AgentSession):
             "streaming_chat",
             self._streaming_chat_from_stub,
             request_dict,
-            service_messages.ChatRequest(),
+            request_instance=service_messages.ChatRequest(),
             stream_response=True)
 
     @staticmethod

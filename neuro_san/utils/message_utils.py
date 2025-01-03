@@ -10,7 +10,9 @@
 #
 # END COPYRIGHT
 from typing import Any
+from typing import Dict
 from typing import List
+from typing import Type
 
 import json
 
@@ -19,6 +21,9 @@ from langchain_core.messages.base import BaseMessage
 from langchain_core.messages.human import HumanMessage
 from langchain_core.messages.system import SystemMessage
 from langchain_core.messages.tool import ToolMessage
+
+from neuro_san.utils.agent_message import AgentMessage
+from neuro_san.utils.agent_framework_message import AgentFrameworkMessage
 
 
 def pretty_the_messages(messages: List[Any]) -> str:
@@ -87,6 +92,16 @@ def generate_response(the_messages: List[Any]) -> str:
     return json.dumps(response_list)
 
 
+MESSAGE_TYPE_TO_ROLE: Dict[Type[BaseMessage], str] = {
+    AIMessage: "assistant",
+    HumanMessage: "user",
+    ToolMessage: "tool",
+    SystemMessage: "system",
+    AgentMessage: "agent",
+    AgentFrameworkMessage: "agent-framework",
+}
+
+
 def get_role(message: Any) -> str:
     """
     :param message: Either an OpenAI message or a langchain BaseMessage
@@ -96,14 +111,10 @@ def get_role(message: Any) -> str:
     if hasattr(message, "role"):
         return message.role
 
-    if isinstance(message, AIMessage):
-        return "assistant"
-    if isinstance(message, HumanMessage):
-        return "user"
-    if isinstance(message, ToolMessage):
-        return "tool"
-    if isinstance(message, SystemMessage):
-        return "system"
+    # Check the look-up table above
+    role: str = MESSAGE_TYPE_TO_ROLE.get(type(message))
+    if role is not None:
+        return role
 
     raise ValueError(f"Don't know how to handle message type {message.__class__.__name__}")
 
@@ -123,3 +134,34 @@ def get_content(message: Any) -> str:
         return message.content[0].text.value
 
     raise ValueError(f"Don't know how to handle message type {message.__class__.__name__}")
+
+
+MESSAGE_TYPE_TO_CHAT_MESSAGE_TYPE: Dict[Type[BaseMessage], int] = {
+    # Needs to match chat.proto
+    HumanMessage: 1,
+    SystemMessage: 2,
+    AIMessage: 3,
+    ToolMessage: 4,
+
+    AgentMessage: 100,
+    AgentFrameworkMessage: 101,
+}
+
+
+def convert_to_chat_message(message: BaseMessage) -> Dict[str, Any]:
+    """
+    Convert the BaseMessage to a chat.ChatMessage dictionary
+
+    :param message: The BaseMessage to convert
+    :return: The ChatMessage in dictionary form
+    """
+
+    unknown: int = 0
+    chat_message: Dict[str, Any] = {
+        "type": MESSAGE_TYPE_TO_CHAT_MESSAGE_TYPE.get(type(message), unknown),
+        "text": message.content,
+        # No mime_data for now
+        # No origin for now
+    }
+
+    return chat_message

@@ -15,7 +15,13 @@ from typing import Dict
 from typing import Generator
 from typing import List
 
-from leaf_server_common.utils.asyncio_executor import AsyncioExecutor
+from asyncio import Future
+from copy import copy
+
+from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
+
+from leaf_server_common.asyncio.asyncio_executor import AsyncioExecutor
+from leaf_server_common.asyncio.async_to_sync_generator import AsyncToSyncGenerator
 
 from neuro_san.chat.chat_session import ChatSession
 from neuro_san.chat.data_driven_chat_session import DataDrivenChatSession
@@ -122,7 +128,12 @@ class DirectAgentSession(AgentSession):
             Note that responses to the chat input are asynchronous and come by polling the
             logs() method below.
         """
+        extractor = DictionaryExtractor(request_dict)
+
+        # Get the user input. Prefer the newer-style from the user_message
         user_input: str = request_dict.get("user_input")
+        user_input = extractor.get("user_message.text", user_input)
+
         session_id: str = request_dict.get("session_id")
         sly_data: Dict[str, Any] = request_dict.get("sly_data")
         status: int = self.NOT_FOUND
@@ -147,9 +158,11 @@ class DirectAgentSession(AgentSession):
             # Create an asynchronous background task to process the user input.
             # This might take a few minutes, which can be longer than some
             # sockets stay open.
-            self.asyncio_executor.submit(session_id, chat_session.chat, user_input, sly_data)
+            future: Future = self.asyncio_executor.submit(session_id, chat_session.chat,
+                                                          user_input, sly_data)
+            _ = future
 
-            # Allow the task to be scheduled
+            # Allow the task to be scheduled. Let the client poll via logs().
 
         # Prepare the response dictionary
         response_dict = {
@@ -242,7 +255,8 @@ class DirectAgentSession(AgentSession):
         if chat_session is not None:
             # We have seen this session_id before and can poll for a new response.
             status = self.FOUND
-            self.asyncio_executor.submit(session_id, chat_session.set_up)
+            future: Future = self.asyncio_executor.submit(session_id, chat_session.set_up)
+            _ = future
 
         response_dict = {
             "session_id": session_id,
@@ -250,6 +264,7 @@ class DirectAgentSession(AgentSession):
         }
         return response_dict
 
+    # pylint: disable=too-many-locals,too-many-statements,too-many-branches
     def streaming_chat(self, request_dict: Dict[str, Any]) -> Generator[Dict[str, Any], None, None]:
         """
         :param request_dict: A dictionary version of the ChatRequest
@@ -281,7 +296,67 @@ class DirectAgentSession(AgentSession):
             Note that responses to the chat input might be numerous and will come as they
             are produced until the system decides there are no more messages to be sent.
         """
-        raise NotImplementedError
+        extractor = DictionaryExtractor(request_dict)
+
+        # Get the user input. Prefer the newer-style from the user_message
+        user_input: str = request_dict.get("user_input")
+        user_input = extractor.get("user_message.text", user_input)
+
+        session_id: str = request_dict.get("session_id")
+        sly_data: Dict[str, Any] = request_dict.get("sly_data")
+        status: int = self.NOT_FOUND
+
+        chat_session: ChatSession = self.chat_session_map.get_chat_session(session_id)
+        if chat_session is None:
+            if session_id is None:
+                # Initiate a new conversation.
+                status = self.CREATED
+                chat_session = DataDrivenChatSession(registry=self.tool_registry)
+                session_id = self.chat_session_map.register_chat_session(chat_session)
+            else:
+                # We got an session_id, but this service instance has no knowledge
+                # of it.
+                status = self.NOT_FOUND
+        else:
+            # We have seen this session_id before and can register new user input.
+            status = self.FOUND
+
+        # Prepare the response dictionary
+        template_response_dict = {
+            "session_id": session_id,
+            "status": status
+        }
+
+        if chat_session is None or user_input is None:
+            # Can't go on to chat, so report back early with a single value.
+            # There is no ChatMessage response in the dictionary in this case
+            yield template_response_dict
+            return
+
+        # Create an asynchronous background task to process the user input.
+        # This might take a few minutes, which can be longer than some
+        # sockets stay open.
+        future: Future = self.asyncio_executor.submit(session_id, chat_session.streaming_chat,
+                                                      user_input, sly_data)
+        # Ignore the future. Live in the now.
+        _ = future
+
+        # The chat_session.queue_consumer() method will hang out waiting for chat.ChatMessage
+        # dictionaries to come back asynchronously from the submit() above until there
+        # are no more from the input.
+        empty: Dict[str, Any] = {}
+        generator = AsyncToSyncGenerator(self.asyncio_executor, session_id,
+                                         generated_type=Dict,
+                                         keep_alive_result=empty,
+                                         keep_alive_timeout_seconds=10.0)
+        for message in generator.synchronously_generate(chat_session.queue_consumer):
+
+            response_dict: Dict[str, Any] = copy(template_response_dict)
+            if any(message):
+                response_dict["response"] = message
+
+            # We expect the message to be a dictionary form of chat.ChatMessage
+            yield response_dict
 
     def close(self):
         """

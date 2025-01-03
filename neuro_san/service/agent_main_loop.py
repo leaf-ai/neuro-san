@@ -13,6 +13,7 @@
 See class comment for details
 """
 from typing import Dict
+from typing import List
 
 import logging
 
@@ -21,8 +22,8 @@ import os
 from argparse import ArgumentParser
 from pathlib import Path
 
+from leaf_server_common.asyncio.asyncio_executor import AsyncioExecutor
 from leaf_server_common.server.server_loop_callbacks import ServerLoopCallbacks
-from leaf_server_common.utils.asyncio_executor import AsyncioExecutor
 
 from neuro_san.chat.chat_session import ChatSession
 from neuro_san.graph.registry.agent_tool_registry import AgentToolRegistry
@@ -31,6 +32,7 @@ from neuro_san.service.agent_server import AgentServer
 from neuro_san.service.agent_server import DEFAULT_SERVER_NAME
 from neuro_san.service.agent_server import DEFAULT_SERVER_NAME_FOR_LOGS
 from neuro_san.service.agent_server import DEFAULT_REQUEST_LIMIT
+from neuro_san.service.agent_service import AgentService
 from neuro_san.service.registry_manifest_restorer import RegistryManifestRestorer
 from neuro_san.session.agent_service_stub import DEFAULT_SERVICE_PREFIX
 from neuro_san.session.agent_session import AgentSession
@@ -77,6 +79,7 @@ class AgentMainLoop(ServerLoopCallbacks):
         self.server_name_for_logs: str = DEFAULT_SERVER_NAME_FOR_LOGS
         self.request_limit: int = DEFAULT_REQUEST_LIMIT
         self.service_prefix: str = service_prefix
+        self.server: AgentServer = None
 
     def parse_args(self):
         """
@@ -174,7 +177,7 @@ class AgentMainLoop(ServerLoopCallbacks):
         # Start up the background thread which will process asyncio stuff
         self.asyncio_executor.start()
 
-        grpc_server = AgentServer(self.port,
+        self.server = AgentServer(self.port,
                                   server_loop_callbacks=self,
                                   chat_session_map=self.chat_session_map,
                                   tool_registries=self.tool_registries,
@@ -183,13 +186,23 @@ class AgentMainLoop(ServerLoopCallbacks):
                                   server_name_for_logs=self.server_name_for_logs,
                                   request_limit=self.request_limit,
                                   service_prefix=self.service_prefix)
-        grpc_server.serve()
+        self.server.serve()
 
-    def loop_callback(self):
+    def loop_callback(self) -> bool:
         """
         Periodically called by the main server loop of ServerLifetime.
         """
         self.chat_session_map.prune()
+
+        # Report back on service activity so the ServerLifetime that calls
+        # this method can properly yield/sleep depending on how many requests
+        # are in motion.
+        agent_services: List[AgentService] = self.server.get_services()
+        for agent_service in agent_services:
+            if agent_service.get_request_count() > 0:
+                return True
+
+        return False
 
     def shutdown_callback(self):
         """

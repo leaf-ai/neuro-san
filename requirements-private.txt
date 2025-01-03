@@ -12,4 +12,4 @@
 git+https://${LEAF_SOURCE_CREDENTIALS}@github.com/leaf-ai/leaf-common.git@1.2.14
 
 # Private repos
-git+https://${LEAF_PRIVATE_SOURCE_CREDENTIALS}@github.com/leaf-ai/leaf-server-common.git@0.1.10
+git+https://${LEAF_PRIVATE_SOURCE_CREDENTIALS}@github.com/leaf-ai/leaf-server-common.git@0.1.13

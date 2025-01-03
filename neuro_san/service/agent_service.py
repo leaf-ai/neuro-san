@@ -21,9 +21,10 @@ import grpc
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.json_format import Parse
 
+from leaf_server_common.asyncio.asyncio_executor import AsyncioExecutor
+from leaf_server_common.server.atomic_counter import AtomicCounter
 from leaf_server_common.server.grpc_metadata_forwarder import GrpcMetadataForwarder
 from leaf_server_common.server.request_logger import RequestLogger
-from leaf_server_common.utils.asyncio_executor import AsyncioExecutor
 
 from neuro_san.api.grpc import agent_pb2 as service_messages
 from neuro_san.api.grpc import agent_pb2_grpc
@@ -39,6 +40,7 @@ DO_NOT_LOG_REQUESTS = [
 ]
 
 
+# pylint: disable=too-many-instance-attributes
 class AgentService(agent_pb2_grpc.AgentServiceServicer):
     """
     A gRPC implementation of the Neuro-San Agent Service.
@@ -80,6 +82,13 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         self.asyncio_executor: AsyncioExecutor = asyncio_executor
         self.tool_registry: AgentToolRegistry = tool_registry
         self.agent_name: str = agent_name
+        self.request_counter = AtomicCounter()
+
+    def get_request_count(self) -> int:
+        """
+        :return: The number of currently active requests
+        """
+        return self.request_counter.get_count()
 
     # pylint: disable=no-member
     def Function(self, request: service_messages.FunctionRequest,
@@ -93,6 +102,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         :param context: a grpc.ServicerContext
         :return: a FunctionResponse
         """
+        self.request_counter.increment()
         request_log = None
         log_marker: str = "function request"
         if "Function" not in DO_NOT_LOG_REQUESTS:
@@ -121,6 +131,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         if request_log is not None:
             self.request_logger.finish_request(f"{self.agent_name}.Function", log_marker, request_log)
 
+        self.request_counter.decrement()
         return response
 
     # pylint: disable=no-member
@@ -136,6 +147,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         :return: a ChatResponse which indicates that the request
                  was successful
         """
+        self.request_counter.increment()
         request_log = None
         log_marker = f"'{request.user_input}' on assistant {request.session_id}"
         if "Chat" not in DO_NOT_LOG_REQUESTS:
@@ -165,6 +177,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         if request_log is not None:
             self.request_logger.finish_request(f"{self.agent_name}.Chat", log_marker, request_log)
 
+        self.request_counter.decrement()
         return response
 
     # pylint: disable=no-member
@@ -180,6 +193,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         :return: a LogsResponse which indicates that the request
                  was successful
         """
+        self.request_counter.increment()
         request_log = None
         log_marker = f"Polling for logs on assistant {request.session_id}"
         if "Logs" not in DO_NOT_LOG_REQUESTS:
@@ -209,6 +223,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         if request_log is not None:
             self.request_logger.finish_request(f"{self.agent_name}.Logs", log_marker, request_log)
 
+        self.request_counter.decrement()
         return response
 
     # pylint: disable=no-member
@@ -223,6 +238,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         :return: a ResetResponse which indicates that the request
                  was successful
         """
+        self.request_counter.increment()
         request_log = None
         log_marker = f"Reset assistant {request.session_id}"
         if "Reset" not in DO_NOT_LOG_REQUESTS:
@@ -252,6 +268,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         if request_log is not None:
             self.request_logger.finish_request(f"{self.agent_name}.Reset", log_marker, request_log)
 
+        self.request_counter.decrement()
         return response
 
     # pylint: disable=no-member
@@ -264,9 +281,9 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
 
         :param request: a ChatRequest
         :param context: a grpc.ServicerContext
-        :return: a ChatResponse which indicates that the request
-                 was successful
+        :return: an iterator for (eventually) returned ChatResponses
         """
+        self.request_counter.increment()
         request_log = None
         log_marker = f"'{request.user_input}' on assistant {request.session_id}"
         if "StreamingChat" not in DO_NOT_LOG_REQUESTS:
@@ -285,16 +302,25 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
                                      asyncio_executor=self.asyncio_executor,
                                      metadata=metadata,
                                      security_cfg=self.security_cfg)
-        response_dict = session.streaming_chat(request_dict)
-        response_dict["request"] = request_dict
+        response_dict_iterator: Iterator[Dict[str, Any]] = session.streaming_chat(request_dict)
 
-        # Convert the response dictionary to a grpc message
-        # DEF - this will get better
-        response_string = json.dumps(response_dict)
-        response = service_messages.ChatResponse()
-        Parse(response_string, response)
+        for response_dict in response_dict_iterator:
+            response_dict["request"] = request_dict
 
+            # Convert the response dictionary to a grpc message
+            response_string = json.dumps(response_dict)
+            response = service_messages.ChatResponse()
+            Parse(response_string, response)
+
+            # Yield-ing a single response allows one response to be returned
+            # over the connection while keeping it open to wait for more.
+            # Grpc client code handling response streaming knows to construct an
+            # iterator on its side to do said waiting over there.
+            yield response
+
+        # Iterator has finally signaled that there are no more responses to be had.
+        # Log that we are done.
         if request_log is not None:
             self.request_logger.finish_request(f"{self.agent_name}.StreamingChat", log_marker, request_log)
 
-        return response
+        self.request_counter.decrement()

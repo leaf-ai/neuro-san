@@ -130,7 +130,10 @@ class ExternalTool(CallableTool):
         # Set up a request
         chat_request = {
             "session_id": self.session_id,
-            "user_input": agent_input
+            "user_message": {
+                "type": 1,          # HUMAN from chat.proto
+                "text": agent_input
+            }
         }
 
         # At some point in the future we might want to block all
