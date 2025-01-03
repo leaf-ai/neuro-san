@@ -252,7 +252,7 @@ All choices require an agent name.
             chat_request = {
                 "session_id": self.session_id,
                 "user_message": {
-                    "type": ChatMessageType.HUMAN.value,
+                    "type": ChatMessageType.HUMAN,
                     "text": user_input
                 }
             }
@@ -341,7 +341,7 @@ All choices require an agent name.
         chat_request = {
             "session_id": self.session_id,
             "user_message": {
-                "type": ChatMessageType.HUMAN.value,
+                "type": ChatMessageType.HUMAN,
                 "text": user_input
             }
         }
@@ -366,7 +366,7 @@ All choices require an agent name.
 
             # Update chat response and maybe prompt.
             if text is not None:
-                if message_type == ChatMessageType.LEGACY_LOGS.value:
+                if message_type == ChatMessageType.LEGACY_LOGS:
                     with open(self.args.thinking_file, "a", encoding="utf-8") as thinking:
                         thinking.write(text)
                         thinking.write("\n")

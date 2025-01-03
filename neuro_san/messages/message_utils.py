@@ -134,7 +134,7 @@ def convert_to_chat_message(message: BaseMessage) -> Dict[str, Any]:
     message_type: ChatMessageType = MESSAGE_TYPE_TO_CHAT_MESSAGE_TYPE.get(type(message),
                                                                           ChatMessageType.UNKNOWN_MESSAGE_TYPE)
     chat_message: Dict[str, Any] = {
-        "type": message_type.value,
+        "type": message_type,
         "text": message.content,
         # No mime_data for now
         # No origin for now

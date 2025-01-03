@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import IntEnum
 from typing import Dict
 from typing import Type
 
@@ -13,7 +13,7 @@ from neuro_san.messages.agent_message import AgentMessage
 from neuro_san.messages.legacy_logs_message import LegacyLogsMessage
 
 
-class ChatMessageType(Enum):
+class ChatMessageType(IntEnum):
     """
     Python enum to mimic gRPC for chat.ChatMessageType without dragging in all of gRPC.
     These all need to match what is defined in chat.proto

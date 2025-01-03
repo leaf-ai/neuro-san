@@ -188,7 +188,7 @@ class DataDrivenChatSession(ChatSession):
         # Only report messages that are important enough to send back as part of chat
         # (for now).  This includes any response for an AI (read: LLM), a tool, or
         # agent or framework messages.
-        if message_type is None or message_type < ChatMessageType.AI.value:
+        if message_type is None or message_type < ChatMessageType.AI:
             return False
 
         if index <= self.last_streamed_index:
