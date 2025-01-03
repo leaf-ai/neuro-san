@@ -73,8 +73,8 @@ class ExternalTool(CallableTool):
             self.session = ExternalToolAdapter.create_session(agent_location)
 
         # Send off the input
-        chat_request: Dict[str, Any] = await self.gather_input(f"```json\n{json.dumps(self.arguments)}```",
-                                                               self.sly_data)
+        chat_request: Dict[str, Any] = self.gather_input(f"```json\n{json.dumps(self.arguments)}```",
+                                                         self.sly_data)
 
         # Note that we are not await-ing the response here because what is returned is a generator.
         # Proper await-ing for generator results is done in the "async for"-loop below.
@@ -108,7 +108,7 @@ class ExternalTool(CallableTool):
         messages_str: str = json.dumps(message_list)
         return messages_str
 
-    async def gather_input(self, agent_input: str, sly_data: Dict[str, Any]) -> Dict[str, Any]:
+    def gather_input(self, agent_input: str, sly_data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Send input to the external agent
         :param agent_input: A single string to send as input to the agent
