@@ -21,7 +21,7 @@ from neuro_san.internals.messages.chat_message_type import ChatMessageType
 from neuro_san.internals.run_context.interfaces.callable_tool import CallableTool
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
-from neuro_san.internals.session.agent_session import AgentSession
+from neuro_san.session.agent_session import AgentSession
 
 
 class ExternalTool(CallableTool):

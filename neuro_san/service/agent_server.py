@@ -23,7 +23,7 @@ from leaf_server_common.server.server_loop_callbacks import ServerLoopCallbacks
 
 from neuro_san.api.grpc import agent_pb2
 
-from neuro_san.internals.registry.agent_tool_registry import AgentToolRegistry
+from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.utils.file_of_class import FileOfClass
 from neuro_san.service.agent_servicer_to_server import AgentServicerToServer
 from neuro_san.service.agent_service import AgentService
