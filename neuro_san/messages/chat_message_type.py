@@ -17,7 +17,7 @@ from neuro_san.messages.legacy_logs_message import LegacyLogsMessage
 
 class ChatMessageType(IntEnum):
     """
-    Python enum to mimic gRPC for chat.ChatMessageType without dragging in all of gRPC.
+    Python enum to mimic protobufs for chat.ChatMessageType without dragging in all of gRPC.
     These all need to match what is defined in chat.proto
     """
     UNKNOWN_MESSAGE_TYPE = 0
