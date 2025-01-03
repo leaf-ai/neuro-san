@@ -23,9 +23,9 @@ from pathlib import Path
 from leaf_common.persistence.easy.easy_hocon_persistence import EasyHoconPersistence
 from leaf_common.persistence.interface.restorer import Restorer
 
-from neuro_san.graph.registry.agent_tool_registry import AgentToolRegistry
-from neuro_san.graph.registry.agent_tool_registry_restorer import AgentToolRegistryRestorer
-from neuro_san.utils.file_of_class import FileOfClass
+from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
+from neuro_san.internals.graph.registry.agent_tool_registry_restorer import AgentToolRegistryRestorer
+from neuro_san.internals.utils.file_of_class import FileOfClass
 
 
 # pylint: disable=too-few-public-methods

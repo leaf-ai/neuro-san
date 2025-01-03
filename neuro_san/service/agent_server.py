@@ -23,11 +23,11 @@ from leaf_server_common.server.server_loop_callbacks import ServerLoopCallbacks
 
 from neuro_san.api.grpc import agent_pb2
 
-from neuro_san.graph.registry.agent_tool_registry import AgentToolRegistry
+from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
+from neuro_san.internals.utils.file_of_class import FileOfClass
 from neuro_san.service.agent_servicer_to_server import AgentServicerToServer
 from neuro_san.service.agent_service import AgentService
 from neuro_san.session.chat_session_map import ChatSessionMap
-from neuro_san.utils.file_of_class import FileOfClass
 
 DEFAULT_SERVER_NAME: str = 'neuro-san.Agent'
 DEFAULT_SERVER_NAME_FOR_LOGS: str = 'Agent Server'
