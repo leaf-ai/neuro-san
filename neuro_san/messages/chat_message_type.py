@@ -30,19 +30,6 @@ class ChatMessageType(IntEnum):
     AGENT_FRAMEWORK = 101
     LEGACY_LOGS = 102
 
-    # Convenience mappings going between constants and class types
-    _MESSAGE_TYPE_TO_CHAT_MESSAGE_TYPE: Dict[Type[BaseMessage], ChatMessageType] = {
-        # Needs to match chat.proto
-        SystemMessage: SYSTEM,
-        HumanMessage: HUMAN,
-        ToolMessage: TOOL,
-        AIMessage: AI,
-
-        AgentMessage: AGENT,
-        AgentFrameworkMessage: AGENT_FRAMEWORK,
-        LegacyLogsMessage: LEGACY_LOGS,
-    }
-
     @classmethod
     def from_message(cls, base_message: BaseMessage) -> ChatMessageType:
         """
@@ -51,25 +38,42 @@ class ChatMessageType(IntEnum):
         """
         base_message_type: Type[BaseMessage] = type(base_message)
         chat_message_type: ChatMessageType = \
-            cls._MESSAGE_TYPE_TO_CHAT_MESSAGE_TYPE.get(base_message_type, cls.UNKNOWN_MESSAGE_TYPE)
+            _MESSAGE_TYPE_TO_CHAT_MESSAGE_TYPE.get(base_message_type, cls.UNKNOWN_MESSAGE_TYPE)
         return chat_message_type
-
-    _MESSAGE_TYPE_TO_ROLE: Dict[Type[BaseMessage], str] = {
-        AIMessage: "assistant",
-        HumanMessage: "user",
-        ToolMessage: "tool",
-        SystemMessage: "system",
-        AgentMessage: "agent",
-        AgentFrameworkMessage: "agent-framework",
-        LegacyLogsMessage: "legacy-logs",
-    }
 
     @classmethod
     def message_to_role(cls, base_message: BaseMessage) -> str:
         """
+        This role stuff will be removed when the Logs() API is removed,
+        as the ChatMessageType and grpc definitions make it redundant.
+
         :param base_message: A base message instance
         :return: The role string corresponding to the base_message
         """
         base_message_type: Type[BaseMessage] = type(base_message)
-        role: str = cls._MESSAGE_TYPE_TO_ROLE.get(base_message_type)
+        role: str = _MESSAGE_TYPE_TO_ROLE.get(base_message_type)
         return role
+
+
+# Convenience mappings going between constants and class types
+_MESSAGE_TYPE_TO_CHAT_MESSAGE_TYPE: Dict[Type[BaseMessage], ChatMessageType] = {
+    # Needs to match chat.proto
+    SystemMessage: ChatMessageType.SYSTEM,
+    HumanMessage: ChatMessageType.HUMAN,
+    ToolMessage: ChatMessageType.TOOL,
+    AIMessage: ChatMessageType.AI,
+
+    AgentMessage: ChatMessageType.AGENT,
+    AgentFrameworkMessage: ChatMessageType.AGENT_FRAMEWORK,
+    LegacyLogsMessage: ChatMessageType.LEGACY_LOGS,
+}
+
+_MESSAGE_TYPE_TO_ROLE: Dict[Type[BaseMessage], str] = {
+    AIMessage: "assistant",
+    HumanMessage: "user",
+    ToolMessage: "tool",
+    SystemMessage: "system",
+    AgentMessage: "agent",
+    AgentFrameworkMessage: "agent-framework",
+    LegacyLogsMessage: "legacy-logs",
+}
