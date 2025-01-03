@@ -23,6 +23,7 @@ import json
 from timedinput import timedinput
 
 from neuro_san.client.agent_session_factory import AgentSessionFactory
+from neuro_san.messages.chat_message_type import ChatMessageType
 from neuro_san.session.agent_session import AgentSession
 from neuro_san.utils.file_of_class import FileOfClass
 
@@ -251,7 +252,7 @@ All choices require an agent name.
             chat_request = {
                 "session_id": self.session_id,
                 "user_message": {
-                    "type": 1,      # HUMAN from chat.proto
+                    "type": ChatMessageType.HUMAN,
                     "text": user_input
                 }
             }
@@ -340,7 +341,7 @@ All choices require an agent name.
         chat_request = {
             "session_id": self.session_id,
             "user_message": {
-                "type": 1,      # HUMAN from chat.proto
+                "type": ChatMessageType.HUMAN,
                 "text": user_input
             }
         }
@@ -360,12 +361,21 @@ All choices require an agent name.
             if session_id is not None:
                 self.session_id = session_id
 
-            message_type: int = response.get("type", 0)
+            # Convert the message type in the response to the enum we want to work with
+            response_message_type: str = response.get("type", "UNKNOWN_MESSAGE_TYPE")
+            message_type: int = ChatMessageType.UNKNOWN_MESSAGE_TYPE
+            try:
+                # Normal case: We have a 1:1 mapping of ChatMessageType to what is in grpc def
+                message_type = ChatMessageType[response_message_type]
+            except KeyError as exception:
+                raise ValueError(f"Got message type {response_message_type}."
+                                 " Are ChatMessageType and chat.proto out of sync?") from exception
+
             text: str = response.get("text")
 
             # Update chat response and maybe prompt.
             if text is not None:
-                if message_type == 102:     # LEGACY_LOGS from chat.proto
+                if message_type == ChatMessageType.LEGACY_LOGS:
                     with open(self.args.thinking_file, "a", encoding="utf-8") as thinking:
                         thinking.write(text)
                         thinking.write("\n")

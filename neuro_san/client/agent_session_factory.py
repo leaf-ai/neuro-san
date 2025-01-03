@@ -21,8 +21,7 @@ class AgentSessionFactory:
     Factory class for agent sessions.
     """
 
-    @staticmethod
-    def create_session(session_type: str,
+    def create_session(self, session_type: str,
                        agent_name: str,
                        hostname: str = None,
                        port: int = None) -> AgentSession:

@@ -9,22 +9,16 @@
 # neuro-san SDK Software in commercial settings.
 #
 # END COPYRIGHT
+
 from typing import Any
 from typing import Dict
 from typing import List
-from typing import Type
 
 import json
 
-from langchain_core.messages.ai import AIMessage
 from langchain_core.messages.base import BaseMessage
-from langchain_core.messages.human import HumanMessage
-from langchain_core.messages.system import SystemMessage
-from langchain_core.messages.tool import ToolMessage
 
-from neuro_san.messages.agent_framework_message import AgentFrameworkMessage
-from neuro_san.messages.agent_message import AgentMessage
-from neuro_san.messages.legacy_logs_message import LegacyLogsMessage
+from neuro_san.messages.chat_message_type import ChatMessageType
 
 
 def pretty_the_messages(messages: List[Any]) -> str:
@@ -93,17 +87,6 @@ def generate_response(the_messages: List[Any]) -> str:
     return json.dumps(response_list)
 
 
-MESSAGE_TYPE_TO_ROLE: Dict[Type[BaseMessage], str] = {
-    AIMessage: "assistant",
-    HumanMessage: "user",
-    ToolMessage: "tool",
-    SystemMessage: "system",
-    AgentMessage: "agent",
-    AgentFrameworkMessage: "agent-framework",
-    LegacyLogsMessage: "legacy-logs",
-}
-
-
 def get_role(message: Any) -> str:
     """
     :param message: Either an OpenAI message or a langchain BaseMessage
@@ -114,7 +97,7 @@ def get_role(message: Any) -> str:
         return message.role
 
     # Check the look-up table above
-    role: str = MESSAGE_TYPE_TO_ROLE.get(type(message))
+    role: str = ChatMessageType.message_to_role(message)
     if role is not None:
         return role
 
@@ -138,19 +121,6 @@ def get_content(message: Any) -> str:
     raise ValueError(f"Don't know how to handle message type {message.__class__.__name__}")
 
 
-MESSAGE_TYPE_TO_CHAT_MESSAGE_TYPE: Dict[Type[BaseMessage], int] = {
-    # Needs to match chat.proto
-    HumanMessage: 1,
-    SystemMessage: 2,
-    AIMessage: 3,
-    ToolMessage: 4,
-
-    AgentMessage: 100,
-    AgentFrameworkMessage: 101,
-    LegacyLogsMessage: 102,
-}
-
-
 def convert_to_chat_message(message: BaseMessage) -> Dict[str, Any]:
     """
     Convert the BaseMessage to a chat.ChatMessage dictionary
@@ -159,9 +129,9 @@ def convert_to_chat_message(message: BaseMessage) -> Dict[str, Any]:
     :return: The ChatMessage in dictionary form
     """
 
-    unknown: int = 0
+    message_type: ChatMessageType = ChatMessageType.from_message(message)
     chat_message: Dict[str, Any] = {
-        "type": MESSAGE_TYPE_TO_CHAT_MESSAGE_TYPE.get(type(message), unknown),
+        "type": message_type,
         "text": message.content,
         # No mime_data for now
         # No origin for now

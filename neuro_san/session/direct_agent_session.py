@@ -18,10 +18,9 @@ from typing import List
 from asyncio import Future
 from copy import copy
 
+from leaf_common.asyncio.async_to_sync_generator import AsyncToSyncGenerator
+from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
-
-from leaf_server_common.asyncio.asyncio_executor import AsyncioExecutor
-from leaf_server_common.asyncio.async_to_sync_generator import AsyncToSyncGenerator
 
 from neuro_san.chat.chat_session import ChatSession
 from neuro_san.chat.data_driven_chat_session import DataDrivenChatSession

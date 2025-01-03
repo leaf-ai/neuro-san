@@ -28,7 +28,16 @@ class CodedTool:
 
     def invoke(self, args: Dict[str, Any], sly_data: Dict[str, Any]) -> Any:
         """
-        Called when the coded tool is invoked by the agent hierarchy.
+        This method is provided as a convenience for an "easy" start to using
+        coded-tools.  This synchronous interface called by async_invoke() below.
+        when the coded tool is invoked by the agent hierarchy.
+
+        Know that any CodedTool is run within the confines of a Python asynchronous
+        EventLoop. Any synchronous blocking that happens - like making a call to a
+        web service over a socket, or something that inherently sleep()s - *will* also
+        block all other agent operations.  This is not so bad in a low-traffic or
+        test environment, but when scaling up, you really really want to embrace
+        and override the async_invoke() method below instead of this one.
 
         :param args: An argument dictionary whose keys are the parameters
                 to the coded tool and whose values are the values passed for them
@@ -44,11 +53,17 @@ class CodedTool:
                 adding the data is not invoke()-ed more than once.
         :return: A return value that goes into the chat stream.
         """
-        raise NotImplementedError
+        # Do not raise an exception here, but pass instead.
+        # This allows for fully asynchronous CodedTools to not have to worry about
+        # the synchronous bits.
 
     async def async_invoke(self, args: Dict[str, Any], sly_data: Dict[str, Any]) -> Any:
         """
-        Called when the coded tool is invoked asynchronously  by the agent hierarchy.
+        Called when the coded tool is invoked asynchronously by the agent hierarchy.
+        Strongly consider overriding this method instead of the "easier" synchronous
+        version above when the possibility of making any kind of call that could block
+        (like sleep() or a socket read/write out to a web service) is within the
+        scope of your CodedTool.
 
         :param args: An argument dictionary whose keys are the parameters
                 to the coded tool and whose values are the values passed for them
@@ -64,6 +79,7 @@ class CodedTool:
                 adding the data is not invoke()-ed more than once.
         :return: A return value that goes into the chat stream.
         """
+        # DEF - Use the AsyncioExecutor for a submit() for better task tracking and handling
         loop = asyncio.get_running_loop()
         result = await loop.run_in_executor(None, self.invoke, args, sly_data)
         return result
