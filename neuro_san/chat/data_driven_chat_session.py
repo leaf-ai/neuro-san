@@ -98,7 +98,17 @@ class DataDrivenChatSession(ChatSession):
         :param user_input: A string with the user's input
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be None.
-        :return: An Iterator of chat.ChatMessage dictionaries
+        :return: An Iterator over dictionary representation of chat messages.
+                The keys/values/structure of these chat message dictionaries will reflect
+                instances of ChatMessage from chat.proto.
+
+                Note that Iterators themselves are *not* simply lists. They are a Python
+                construct intended for use in a for-loop that is allowed to come up with
+                its content dynamically.  For our purposes, when an initiator of chat()
+                gets a handle to this Iterator, they can begin looping/waiting on its contents
+                without the content itself having been created yet.  This is a building
+                block of streaming results even though direct callers may not actually
+                be streaming.
 
         Results are polled from get_latest_response() below, as this non-streaming
         version can take longer than the lifetime of a socket.
