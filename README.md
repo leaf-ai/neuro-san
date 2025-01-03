@@ -137,32 +137,25 @@ That gRPC service is implemented (client and server) using this interface:
 
 https://github.com/leaf-ai/neuro-san/blob/main/neuro_san/session/agent_session.py
 
-It has 4 methods:
+It has 2 methods:
 
-* prompt()
+* function()
 
     This tells the client what the top-level agent will do for it.
 
-* chat()
+* streaming_chat()
 
     This is the main entry point. Send some text and it starts a conversation
     with a "front man" agent.  If that guy needs more information it will ask
     you and you return your answer via another call to the chat() interface.
-    It's worth noting that these chat sessions are likely to take longer
-    than the typical socket timeout (30-45secs) so the service stores a session
-    id for each chat.
+    ChatMessage Results from this method are streamed and when the conversation
+    is over, the stream itself closes after the last message has been received.
 
-* logs()
+    ChatMessages of various types will come back over the stream.
+    Anything of type AI is the front-man answering you on behalf of the rest of
+    its agent posse, so this is the kind you want to pay the most attention to.
 
-    This shows all the agent chat history so far for a given session id.
-    Think of this as seeing all of the internal "thinking" that the agents
-    are doing talking to each other
-
-* reset()
-
-    This basically says restart this chat from nothing as if there were no
-    chat history or context
-
+* Other methods like chat(), logs(), and reset() are legacy
 
 # Adding agents that are UI-visible
 
