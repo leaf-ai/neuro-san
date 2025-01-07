@@ -344,14 +344,8 @@ All choices require an agent name.
                 self.session_id = session_id
 
             # Convert the message type in the response to the enum we want to work with
-            response_message_type: str = response.get("type", "UNKNOWN_MESSAGE_TYPE")
-            message_type: int = ChatMessageType.UNKNOWN_MESSAGE_TYPE
-            try:
-                # Normal case: We have a 1:1 mapping of ChatMessageType to what is in grpc def
-                message_type = ChatMessageType[response_message_type]
-            except KeyError as exception:
-                raise ValueError(f"Got message type {response_message_type}."
-                                 " Are ChatMessageType and chat.proto out of sync?") from exception
+            response_type: str = response.get("type")
+            message_type: ChatMessageType = ChatMessageType.from_response_type(response_type)
 
             text: str = response.get("text")
 
