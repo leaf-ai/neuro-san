@@ -59,6 +59,9 @@ class ServiceAgentSession(AbstractServiceSession, AgentSession):
                         GRPC Channel.  Default is None, uses insecure channel.
         :param umbrella_timeout: A Timeout object under which the length of all
                         looping and retries should be considered
+        :param streaming_timeout_in_seconds: timeout to use when streaming to/from
+                        the service. Default is None, indicating connection should
+                        stay open until the (last) result is yielded.
         :param agent_name: The name of the agent to talk to
         :param service_prefix: The service prefix to use. Default is None,
                         implying the policy in AgentServiceStub takes over.

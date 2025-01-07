@@ -249,16 +249,7 @@ All choices require an agent name.
         """
         # Send user input
         if user_input != self.default_input:
-            chat_request = {
-                "session_id": self.session_id,
-                "user_message": {
-                    "type": ChatMessageType.HUMAN,
-                    "text": user_input
-                }
-            }
-
-            if sly_data is not None and len(sly_data.keys()) > 0:
-                chat_request["sly_data"] = sly_data
+            chat_request: Dict[str, Any] = self.formulate_chat_request(user_input, sly_data)
 
             # Send initial chat request
             chat_response = self.session.chat(chat_request)
@@ -338,17 +329,8 @@ All choices require an agent name.
             return state
 
         print(f"Sending user_input {user_input}")
-        chat_request = {
-            "session_id": self.session_id,
-            "user_message": {
-                "type": ChatMessageType.HUMAN,
-                "text": user_input
-            }
-        }
-
         sly_data: Dict[str, Any] = state.get("sly_data")
-        if sly_data is not None and len(sly_data.keys()) > 0:
-            chat_request["sly_data"] = sly_data
+        chat_request: Dict[str, Any] = self.formulate_chat_request(user_input, sly_data)
 
         return_state: Dict[str, Any] = {}
         empty = {}
@@ -392,6 +374,26 @@ All choices require an agent name.
             }
 
         return return_state
+
+    def formulate_chat_request(self, user_input: str, sly_data: Dict[str, Any] = None) -> Dict[str, Any]:
+        """
+        Formulates a single chat request given the user_input
+        :param user_input: The string to send
+        :param sly_data: The sly_data dictionary to send
+        :return: A dictionary representing the chat request to send
+        """
+        chat_request = {
+            "session_id": self.session_id,
+            "user_message": {
+                "type": ChatMessageType.HUMAN,
+                "text": user_input
+            }
+        }
+
+        if sly_data is not None and len(sly_data.keys()) > 0:
+            chat_request["sly_data"] = sly_data
+
+        return chat_request
 
 
 if __name__ == '__main__':
