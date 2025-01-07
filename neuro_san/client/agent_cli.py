@@ -249,7 +249,7 @@ All choices require an agent name.
         """
         # Send user input
         if user_input != self.default_input:
-            chat_request: Dict[str, Any] = self.formulate_request(user_input, sly_data)
+            chat_request: Dict[str, Any] = self.formulate_chat_request(user_input, sly_data)
 
             # Send initial chat request
             chat_response = self.session.chat(chat_request)
@@ -330,7 +330,7 @@ All choices require an agent name.
 
         print(f"Sending user_input {user_input}")
         sly_data: Dict[str, Any] = state.get("sly_data")
-        chat_request: Dict[str, Any] = self.formulate_request(user_input, sly_data)
+        chat_request: Dict[str, Any] = self.formulate_chat_request(user_input, sly_data)
 
         return_state: Dict[str, Any] = {}
         empty = {}
