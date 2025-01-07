@@ -9,7 +9,7 @@
 # DEF 07/26/2022: Due to bug in codefresh private repo plugin, this leaf-common
 # comes in from top-level requirements.txt file for now.
 # Public repos
-git+https://${LEAF_SOURCE_CREDENTIALS}@github.com/leaf-ai/leaf-common.git@1.2.15
+git+https://${LEAF_SOURCE_CREDENTIALS}@github.com/leaf-ai/leaf-common.git@1.2.16
 
 # Private repos
 git+https://${LEAF_PRIVATE_SOURCE_CREDENTIALS}@github.com/leaf-ai/leaf-server-common.git@0.1.15

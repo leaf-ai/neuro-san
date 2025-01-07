@@ -13,6 +13,7 @@ from __future__ import annotations
 from enum import IntEnum
 from typing import Dict
 from typing import Type
+from typing import Union
 
 from langchain_core.messages.ai import AIMessage
 from langchain_core.messages.base import BaseMessage
@@ -52,6 +53,29 @@ class ChatMessageType(IntEnum):
         chat_message_type: ChatMessageType = \
             _MESSAGE_TYPE_TO_CHAT_MESSAGE_TYPE.get(base_message_type, cls.UNKNOWN_MESSAGE_TYPE)
         return chat_message_type
+
+    @classmethod
+    def from_response_type(cls, response_type: Union[str, ChatMessageType]) -> ChatMessageType:
+        """
+        :param response_type: A type from a response instance
+        :return: The ChatMessageType corresponding to the base_message
+        """
+        message_type: ChatMessageType = ChatMessageType.UNKNOWN_MESSAGE_TYPE
+
+        if response_type is None:
+            # Return early
+            return message_type
+
+        if isinstance(response_type, ChatMessageType):
+            return response_type
+
+        try:
+            # Normal case: We have a 1:1 mapping of ChatMessageType to what is in grpc def
+            message_type = ChatMessageType[response_type]
+        except KeyError as exception:
+            raise ValueError(f"Got message type {response_type} (type {response_type.__class__.__name__})."
+                             " Are ChatMessageType and chat.proto out of sync?") from exception
+        return message_type
 
     @classmethod
     def message_to_role(cls, base_message: BaseMessage) -> str:
