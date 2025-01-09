@@ -174,7 +174,9 @@ class AgentToolRegistry(AgentToolFactory):
             # it wants to be called with.
             if agent_tool_spec.get("class") is not None:
                 # Agent specifically requested a python class to be run.
-                agent_tool = ClassTool(parent_run_context, journal, self, arguments, agent_tool_spec, sly_data)
+                config: Dict[str, Any] = agent_tool_spec.get("config")
+                agent_tool = ClassTool(parent_run_context, journal, self, arguments,
+                                       agent_tool_spec, sly_data, config)
             elif agent_tool_spec.get("method") is not None:
                 # Agent specifically requested a python method to be run.
                 # NOTE: this usage is deprecaded in favor of ClassTools so as to

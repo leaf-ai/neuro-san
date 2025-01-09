@@ -26,7 +26,7 @@ class CodedTool:
     Implementations are expected to clean up after themselves.
     """
 
-    def invoke(self, args: Dict[str, Any], sly_data: Dict[str, Any]) -> Any:
+    def invoke(self, args: Dict[str, Any], sly_data: Dict[str, Any], config: Dict[str, Any]) -> Any:
         """
         This method is provided as a convenience for an "easy" start to using
         coded-tools.  This synchronous interface called by async_invoke() below.
@@ -57,7 +57,7 @@ class CodedTool:
         # This allows for fully asynchronous CodedTools to not have to worry about
         # the synchronous bits.
 
-    async def async_invoke(self, args: Dict[str, Any], sly_data: Dict[str, Any]) -> Any:
+    async def async_invoke(self, args: Dict[str, Any], sly_data: Dict[str, Any], config: Dict[str, Any]) -> Any:
         """
         Called when the coded tool is invoked asynchronously by the agent hierarchy.
         Strongly consider overriding this method instead of the "easier" synchronous
@@ -81,5 +81,5 @@ class CodedTool:
         """
         # DEF - Use the AsyncioExecutor for a submit() for better task tracking and handling
         loop = asyncio.get_running_loop()
-        result = await loop.run_in_executor(None, self.invoke, args, sly_data)
+        result = await loop.run_in_executor(None, self.invoke, args, sly_data, config)
         return result

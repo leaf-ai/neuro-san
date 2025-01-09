@@ -35,7 +35,8 @@ class ClassTool(CallableTool):
                  factory: AgentToolFactory,
                  arguments: Dict[str, Any],
                  agent_tool_spec: Dict[str, Any],
-                 sly_data: Dict[str, Any]):
+                 sly_data: Dict[str, Any],
+                 config: Dict[str, Any] = None):
         """
         Constructor
 
@@ -51,6 +52,7 @@ class ClassTool(CallableTool):
                  values should not appear in agent chat text. Can be an empty dictionary.
                  This gets passed along as a distinct argument to the referenced python class's
                  invoke() method.
+        :param config: An optional config dictionary to pass to the CodedTool
         """
         _ = parent_run_context, journal, factory
         self.agent_tool_spec: Dict[str, Any] = agent_tool_spec
@@ -58,6 +60,9 @@ class ClassTool(CallableTool):
         self.arguments: Dict[str, Any] = arguments
         self.sly_data: Dict[str, Any] = sly_data
         self.factory: AgentToolFactory = factory
+        self.config: Dict[str, str] = {}
+        if config is not None:
+            self.config = config
 
     async def build(self) -> List[Any]:
         """
@@ -88,7 +93,7 @@ class ClassTool(CallableTool):
 
         coded_tool: CodedTool = python_class()
         if isinstance(coded_tool, CodedTool):
-            retval: Any = await coded_tool.async_invoke(self.arguments, self.sly_data)
+            retval: Any = await coded_tool.async_invoke(self.arguments, self.sly_data, self.config)
         else:
             retval = f"Error: {full_class_ref} is not a CodedTool"
 
