@@ -18,6 +18,7 @@ import json
 from leaf_common.config.resolver import Resolver
 
 from neuro_san.interfaces.coded_tool import CodedTool
+from neuro_san.internals.graph.tools.branch_tool import BranchTool
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.callable_tool import CallableTool
@@ -54,12 +55,12 @@ class ClassTool(CallableTool):
                  invoke() method.
         :param config: An optional config dictionary to pass to the CodedTool
         """
-        _ = parent_run_context, journal, factory
-        self.agent_tool_spec: Dict[str, Any] = agent_tool_spec
-
-        self.arguments: Dict[str, Any] = arguments
-        self.sly_data: Dict[str, Any] = sly_data
+        self.parent_run_context: RunContext = parent_run_context
+        self.journal: Journal = journal
         self.factory: AgentToolFactory = factory
+        self.arguments: Dict[str, Any] = arguments
+        self.agent_tool_spec: Dict[str, Any] = agent_tool_spec
+        self.sly_data: Dict[str, Any] = sly_data
         self.config: Dict[str, str] = {}
         if config is not None:
             self.config = config
@@ -91,7 +92,15 @@ class ClassTool(CallableTool):
 
         python_class = resolver.resolve_class_in_module(class_name, module_name)
 
-        coded_tool: CodedTool = python_class()
+        # Instantiate the CodedTool
+        coded_tool: CodedTool = None
+        if issubclass(python_class, BranchTool):
+            coded_tool = python_class(self.parent_run_context, self.journal, self.factory,
+                                      self.arguments, self.agent_tool_spec, self.sly_data)
+        else:
+            # Go with the no-args constructor as per the run-of-the-mill contract
+            coded_tool = python_class()
+
         if isinstance(coded_tool, CodedTool):
             retval: Any = await coded_tool.async_invoke(self.arguments, self.sly_data, self.config)
         else:

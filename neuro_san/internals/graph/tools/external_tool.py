@@ -10,8 +10,8 @@
 #
 # END COPYRIGHT
 from typing import Any
+from typing import AsyncGenerator
 from typing import Dict
-from typing import Generator
 from typing import List
 
 import json
@@ -78,7 +78,7 @@ class ExternalTool(CallableTool):
 
         # Note that we are not await-ing the response here because what is returned is a generator.
         # Proper await-ing for generator results is done in the "async for"-loop below.
-        chat_responses: Generator[Dict[str, Any], None, None] = self.session.streaming_chat(chat_request)
+        chat_responses: AsyncGenerator[Dict[str, Any], None] = self.session.streaming_chat(chat_request)
 
         # The asynchronous generator will wait until the next response is available
         # from the stream.  When the other side is done, the iterator will exit the loop.
@@ -91,12 +91,13 @@ class ExternalTool(CallableTool):
             if session_id is not None:
                 self.session_id = session_id
 
-            message_type: int = response.get("type", 0)
+            response_type = response.get("type")
+            message_type: ChatMessageType = ChatMessageType.from_response_type(response_type)
             text: str = response.get("text")
 
             # In terms of sending tool results back up the graph,
             # we really only care about the AI responses.
-            if message_type == ChatMessageType.AI.value and text is not None:
+            if message_type == ChatMessageType.AI and text is not None:
 
                 # Prepare the output
                 message: Dict[str, Any] = {
