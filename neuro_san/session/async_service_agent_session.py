@@ -244,11 +244,8 @@ class AsyncServiceAgentSession(AsyncAbstractServiceSession):
             request_instance=service_messages.ChatRequest())
 
         # Cannot do "yield from" in async land. Have to make explicit loop
-        try:
-            async for response in generator:
-                yield response
-        except TypeError as exception:
-            raise exception
+        async for response in generator:
+            yield response
 
     @staticmethod
     async def _function_from_stub(stub, timeout_in_seconds,
@@ -308,5 +305,6 @@ class AsyncServiceAgentSession(AsyncAbstractServiceSession):
         generator = stub.StreamingChat(*args, timeout=timeout_in_seconds,
                                        metadata=metadata,
                                        credentials=credentials)
+        # Cannot do "yield from" in async land. Have to make explicit loop
         async for response in generator:
             yield response
