@@ -1,0 +1,76 @@
+// Copyright © 2024 Cognizant Digital Business, Evolutionary AI. All rights reserved.
+
+// To obtain information concerning the code generation that is used by this Interface Definition Language
+// please see the following:
+//
+// Go - https://developers.google.com/protocol-buffers/docs/reference/go-generated
+// Python - https://developers.google.com/protocol-buffers/docs/reference/python-generated
+//
+
+syntax = "proto3";
+
+// The communication protocol that is used between the two parties
+// to request execution of LLM-specific tasks.
+package dev.cognizant_ai.neuroai.tasks;
+
+option go_package = "github.com/leaf-ai/unileaf/internal/gen/dev.cognizant_dev.ai/genproto/unileaf/tasks/v1;tasks";
+
+enum TaskStatus {
+  UNKNOWN = 0;
+  RUNNING = 1;
+  SUCCESS = 2;
+  ERROR = 3;
+  INVALID_INPUT = 4;
+  ALREADY_EXISTS = 5;
+  DOES_NOT_EXIST = 6;
+}
+
+message DatasetTaskRequest {
+  // Unique task ID
+  string task_id = 1 [json_name="task_id"];
+
+  // Code source in text form assumed to generate a dataset
+  string code_source = 2 [json_name="code_source"];
+
+  // URI to put generated dataset into
+  string destination_uri = 3 [json_name="destination_uri"];
+
+  // Any additional (optional) parameters for the task.
+  map<string, string> params = 4 [json_name="params"];
+}
+
+message DatasetTaskResponse {
+  // Task ID for corresponding task request
+  string task_id = 1 [json_name="task_id"];
+
+  // Response status for task.
+  TaskStatus status = 2 [json_name="status"];
+
+  // Error message if response is ERROR/INVALID_INPUT.
+  string error_msg = 3 [json_name="error_msg"];
+}
+
+message TaskStatusRequest {
+  // Request status of a task with given ID
+  string task_id = 1 [json_name="task_id"];
+}
+
+message TaskStatusResponse {
+  // Task ID for corresponding task status request
+  string task_id = 1 [json_name="task_id"];
+
+  // Response status for task.
+  TaskStatus status = 2 [json_name="status"];
+
+  // Error message if status is ERROR/INVALID_INPUT.
+  string error_msg = 3 [json_name="error_msg"];
+}
+
+service TaskService {
+
+  // Request to perform a Dataset generation task.
+  rpc GenerateDataset(DatasetTaskRequest) returns (DatasetTaskResponse) {}
+
+  // Request to get current status of a task being performed
+  rpc GetTaskStatus(TaskStatusRequest) returns (TaskStatusResponse) {}
+}

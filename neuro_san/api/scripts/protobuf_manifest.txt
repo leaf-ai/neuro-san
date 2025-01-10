@@ -1,3 +1,4 @@
 neuro_san/api/grpc/agent.proto
 neuro_san/api/grpc/chat.proto
 neuro_san/api/grpc/mime_data.proto
+neuro_san/api/grpc/tasks_service.proto
