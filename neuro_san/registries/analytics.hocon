@@ -71,6 +71,7 @@ You must complete these steps in order to help a user with data analysis.
         - This code must be passed verbatim and in its entirety.
         - The output of this tool will be a URL string that will be known as 'output_url'.
 
+
     5. Open the object at the url generated from this tool.
 
     6. Return either:
@@ -242,7 +243,7 @@ This code must come verbatim from the Opportunity Finder results.
                     "required": ["project_name", "code_snippet"]
                 }
             },
-            "class": "data_generator_service_tool.DataGeneratorServiceTool",
+            "class": "analytics_output_generator.AnalyticsOutputGenerator",
             "command": "Create the synthetic data file and return its URL or return error message if data file generation fails."
         },
     ]
