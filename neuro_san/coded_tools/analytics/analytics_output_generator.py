@@ -5,6 +5,7 @@ from typing import List
 from typing import Union
 
 import uuid
+import random
 
 from datetime import datetime
 from urllib.parse import quote
@@ -26,8 +27,8 @@ class AnalyticsOutputGenerator(CodedTool):
                 by the calling agent.  This dictionary is to be treated as read-only.
 
                 The argument dictionary expects the following keys:
-                    "code" A string containing well-formed Python code segment;
-                    "target" A string with S3 full destination path for code execution result
+                    "code_snippet" A string containing well-formed Python code segment;
+                    "project_name" A string with S3 full destination path for code execution result
                              (like s3://my-bucket/my-plot.png)
 
         :param sly_data: A dictionary whose keys are defined by the agent hierarchy,
@@ -53,22 +54,20 @@ class AnalyticsOutputGenerator(CodedTool):
                 "Error: <error message>"
         """
         print(f"ARGS: {args}")
-        code_source: str = args.get("code", "")
+        code_source: str = args.get("code_snippet", "")
         if not code_source:
             print("NO code string provided!")
             return "Error: NO CODE"
-        target: str = args.get("target", "")
-        if not target:
-            print("NO destination path provided!")
-            return "Error: NO DESTINATION PATH"
+        project_name: str = args.get("project_name", "fedex_day")
+        if not project_name:
+            print("NO project_name provided!")
+            return "Error: NO PROJECT NAME"
 
         service_endpoint: str = "localhost:30012"
         client = GRPCTaskClient(service_endpoint)
 
         task_id: str = f"task-{uuid.uuid4()}"
-        dest_uri: str = target
-        if dest_uri is None:
-            dest_uri = f"s3://asd-test01/{task_id}/result.csv"
+        dest_uri: str = self.generate_destination_uri(project_name)
 
         # Construct dataset generation request:
         request_dict: Dict[str, Any] = \
@@ -97,6 +96,52 @@ class AnalyticsOutputGenerator(CodedTool):
             return f"Error: {error_msg}"
 
         return {"status": "success"}
+
+    def generate_destination_uri(self, project_name: str, login: str = "fedex") -> str:
+        """
+        Function generates S3 URI for a dataset file created by data generation task;
+        dataset will be uploaded to this URI.
+        """
+        bucket: str = "aaa-storage"
+        project: str = self.make_s3_acceptable(project_name)
+        generation_time: str = self.get_s3_acceptable_time()
+        return f"s3://{bucket}/{login}/{project}_generated_{generation_time}.png"
+
+    def generate_short_uuid(self, length=12) -> str:
+        """
+        Utility function to generate UUID string of given length.
+        """
+        # Generate a random UUID
+        random_uuid = uuid.uuid4()
+        # Convert the UUID to a string without dashes
+        uuid_str = str(random_uuid).replace('-', '')
+        # Return the first `length` characters of the UUID
+        return uuid_str[:length]
+
+    def make_s3_acceptable(self, name: str) -> str:
+        """
+        Utility function to convert some name into a string
+        suitable to be a part of S3 URI.
+        """
+        # Replace spaces with hyphens or URL-encode them
+        name = name.replace(" ", "-")
+        # Lowercase the string (required for bucket names)
+        name = name.lower()
+        # URL encode the name to make it URI-safe
+        s3_acceptable_name = quote(name, safe='-')
+        return s3_acceptable_name
+
+    def get_s3_acceptable_time(self) -> str:
+        """
+        Utility function to generate timestamp in a format
+        suitable to be a part of S3 URI.
+        """
+        # Get the current time
+        now = datetime.now()
+        # Format the time in a human-readable string without spaces or colons
+        readable_time = now.strftime("%Y-%m-%d-%H-%M")
+        return readable_time
+
 
 if __name__ == '__main__':
     generator: AnalyticsOutputGenerator = AnalyticsOutputGenerator()

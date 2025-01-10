@@ -33,34 +33,6 @@ The unaltered code to work on, in its entirety.
         # he is the only one with no parameters in his function definition,
         # and therefore he needs to talk to the outside world to get things rolling.
         {
-            "name": "analytics_agent",
-
-            # Note that there are no parameters defined for this guy's "function" key.
-            # This is the primary way to identify this tool as a front-man,
-            # distinguishing it from the rest of the tools.
-
-            "function": {
-
-                # When there are no function parameters to the front-man,
-                # its description acts as an initial prompt.
-
-                "description": """
-Perform Data Analysis.
-"""
-            },
-
-            "instructions": """
-{instructions_prefix}
-You are the top-level agent responsible for data analysis.
-Ask a client for file path to the input file with CSV data. The resulting string is known as "file_path".
-Ask a client for kind of analysis he wishes to perform on this data. This information will be known as inquiry.
-Pass this  client inquiry to the analyze_data tool as a string for analyzing the data at file_path further.
-Once all down-chain agents respond, you will compile their responses and return the final response.
-""",
-            "tools": ["analyze_data"]
-        },
-
-        {
             "name": "analyze_data",
 
             "function": {
@@ -68,24 +40,17 @@ Once all down-chain agents respond, you will compile their responses and return 
                 "description": """
 Perform analytics on a given CSV and return a plot or description.
 """
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "inquiry": {
-                            "type": "string",
-                            "description": "The inquiry"
-                        }
-                    },
-                    "required": ["inquiry"]
-                }
-            },
+            }
 
             "instructions": """
-You are an expert Python Data Analysis assistant. 
-You must only reply to questions related to Data Analytics! Do not respond to any questions
-that are off-topic or unrelated to this!
+{instructions_prefix}
+You are the top-level agent responsible for data analysis.
+You are an expert in Python Data Analysis.
 
-Follow these steps:
+Ask a client for file path to the input file with CSV data. The resulting string is known as "file_path".
+Ask a client for kind of analysis he wishes to perform on this data. This information will be known as "inquiry".
+Once you get this input,
+follow these steps:
 
 1. Classify the user inquiry into one of the following types:
     'plot' -   If user asks for generating a plot, chart or visualization of any kind.
@@ -94,16 +59,18 @@ Follow these steps:
 
 2. Do not deviate from the columns in the given dataset. Do one of the following based on the user query:
 If user query is classified as 'description':
-    - Without importing the {sp_imports} packages, provide a detailed response as plain text.
+    - Provide a detailed response as plain text and finish your work.
 
 If user query is classified as 'plot':
-    - Write python code for the input {file_path}, using {com_imports} and {sp_imports} packages, to: {inquiry}.
+    - Write python code for the input file_path which will implement client inquiry.
+      Python code must save resulting plot file into some local file;
     - Do not write any text explanation except the code and the code should run directly without errors.
     - This code would be known as "code_snippet".
+    - Continue with further steps.
 
-3. Pass the above "code_snippet" to the code_validator tool. Take special care to preserve all formatting of data generator code,
+3. Pass the above "code_snippet" to the code_validator tool. Take special care to preserve all formatting of generated code,
     keeping all white spaces and text indentation in the original form. 
-    - The outputs from this tool would be either the original "code_snippet" or an error message string
+    - The outputs from this tool would be either the string "Success" or an error message string
       starting with "Error".
 
 4. If the output from this tool is not an error message, pass the code_snippet into the analytics_output_generator tool
@@ -186,7 +153,7 @@ This code must come verbatim from the Opportunity Finder results.
                     "required": ["project_name", "code_snippet"]
                 }
             },
-            "class": "data_generator_service_tool.DataGeneratorServiceTool",
+            "class": "analytics_output_generator.AnalyticsOutputGenerator",
             "command": "Create the synthetic data file and return its URL or return error message if data file generation fails."
         },
     ]

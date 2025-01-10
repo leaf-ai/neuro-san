@@ -3,8 +3,6 @@ from typing import Dict
 from typing import List
 from typing import Union
 
-import pandas as pd
-
 from neuro_san.interfaces.coded_tool import CodedTool
 
 
@@ -50,17 +48,17 @@ class CodeValidator(CodedTool):
         code_snippet = args.get("code_snippet")
 
         # Validate the code
-        is_valid, error_message = validate_code(code_snippet)
+        is_valid, error_message = self.validate_code(code_snippet)
         if not is_valid:
-            return error_message
+            return f"Error: {error_message}"
         else:
-            return code_snippet
+            return "Success"
 
     # Function to validate matplotlib code
-    def validate_code(code):
+    def validate_code(self, code):
         try:
             # Check for unsafe imports or malicious code
-            disallowed_imports = ["io", "os", "subprocess", "sys", "importlib", "pickle", "shutil", "tempfile"]
+            disallowed_imports = ["io.", "os.", "subprocess.", "sys.", "importlib.", "pickle.", "shutil.", "tempfile."]
             for disallowed in disallowed_imports:
                 if disallowed in code:
                     raise ValueError(f"Disallowed import detected: {disallowed}")
