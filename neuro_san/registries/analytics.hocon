@@ -67,7 +67,7 @@ You must complete these steps in order to help a user with data analysis.
         - "error": If present, this will describe any error that might
                 have arisen during the testing of the code. Using this error message as context, retry generate_analysis_code from step 2 above.
     
-    4. Pass the code_snippet into the analytics_output_generator tool.
+    4. Pass the code_snippet from code_validator tool output into the analytics_output_generator tool.
         - This code must be passed verbatim and in its entirety.
         - The output of this tool will be a URL string that will be known as 'output_url'.
 
@@ -80,7 +80,7 @@ You must complete these steps in order to help a user with data analysis.
         b.  Any error message, which will always be preceded by the error marker 'Error:'
         Specifically, do not make up a analytics_output dictionary in the case of an error.
 """,
-            "tools": ["get_input_file", "generate_analysis_code", "code_validator"]
+            "tools": ["get_input_file", "generate_analysis_code", "code_validator", "analytics_output_generator"]
         },
 
         {
@@ -222,8 +222,7 @@ which includes the following keys:
             "name": "analytics_output_generator",
             "function": {
                 "description": """
-Runs a given code snippet in order to generate a synthesized data file
-for a project being processed.
+Runs a given code snippet in order to execute a code snippet passed to it.
 """,
                 "parameters": {
                     "type": "object",
@@ -235,16 +234,14 @@ for a project being processed.
                         "code_snippet": {
                             "type": "string",
                             "description": """
-A snippet of code to run that will generate create the synthesized data file.
-This code must come verbatim from the Opportunity Finder results.
+A snippet of code to run that will generate an output data file.
 """
                         }
                     },
                     "required": ["project_name", "code_snippet"]
                 }
             },
-            "class": "analytics_output_generator.AnalyticsOutputGenerator",
-            "command": "Create the synthetic data file and return its URL or return error message if data file generation fails."
+            "class": "analytics_output_generator.AnalyticsOutputGenerator"
         },
     ]
 }
