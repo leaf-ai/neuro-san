@@ -12,6 +12,7 @@ from urllib.parse import quote
 from neuro_san.interfaces.coded_tool import CodedTool
 from neuro_san.internals.coded_tools.analytics_san.grpc_task_client import GRPCTaskClient
 
+
 class AnalyticsOutputGenerator(CodedTool):
     """
     CodedTool implementation which handles generating data plot

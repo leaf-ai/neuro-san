@@ -15,6 +15,7 @@
 
     "esp_decision_assistant.hocon": true,
     "hello_world.hocon": true,
+    "analytics.hocon": true,
     "intranet_agents.hocon": true,
     "telco_network_support.hocon": true,
     "six_thinking_hats.hocon": true,

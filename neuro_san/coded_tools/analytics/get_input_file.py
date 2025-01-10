@@ -3,7 +3,6 @@ from typing import Dict
 from typing import List
 from typing import Union
 
-import pandas as pd
 import os
 
 from neuro_san.interfaces.coded_tool import CodedTool

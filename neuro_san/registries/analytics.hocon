@@ -52,11 +52,12 @@ Perform Data Analysis.
             "instructions": """
 {instructions_prefix}
 You are the top-level agent responsible for data analysis.
-Call the get_input_file tool to get the input file. The resulting output from this tool is known as "file_path".
-Pass this absolute path called file_path to the analyze_data tool for analyzing the data at file_path further.
+Ask a client for file path to the input file with CSV data. The resulting string is known as "file_path".
+Ask a client for kind of analysis he wishes to perform on this data. This information will be known as inquiry.
+Pass this  client inquiry to the analyze_data tool as a string for analyzing the data at file_path further.
 Once all down-chain agents respond, you will compile their responses and return the final response.
 """,
-            "tools": ["analyze_data", "get_input_file"]
+            "tools": ["analyze_data"]
         },
 
         {
@@ -73,29 +74,9 @@ Perform analytics on a given CSV and return a plot or description.
                         "inquiry": {
                             "type": "string",
                             "description": "The inquiry"
-                        },
-                        "file_path": {
-                            "type": "string",
-                            "description": """
-File path obtained from the user.
-                            """
-                        },
-                        "sp_imports": {
-                            "type": "string",
-                             "default": "'matplotlib', 'seaborn'",
-                            "description": """
-A list of special imports that may be used in generating code.
-                            """
-                        },
-                        "com_imports": {
-                            "type": "string",
-                             "default": "'base64', 'json', 'pandas', 'numpy', 'datetime'",
-                            "description": """
-A list of common imports that may be used in generating code.
-                            """
                         }
                     },
-                    "required": ["inquiry", "file_path", "sp_imports", "com_imports"]
+                    "required": ["inquiry"]
                 }
             },
 
@@ -106,7 +87,7 @@ that are off-topic or unrelated to this!
 
 Follow these steps:
 
-1. Ask user for what they would like to analyze in the data. Classify the user input query into one of the following types:
+1. Classify the user inquiry into one of the following types:
     'plot' -   If user asks for generating a plot, chart or visualization of any kind.
     'description'  -   If user asks to describe the data or any aspect of it.
     'dataframe' - If user asks to provide a dataframe or part of a dataframe as a result.
@@ -115,12 +96,6 @@ Follow these steps:
 If user query is classified as 'description':
     - Without importing the {sp_imports} packages, provide a detailed response as plain text.
 
-If user query is classified as 'dataframe':
-    - Write python code for the input {file_path} using {com_imports} packages, to provide the required dataframe or part of dataframe
-        as asked: {inquiry}.
-    - Do not write any text explanation except the code and the code should run directly without errors.
-    - This code would be known as "code_snippet".
-
 If user query is classified as 'plot':
     - Write python code for the input {file_path}, using {com_imports} and {sp_imports} packages, to: {inquiry}.
     - Do not write any text explanation except the code and the code should run directly without errors.
@@ -128,18 +103,18 @@ If user query is classified as 'plot':
 
 3. Pass the above "code_snippet" to the code_validator tool. Take special care to preserve all formatting of data generator code,
     keeping all white spaces and text indentation in the original form. 
-    - The outputs from this tool would be either the original "code_snippet" or an "error".
+    - The outputs from this tool would be either the original "code_snippet" or an error message string
+      starting with "Error".
 
-
-4. If the output from this tool is not an error message, pass the code_snippet into the analytics_output_generator tool.
+4. If the output from this tool is not an error message, pass the code_snippet into the analytics_output_generator tool
+   together with file path.
     - This code must be passed verbatim and in its entirety.
     - The output of this tool will be a URL string that will be known as 'output_url'.
 
 5. Open the object at the url generated from this tool.
 
 6. Return either:
-    a.  the output of the "analytics_output" dictionary from the plot_creation tool
-        as a JSON dictionary   or
+    a.  A string "Success" in case of successful execution or
     b.  Any error message, which will always be preceded by the error marker 'Error:'
     Specifically, do not make up a analytics_output dictionary in the case of an error.
 
