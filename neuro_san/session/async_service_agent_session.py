@@ -245,12 +245,9 @@ class AsyncServiceAgentSession(AsyncAbstractServiceSession):
 
         # Cannot do "yield from" in async land. Have to make explicit loop
         try:
-            print("About to async for in streaming_chat()")
             async for response in generator:
                 yield response
-            print("Donw with async for in streaming_chat()")
         except TypeError as exception:
-            print(f"generator from streaming_chat() is {generator}")
             raise exception
 
     @staticmethod
@@ -311,7 +308,5 @@ class AsyncServiceAgentSession(AsyncAbstractServiceSession):
         generator = stub.StreamingChat(*args, timeout=timeout_in_seconds,
                                       metadata=metadata,
                                       credentials=credentials)
-        print("About to async for in _streaming_chat_from_stub")
         async for response in generator:
             yield response
-        print("Done with async for in _streaming_chat_from_stub")
