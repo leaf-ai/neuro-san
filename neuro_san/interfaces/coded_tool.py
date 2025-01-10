@@ -81,5 +81,5 @@ class CodedTool:
         """
         # DEF - Use the AsyncioExecutor for a submit() for better task tracking and handling
         loop = asyncio.get_running_loop()
-        result = await loop.run_in_executor(None, self.invoke, args, sly_data, config)
+        result = await loop.run_in_executor(None, self.invoke, args, sly_data)
         return result
