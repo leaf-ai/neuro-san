@@ -52,12 +52,18 @@ class GetInputFile(CodedTool):
         input_path = args.get("input_path", self.default_path)
         if input_path == "":
             input_path = self.default_path
-
+        
         if input_path.startswith("s3://") or os.path.isabs(input_path):
             sly_data['input_path'] = input_path
             return {"file_path": input_path}
         else:
-            sly_data['input_path'] = os.path.abspath(input_path)
-            return {"file_path": os.path.abspath(input_path)}
+            # Get the current working directory
+            current_working_dir = os.getcwd()
 
+            # Combine the current working directory with the relative input path
+            absolute_path = os.path.join(current_working_dir, input_path)
 
+            # Convert to absolute path
+            absolute_path = os.path.abspath(absolute_path)
+            sly_data['input_path'] = absolute_path
+            return {"file_path": absolute_path}

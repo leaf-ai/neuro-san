@@ -51,7 +51,7 @@ class DataDescriber(CodedTool):
         # input_path = input("Provide path to the input CSV (to use a sample data, press enter): ")
         input_path = sly_data.get("input_path", self.default_path)
 
-        df = pd.read_csv(file_path)
+        df = pd.read_csv(input_path)
         # Get the summary statistics for both numerical and categorical features
         full_summary = df.describe(include='all').to_dict()
         

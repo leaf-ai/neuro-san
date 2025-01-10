@@ -110,7 +110,7 @@ A list of special imports that may be used in generating code.
                         },
                         "com_imports": {
                             "type": "string",
-                             "enum": ['base64', 'json', 'pandas', 'numpy', 'datetime'],
+                             "enum": ['base64', 'json', 'pandas', 'numpy', 'datetime', 'uuid'],
                             "description": """
 A list of common imports that may be used in generating code.
                             """
@@ -140,8 +140,8 @@ If user query is classified as 'dataframe':
 
 If user query is classified as 'plot':
     - Write python code for the input input_path, using com_imports and sp_imports packages, to: inquiry.
-    -  "For matplotlib or seaborn code, add functionality to save the plot. "
-        "# Save the plot\noutput_path = 'output_plot_' + '.png' \nplt.savefig(output_path)\nplt.show()"
+    -  "For matplotlib or seaborn code, add functionality to save the plot with a uuid. "
+        "# Save the plot\noutput_path = 'output_plot_' + str(uuid.uuid4()) + '.png' \nplt.savefig(output_path)\nplt.show()"
     - Do not write any text explanation except the code and the code should run directly without errors.
     - This code would be known as "code_snippet".
 
