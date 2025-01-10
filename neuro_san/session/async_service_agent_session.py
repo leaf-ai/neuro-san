@@ -306,7 +306,7 @@ class AsyncServiceAgentSession(AsyncAbstractServiceSession):
         given a grpc Stub already set up with a channel (socket) to call with.
         """
         generator = stub.StreamingChat(*args, timeout=timeout_in_seconds,
-                                      metadata=metadata,
-                                      credentials=credentials)
+                                       metadata=metadata,
+                                       credentials=credentials)
         async for response in generator:
             yield response
