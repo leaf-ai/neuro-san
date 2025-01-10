@@ -131,6 +131,7 @@ Call the data_describer tool to get a description of the columns in the data.
 2. Do not deviate from the columns in the given dataset. Do one of the following based on the user query:
 If user query is classified as 'description':
     - Without importing the sp_imports packages, provide a detailed response as plain text.
+    - Use the outputs from data_describer tool if required.
 
 If user query is classified as 'dataframe':
     - Write python code for the input_path using com_imports packages, to provide the required dataframe or part of dataframe

@@ -58,12 +58,15 @@ class GetInputFile(CodedTool):
             return {"file_path": input_path}
         else:
             # Get the current working directory
-            current_working_dir = os.getcwd()
-
-            # Combine the current working directory with the relative input path
-            absolute_path = os.path.join(current_working_dir, input_path)
-
-            # Convert to absolute path
-            absolute_path = os.path.abspath(absolute_path)
+            cwd = os.getcwd()
+            cwd_basename = os.path.basename(cwd)  # e.g. "neuro-san"
+    
+            parts = input_path.split(os.sep)       # e.g. ["neuro-san", "neuro_san", "coded_tools", ...]
+            if parts and parts[0] == cwd_basename:
+                parts.pop(0)                       # remove the duplicated folder name
+            
+            # build the final absolute path
+            absolute_path = os.path.abspath(os.path.join(cwd, *parts))
             sly_data['input_path'] = absolute_path
+            
             return {"file_path": absolute_path}
