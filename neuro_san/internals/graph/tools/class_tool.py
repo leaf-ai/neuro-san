@@ -37,8 +37,7 @@ class ClassTool(CallableTool):
                  factory: AgentToolFactory,
                  arguments: Dict[str, Any],
                  agent_tool_spec: Dict[str, Any],
-                 sly_data: Dict[str, Any],
-                 config_args: Dict[str, Any] = None):
+                 sly_data: Dict[str, Any]):
         """
         Constructor
 
@@ -54,9 +53,6 @@ class ClassTool(CallableTool):
                  values should not appear in agent chat text. Can be an empty dictionary.
                  This gets passed along as a distinct argument to the referenced python class's
                  invoke() method.
-        :param config_args: An optional args dictionary from the agent spec to pass as additional
-                arguments to the CodedTool These are meant to augment what the LLMs pass in as
-                function arguments for greater re-use of CodedTools.
         """
         self.parent_run_context: RunContext = parent_run_context
         self.journal: Journal = journal
@@ -66,10 +62,6 @@ class ClassTool(CallableTool):
             self.arguments = arguments
         self.agent_tool_spec: Dict[str, Any] = agent_tool_spec
         self.sly_data: Dict[str, Any] = sly_data
-
-        self.config_args: Dict[str, str] = {}
-        if config_args is not None:
-            self.config_args = config_args
 
     async def build(self) -> List[Any]:
         """
@@ -108,8 +100,10 @@ class ClassTool(CallableTool):
             coded_tool = python_class()
 
         if isinstance(coded_tool, CodedTool):
-            use_args = copy(self.arguments)
-            use_args.update(self.config_args)
+            use_args: Dict[str, Any] = copy(self.arguments)
+            config_args: Dict[str, Any] = self.agent_tool_spec.get("args")
+            if config_args is not None:
+                use_args.update(config_args)
             retval: Any = await coded_tool.async_invoke(use_args, self.sly_data)
         else:
             retval = f"Error: {full_class_ref} is not a CodedTool"
