@@ -63,6 +63,7 @@ class ClassTool(CallableTool):
         self.agent_tool_spec: Dict[str, Any] = agent_tool_spec
         self.sly_data: Dict[str, Any] = sly_data
 
+    # pylint: disable=too-many-locals
     async def build(self) -> List[Any]:
         """
         Main entry point to the class.
