@@ -21,5 +21,6 @@
     "insurance_agents.hocon": true,
     "retail_ops_and_customer_service.hocon": true,
     "banking_ops.hocon": true,
-    "cpg_agents.hocon": true
+    "cpg_agents.hocon": true,
+    "analytics.hocon": true
 }

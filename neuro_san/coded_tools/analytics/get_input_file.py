@@ -48,16 +48,16 @@ class GetInputFile(CodedTool):
                 "Error: <error message>"
         """
         # Formulate the file reference for the request
-        input_path = input("Provide path to the input CSV (to use a sample data, press enter): ")
-        if not input_path:
+        # input_path = input("Provide path to the input CSV (to use a sample data, press enter): ")
+        input_path = args.get("input_path", self.default_path)
+        if input_path == "":
             input_path = self.default_path
 
-        if input_path.startswith("s3://"):
-            return input_path
-        # Load the dataset
-        if os.path.isabs(input_path):
-            return input_path
+        if input_path.startswith("s3://") or os.path.isabs(input_path):
+            sly_data['input_path'] = input_path
+            return {"file_path": input_path}
         else:
-            return os.path.abspath(input_path)
+            sly_data['input_path'] = os.path.abspath(input_path)
+            return {"file_path": os.path.abspath(input_path)}
 
 

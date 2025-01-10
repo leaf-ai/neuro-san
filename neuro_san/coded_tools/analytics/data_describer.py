@@ -8,10 +8,13 @@ import pandas as pd
 from neuro_san.interfaces.coded_tool import CodedTool
 
 
-class CodeValidator(CodedTool):
+class DataDescriber(CodedTool):
     """
-    CodedTool implementation which handles validating a code snippet.
+    CodedTool implementation which summarizes the DataFrame by returning the result of `df.describe(include='all')`
+    as a JSON dictionary..
     """
+    def __init__(self):
+        self.default_path = "./neuro_san/coded_tools/analytics-san/credit_risk_data_20250109.csv"
 
     def invoke(self, args: Dict[str, Any], sly_data: Dict[str, Any]) -> Union[Dict[str, Any], str]:
         """
@@ -22,7 +25,7 @@ class CodeValidator(CodedTool):
                 by the calling agent.  This dictionary is to be treated as read-only.
 
                 The argument dictionary expects the following keys:
-                    "code_snippet":  Python code snippet to run for synthetic data generation.
+                    "input_path": The input path to a CSV file
 
         :param sly_data: A dictionary whose keys are defined by the agent hierarchy,
                 but whose values are meant to be kept out of the chat stream.
@@ -39,34 +42,17 @@ class CodeValidator(CodedTool):
 
         :return:
             In case of successful execution:
-                a dictionary containing S3 URI of resulting output,
-                which includes the following key:
-                    "output_url"
+                a JSON dictionary describing the dataframe
             otherwise:
                 a text string an error message in the format:
                 "Error: <error message>"
         """
         # Formulate the file reference for the request
-        code_snippet = args.get("code_snippet")
+        # input_path = input("Provide path to the input CSV (to use a sample data, press enter): ")
+        input_path = sly_data.get("input_path", self.default_path)
 
-        # Validate the code
-        is_valid, error_message = validate_code(code_snippet)
-        if not is_valid:
-            return {"error": error_message}
-        else:
-            return {"code_snippet": code_snippet}
-
-    # Function to validate matplotlib code
-    def validate_code(code):
-        try:
-            # Check for unsafe imports or malicious code
-            disallowed_imports = ["io", "os", "subprocess", "sys", "importlib", "pickle", "shutil", "tempfile"]
-            for disallowed in disallowed_imports:
-                if disallowed in code:
-                    raise ValueError(f"Disallowed import detected: {disallowed}")
-            compile(code, '<string>', 'exec')
-            print("Code validation successful.")
-        except (SyntaxError, ValueError) as e:
-            print(f"Code validation failed: {e}")
-            return False, str(e)
-        return True, None
+        df = pd.read_csv(file_path)
+        # Get the summary statistics for both numerical and categorical features
+        full_summary = df.describe(include='all').to_dict()
+        
+        return {"data_description": full_summary}
