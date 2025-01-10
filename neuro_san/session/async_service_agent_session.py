@@ -12,7 +12,7 @@
 
 from typing import Any
 from typing import Dict
-from typing import Generator
+from typing import AsyncGenerator
 
 from leaf_common.session.async_abstract_service_session import AsyncAbstractServiceSession
 from leaf_common.time.timeout import Timeout
@@ -205,7 +205,7 @@ class AsyncServiceAgentSession(AsyncAbstractServiceSession):
             request_dict,
             service_messages.ResetRequest())
 
-    async def streaming_chat(self, request_dict: Dict[str, Any]) -> Generator[Dict[str, Any], None, None]:
+    async def streaming_chat(self, request_dict: Dict[str, Any]) -> AsyncGenerator[Dict[str, Any], None]:
         """
         :param request_dict: A dictionary version of the ChatRequest
                     protobufs structure. Has the following keys:
@@ -237,12 +237,21 @@ class AsyncServiceAgentSession(AsyncAbstractServiceSession):
             are produced until the system decides there are no more messages to be sent.
         """
         # pylint: disable=no-member
-        return await self.call_grpc_method(
+        generator = self.stream_grpc_method(
             "streaming_chat",
             self._streaming_chat_from_stub,
             request_dict,
-            request_instance=service_messages.ChatRequest(),
-            stream_response=True)
+            request_instance=service_messages.ChatRequest())
+
+        # Cannot do "yield from" in async land. Have to make explicit loop
+        try:
+            print("About to async for in streaming_chat()")
+            async for response in generator:
+                yield response
+            print("Donw with async for in streaming_chat()")
+        except TypeError as exception:
+            print(f"generator from streaming_chat() is {generator}")
+            raise exception
 
     @staticmethod
     async def _function_from_stub(stub, timeout_in_seconds,
@@ -299,7 +308,10 @@ class AsyncServiceAgentSession(AsyncAbstractServiceSession):
         Global method associated with the session that calls StreamingChat
         given a grpc Stub already set up with a channel (socket) to call with.
         """
-        response = await stub.StreamingChat(*args, timeout=timeout_in_seconds,
-                                            metadata=metadata,
-                                            credentials=credentials)
-        return response
+        generator = stub.StreamingChat(*args, timeout=timeout_in_seconds,
+                                      metadata=metadata,
+                                      credentials=credentials)
+        print("About to async for in _streaming_chat_from_stub")
+        async for response in generator:
+            yield response
+        print("Done with async for in _streaming_chat_from_stub")
