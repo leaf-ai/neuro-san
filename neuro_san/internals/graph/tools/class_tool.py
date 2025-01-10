@@ -93,6 +93,8 @@ class ClassTool(CallableTool):
         # Instantiate the CodedTool
         coded_tool: CodedTool = None
         if issubclass(python_class, BranchTool):
+            # Allow for a combination of BranchTool + CodedTool to allow
+            # for easier invocation of agents within code.
             coded_tool = python_class(self.parent_run_context, self.journal, self.factory,
                                       self.arguments, self.agent_tool_spec, self.sly_data)
         else:
