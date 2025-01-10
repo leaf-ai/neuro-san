@@ -100,10 +100,14 @@ class ClassTool(CallableTool):
             coded_tool = python_class()
 
         if isinstance(coded_tool, CodedTool):
+            # Merge the args that the LLM has passed in with anything that might
+            # be specified in the agent spec.
             use_args: Dict[str, Any] = copy(self.arguments)
             config_args: Dict[str, Any] = self.agent_tool_spec.get("args")
             if config_args is not None:
                 use_args.update(config_args)
+
+            # Invoke the CodedTool
             retval: Any = await coded_tool.async_invoke(use_args, self.sly_data)
         else:
             retval = f"Error: {full_class_ref} is not a CodedTool"
