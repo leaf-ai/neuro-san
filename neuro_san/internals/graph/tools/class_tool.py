@@ -13,6 +13,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 
+from copy import copy
 import json
 
 from leaf_common.config.resolver import Resolver
@@ -37,7 +38,7 @@ class ClassTool(CallableTool):
                  arguments: Dict[str, Any],
                  agent_tool_spec: Dict[str, Any],
                  sly_data: Dict[str, Any],
-                 config: Dict[str, Any] = None):
+                 config_args: Dict[str, Any] = None):
         """
         Constructor
 
@@ -46,24 +47,29 @@ class ClassTool(CallableTool):
                              this call.
         :param journal: The Journal that captures messages for user output
         :param factory: The AgentToolFactory used to create tools
-        :param arguments: A dictionary of the tool function arguments passed in
+        :param arguments: A dictionary of the tool function arguments passed in by the LLM
         :param agent_tool_spec: The dictionary describing the JSON agent tool
                             to be used by the instance
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be an empty dictionary.
                  This gets passed along as a distinct argument to the referenced python class's
                  invoke() method.
-        :param config: An optional config dictionary to pass to the CodedTool
+        :param config_args: An optional args dictionary from the agent spec to pass as additional
+                arguments to the CodedTool These are meant to augment what the LLMs pass in as
+                function arguments for greater re-use of CodedTools.
         """
         self.parent_run_context: RunContext = parent_run_context
         self.journal: Journal = journal
         self.factory: AgentToolFactory = factory
-        self.arguments: Dict[str, Any] = arguments
+        self.arguments: Dict[str, Any] = {}
+        if arguments is not None:
+            self.arguments = arguments
         self.agent_tool_spec: Dict[str, Any] = agent_tool_spec
         self.sly_data: Dict[str, Any] = sly_data
-        self.config: Dict[str, str] = {}
-        if config is not None:
-            self.config = config
+
+        self.config_args: Dict[str, str] = {}
+        if config_args is not None:
+            self.config_args = config_args
 
     async def build(self) -> List[Any]:
         """
@@ -102,7 +108,9 @@ class ClassTool(CallableTool):
             coded_tool = python_class()
 
         if isinstance(coded_tool, CodedTool):
-            retval: Any = await coded_tool.async_invoke(self.arguments, self.sly_data, self.config)
+            use_args = copy(self.arguments)
+            use_args.update(self.config_args)
+            retval: Any = await coded_tool.async_invoke(use_args, self.sly_data)
         else:
             retval = f"Error: {full_class_ref} is not a CodedTool"
 
