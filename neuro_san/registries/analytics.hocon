@@ -1,0 +1,218 @@
+{
+    "llm_config": {
+        "model_name": "gpt-4o",
+        "verbose": true
+    },
+    "max_iterations": 2000,
+    "max_execution_seconds": 600,
+    "commondefs": {
+        "replacement_strings": {
+            "instructions_prefix": """
+            You are an expert Python Data Analysis assistant. 
+            You must only reply to questions related to Data Analysis! Do not respond to any questions
+            that are off-topic or unrelated to this!
+            Do not try to help for personal matters.
+            Do not mention what you can NOT do. Only mention what you can do.
+            """,
+        },
+        "replacement_values": {
+            "code_snippet_def": {
+                "type": "string",
+                "description": """
+The unaltered code to work on, in its entirety.
+"""
+            }
+        }
+    },
+    "tools": [
+        # These tool definitions do not have to be in any particular order
+        # How they are linked and call each other is defined within their
+        # own specs.  This could be a graph, potentially even with cycles.
+
+        # This first guy is the "Front Man".  He is identified as such because
+        # he is the only one with no parameters in his function definition,
+        # and therefore he needs to talk to the outside world to get things rolling.
+        {
+            "name": "analytics_agent",
+
+            # Note that there are no parameters defined for this guy's "function" key.
+            # This is the primary way to identify this tool as a front-man,
+            # distinguishing it from the rest of the tools.
+
+            "function": {
+
+                # When there are no function parameters to the front-man,
+                # its description acts as an initial prompt.
+
+                "description": """
+Perform Data Analysis.
+"""
+            },
+
+            "instructions": """
+{instructions_prefix}
+You are the top-level agent responsible for data analysis.
+Call the get_input_file tool to get the input file. The resulting output from this tool is known as "file_path".
+Pass this absolute path called file_path to the analyze_data tool for analyzing the data at file_path further.
+Once all down-chain agents respond, you will compile their responses and return the final response.
+""",
+            "tools": ["analyze_data", "get_input_file"]
+        },
+
+        {
+            "name": "analyze_data",
+
+            "function": {
+
+                "description": """
+Perform analytics on a given CSV and return a plot or description.
+"""
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "inquiry": {
+                            "type": "string",
+                            "description": "The inquiry"
+                        },
+                        "file_path": {
+                            "type": "string",
+                            "description": """
+File path obtained from the user.
+                            """
+                        },
+                        "sp_imports": {
+                            "type": "string",
+                             "default": "'matplotlib', 'seaborn'",
+                            "description": """
+A list of special imports that may be used in generating code.
+                            """
+                        },
+                        "com_imports": {
+                            "type": "string",
+                             "default": "'base64', 'json', 'pandas', 'numpy', 'datetime'",
+                            "description": """
+A list of common imports that may be used in generating code.
+                            """
+                        }
+                    },
+                    "required": ["inquiry", "file_path", "sp_imports", "com_imports"]
+                }
+            },
+
+            "instructions": """
+You are an expert Python Data Analysis assistant. 
+You must only reply to questions related to Data Analytics! Do not respond to any questions
+that are off-topic or unrelated to this!
+
+Follow these steps:
+
+1. Ask user for what they would like to analyze in the data. Classify the user input query into one of the following types:
+    'plot' -   If user asks for generating a plot, chart or visualization of any kind.
+    'description'  -   If user asks to describe the data or any aspect of it.
+    'dataframe' - If user asks to provide a dataframe or part of a dataframe as a result.
+
+2. Do not deviate from the columns in the given dataset. Do one of the following based on the user query:
+If user query is classified as 'description':
+    - Without importing the {sp_imports} packages, provide a detailed response as plain text.
+
+If user query is classified as 'dataframe':
+    - Write python code for the input {file_path} using {com_imports} packages, to provide the required dataframe or part of dataframe
+        as asked: {inquiry}.
+    - Do not write any text explanation except the code and the code should run directly without errors.
+    - This code would be known as "code_snippet".
+
+If user query is classified as 'plot':
+    - Write python code for the input {file_path}, using {com_imports} and {sp_imports} packages, to: {inquiry}.
+    - Do not write any text explanation except the code and the code should run directly without errors.
+    - This code would be known as "code_snippet".
+
+3. Pass the above "code_snippet" to the code_validator tool. Take special care to preserve all formatting of data generator code,
+    keeping all white spaces and text indentation in the original form. 
+    - The outputs from this tool would be either the original "code_snippet" or an "error".
+
+
+4. If the output from this tool is not an error message, pass the code_snippet into the analytics_output_generator tool.
+    - This code must be passed verbatim and in its entirety.
+    - The output of this tool will be a URL string that will be known as 'output_url'.
+
+5. Open the object at the url generated from this tool.
+
+6. Return either:
+    a.  the output of the "analytics_output" dictionary from the plot_creation tool
+        as a JSON dictionary   or
+    b.  Any error message, which will always be preceded by the error marker 'Error:'
+    Specifically, do not make up a analytics_output dictionary in the case of an error.
+
+""",
+            "tools": ["code_validator", "analytics_output_generator"]
+        },
+
+        {
+            "name": "get_input_file",
+            "function": {
+                "description": """
+Returns the absolute path to the input CSV.
+You MUST call this tool to get the path of the input CSV file.
+                """,
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "input_path": {
+                            "type": "string",
+                            "description": "The absolute path of the CSV being analyzed."
+                        },
+                    },
+                    "required": ["input_path"]
+                    }
+            },
+            "class": "get_input_file.GetInputFile",
+            "command": "Call the API to get the absolute path of the CSV."    
+        },
+
+        {
+            "name": "code_validator",
+            "function": {
+                "description": """
+Tests a given code snippet and reports if there are any errors in executing it.
+"""
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "code_snippet": "code_snippet_def",
+                    },
+                    "required": ["code_snippet"]
+                    }
+                }
+            "class": "code_validator.CodeValidator",
+            "command": "Call the API to validate the generated code." 
+        },
+        {
+            "name": "analytics_output_generator",
+            "function": {
+                "description": """
+Runs a given code snippet in order to generate a synthesized data file
+for a project being processed.
+""",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "project_name": {
+                            "type": "string",
+                            "description": "The name of the project being processed."
+                        },
+                        "code_snippet": {
+                            "type": "string",
+                            "description": """
+A snippet of code to run that will generate create the synthesized data file.
+This code must come verbatim from the Opportunity Finder results.
+"""
+                        }
+                    },
+                    "required": ["project_name", "code_snippet"]
+                }
+            },
+            "class": "data_generator_service_tool.DataGeneratorServiceTool",
+            "command": "Create the synthetic data file and return its URL or return error message if data file generation fails."
+        },
+    ]
+}
