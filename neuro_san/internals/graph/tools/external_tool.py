@@ -82,12 +82,15 @@ class ExternalTool(CallableTool):
 
         # The asynchronous generator will wait until the next response is available
         # from the stream.  When the other side is done, the iterator will exit the loop.
-        empty = {}
         async for chat_response in chat_responses:
 
-            session_id: str = chat_response.get("session_id")
-            response: Dict[str, Any] = chat_response.get("response", empty)
+            response: Dict[str, Any] = chat_response.get("response")
+            if response is None:
+                # Sometimes we get messages over the stream with no response.
+                # Not sure why just yet.
+                continue
 
+            session_id: str = chat_response.get("session_id")
             if session_id is not None:
                 self.session_id = session_id
 
@@ -96,7 +99,8 @@ class ExternalTool(CallableTool):
             text: str = response.get("text")
 
             # In terms of sending tool results back up the graph,
-            # we really only care about the AI responses.
+            # we really only care about immediately are the AI responses.
+            # Eventually we will care about a fuller chat history.
             if message_type == ChatMessageType.AI and text is not None:
 
                 # Prepare the output
