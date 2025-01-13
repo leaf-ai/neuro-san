@@ -249,7 +249,7 @@ class BranchTool(CallingTool, CallableTool):
         callable_tool: CallableTool = self.factory.create_agent_tool(self.run_context,
                                                                      self.journal,
                                                                      tool_name,
-                                                                     self.sly_data,
+                                                                     sly_data,
                                                                      tool_args)
         print(f"Calling tool {tool_name}")
         message: str = await callable_tool.build()
