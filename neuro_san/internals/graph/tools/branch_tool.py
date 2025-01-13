@@ -232,3 +232,32 @@ class BranchTool(CallingTool, CallableTool):
         response = generate_response(messages)
         await self.journal.write(f"{upper_component} RETURNED>>> {response}")
         return response
+
+    async def use_tool(self, tool_name: str, tool_args: Dict[str, Any], sly_data: Dict[str, Any]) -> str:
+        """
+        Experimental method to call a tool more directly from a subclass.
+
+        NOTE: This method is not correctly reporting history or anything like that just yet.
+
+        :param tool_name: The name of the tool to invoke
+        :param tool_args: A dictionary of arguments to send to the tool.
+        :param sly_data: private data dictionary to send to the tool.
+        :return: A string representing the last received content text of the last message.
+        """
+
+        # Use the tool
+        callable_tool: CallableTool = self.factory.create_agent_tool(self.run_context,
+                                                                     self.journal,
+                                                                     tool_name,
+                                                                     sly_data,
+                                                                     tool_args)
+        print(f"Calling tool {tool_name}")
+        message: str = await callable_tool.build()
+
+        # We got a list of messages back as a string. Take the last.
+        message_list: List[Dict[str, Any]] = json.loads(message)
+        message_dict: Dict[str, Any] = message_list[-1]
+        content: str = message_dict.get("content")
+        print(f"Got this last response from tool {tool_name}: '{content}'")
+
+        return content

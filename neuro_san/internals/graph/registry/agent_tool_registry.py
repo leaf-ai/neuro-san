@@ -17,6 +17,7 @@ import os
 
 from pathlib import Path
 
+from leaf_common.config.dictionary_overlay import DictionaryOverlay
 from leaf_common.parsers.field_extractor import FieldExtractor
 
 from neuro_san.internals.graph.tools.branch_tool import BranchTool
@@ -169,19 +170,23 @@ class AgentToolRegistry(AgentToolFactory):
             agent_tool = ExternalTool(parent_run_context, journal, name, arguments, sly_data)
             return agent_tool
 
+        # Merge the arguments coming in from the LLM with those that were specified
+        # in the hocon file for the agent.
+        use_args: Dict[str, Any] = self.merge_args(arguments, agent_tool_spec)
+
         if agent_tool_spec.get("function") is not None:
             # If we have a function in the spec, the agent has arguments
             # it wants to be called with.
             if agent_tool_spec.get("class") is not None:
                 # Agent specifically requested a python class to be run.
-                agent_tool = ClassTool(parent_run_context, journal, self, arguments, agent_tool_spec, sly_data)
+                agent_tool = ClassTool(parent_run_context, journal, self, use_args, agent_tool_spec, sly_data)
             elif agent_tool_spec.get("method") is not None:
                 # Agent specifically requested a python method to be run.
                 # NOTE: this usage is deprecaded in favor of ClassTools so as to
                 # discourage tool implementations with Static Cling.
-                agent_tool = MethodTool(parent_run_context, journal, self, arguments, agent_tool_spec, sly_data)
+                agent_tool = MethodTool(parent_run_context, journal, self, use_args, agent_tool_spec, sly_data)
             else:
-                agent_tool = BranchTool(parent_run_context, journal, self, arguments, agent_tool_spec, sly_data)
+                agent_tool = BranchTool(parent_run_context, journal, self, use_args, agent_tool_spec, sly_data)
         else:
             # Get the tool to call from the spec.
             agent_tool = FrontMan(parent_run_context, journal, self, agent_tool_spec, sly_data)
@@ -225,3 +230,22 @@ class AgentToolRegistry(AgentToolFactory):
 
         front_man = front_men[0]
         return front_man
+
+    def merge_args(self, llm_args: Dict[str, Any], agent_tool_spec: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Merges the args specified by the llm with "hard-coded" args specified in the agent spec.
+        Hard-coded args win over llm-specified args if both are defined.
+        If you want the llm args to win out over the hard-coded args, use a default for
+        the function spec instead of the hard-coded args.
+
+        :param llm_args: argument dictionary that the LLM wants
+        :param agent_tool_spec: The dictionary representing the spec registered agent
+        """
+        config_args: Dict[str, Any] = agent_tool_spec.get("args")
+        if config_args is None:
+            # Nothing to override
+            return llm_args
+
+        overlay = DictionaryOverlay()
+        merged_args: Dict[str, Any] = overlay.overlay(llm_args, config_args)
+        return merged_args
