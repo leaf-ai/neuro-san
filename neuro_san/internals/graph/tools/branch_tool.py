@@ -245,13 +245,11 @@ class BranchTool(CallingTool, CallableTool):
         :return: A string representing the last received content text of the last message.
         """
 
-        redacted_sly_data: Dict[str, Any] = self.redact_sly_data(sly_data)
-
         # Use the tool
         callable_tool: CallableTool = self.factory.create_agent_tool(self.run_context,
                                                                      self.journal,
                                                                      tool_name,
-                                                                     redacted_sly_data,
+                                                                     self.sly_data,
                                                                      tool_args)
         print(f"Calling tool {tool_name}")
         message: str = await callable_tool.build()

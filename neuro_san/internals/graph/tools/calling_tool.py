@@ -16,7 +16,6 @@ from typing import List
 import json
 
 from leaf_common.config.dictionary_overlay import DictionaryOverlay
-from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.run_context.factory.run_context_factory import RunContextFactory
@@ -210,13 +209,11 @@ class CallingTool(ToolCaller):
         if use_tool_name is None:
             raise ValueError(f"{tool_name} is not in tools {list(callable_tool_dict.keys())}")
 
-        redacted_sly_data: Dict[str, Any] = self.redact_sly_data()
-
         # Note: This is not a BaseTool. This is our own construct within graph
         #       that we can build().
         callable_component: CallableTool = \
             self.factory.create_agent_tool(self.run_context, self.journal,
-                                           use_tool_name, redacted_sly_data, tool_arguments)
+                                           use_tool_name, self.sly_data, tool_arguments)
         callable_component_response: List[Any] = await callable_component.build()
 
         output: str = json.dumps(callable_component_response)
@@ -245,53 +242,3 @@ class CallingTool(ToolCaller):
         if self.run_context is not None:
             await self.run_context.delete_resources(parent_run_context)
             self.run_context = None
-
-    def redact_sly_data(self, source: Dict[str, Any] = None) -> Dict[str, Any]:
-        """
-        :param source: Source of the sly_data to redact. When None, we use the member variable.
-        :return: A new sly_data dictionary with proper redactions per the "allow.sly_data"
-                dictionary on the agent spec.  If no such key exists, then no sly_data
-                gets through to the agent to be called.
-        """
-        empty: Dict[str, Any] = {}
-
-        extractor = DictionaryExtractor(self.agent_tool_spec)
-        allow_dict: Dict[str, Any] = extractor.get("allow.sly_data", empty)
-
-        # Recall empty dictionaries evaluate to False
-        if not bool(allow_dict):
-            # By default we don't let anything through
-            return empty
-
-        # Determine the source of the sly data to redact
-        use_source: Dict[str, Any] = source
-        if use_source is None:
-            use_source = self.sly_data
-
-        if isinstance(allow_dict, bool) and bool(allow_dict):
-            # The value is a simple True, so let everything through.
-            return use_source
-
-        if not bool(use_source) or not isinstance(use_source, Dict):
-            # There is no dictionary content, so nothing to redact
-            return empty
-
-        # Got rid of all the easy cases.
-        # Now leaf through the keys of the dictionaries.
-        # For now, just do top-level keys. Can get more complicated later if need be.
-        redacted: Dict[str, Any] = {}
-        for source_key, dest_key in allow_dict.items():
-
-            source_value: Any = use_source.get(source_key)
-            if source_value is None:
-                # We have an allowance, but no data, so nothing to do for this key.
-                continue
-
-            if isinstance(dest_key, str):
-                # Translate the key
-                redacted[dest_key] = source_value
-            elif isinstance(dest_key, bool) and bool(dest_key):
-                # Use the same key and the same value in the explicit allow
-                redacted[source_key] = source_value
-
-        return redacted
