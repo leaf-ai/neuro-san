@@ -352,10 +352,9 @@ class DirectAgentSession(AgentSession):
 
             response_dict: Dict[str, Any] = copy(template_response_dict)
             if any(message):
+                # We expect the message to be a dictionary form of chat.ChatMessage
                 response_dict["response"] = message
-
-            # We expect the message to be a dictionary form of chat.ChatMessage
-            yield response_dict
+                yield response_dict
 
     def close(self):
         """
