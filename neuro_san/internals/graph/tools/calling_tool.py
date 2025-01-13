@@ -246,7 +246,7 @@ class CallingTool(ToolCaller):
             await self.run_context.delete_resources(parent_run_context)
             self.run_context = None
 
-    def redact_sly_data(self, source: Dict[str, Any] = None): -> Dict[str, Any]:
+    def redact_sly_data(self, source: Dict[str, Any] = None) -> Dict[str, Any]:
         """
         :param source: Source of the sly_data to redact. When None, we use the member variable.
         :return: A new sly_data dictionary with proper redactions per the "allow.sly_data"
