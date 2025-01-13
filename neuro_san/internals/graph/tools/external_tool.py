@@ -86,8 +86,7 @@ class ExternalTool(CallableTool):
 
             response: Dict[str, Any] = chat_response.get("response")
             if response is None:
-                # Sometimes we get messages over the stream with no response.
-                # Not sure why just yet.
+                # Ignore messages with no response.
                 continue
 
             session_id: str = chat_response.get("session_id")
