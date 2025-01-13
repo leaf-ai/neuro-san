@@ -57,6 +57,10 @@ message ChatMessage {
     // reference for how the data was created.  If this happens, then
     // it should be safe to assume that the text is enough to represent the
     // message in any history carried forward.
+    //
+    // As of 1/13/25 this is a forward-looking, experimental field not likely
+    // to be used in regular operation until we can get proper plumbing of such
+    // data in place.
     repeated mime_data.MimeData mime_data = 3 [json_name="mime_data"];
 
     // Optional string describing the origin of the chat message.
