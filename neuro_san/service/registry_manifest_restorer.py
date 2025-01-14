@@ -85,8 +85,7 @@ class RegistryManifestRestorer(Restorer):
                     one_manifest = json.load(json_file)
 
             if one_manifest is None:
-                message = f"Could not find manifest file at path: {manifest_file}.\n" + \
-"""
+                message = f"Could not find manifest file at path: {manifest_file}.\n" + """
 Some common problems include:
 * The file itself simply does not exist.
 * Path is not an absolute path and you are invoking the server from a place
