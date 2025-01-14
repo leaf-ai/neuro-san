@@ -12,8 +12,6 @@
 from typing import Any
 from typing import Dict
 
-import json
-
 from unittest import TestCase
 
 from neuro_san.internals.graph.registry.sly_data_redactor import SlyDataRedactor
@@ -52,7 +50,7 @@ class TestSlyDataRedactor(TestCase):
             "not_mentioned": -1,
         }
 
-        redacted = redactor.filter_config(sly_data)
+        redacted: Dict[str, Any] = redactor.filter_config(sly_data)
 
         self.assertIsNotNone(redacted.get("yes"))
         self.assertIsNone(redacted.get("no"))
@@ -75,7 +73,7 @@ class TestSlyDataRedactor(TestCase):
             "not_mentioned": -1,
         }
 
-        redacted = redactor.filter_config(sly_data)
+        redacted: Dict[str, Any] = redactor.filter_config(sly_data)
 
         self.assertIsNotNone(redacted.get("yes"))
         self.assertIsNotNone(redacted.get("no"))
@@ -98,7 +96,7 @@ class TestSlyDataRedactor(TestCase):
             "not_mentioned": -1,
         }
 
-        redacted = redactor.filter_config(sly_data)
+        redacted: Dict[str, Any] = redactor.filter_config(sly_data)
 
         self.assertIsNone(redacted.get("yes"))
         self.assertIsNone(redacted.get("no"))
@@ -118,7 +116,7 @@ class TestSlyDataRedactor(TestCase):
             "not_mentioned": -1,
         }
 
-        redacted = redactor.filter_config(sly_data)
+        redacted: Dict[str, Any] = redactor.filter_config(sly_data)
 
         self.assertIsNone(redacted.get("yes"))
         self.assertIsNone(redacted.get("no"))
@@ -144,7 +142,7 @@ class TestSlyDataRedactor(TestCase):
             "not_mentioned": -1,
         }
 
-        redacted = redactor.filter_config(sly_data)
+        redacted: Dict[str, Any] = redactor.filter_config(sly_data)
 
         self.assertIsNone(redacted.get("yes"))
         self.assertIsNone(redacted.get("no"))
