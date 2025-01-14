@@ -85,7 +85,7 @@ The agent "{self.args.agent}" is not implemented on the server.
 
 Some suggestions:
 1. Did you misspell the agent name on the command line?
-2. Is there an key for the agent name in the server manifest.hocon file?
+2. Is there a key for the agent name in the server manifest.hocon file?
 3. Is the value for the agent name key in the server manifest.hocon file set to true?
 """
                 raise ValueError(message) from exception
