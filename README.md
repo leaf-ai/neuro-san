@@ -33,8 +33,6 @@ If they are directly available via git, install the semi-private libraries
 
 In a terminal window, set at least these environment variables:
 
-    export AGENT_MANIFEST_FILE=neuro_san/registries/manifest.hocon
-    export AGENT_TOOL_PATH=neuro_san/coded_tools
     export OPENAI_API_KEY="XXX_YOUR_OPENAI_API_KEY_HERE"
 
 Any other API key environment variables for other LLM provider(s) also need to be set if you are using them.
@@ -59,7 +57,7 @@ What should return is something like:
 
 #### Server
 
-In the same terminal window, be sure the (at least 3) environment variables listed above
+In the same terminal window, be sure the environment variable(s) listed above
 are set before proceeding.
 
 Option 1: Run the service directly.  (Most useful for development)
@@ -75,7 +73,6 @@ Option 2: Build and run the docker container for the hosting agent service:
     These build.sh / Dockerfile / run.sh scripts are portable so they can be used with
     your own projects' registries and coded_tools work.
 
-Both options host all agents specified in the file pointed at by the AGENT_MANIFEST_FILE env var.
 
 #### Client
 
@@ -101,17 +98,14 @@ string of a JSON dictionary. For example:
 
 ## Creating a new agent network
 
-### Manifest file
-
-All agents used have an entry in the single manifest file pointed at by the AGENT_MANIFEST_FILE 
-environment variable. For this repo, that is neuro_san/registries/manifest.hocon.
-When you create your own repo for your own agents, that will be different.
-
-### Agent hocon file
+### Agent example files
 
 Look at the hocon files in ./neuro_san/registries for examples of specific agent networks.
 
-Here are some descriptions of the example hocon files.
+The natural question to ask is: What is a hocon file?
+The simplest answer is that you can think of a hocon file as a JSON file that allows for comments.
+
+Here are some descriptions of the example hocon files provided in this repo.
 To play with them, specify their stem as the argument for --agent on the agent_cli.py chat client.
 In some order of complexity, they are:
 
@@ -149,6 +143,17 @@ build.sh / run.sh the service like you did above to re-load the server,
 and interact with it via the agent_cli.py chat client, making sure
 you specify your agent correctly (per the hocon file stem).
 
+### Manifest file
+
+All agents used need to have an entry in a single manifest hocon file.
+For the neuro-san repo, this is: neuro_san/registries/manifest.hocon.
+
+When you create your own repo for your own agents, that will be different
+and you will need to create your own manifest file.  To point the system
+at your own manifest file, set a new environment variable:
+
+    export AGENT_MANIFEST_FILE=<your_repo>/registries/manifest.hocon
+
 # Infrastructure
 
 The agent infrastructure is run as a gRPC service.
@@ -156,7 +161,7 @@ That gRPC service is implemented (client and server) using this interface:
 
 https://github.com/leaf-ai/neuro-san/blob/main/neuro_san/session/agent_session.py
 
-It has 2 methods:
+It has 2 main methods:
 
 * function()
 
@@ -176,8 +181,36 @@ It has 2 methods:
 
 * Other methods like chat(), logs(), and reset() are legacy
 
-# Adding agents that are UI-visible
+Implementations of the AgentSession interface:
 
-1. Be sure your agent is added to the ./neuro_san/registries/manifest.hocon
+* DirectAgentSession class.  Use this if you want to call neuro-san as a library
+* ServiceAgentSession class. Use this if you want to call neuro-san as a client to a service
 
-Your agent should now be available for public consumption.
+Note that agent_cli uses both of these.  You can look at the source code there for examples.
+
+There is also an AsyncServiceAgentSession implementation available
+
+# Advanced concepts
+
+## Coded Tools
+
+Most of the examples provided here show how no-code agents are put together,
+but neuro-san agent networks support the notion of coded tools for
+low-code solutions.
+
+These are most often used when an agent needs to call out to a specific
+web service, but they can be any kind of Python code as long it
+derives from the CodedTool interface defined in neuro_san/interfaces/coded_tool.py.
+See the class and method comments there for more information.
+
+When you develop your own coded tools, there is another environment variable
+that comes into play:
+
+    export AGENT_TOOL_PATH=<your_repo>/coded_tools
+
+Beneath this, classes are dynamically resolved based on their agent name.
+That is, if you added a new coded tool to your agent, its file path would
+look like this:
+
+    <your_repo>/coded_tools/<your_agent_name>/<your_coded_tool>.py
+
