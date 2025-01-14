@@ -23,7 +23,6 @@ class SlyDataRedactor(ConfigFilter):
     based on calling-agent specs.
     """
 
-    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, calling_agent_tool_spec: Dict[str, Any]):
         """
         Constructor
