@@ -63,6 +63,7 @@ class RegistryManifestRestorer(Restorer):
 
         self.logger = logging.getLogger(self.__class__.__name__)
 
+    # pylint: disable=too-many-local-variables
     def restore(self, file_reference: str = None):
         """
         :param file_reference: The file reference to use when restoring.

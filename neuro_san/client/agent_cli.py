@@ -78,6 +78,7 @@ class AgentCli:
         try:
             response: Dict[str, Any] = self.session.function(empty)
         except RpcError as exception:
+            # pylint: disable=no-member
             if exception.code() is StatusCode.UNIMPLEMENTED:
                 message = f"""
 The agent "{self.args.agent}" is not implemented on the server.
@@ -87,9 +88,10 @@ Some suggestions:
 2. Is there an key for the agent name in the server manifest.hocon file?
 3. Is the value for the agent name key in the server manifest.hocon file set to true?
 """
-                raise ValueError(message)
-            else:
-                raise
+                raise ValueError(message) from exception
+
+            # If not an RpcException, then I dunno what it is.
+            raise
 
         function: Dict[str, Any] = response.get("function", empty)
         initial_prompt: str = function.get("description")
