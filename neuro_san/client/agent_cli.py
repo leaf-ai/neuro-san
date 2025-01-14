@@ -87,6 +87,8 @@ Some suggestions:
 1. Did you misspell the agent name on the command line?
 2. Is there a key for the agent name in the server manifest.hocon file?
 3. Is the value for the agent name key in the server manifest.hocon file set to true?
+4. Servers will skip manifest entries that have errors. They will also print out which
+   agents they are actually serving.  Check your server output for each of these.
 """
                 raise ValueError(message) from exception
 
