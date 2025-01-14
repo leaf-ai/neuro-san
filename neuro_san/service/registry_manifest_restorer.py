@@ -84,6 +84,20 @@ class RegistryManifestRestorer(Restorer):
                 with open(manifest_file, "r", encoding="utf-8") as json_file:
                     one_manifest = json.load(json_file)
 
+            if one_manifest is None:
+                message = f"Could not find manifest file at path: {manifest_file}.\n" + \
+"""
+Some common problems include:
+* The file itself simply does not exist.
+* Path is not an absolute path and you are invoking the server from a place
+  where the path is not reachable.
+* The path has a typo in it.
+
+Double-check the value of the AGENT_MANIFEST_FILE env var and
+your current working directory (pwd).
+"""
+                raise ValueError(message)
+
             for key, value in one_manifest.items():
 
                 # Keys sometimes come with quotes.
