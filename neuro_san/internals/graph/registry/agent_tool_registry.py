@@ -20,6 +20,7 @@ from pathlib import Path
 from leaf_common.config.dictionary_overlay import DictionaryOverlay
 from leaf_common.parsers.field_extractor import FieldExtractor
 
+from neuro_san.internals.graph.registry.sly_data_redactor import SlyDataRedactor
 from neuro_san.internals.graph.tools.branch_tool import BranchTool
 from neuro_san.internals.graph.tools.class_tool import ClassTool
 from neuro_san.internals.graph.tools.external_tool import ExternalTool
@@ -167,7 +168,11 @@ class AgentToolRegistry(AgentToolFactory):
             if not ExternalToolAdapter.is_external_agent(name):
                 raise ValueError(f"No agent_tool_spec for {name}")
 
-            agent_tool = ExternalTool(parent_run_context, journal, name, arguments, sly_data)
+            # For external tools, we want to redact the sly data based on
+            # the calling/parent's agent specs.
+            redacted_sly_data: Dict[str, Any] = self.redact_sly_data(parent_run_context, sly_data)
+
+            agent_tool = ExternalTool(parent_run_context, journal, name, arguments, redacted_sly_data)
             return agent_tool
 
         # Merge the arguments coming in from the LLM with those that were specified
@@ -249,3 +254,19 @@ class AgentToolRegistry(AgentToolFactory):
         overlay = DictionaryOverlay()
         merged_args: Dict[str, Any] = overlay.overlay(llm_args, config_args)
         return merged_args
+
+    def redact_sly_data(self, parent_run_context: RunContext, sly_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Redact the sly_data based on the agent spec associated with the parent run context
+
+        :param parent_run_context: The parent run context of the tool to be created.
+        :param sly_data: The internal representation of the sly_data to be redacted
+        :return: A new sly_data dictionary, redacted as per the parent spec
+        """
+        parent_spec: Dict[str, Any] = None
+        if parent_run_context is not None:
+            parent_spec = parent_run_context.get_agent_tool_spec()
+
+        redactor = SlyDataRedactor(parent_spec)
+        redacted: Dict[str, Any] = redactor.filter_config(sly_data)
+        return redacted

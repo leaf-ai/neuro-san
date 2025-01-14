@@ -14,13 +14,15 @@
 from __future__ import annotations
 
 from typing import Any
+from typing import Dict
 from typing import List
 
 from neuro_san.internals.journals.journal import Journal
+from neuro_san.internals.run_context.interfaces.agent_spec_provider import AgentSpecProvider
 from neuro_san.internals.run_context.interfaces.run import Run
 
 
-class RunContext:
+class RunContext(AgentSpecProvider):
     """
     Interface supporting high-level LLM usage.
     """
@@ -75,5 +77,11 @@ class RunContext:
         Cleans up the service-side resources associated with this instance
         :param parent_run_context: A parent RunContext perhaps the same instance,
                         but perhaps not.  Default is None
+        """
+        raise NotImplementedError
+
+    def get_agent_tool_spec(self) -> Dict[str, Any]:
+        """
+        :return: the dictionary describing the data-driven agent
         """
         raise NotImplementedError
