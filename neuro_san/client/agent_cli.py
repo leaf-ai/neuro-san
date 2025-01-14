@@ -174,7 +174,7 @@ Some suggestions:
         arg_parser.add_argument("--sly_data", type=str,
                                 help="JSON string containing data that is out-of-band to the chat stream, "
                                      "but is still essential to agent function")
-        arg_parser.add_argument("--stream", default=False, action="store_true",
+        arg_parser.add_argument("--stream", default=True, action="store_true",
                                 help="Use streaming chat instead of polling")
         arg_parser.add_argument("--poll", dest="stream", action="store_false",
                                 help="Use polling chat instead of streaming")
