@@ -385,3 +385,12 @@ class LangChainRunContext(RunContext):
         self.chat_history = []
         self.agent = None
         self.recent_human_message = None
+
+    def get_agent_tool_spec(self) -> Dict[str, Any]:
+        """
+        :return: the dictionary describing the data-driven agent
+        """
+        if self.tool_caller is None:
+            return None
+
+        return self.tool_caller.get_agent_tool_spec()

@@ -12,11 +12,12 @@
 from typing import Any
 from typing import Dict
 
+from neuro_san.internals.run_context.interfaces.agent_spec_provider import AgentSpecProvider
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.run import Run
 
 
-class ToolCaller:
+class ToolCaller(AgentSpecProvider):
     """
     Interface for Tools that call Agents/LLMs as functions.
     This is called by langchain Tools and implemented by CallingTool.

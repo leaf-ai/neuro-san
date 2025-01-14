@@ -227,3 +227,12 @@ class OpenAIRunContext(RunContext):
             if self.thread_id is not None and self.thread_id != parent_run_context.thread_id:
                 await self.openai_client.delete_thread(self.thread_id)
                 self.thread_id = None
+
+    def get_agent_tool_spec(self) -> Dict[str, Any]:
+        """
+        :return: the dictionary describing the data-driven agent
+        """
+        if self.tool_caller is None:
+            return None
+
+        return self.tool_caller.get_agent_tool_spec()
