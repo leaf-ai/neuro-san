@@ -312,6 +312,7 @@ Detailed Role and Step-by-Step Workflow:
 {aaosa_instructions}
             """,
             "tools": ["destination_researcher", "travel_cost_analyzer"]
+            "command": "{aaosa_command}"
         },
         {
             "name": "destination_researcher",
