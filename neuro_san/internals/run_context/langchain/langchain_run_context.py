@@ -19,6 +19,8 @@ import traceback
 
 from openai import APIError
 
+from pydantic_core import ValidationError
+
 from langchain.agents import Agent
 from langchain.agents import AgentExecutor
 from langchain.agents.conversational.base import ConversationalAgent
@@ -200,7 +202,11 @@ class LangChainRunContext(RunContext):
         """
         # Contruct a human message out of the text of the user message
         # Don't add this to the chat history yet.
-        self.recent_human_message = HumanMessage(user_message)
+        try:
+            self.recent_human_message = HumanMessage(user_message)
+        except ValidationError as exception:
+            message = f"ValidationError in {self.assistant_name} with message: {user_message}"
+            raise ValueError(message) from exception
 
         # Create a run to return
         run = LangChainRun(self.run_id_base, self.chat_history)
