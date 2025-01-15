@@ -49,4 +49,5 @@ class TextJournal(Journal):
         Writes a BaseMessage entry into the journal
         :param message: The BaseMessage instance to write to the journal
         """
+        # Do nothing
         _ = message
