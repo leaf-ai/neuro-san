@@ -174,7 +174,7 @@ class BranchTool(CallingTool, CallableTool):
         :return: A string describing the objective of the component.
         """
         agent_spec = self.get_agent_tool_spec()
-        return agent_spec.get("command")
+        return agent_spec.get("command", "Perform your instructions to the best of your ability.")
 
     async def integrate_callable_response(self, run: Run, messages: List[Any]) -> List[Any]:
         """
