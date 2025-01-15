@@ -1,14 +1,3 @@
-
-# Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
-# All Rights Reserved.
-# Issued under the Academic Public License.
-#
-# You can be released from the terms, and requirements of the Academic Public
-# License by purchasing a commercial license.
-# Purchase of a commercial license is mandatory for any use of the
-# neuro-san SDK Software in commercial settings.
-#
-# END COPYRIGHT
 {
     # Currently we list each hocon file we want to serve as a key with a boolean value.
     # Eventually we might have a dictionary value with server specifications for each.
@@ -21,5 +10,9 @@
     "insurance_agents.hocon": true,
     "retail_ops_and_customer_service.hocon": true,
     "banking_ops.hocon": true,
+    "insurance_underwriting_agents.hocon": true,
+    "consumer_decision_assistant.hocon": true,
+    "airbnb.hocon": true,
+    "expedia.hocon": true,
     "cpg_agents.hocon": true
 }
