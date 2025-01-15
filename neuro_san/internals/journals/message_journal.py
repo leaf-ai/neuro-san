@@ -14,6 +14,8 @@ from typing import Dict
 from typing import List
 from typing import Union
 
+from langchain_core.messages.base import BaseMessage
+
 from neuro_san.internals.interfaces.async_hopper import AsyncHopper
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.legacy_logs_message import LegacyLogsMessage
@@ -53,3 +55,10 @@ class MessageJournal(Journal):
         :return: A list of strings corresponding to log entries written with write()
         """
         return None
+
+    async def write_message(self, message: BaseMessage):
+        """
+        Writes a BaseMessage entry into the journal
+        :param message: The BaseMessage instance to write to the journal
+        """
+        _ = message
