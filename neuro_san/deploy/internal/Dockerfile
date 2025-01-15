@@ -40,7 +40,7 @@ RUN apt-get update && apt-get install --yes \
     curl \
     --no-install-recommends && \
     curl -LO https://github.com/git/git/archive/refs/tags/v${GIT_VERSION}.tar.gz && \
-    tar -zxf v${GIT_VERSION}.tar.gz && \ 
+    tar -zxf v${GIT_VERSION}.tar.gz && \
     rm -rf /var/lib/apt/lists/*
 
 # Change to the Git source directory to build and install Git
@@ -131,5 +131,5 @@ ENV APP_ENTRYPOINT neuro_san/deploy/entrypoint.sh
 ENV TOOL_REGISTRY_FILE=${TOOL_REGISTRY_FILE}
 ENV AGENT_SERVICE_LOG_JSON=${APP_SOURCE}/neuro_san/deploy/logging.json
 
-ENTRYPOINT "${APP_SOURCE}/${APP_ENTRYPOINT}" --tool_registry_file="${TOOL_REGISTRY_FILE}"
+ENTRYPOINT "${APP_SOURCE}/${APP_ENTRYPOINT}"
 

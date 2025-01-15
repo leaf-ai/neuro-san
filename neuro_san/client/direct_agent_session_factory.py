@@ -9,6 +9,7 @@
 # neuro-san SDK Software in commercial settings.
 #
 # END COPYRIGHT
+from os import environ
 from typing import Dict
 
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
@@ -51,6 +52,17 @@ class DirectAgentSessionFactory:
         :param agent_name: The name of the agent to use for the session.
         """
         tool_registry: AgentToolRegistry = self.manifest_tool_registries.get(agent_name)
+        if tool_registry is None:
+            message = f"""
+Agent named "{agent_name}" not found in manifest file {environ.get("AGENT_MANIFEST_FILE")}.
+
+Some things to check:
+1. Does your agent name have a typo?
+2. Does your manifest file contain a key for the agent?
+3. Does the value for the key in the manifest file have a value of 'true'?
+"""
+            raise ValueError(message)
+
         session: DirectAgentSession = DirectAgentSession(self.chat_session_map,
                                                          tool_registry,
                                                          self.asyncio_executor)

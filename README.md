@@ -4,6 +4,8 @@
 
 ### Prep
 
+#### Install Python dependencies
+
 From the top-level:
 
 In a new virtual environment:
@@ -27,16 +29,19 @@ If they are directly available via git, install the semi-private libraries
     export LEAF_PRIVATE_SOURCE_CREDENTIALS=<Your GitHub Personal Access Token>
     pip install -r requirements-private.txt
 
+#### Set necessary environment variables
+
+In a terminal window, set at least these environment variables:
+
+    export OPENAI_API_KEY="XXX_YOUR_OPENAI_API_KEY_HERE"
+
+Any other API key environment variables for other LLM provider(s) also need to be set if you are using them.
+
 ### Direct Setup
 
-In a terminal window, set at least OPENAI_API_KEY to a valid access key for ChatGPT access.
-(Any other API key environment variables for other LLMs also need to be set if you are using them.)
+From the top-level of this repo:
 
-    export OPENAI_API_KEY="XXX"
-
-From the top-level:
-
-    python ./neuro_san/client/agent_cli.py --connection direct --agent hello_world
+    python -m neuro_san.client.agent_cli --connection direct --agent hello_world
 
 Type in this input to the chat client:
 
@@ -46,38 +51,41 @@ What should return is something like:
 
     Hello, world.
 
+... but you are dealing with LLMs. Your results will vary!
+
 ### Client/Server Setup
 
 #### Server
 
-In one terminal window, set at least OPENAI_API_KEY to a valid access key for ChatGPT access.
-(Any other API key environment variables for other LLMs also need to be set if you are using them.)
+In the same terminal window, be sure the environment variable(s) listed above
+are set before proceeding.
 
-    export OPENAI_API_KEY="XXX"
+Option 1: Run the service directly.  (Most useful for development)
 
-Option 1: Build and run the docker container for the hosting agent service:
+    python -m neuro_san.service.agent_main_loop
+
+Option 2: Build and run the docker container for the hosting agent service:
 
     ./neuro_san/deploy/build.sh ; ./neuro_san/deploy/run.sh
+
+    You will need the leaf-common and leaf-server-common wheel files for this to work.
 
     These build.sh / Dockerfile / run.sh scripts are portable so they can be used with
     your own projects' registries and coded_tools work.
 
-Option 2: Run the service directly for a specific agent network:
-
-    python -m neuro_san.service.agent_main_loop --tool_registry_file hello_world
 
 #### Client
 
 In another terminal start the chat client:
 
-    python ./neuro_san/client/agent_cli.py --connection service --agent hello_world
+    python -m neuro_san.client.agent_cli --connection service --agent hello_world
 
 
 ### Extra info about agent_cli.py
 
 There is help to be had with --help.
 
-By design, you cannot see all agents registered with the service.
+By design, you cannot see all agents registered with the service from the client.
 
 When the chat client is given a newline as input, that implies "send the message".
 This isn't great when you are copy/pasting multi-line input.  For that there is a
@@ -90,9 +98,14 @@ string of a JSON dictionary. For example:
 
 ## Creating a new agent network
 
-Look at the example hocon files in ./neuro_san/registries
+### Agent example files
 
-Here are some descriptions of the example hocon files.
+Look at the hocon files in ./neuro_san/registries for examples of specific agent networks.
+
+The natural question to ask is: What is a hocon file?
+The simplest answer is that you can think of a hocon file as a JSON file that allows for comments.
+
+Here are some descriptions of the example hocon files provided in this repo.
 To play with them, specify their stem as the argument for --agent on the agent_cli.py chat client.
 In some order of complexity, they are:
 
@@ -130,6 +143,17 @@ build.sh / run.sh the service like you did above to re-load the server,
 and interact with it via the agent_cli.py chat client, making sure
 you specify your agent correctly (per the hocon file stem).
 
+### Manifest file
+
+All agents used need to have an entry in a single manifest hocon file.
+For the neuro-san repo, this is: neuro_san/registries/manifest.hocon.
+
+When you create your own repo for your own agents, that will be different
+and you will need to create your own manifest file.  To point the system
+at your own manifest file, set a new environment variable:
+
+    export AGENT_MANIFEST_FILE=<your_repo>/registries/manifest.hocon
+
 # Infrastructure
 
 The agent infrastructure is run as a gRPC service.
@@ -137,7 +161,7 @@ That gRPC service is implemented (client and server) using this interface:
 
 https://github.com/leaf-ai/neuro-san/blob/main/neuro_san/session/agent_session.py
 
-It has 2 methods:
+It has 2 main methods:
 
 * function()
 
@@ -157,8 +181,36 @@ It has 2 methods:
 
 * Other methods like chat(), logs(), and reset() are legacy
 
-# Adding agents that are UI-visible
+Implementations of the AgentSession interface:
 
-1. Be sure your agent is added to the ./neuro_san/registries/manifest.hocon
+* DirectAgentSession class.  Use this if you want to call neuro-san as a library
+* ServiceAgentSession class. Use this if you want to call neuro-san as a client to a service
 
-Your agent should now be available for public consumption.
+Note that agent_cli uses both of these.  You can look at the source code there for examples.
+
+There is also an AsyncServiceAgentSession implementation available
+
+# Advanced concepts
+
+## Coded Tools
+
+Most of the examples provided here show how no-code agents are put together,
+but neuro-san agent networks support the notion of coded tools for
+low-code solutions.
+
+These are most often used when an agent needs to call out to a specific
+web service, but they can be any kind of Python code as long it
+derives from the CodedTool interface defined in neuro_san/interfaces/coded_tool.py.
+See the class and method comments there for more information.
+
+When you develop your own coded tools, there is another environment variable
+that comes into play:
+
+    export AGENT_TOOL_PATH=<your_repo>/coded_tools
+
+Beneath this, classes are dynamically resolved based on their agent name.
+That is, if you added a new coded tool to your agent, its file path would
+look like this:
+
+    <your_repo>/coded_tools/<your_agent_name>/<your_coded_tool>.py
+

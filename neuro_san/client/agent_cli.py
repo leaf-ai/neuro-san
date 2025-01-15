@@ -22,6 +22,9 @@ import json
 
 from timedinput import timedinput
 
+from grpc import RpcError
+from grpc import StatusCode
+
 from neuro_san.client.agent_session_factory import AgentSessionFactory
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
 from neuro_san.internals.utils.file_of_class import FileOfClass
@@ -72,7 +75,25 @@ class AgentCli:
             print(f"sly_data is {sly_data}")
 
         empty: Dict[str, Any] = {}
-        response: Dict[str, Any] = self.session.function(empty)
+        try:
+            response: Dict[str, Any] = self.session.function(empty)
+        except RpcError as exception:
+            # pylint: disable=no-member
+            if exception.code() is StatusCode.UNIMPLEMENTED:
+                message = f"""
+The agent "{self.args.agent}" is not implemented on the server.
+
+Some suggestions:
+1. Did you misspell the agent name on the command line?
+2. Is there a key for the agent name in the server manifest.hocon file?
+3. Is the value for the agent name key in the server manifest.hocon file set to true?
+4. Servers will skip manifest entries that have errors. They will also print out which
+   agents they are actually serving.  Check your server output for each of these.
+"""
+                raise ValueError(message) from exception
+
+            # If not an RpcException, then I dunno what it is.
+            raise
 
         function: Dict[str, Any] = response.get("function", empty)
         initial_prompt: str = function.get("description")
@@ -155,7 +176,7 @@ class AgentCli:
         arg_parser.add_argument("--sly_data", type=str,
                                 help="JSON string containing data that is out-of-band to the chat stream, "
                                      "but is still essential to agent function")
-        arg_parser.add_argument("--stream", default=False, action="store_true",
+        arg_parser.add_argument("--stream", default=True, action="store_true",
                                 help="Use streaming chat instead of polling")
         arg_parser.add_argument("--poll", dest="stream", action="store_false",
                                 help="Use polling chat instead of streaming")
