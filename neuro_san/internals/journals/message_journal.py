@@ -47,8 +47,7 @@ class MessageJournal(Journal):
             entry = entry.decode('utf-8')
 
         legacy = LegacyLogsMessage(content=entry)
-        message_dict: Dict[str, Any] = convert_to_chat_message(legacy)
-        await self.hopper.put(message_dict)
+        await self.write_message(legacy)
 
     def get_logs(self) -> List[str]:
         """
@@ -61,4 +60,5 @@ class MessageJournal(Journal):
         Writes a BaseMessage entry into the journal
         :param message: The BaseMessage instance to write to the journal
         """
-        _ = message
+        message_dict: Dict[str, Any] = convert_to_chat_message(message)
+        await self.hopper.put(message_dict)
