@@ -19,7 +19,7 @@ import traceback
 
 from openai import APIError
 
-from pydantic_core._pydantic_core import ValidationError
+from pydantic_core import ValidationError
 
 from langchain.agents import Agent
 from langchain.agents import AgentExecutor
