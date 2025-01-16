@@ -65,9 +65,9 @@ class ConnectivityReporter:
 
         for agent_name in agent_names:
             agent_spec: Dict[str, Any] = self.registry.get_agent_tool_spec(agent_name)
-            self.report_node_connectivity(agent_spec)
+            await self.report_node_connectivity(agent_spec)
 
-    def report_node_connectivity(self, agent_spec: Dict[str, Any]):
+    async def report_node_connectivity(self, agent_spec: Dict[str, Any]):
         """
         Share the connectivity information of a single node in the network.
         :param agent_spec: The agent spec dictionary to report on
@@ -114,4 +114,4 @@ class ConnectivityReporter:
         # Report the origin as the agent itself, so any client that receives
         # the message has the correct context about the tools listed in the content.
         agent_name: str = self.registry.get_name_from_spec(agent_spec)
-        self.journal.write_message(message, origin=agent_name)
+        await self.journal.write_message(message, origin=agent_name)
