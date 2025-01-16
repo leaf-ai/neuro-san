@@ -27,7 +27,7 @@ from neuro_san.internals.messages.agent_framework_message import AgentFrameworkM
 class ConnectivityReporter:
     """
     A class that knows how to report the connectivity of an entire
-    AgenttoolRegistry to a particular Journal
+    AgentToolRegistry to a particular Journal
     """
 
     def __init__(self, registry: AgentToolRegistry,
