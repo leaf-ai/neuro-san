@@ -83,12 +83,17 @@ class AgentToolRegistry(AgentToolFactory):
             # Find the best of many resolution paths in the PYTHONPATH
             resolved_tool_path: str = str(Path(agent_tool_path).resolve())
             best_path = ""
-            pythonpath_split = os.environ.get("PYTHONPATH").split(":")
-            for one_path in pythonpath_split:
-                resolved_path: str = str(Path(one_path).resolve())
-                if resolved_tool_path.startswith(resolved_path) and \
-                        len(resolved_path) > len(best_path):
-                    best_path = resolved_path
+            pythonpath: str = os.environ.get("PYTHONPATH")
+            if pythonpath is None:
+                # Trust what we have already
+                best_path = agent_tool_path
+            else:
+                pythonpath_split = pythonpath.split(":")
+                for one_path in pythonpath_split:
+                    resolved_path: str = str(Path(one_path).resolve())
+                    if resolved_tool_path.startswith(resolved_path) and \
+                            len(resolved_path) > len(best_path):
+                        best_path = resolved_path
 
             if len(best_path) == 0:
                 raise ValueError(f"No reasonable agent tool path found in PYTHONPATH for {agent_tool_path}")
