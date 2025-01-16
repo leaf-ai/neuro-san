@@ -74,7 +74,7 @@ class AgentToolRegistry(AgentToolFactory):
 
         # Try reach-around directory if still nothing to start with
         if agent_tool_path is None:
-            file_of_class = FileOfClass(__file__, "../../coded_tools")
+            file_of_class = FileOfClass(__file__, "../../../coded_tools")
             agent_tool_path = file_of_class.get_basis()
 
         # If we are dealing with file paths, convert that to something resolvable
