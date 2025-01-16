@@ -132,7 +132,7 @@ class DataDrivenChatSession(ChatSession):
             self.sly_data.update(sly_data)
 
         # Report on network connectivity for clients that care.
-        connectivity_reporter = ConnectivityReporter(self.registry, self.front_man, self.journal)
+        connectivity_reporter = ConnectivityReporter(self.registry, self.journal)
         await connectivity_reporter.report_network_connectivity()
 
         try:

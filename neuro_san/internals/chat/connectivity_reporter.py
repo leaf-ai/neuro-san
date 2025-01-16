@@ -19,7 +19,6 @@ import json
 from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
-from neuro_san.internals.graph.tools.front_man import FrontMan
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.agent_framework_message import AgentFrameworkMessage
 from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
@@ -54,31 +53,27 @@ class ConnectivityReporter:
     """
 
     def __init__(self, registry: AgentToolRegistry,
-                 front_man: FrontMan,
                  journal: Journal):
         """
         Constructor
 
         :param registry: The AgentToolRegistry to use.
-        :param front_man: The pre-determined front man agent.
         :param journal: The Journal that captures messages for user output
         """
 
         self.registry: AgentToolRegistry = registry
-        self.front_man: FrontMan = front_man
         self.journal: Journal = journal
 
     async def report_network_connectivity(self):
         """
         Share the connectivity information of the agent network in question
         """
+        # Find the name of the front-man as a root node
+        front_man: str = self.registry.find_front_man()
 
         # Do a breadth-first traversal starting with the front-man
-        front_man_spec: Dict[str, Any] = self.front_man.get_agent_tool_spec()
-        front_man_name: str = self.registry.get_name_from_spec(front_man_spec)
-
         reported_agents: Set[str] = set()
-        await self.report_node_connectivity(front_man_name, reported_agents)
+        await self.report_node_connectivity(front_man, reported_agents)
 
     async def report_node_connectivity(self, agent_name: str, reported_agents: Set[str]):
         """
