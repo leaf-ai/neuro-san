@@ -27,7 +27,13 @@ from neuro_san.internals.messages.agent_framework_message import AgentFrameworkM
 class ConnectivityReporter:
     """
     A class that knows how to report the connectivity of an entire
-    AgentToolRegistry to a particular Journal
+    AgentToolRegistry to a particular Journal.
+
+    Connectivity information comes as a series of AgentFramework
+    messages, each of whose origin field reflects the name of the
+    node and the content of the message is a JSON structure
+    containing the list of tools that the node is connected to.
+    The FrontMan is always sent first.
     """
 
     def __init__(self, registry: AgentToolRegistry,
