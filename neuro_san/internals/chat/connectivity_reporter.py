@@ -63,6 +63,7 @@ class ConnectivityReporter:
         agent_names = list(agent_name_set)
         agent_names.insert(0, front_man_name)
 
+        # Report connectivity for each node in the graph
         for agent_name in agent_names:
             agent_spec: Dict[str, Any] = self.registry.get_agent_tool_spec(agent_name)
             await self.report_node_connectivity(agent_spec)
@@ -73,6 +74,9 @@ class ConnectivityReporter:
         :param agent_spec: The agent spec dictionary to report on
         """
         extractor = DictionaryExtractor(agent_spec)
+
+        # Check to see if this node in the graph actually wants its connectivity
+        # known to the outside world.
         allow_connectivity = bool(extractor.get("allow.connectivity", True))
         if not allow_connectivity:
             # Nothing to see here, please move along
