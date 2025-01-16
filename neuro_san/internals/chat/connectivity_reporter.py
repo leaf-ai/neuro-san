@@ -34,7 +34,20 @@ class ConnectivityReporter:
     messages, each of whose origin field reflects the name of the
     node and the content of the message is a JSON structure
     containing the list of tools that the node is connected to.
-    The FrontMan is always sent first.
+
+    *   The FrontMan is always sent first.
+    *   Subsequent tool reporting proceeds in a breadth-first search, as per the
+        ordering of the tools laid out in each agent spec.
+    *   Cycles in the graph are mentioned in the tool reporting, but any node
+        is only ever reported once.
+    *   Hocon files can elect to hide the connectivity information from this reporting
+        from any level on downstream by adding this block:
+            "allow": {
+                "connectivity": False
+            }
+        ...so if a network does not want connectivity reported at all, then this is only
+        required in the front man's spec.
+    *   External agent's connectivity is not reported. Maybe someday.
     """
 
     def __init__(self, registry: AgentToolRegistry,
