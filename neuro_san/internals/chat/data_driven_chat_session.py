@@ -256,26 +256,34 @@ class DataDrivenChatSession(ChatSession):
             extractor = DictionaryExtractor(agent_spec)
             allow_connectivity = bool(extractor.get("allow.connectivity", True))
             if not allow_connectivity:
+                # Nothing to see here, please move along
                 continue
+
+            # Keep a set of the combined sources of tools, so connectivity only gets
+            # listed once.
+            tool_set: Set[str] = set()
 
             # Check the 2 places that would list connectivity
             empty_dict: Dict[str, Any] = {}
-            args_tools: Dict[str, Any] = extractor.get("args.tools", empty_dict)
+            args_tools = extractor.get("args.tools", empty_dict)
+            if isinstance(args_tools, Dict):
+                args_tools = args_tools.values()
+            if isinstance(args_tools, List):
+                tool_set.update(args_tools)
+
             empty_list: List[str] = []
             tools: List[str] = agent_spec.get("tools", empty_list)
+            tool_set.update(tools)
+            tool_list: List[str] = list(tool_set)
 
-            # When empty both lists and dicts evaluate to False
-            if not tools and not args_tools:
+            # Recall that an empty list evaluates to False
+            if not bool(tool_list):
+                # Nothing to see here, please move along
                 continue
-
-            # Make a set of the combined sources of tools, so connectivity only gets
-            # listed once.
-            tool_set: Set[str] = set(tools)
-            tool_set.update(args_tools.values())
 
             # Report the content of the tools list as a dictionary in JSON.
             tools_dict: Dict[str, Any] = {
-                "tools": list(tool_set)
+                "tools": tool_list
             }
             content: str = json.dumps(tools_dict)
             message = AgentFrameworkMessage(content=content)
