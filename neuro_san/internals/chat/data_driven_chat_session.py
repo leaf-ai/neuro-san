@@ -13,12 +13,16 @@ from typing import Any
 from typing import Dict
 from typing import Iterator
 from typing import List
+from typing import Set
 
+import json
 import traceback
 
 from datetime import datetime
 
 from openai import BadRequestError
+
+from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
 from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.internals.chat.chat_session import ChatSession
@@ -130,6 +134,8 @@ class DataDrivenChatSession(ChatSession):
         if sly_data is not None:
             self.sly_data.update(sly_data)
 
+        await self.transmit_connectivity()
+
         try:
             await self.journal.write("consulting chat agent(s)...")
 
@@ -239,3 +245,38 @@ class DataDrivenChatSession(ChatSession):
                 last received input.
         """
         return self.last_input_timestamp
+
+    async def transmit_connectivity(self):
+        """
+        Share the connectivity information of the agent network in question
+        """
+        agent_names: List[str] = self.registry.get_agent_names()
+        for agent_name in agent_names:
+            agent_spec: Dict[str, Any] = self.registry.get_agent_tool_spec(agent_name)
+            extractor = DictionaryExtractor(agent_spec)
+            allow_connectivity = bool(extractor.get("allow.connectivity", True))
+            if not allow_connectivity:
+                continue
+
+            # Check the 2 places that would list connectivity
+            empty_dict: Dict[str, Any] = {}
+            args_tools: Dict[str, Any] = extractor.get("args.tools", empty_dict)
+            empty_list: List[str] = []
+            tools: List[str] = agent_spec.get("tools", empty_list)
+
+            # When empty both lists and dicts evaluate to False
+            if not tools and not args_tools:
+                continue
+
+            # Make a set of the combined sources of tools, so connectivity only gets
+            # listed once.
+            tool_set: Set[str] = set(tools)
+            tool_set.update(args_tools.values())
+
+            # Report the content of the tools list as a dictionary in JSON.
+            tools_dict: Dict[str, Any] = {
+                "tools": list(tool_set)
+            }
+            content: str = json.dumps(tools_dict)
+            message = AgentFrameworkMessage(content=content)
+            self.journal.write_message(message, origin=agent_name)
