@@ -130,15 +130,23 @@ class AgentToolRegistry(AgentToolFactory):
         if agent_spec is None:
             return
 
+        name: str = self.get_name_from_spec(agent_spec)
+        if self.first_agent is None:
+            self.first_agent = name
+
+        self.agent_spec_map[name] = agent_spec
+
+    def get_name_from_spec(self, agent_spec: Dict[str, Any]) -> str:
+        """
+        :param agent_spec: A single agent to register
+        :return: The agent name as per the spec
+        """
         extractor = FieldExtractor()
         name = extractor.get_field(agent_spec, "function.name")
         if name is None:
             name = agent_spec.get("name")
 
-        if self.first_agent is None:
-            self.first_agent = name
-
-        self.agent_spec_map[name] = agent_spec
+        return name
 
     def get_agent_tool_spec(self, name: str) -> Dict[str, Any]:
         """
