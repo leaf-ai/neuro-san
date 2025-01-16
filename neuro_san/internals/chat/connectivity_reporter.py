@@ -47,7 +47,10 @@ class ConnectivityReporter:
             }
         ...so if a network does not want connectivity reported at all, then this is only
         required in the front man's spec.
-    *   External agent's connectivity is not reported. Maybe someday.
+        Such a node will itself be reported, but with an empty tool list.
+    *   External agents are reported but with an empty tool list.
+        No effort to discover their internal connectivity is attempted.
+        Maybe someday.
     """
 
     def __init__(self, registry: AgentToolRegistry,
