@@ -33,10 +33,10 @@ class Journal:
         """
         raise NotImplementedError
 
-    async def write_message(self, message: BaseMessage, origin: str = None):
+    async def write_message(self, message: BaseMessage, origin: Union[str, List[str]] = None):
         """
         Writes a BaseMessage entry into the journal
         :param message: The BaseMessage instance to write to the journal
-        :param origin: A string describing the originating agent of the information
+        :param origin: A string or list of strings describing the originating agent of the information
         """
         raise NotImplementedError
