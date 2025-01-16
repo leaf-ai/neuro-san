@@ -91,10 +91,14 @@ class ConnectivityReporter:
 
             # This is not an external agent, so get its spec to report on
             agent_spec: Dict[str, Any] = self.registry.get_agent_tool_spec(agent_name)
-            extractor = DictionaryExtractor(agent_spec)
+            if agent_spec is None:
+                # The agent referred to by the caller is not actually in the registry.
+                # As a hint, don't report anything, not even an empty tool list.
+                return
 
             # Check to see if this node in the graph actually wants its connectivity
             # known to the outside world.
+            extractor = DictionaryExtractor(agent_spec)
             allow_connectivity = bool(extractor.get("allow.connectivity", True))
             if not bool(allow_connectivity):
 
