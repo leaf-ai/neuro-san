@@ -22,7 +22,7 @@ from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegi
 from neuro_san.internals.graph.tools.front_man import FrontMan
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.agent_framework_message import AgentFrameworkMessage
-from neuro_san.run_context.utils.external_tool_adapter import ExternalToolAdapter
+from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
 
 
 class ConnectivityReporter:

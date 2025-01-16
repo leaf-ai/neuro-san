@@ -278,9 +278,3 @@ class AgentToolRegistry(AgentToolFactory):
         redactor = SlyDataRedactor(parent_spec)
         redacted: Dict[str, Any] = redactor.filter_config(sly_data)
         return redacted
-
-    def get_agent_names(self) -> List[str]:
-        """
-        :return: A list of all the agent names in the registry
-        """
-        return self.agent_spec_map.keys()
