@@ -61,6 +61,8 @@ class MessageJournal(Journal):
         :param message: The BaseMessage instance to write to the journal
         :param origin: A string describing the originating agent of the information
         """
-        # XXX origin
         message_dict: Dict[str, Any] = convert_to_chat_message(message)
+        if origin is not None:
+            message_dict["origin"] = [origin]
+
         await self.hopper.put(message_dict)
