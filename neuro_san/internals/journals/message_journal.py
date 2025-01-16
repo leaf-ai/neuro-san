@@ -55,10 +55,12 @@ class MessageJournal(Journal):
         """
         return None
 
-    async def write_message(self, message: BaseMessage):
+    async def write_message(self, message: BaseMessage, origin: str = None):
         """
         Writes a BaseMessage entry into the journal
         :param message: The BaseMessage instance to write to the journal
+        :param origin: A string describing the originating agent of the information
         """
+        # XXX origin
         message_dict: Dict[str, Any] = convert_to_chat_message(message)
         await self.hopper.put(message_dict)

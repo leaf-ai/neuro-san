@@ -44,10 +44,11 @@ class TextJournal(Journal):
         """
         return self.log_content
 
-    async def write_message(self, message: BaseMessage):
+    async def write_message(self, message: BaseMessage, origin: str = None):
         """
         Writes a BaseMessage entry into the journal
         :param message: The BaseMessage instance to write to the journal
+        :param origin: A string describing the originating agent of the information
         """
         # Do nothing
         _ = message

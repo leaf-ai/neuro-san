@@ -59,10 +59,11 @@ class CompoundJournal(Journal):
         """
         self.journals.append(journal)
 
-    async def write_message(self, message: BaseMessage):
+    async def write_message(self, message: BaseMessage, origin: str = None):
         """
         Writes a BaseMessage entry into the journal
         :param message: The BaseMessage instance to write to the journal
+        :param origin: A string describing the originating agent of the information
         """
         for journal in self.journals:
-            await journal.write_message(message)
+            await journal.write_message(message, origin)
