@@ -113,20 +113,41 @@ Check these things:
         named for your agent network?
     c)  Does the module in the "class" designation for the agent {agent_name}
         match what is in the filesystem?
-    d)  Does the specified class name match what is actually implemented in the file? 
+    d)  Does the specified class name match what is actually implemented in the file?
 """
             raise ValueError(message) from exception
 
         # Instantiate the CodedTool
         coded_tool: CodedTool = None
-        if issubclass(python_class, BranchTool):
-            # Allow for a combination of BranchTool + CodedTool to allow
-            # for easier invocation of agents within code.
-            coded_tool = python_class(self.parent_run_context, self.journal, self.factory,
-                                      self.arguments, self.agent_tool_spec, self.sly_data)
-        else:
-            # Go with the no-args constructor as per the run-of-the-mill contract
-            coded_tool = python_class()
+        try:
+            if issubclass(python_class, BranchTool):
+                # Allow for a combination of BranchTool + CodedTool to allow
+                # for easier invocation of agents within code.
+                coded_tool = python_class(self.parent_run_context, self.journal, self.factory,
+                                          self.arguments, self.agent_tool_spec, self.sly_data)
+            else:
+                # Go with the no-args constructor as per the run-of-the-mill contract
+                coded_tool = python_class()
+        except TypeError as exception:
+            message: str = f"""
+Coded tool class {python_class} must take no orguments to its constructor.
+
+Some hints:
+1)  If you are attempting to re-use/re-purpose your CodedTool implementation,
+    consider adding an "args" block to your specific agents. This will pass
+    whatever dictionary you specify there as extra key/value pairs to your
+    CodedTool's invoke()/async_invoke() method's args parameter in addition
+    to those provided by any calling LLM.
+2)  If you need something more dynamic that is shared amongst the CodedTools
+    of your agent network, consider lazy instatiation of the object, and share
+    a reference to the object in the sly_data dictionary.
+3)  Try very very hard to *not* use global variables to bypass this limitation.
+    Your CodedTool implementation is working in a multi-threaded, asynchronous
+    environment. If your first instinct is to reach for a global variable,
+    you are highly likely to diminish the performance for all other requests
+    on any server running your agent with your CodedTool.
+"""
+            raise TypeError(message) from exception
 
         if isinstance(coded_tool, CodedTool):
             # Invoke the CodedTool
