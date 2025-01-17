@@ -131,6 +131,7 @@ Check these things:
         except TypeError as exception:
             message: str = f"""
 Coded tool class {python_class} must take no orguments to its constructor.
+The standard pattern for CodedTools is to not have a constructor at all.
 
 Some hints:
 1)  If you are attempting to re-use/re-purpose your CodedTool implementation,
@@ -139,8 +140,10 @@ Some hints:
     CodedTool's invoke()/async_invoke() method's args parameter in addition
     to those provided by any calling LLM.
 2)  If you need something more dynamic that is shared amongst the CodedTools
-    of your agent network, consider lazy instatiation of the object, and share
-    a reference to the object in the sly_data dictionary.
+    of your agent network to handle a single request, consider lazy instantiation
+    of the object in question, and share a reference to that  object in the
+    sly_data dictionary. The lifetime will of that object will last as long
+    as the ruest itself is in motion.
 3)  Try very very hard to *not* use global variables/singletons to bypass this limitation.
     Your CodedTool implementation is working in a multi-threaded, asynchronous
     environment. If your first instinct is to reach for a global variable,
