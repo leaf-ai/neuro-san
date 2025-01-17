@@ -14,6 +14,8 @@ from typing import Dict
 from typing import List
 from typing import Union
 
+from langchain_core.messages.base import BaseMessage
+
 from neuro_san.internals.interfaces.async_hopper import AsyncHopper
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.legacy_logs_message import LegacyLogsMessage
@@ -45,11 +47,28 @@ class MessageJournal(Journal):
             entry = entry.decode('utf-8')
 
         legacy = LegacyLogsMessage(content=entry)
-        message_dict: Dict[str, Any] = convert_to_chat_message(legacy)
-        await self.hopper.put(message_dict)
+        await self.write_message(legacy)
 
     def get_logs(self) -> List[str]:
         """
         :return: A list of strings corresponding to log entries written with write()
         """
         return None
+
+    async def write_message(self, message: BaseMessage, origin: Union[str, List[str]] = None):
+        """
+        Writes a BaseMessage entry into the journal
+        :param message: The BaseMessage instance to write to the journal
+        :param origin: A string or list of strings describing the originating agent of the information
+        """
+        message_dict: Dict[str, Any] = convert_to_chat_message(message)
+
+        # Handle the origin information
+        if origin is not None:
+            origin_list: List[str] = origin
+            if isinstance(origin, str):
+                # Handle the case of a single string
+                origin_list = [origin]
+            message_dict["origin"] = origin_list
+
+        await self.hopper.put(message_dict)

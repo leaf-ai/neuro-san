@@ -13,6 +13,8 @@ from typing import Any
 from typing import List
 from typing import Union
 
+from langchain_core.messages.base import BaseMessage
+
 from neuro_san.internals.journals.journal import Journal
 
 
@@ -56,3 +58,12 @@ class CompoundJournal(Journal):
         :param journal: A Journal instance to service
         """
         self.journals.append(journal)
+
+    async def write_message(self, message: BaseMessage, origin: Union[str, List[str]] = None):
+        """
+        Writes a BaseMessage entry into the journal
+        :param message: The BaseMessage instance to write to the journal
+        :param origin: A string or list of strings describing the originating agent of the information
+        """
+        for journal in self.journals:
+            await journal.write_message(message, origin)
