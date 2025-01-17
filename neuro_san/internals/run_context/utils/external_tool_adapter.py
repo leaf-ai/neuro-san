@@ -18,6 +18,9 @@ import logging
 from urllib.parse import ParseResult
 from urllib.parse import urlparse
 
+from grpc import StatusCode
+from grpc.aio import AioRpcError
+
 # The only reach-around from internals outward.
 from neuro_san.session.agent_session import AgentSession
 from neuro_san.session.async_service_agent_session import AsyncServiceAgentSession
@@ -46,16 +49,41 @@ class ExternalToolAdapter:
         """
         if self.function_json is None:
 
-            # Lazily get the information from the service
+            # Lazily get the information about the service
             agent_location: Dict[str, Any] = self.parse_external_agent(self.agent_url)
             self.session = self.create_session(agent_location)
 
             # Set up the request. Turns out we don't need much.
             request_dict: Dict[str, Any] = {}
 
-            # Ideally this guy would be async as well.
-            function_response: Dict[str, Any] = await self.session.function(request_dict)
-            self.function_json = function_response.get("function")
+            # Get the function spec so we can call it as a tool later.
+            try:
+                function_response: Dict[str, Any] = await self.session.function(request_dict)
+                self.function_json = function_response.get("function")
+            except AioRpcError as exception:
+                message: str = f"Problem accessing external agent {self.agent_url}.\n"
+                if exception.code() == StatusCode.UNIMPLEMENTED:
+                    message += """
+The server (which could be your own localhost) is currently not serving up
+an agent network by that name. Try these hints:
+1. Check to see that you do not have a typo in your reference to the external agent
+   in the calling hocon file.
+2. If you have control over the server, check to see that the agent network your are trying
+   to reach has an entry in the manifest.hocon file whose value is set to true.
+3. Consider restarting the server, as perhaps a server does not continually look
+   for changes to hocon files or manifest files during normal operation.
+4. If you are new to calling external agent networks, know that:
+    a. Simply referencing an agent within your own hocon file with a / prefix
+       does not mean the server is serving that agent up separately.
+    b. Every agent that is externally referenceable needs its own hocon file
+       which must also have an entry in the manifest.hocon file for the server.
+    c. There is one and only one "front man" agent note in each network described
+       by a hocon file that receives input on behalf of the network.
+    d. In order to be called by external agents, that front man must have a full
+       "function" definition, which includes a description, and at least one parameter
+       defined.  These are how calling agents know how to interact with the agent network.
+"""
+                raise ValueError(message) from exception
 
         return self.function_json
 
