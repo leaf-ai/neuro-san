@@ -141,7 +141,7 @@ Some hints:
 2)  If you need something more dynamic that is shared amongst the CodedTools
     of your agent network, consider lazy instatiation of the object, and share
     a reference to the object in the sly_data dictionary.
-3)  Try very very hard to *not* use global variables to bypass this limitation.
+3)  Try very very hard to *not* use global variables/singletons to bypass this limitation.
     Your CodedTool implementation is working in a multi-threaded, asynchronous
     environment. If your first instinct is to reach for a global variable,
     you are highly likely to diminish the performance for all other requests
