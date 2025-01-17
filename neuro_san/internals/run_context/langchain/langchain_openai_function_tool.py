@@ -18,6 +18,7 @@ from typing import Type
 
 import traceback
 
+from pydantic_core import ValidationError
 from langchain_core.tools import BaseTool
 
 from neuro_san.internals.run_context.interfaces.tool_caller import ToolCaller
@@ -71,6 +72,44 @@ class LangChainOpenAIFunctionTool(BaseTool):
     tool_caller: Optional[ToolCaller] = None
 
     @staticmethod
+    def verify_function_json(function_json: Dict[str, Any]):
+        """
+        :param function_json: The function json description of the tool.
+            Must have at least:
+                * A name
+                * A description
+                * A parameters dictionary with at least one entry in its properties dict
+        """
+        message: str = ""
+        name: str = function_json.get("name")
+        if name is None:
+            message = "function dictionary has no 'name' defined."
+            raise ValueError(message)
+
+        if function_json.get("description") is None:
+            message = f"Function for {name} has no description.\n"
+
+        parameters: Dict[str, Any] = function_json.get("parameters")
+        if parameters is None:
+            message = f"Function for {name} has no parameters defined.\n"
+        else:
+            if parameters.get("type") is None:
+                message = f"Function for {name} needs to have a parameters.type set to 'object'.\n"
+            properties: Dict[str, Any] = parameters.get("properties")
+            if properties is None:
+                message = f"Function for {name} needs to have a properties dictionary as part of its parameters.\n"
+            elif not isinstance(properties, Dict) or len(properties.keys()) == 0:
+                message = f"Function for {name} needs to have at least one argument dictionary in its properties.\n"
+
+        if len(message) > 0:
+            message += """
+This most often happens when calling an /external agent for the first time
+and the hocon file for the agent network does not have a full function definition
+specified for its front man for it to be called by another agent.
+"""
+            raise ValueError(message)
+
+    @staticmethod
     def from_function_json(function_json: Dict[str, Any],
                            tool_caller: ToolCaller) \
             -> LangChainOpenAIFunctionTool:
@@ -82,7 +121,16 @@ class LangChainOpenAIFunctionTool(BaseTool):
         # the actual description of the function_json that we expect to
         # be passed in which we expect to conform to an OpenAI function.
         # definition.
-        tool = LangChainOpenAIFunctionTool(**function_json)
+        LangChainOpenAIFunctionTool.verify_function_json(function_json)
+        try:
+            tool = LangChainOpenAIFunctionTool(**function_json)
+        except ValidationError as exception:
+            message: str = f"""
+Could not create tool to call extenal agent {function_json.get("name")}.
+It's function_json is described thusly:
+{function_json}
+"""
+            raise ValueError(message) from exception
 
         # Check for external tools.
         name: str = function_json.get("name")

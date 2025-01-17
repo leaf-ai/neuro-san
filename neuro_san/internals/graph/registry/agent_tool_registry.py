@@ -232,7 +232,7 @@ class AgentToolRegistry(AgentToolFactory):
         # The primary way to identify a front-man is that its function has no parameters.
         for name, agent_spec in self.agent_spec_map.items():
             function: Dict[str, Any] = agent_spec.get("function")
-            if function.get("parameters") is None:
+            if function is not None and function.get("parameters") is None:
                 front_men.append(name)
 
         if len(front_men) == 0:
