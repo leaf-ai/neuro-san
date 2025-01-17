@@ -19,6 +19,7 @@ import json
 import logging
 
 from pathlib import Path
+from pyparsing.exceptions import ParseException
 
 from leaf_common.persistence.easy.easy_hocon_persistence import EasyHoconPersistence
 from leaf_common.persistence.interface.restorer import Restorer
@@ -80,13 +81,29 @@ class RegistryManifestRestorer(Restorer):
             one_manifest: Dict[str, Any] = {}
             if manifest_file.endswith(".hocon"):
                 hocon = EasyHoconPersistence()
-                one_manifest = hocon.restore(file_reference=manifest_file)
+                try:
+                    one_manifest = hocon.restore(file_reference=manifest_file)
+                except ParseException as exception:
+                    message: str = f"""
+There was an error parsing the agent network manifest file "{manifest_file}".
+See the accompanying ParseException (above) for clues as to what might be
+syntactically incorrect in that file.
+"""
+                    raise ParseException(message) from exception
             else:
-                try: 
+                try:
                     with open(manifest_file, "r", encoding="utf-8") as json_file:
                         one_manifest = json.load(json_file)
                 except FileNotFoundError:
+                    # Use the common verbiage below
                     one_manifest = None
+                except json.decoder.JSONDecodeError as exception:
+                    message: str = f"""
+There was an error parsing the agent network manifest file "{manifest_file}".
+See the accompanying JSONDecodeError exception (above) for clues as to what might be
+syntactically incorrect in that file.
+"""
+                    raise ParseException(message) from exception
 
             if one_manifest is None:
                 message = f"Could not find manifest file at path: {manifest_file}.\n" + """
