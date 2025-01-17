@@ -18,6 +18,9 @@ from pathlib import Path
 
 import json
 
+from pyparsing.exceptions import ParseException
+from pyparsing.exceptions import ParseSyntaxException
+
 from leaf_common.config.config_filter_chain import ConfigFilterChain
 from leaf_common.persistence.easy.easy_hocon_persistence import EasyHoconPersistence
 from leaf_common.persistence.interface.restorer import Restorer
@@ -64,13 +67,21 @@ class AgentToolRegistryRestorer(Restorer):
         if self.registry_dir is not None:
             use_file = path.join(self.registry_dir, file_reference)
 
-        if use_file.endswith(".json"):
-            config = json.load(use_file)
-        elif use_file.endswith(".hocon"):
-            hocon = EasyHoconPersistence(full_ref=use_file, must_exist=True)
-            config = hocon.restore()
-        else:
-            raise ValueError(f"file_reference {use_file} must be a .json or .hocon file")
+        try:
+            if use_file.endswith(".json"):
+                config = json.load(use_file)
+            elif use_file.endswith(".hocon"):
+                hocon = EasyHoconPersistence(full_ref=use_file, must_exist=True)
+                config = hocon.restore()
+            else:
+                raise ValueError(f"file_reference {use_file} must be a .json or .hocon file")
+        except (ParseException, ParseSyntaxException, json.decoder.JSONDecodeError) as exception:
+            message = f"""
+There was an error parsing the agent network file "{use_file}".
+See the accompanying ParseException (above) for clues as to what might be
+syntactically incorrect in that file.
+"""
+            raise ParseException(message) from exception
 
         # Perform a filter chain on the config that was read in
         filter_chain = ConfigFilterChain()

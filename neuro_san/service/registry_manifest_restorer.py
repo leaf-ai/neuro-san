@@ -20,6 +20,7 @@ import logging
 
 from pathlib import Path
 from pyparsing.exceptions import ParseException
+from pyparsing.exceptions import ParseSyntaxException
 
 from leaf_common.persistence.easy.easy_hocon_persistence import EasyHoconPersistence
 from leaf_common.persistence.interface.restorer import Restorer
@@ -83,7 +84,7 @@ class RegistryManifestRestorer(Restorer):
                 hocon = EasyHoconPersistence()
                 try:
                     one_manifest = hocon.restore(file_reference=manifest_file)
-                except ParseException as exception:
+                except (ParseException, ParseSyntaxException) as exception:
                     message: str = f"""
 There was an error parsing the agent network manifest file "{manifest_file}".
 See the accompanying ParseException (above) for clues as to what might be
