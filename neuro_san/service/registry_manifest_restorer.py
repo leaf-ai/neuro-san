@@ -82,8 +82,11 @@ class RegistryManifestRestorer(Restorer):
                 hocon = EasyHoconPersistence()
                 one_manifest = hocon.restore(file_reference=manifest_file)
             else:
-                with open(manifest_file, "r", encoding="utf-8") as json_file:
-                    one_manifest = json.load(json_file)
+                try: 
+                    with open(manifest_file, "r", encoding="utf-8") as json_file:
+                        one_manifest = json.load(json_file)
+                except FileNotFoundError:
+                    one_manifest = None
 
             if one_manifest is None:
                 message = f"Could not find manifest file at path: {manifest_file}.\n" + """
@@ -96,7 +99,7 @@ Some common problems include:
 Double-check the value of the AGENT_MANIFEST_FILE env var and
 your current working directory (pwd).
 """
-                raise ValueError(message)
+                raise FileNotFoundError(message)
 
             for key, value in one_manifest.items():
 
