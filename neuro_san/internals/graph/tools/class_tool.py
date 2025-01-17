@@ -85,10 +85,37 @@ class ClassTool(CallableTool):
             module_name = module_name[:-1]
 
         # Resolve the class and the method
-        packages: List[str] = [self.factory.get_agent_tool_path()]
+        this_agent_tool_path: str = self.factory.get_agent_tool_path()
+        packages: List[str] = [this_agent_tool_path]
         resolver: Resolver = Resolver(packages)
 
-        python_class = resolver.resolve_class_in_module(class_name, module_name)
+        try:
+            python_class = resolver.resolve_class_in_module(class_name, module_name)
+        except (ValueError, AttributeError) as exception:
+            # Get all but the last module in the path.
+            # This is what was actually used for AGENT_TOOL_PATH
+            agent_tool_path: str = ".".join(this_agent_tool_path.split(".")[:-1])
+            agent_network: str = this_agent_tool_path.split(".")[-1]
+            agent_name: str = self.factory.get_name_from_spec(self.agent_tool_spec)
+            message = f"""
+Could not find class "{class_name}"
+in module "{module_name}"
+under AGENT_TOOL_PATH "{agent_tool_path}"
+for the agent called "{agent_name}"
+in the agent network "{agent_network}".
+
+Check these things:
+1.  Is there a typo in your AGENT_TOOL_PATH?
+2.  CodedTools for the agent network are expected to be found in a module
+    under the path: <AGENT_TOOL_PATH>/<agent_network>/<coded_tool_name>.py
+    a)  Does your AGENT_TOOL_PATH point to the correct directory?
+    b)  Does your CodedTool actually live in a module appropriately
+        named for your agent network?
+    c)  Does the module in the "class" designation for the agent {agent_name}
+        match what is in the filesystem?
+    d)  Does the specified class name match what is actually implemented in the file? 
+"""
+            raise ValueError(message) from exception
 
         # Instantiate the CodedTool
         coded_tool: CodedTool = None
