@@ -223,7 +223,7 @@ message ConnectivityInfo {
     // The agent network node whose connectivity is being described
     string origin = 1 [json_name="origin"];
 
-    // A list of destination agent nodes that are possible to reach from the origin
+    // A list of tool nodes that are possible to reach from the origin
     //
     // This might include references into external agent networks, perhaps hosted
     // on other servers.  Separate calls to those guys will need to be made
@@ -234,7 +234,7 @@ message ConnectivityInfo {
     // withhold connectivity info they deem private, or too much of an
     // implementation detail.  That is, connectivity reported is only
     // as much as the server wants a client to know.
-    repeated string destination = 2 [json_name="destination"];
+    repeated string tools = 2 [json_name="tools"];
 }
 
 
