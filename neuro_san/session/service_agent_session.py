@@ -102,6 +102,25 @@ class ServiceAgentSession(AbstractServiceSession, AgentSession):
             request_dict,
             service_messages.FunctionRequest())
 
+    def connectivity(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        :param request_dict: A dictionary version of the ConnectivityRequest
+                    protobufs structure. Has the following keys:
+                        <None>
+        :return: A dictionary version of the ConnectivityResponse
+                    protobufs structure. Has the following keys:
+                "connectivity_info" - the list of connectivity descriptions for
+                                    each node in the agent network the service
+                                    wants the client ot know about.
+                "status" - status for finding the function.
+        """
+        # pylint: disable=no-member
+        return self.call_grpc_method(
+            "connectivity",
+            self._connectivity_from_stub,
+            request_dict,
+            service_messages.ConnectivityRequest())
+
     def chat(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
         """
         :param request_dict: A dictionary version of the ChatRequest
@@ -254,6 +273,18 @@ class ServiceAgentSession(AbstractServiceSession, AgentSession):
         response = stub.Function(*args, timeout=timeout_in_seconds,
                                  metadata=metadata,
                                  credentials=credentials)
+        return response
+
+    @staticmethod
+    def _connectivity_from_stub(stub, timeout_in_seconds,
+                                metadata, credentials, *args):
+        """
+        Global method associated with the session that calls Connectivity
+        given a grpc Stub already set up with a channel (socket) to call with.
+        """
+        response = stub.Connectivity(*args, timeout=timeout_in_seconds,
+                                     metadata=metadata,
+                                     credentials=credentials)
         return response
 
     @staticmethod

@@ -42,10 +42,13 @@ class AgentServiceStub:
         # note that thare are more defined on grpc.Channel if needed (see the source).
         # pylint: disable=invalid-name
         self.Function: UnaryUnaryMultiCallable = None
+        self.Connectivity: UnaryUnaryMultiCallable = None
+        self.StreamingChat: UnaryStreamMultiCallable = None
+
+        # Below here are deprecated
         self.Chat: UnaryUnaryMultiCallable = None
         self.Logs: UnaryUnaryMultiCallable = None
         self.Reset: UnaryUnaryMultiCallable = None
-        self.StreamingChat: UnaryStreamMultiCallable = None
 
     def set_agent_name(self, agent_name: str):
         """
@@ -81,6 +84,18 @@ class AgentServiceStub:
                 request_serializer=agent__pb2.FunctionRequest.SerializeToString,
                 response_deserializer=agent__pb2.FunctionResponse.FromString,
                 )
+        self.Connectivity = channel.unary_unary(
+                f"/{service_name}/Connectivity",
+                request_serializer=agent__pb2.ConnectivityRequest.SerializeToString,
+                response_deserializer=agent__pb2.ConnectivityResponse.FromString,
+                )
+        self.StreamingChat = channel.unary_stream(
+                f"/{service_name}/StreamingChat",
+                request_serializer=agent__pb2.ChatRequest.SerializeToString,
+                response_deserializer=agent__pb2.ChatResponse.FromString,
+                )
+
+        # Below here are deprecated
         self.Chat = channel.unary_unary(
                 f"/{service_name}/Chat",
                 request_serializer=agent__pb2.ChatRequest.SerializeToString,
@@ -95,11 +110,6 @@ class AgentServiceStub:
                 f"/{service_name}/Reset",
                 request_serializer=agent__pb2.ResetRequest.SerializeToString,
                 response_deserializer=agent__pb2.ResetResponse.FromString,
-                )
-        self.StreamingChat = channel.unary_stream(
-                f"/{service_name}/StreamingChat",
-                request_serializer=agent__pb2.ChatRequest.SerializeToString,
-                response_deserializer=agent__pb2.ChatResponse.FromString,
                 )
 
         return self

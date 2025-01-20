@@ -23,6 +23,7 @@ from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
 from neuro_san.internals.chat.chat_session import ChatSession
+from neuro_san.internals.chat.connectivity_reporter import ConnectivityReporter
 from neuro_san.internals.chat.data_driven_chat_session import DataDrivenChatSession
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.graph.tools.front_man import FrontMan
@@ -94,6 +95,31 @@ class DirectAgentSession(AgentSession):
                 "function": function,
                 "status": self.FOUND
             }
+
+        return response_dict
+
+    def connectivity(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        :param request_dict: A dictionary version of the ConnectivityRequest
+                    protobufs structure. Has the following keys:
+                        <None>
+        :return: A dictionary version of the ConnectivityResponse
+                    protobufs structure. Has the following keys:
+                "connectivity_info" - the list of connectivity descriptions for
+                                    each node in the agent network the service
+                                    wants the client ot know about.
+                "status" - status for finding the function.
+        """
+        response_dict: Dict[str, Any] = {
+            "status": self.NOT_FOUND
+        }
+
+        reporter = ConnectivityReporter(self.tool_registry)
+        connectivity_info: List[Dict[str, Any]] = reporter.report_network_connectivity()
+        response_dict = {
+            "connectivity_info": connectivity_info,
+            "status": self.FOUND
+        }
 
         return response_dict
 
