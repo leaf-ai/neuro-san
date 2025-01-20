@@ -113,7 +113,7 @@ class AgentServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def Connectivity(self, request, context):
-        """Unidirectional streaming method which would supercede Chat() and Logs() above.
+        """Called when a client needs the internal connectivity description of an agent.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
