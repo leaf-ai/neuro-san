@@ -14,20 +14,16 @@ from typing import Dict
 from typing import List
 from typing import Set
 
-import json
-
 from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
-from neuro_san.internals.journals.journal import Journal
-from neuro_san.internals.messages.agent_framework_message import AgentFrameworkMessage
 from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
 
 
 class ConnectivityReporter:
     """
     A class that knows how to report the connectivity of an entire
-    AgentToolRegistry to a particular Journal.
+    AgentToolRegistry.
 
     Connectivity information comes as a series of AgentFramework
     messages, each of whose origin field reflects the name of the
@@ -52,37 +48,50 @@ class ConnectivityReporter:
         Maybe someday.
     """
 
-    def __init__(self, registry: AgentToolRegistry,
-                 journal: Journal):
+    def __init__(self, registry: AgentToolRegistry):
         """
         Constructor
 
         :param registry: The AgentToolRegistry to use.
-        :param journal: The Journal that captures messages for user output
         """
 
         self.registry: AgentToolRegistry = registry
-        self.journal: Journal = journal
 
-    async def report_network_connectivity(self):
+    def report_network_connectivity(self) -> List[Dict[str, Any]]:
         """
         Share the connectivity information of the agent network in question
+        :return: A list of connectivity information dictionaries each with the following keys:
+            * origin  - The agent network node whose connectivity is being described
+            * tools   - A list of tool nodes that are possible to reach from the origin
+
+                        This might include references into external agent networks, perhaps hosted
+                        on other servers.  Separate calls to those guys will need to be made
+                        in order to gain information about their own connectivity, if this is
+                        actually desired by the client.
+
+                        Worth noting that server-side agent descriptions are allowed to
+                        withhold connectivity info they deem private, or too much of an
+                        implementation detail.  That is, connectivity reported is only
+                        as much as the server wants a client to know.
         """
         # Find the name of the front-man as a root node
         front_man: str = self.registry.find_front_man()
 
         # Do a breadth-first traversal starting with the front-man
         reported_agents: Set[str] = set()
-        await self.report_node_connectivity(front_man, reported_agents)
+        connectivity: List[Dict[str, Any]] = self.report_node_connectivity(front_man, reported_agents)
+        return connectivity
 
-    async def report_node_connectivity(self, agent_name: str, reported_agents: Set[str]):
+    def report_node_connectivity(self, agent_name: str, reported_agents: Set[str]) -> List[Dict[str, Any]]:
         """
         Share the connectivity information of a single node in the network.
         :param agent_name: The name of the agent spec dictionary to report on
         :param reported_agents: A list of agents that have been reported already.
                 Prevents cycles.
+        :return: A list of connectivity information dictionaries.
         """
 
+        connectivity_list: List[Dict[str, Any]] = []
         agent_spec: Dict[str, Any] = None
 
         if not ExternalToolAdapter.is_external_agent(agent_name):
@@ -107,23 +116,26 @@ class ConnectivityReporter:
         # For many reasons, this list could be empty.
         tool_list: List[str] = self.assemble_tool_list(agent_spec)
 
-        # Report the content of the tools list as a dictionary in JSON.
-        tools_dict: Dict[str, Any] = {
+        connectivity_dict: Dict[str, Any] = {
+            # Report the origin as the agent itself, so any client that receives
+            "origin": agent_name,
+            # Report the content of the tools list
             "tools": tool_list
         }
-        content: str = f"```json\n{json.dumps(tools_dict)}```"
-        message = AgentFrameworkMessage(content=content)
 
-        # Report the origin as the agent itself, so any client that receives
         # the message has the correct context about the tools listed in the content.
-        await self.journal.write_message(message, origin=agent_name)
         reported_agents.add(agent_name)
+        connectivity_list.append(connectivity_dict)
 
         # Recurse for a bread-first search.
         for tool in tool_list:
             # Don't report more than once for the same node to avoid cycles.
             if tool not in reported_agents:
-                await self.report_node_connectivity(tool, reported_agents)
+                new_list: List[Dict[str, Any]] = self.report_node_connectivity(tool, reported_agents)
+                if len(new_list) > 0:
+                    connectivity_list.extend(new_list)
+
+        return connectivity_list
 
     @staticmethod
     def assemble_tool_list(agent_spec: Dict[str, Any]) -> List[str]:
