@@ -101,7 +101,7 @@ class ConnectivityReporter:
             if agent_spec is None:
                 # The agent referred to by the caller is not actually in the registry.
                 # As a hint, don't report anything, not even an empty tool list.
-                return
+                return connectivity_list
 
             # Check to see if this node in the graph actually wants its connectivity
             # known to the outside world.

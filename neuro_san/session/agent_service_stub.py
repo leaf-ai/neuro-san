@@ -23,6 +23,7 @@ import neuro_san.api.grpc.agent_pb2 as agent__pb2
 DEFAULT_SERVICE_PREFIX: str = ""
 
 
+# pylint: disable=too-many-instance-attributes
 class AgentServiceStub:
     """
     The service comprises all the exchanges to the backend in support of agent services.
