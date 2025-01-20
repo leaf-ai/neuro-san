@@ -54,7 +54,7 @@ service AgentService {
     // Unidirectional streaming method which would supercede Chat() and Logs() above.
     rpc StreamingChat(ChatRequest) returns (stream ChatResponse) {}
 
-    // Unidirectional streaming method which would supercede Chat() and Logs() above.
+    // Called when a client needs the internal connectivity description of an agent.
     rpc Connectivity(ConnectivityRequest) returns (ConnectivityResponse) {}
 }
 
