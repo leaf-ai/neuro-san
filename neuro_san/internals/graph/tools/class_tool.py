@@ -85,21 +85,72 @@ class ClassTool(CallableTool):
             module_name = module_name[:-1]
 
         # Resolve the class and the method
-        packages: List[str] = [self.factory.get_agent_tool_path()]
+        this_agent_tool_path: str = self.factory.get_agent_tool_path()
+        packages: List[str] = [this_agent_tool_path]
         resolver: Resolver = Resolver(packages)
 
-        python_class = resolver.resolve_class_in_module(class_name, module_name)
+        try:
+            python_class = resolver.resolve_class_in_module(class_name, module_name)
+        except (ValueError, AttributeError) as exception:
+            # Get all but the last module in the path.
+            # This is what was actually used for AGENT_TOOL_PATH
+            agent_tool_path: str = ".".join(this_agent_tool_path.split(".")[:-1])
+            agent_network: str = this_agent_tool_path.split(".")[-1]
+            agent_name: str = self.factory.get_name_from_spec(self.agent_tool_spec)
+            message = f"""
+Could not find class "{class_name}"
+in module "{module_name}"
+under AGENT_TOOL_PATH "{agent_tool_path}"
+for the agent called "{agent_name}"
+in the agent network "{agent_network}".
+
+Check these things:
+1.  Is there a typo in your AGENT_TOOL_PATH?
+2.  CodedTools for the agent network are expected to be found in a module
+    under the path: <AGENT_TOOL_PATH>/<agent_network>/<coded_tool_name>.py
+    a)  Does your AGENT_TOOL_PATH point to the correct directory?
+    b)  Does your CodedTool actually live in a module appropriately
+        named for your agent network?
+    c)  Does the module in the "class" designation for the agent {agent_name}
+        match what is in the filesystem?
+    d)  Does the specified class name match what is actually implemented in the file?
+"""
+            raise ValueError(message) from exception
 
         # Instantiate the CodedTool
         coded_tool: CodedTool = None
-        if issubclass(python_class, BranchTool):
-            # Allow for a combination of BranchTool + CodedTool to allow
-            # for easier invocation of agents within code.
-            coded_tool = python_class(self.parent_run_context, self.journal, self.factory,
-                                      self.arguments, self.agent_tool_spec, self.sly_data)
-        else:
-            # Go with the no-args constructor as per the run-of-the-mill contract
-            coded_tool = python_class()
+        try:
+            if issubclass(python_class, BranchTool):
+                # Allow for a combination of BranchTool + CodedTool to allow
+                # for easier invocation of agents within code.
+                coded_tool = python_class(self.parent_run_context, self.journal, self.factory,
+                                          self.arguments, self.agent_tool_spec, self.sly_data)
+            else:
+                # Go with the no-args constructor as per the run-of-the-mill contract
+                coded_tool = python_class()
+        except TypeError as exception:
+            message: str = f"""
+Coded tool class {python_class} must take no orguments to its constructor.
+The standard pattern for CodedTools is to not have a constructor at all.
+
+Some hints:
+1)  If you are attempting to re-use/re-purpose your CodedTool implementation,
+    consider adding an "args" block to your specific agents. This will pass
+    whatever dictionary you specify there as extra key/value pairs to your
+    CodedTool's invoke()/async_invoke() method's args parameter in addition
+    to those provided by any calling LLM.
+2)  If you need something more dynamic that is shared amongst the CodedTools
+    of your agent network to handle a single request, consider lazy instantiation
+    of the object in question, and share a reference to that  object in the
+    sly_data dictionary. The lifetime will of that object will last as long
+    as the ruest itself is in motion.
+3)  Try very very hard to *not* use global variables/singletons to bypass this limitation.
+    Your CodedTool implementation is working in a multi-threaded, asynchronous
+    environment. If your first instinct is to reach for a global variable,
+    you are highly likely to diminish the performance for all other requests
+    on any server running your agent with your CodedTool.
+"""
+            raise TypeError(message) from exception
 
         if isinstance(coded_tool, CodedTool):
             # Invoke the CodedTool
