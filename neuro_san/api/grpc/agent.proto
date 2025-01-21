@@ -40,16 +40,22 @@ service AgentService {
 
     // Called when the user needs to initialize a new chat request
     // or respond to an LLM's request during an already initialized chat.
+    // NOTE: This method is deprecated in favor of StreamingChat
     rpc Chat (ChatRequest) returns (ChatResponse) {}
 
     // Polls for chat results which are processed asynchronously from Chat() above.
+    // NOTE: This method is deprecated in favor of StreamingChat
     rpc Logs (LogsRequest) returns (LogsResponse) {}
 
     // Resets the chat initiated with Chat() above.
+    // NOTE: This method is deprecated in favor of StreamingChat
     rpc Reset (ResetRequest) returns (ResetResponse) {}
 
     // Unidirectional streaming method which would supercede Chat() and Logs() above.
     rpc StreamingChat(ChatRequest) returns (stream ChatResponse) {}
+
+    // Called when a client needs the internal connectivity description of an agent.
+    rpc Connectivity(ConnectivityRequest) returns (ConnectivityResponse) {}
 }
 
 enum AgentStatus {
@@ -207,3 +213,41 @@ message ResetResponse {
     // on how to respond.
     AgentStatus status = 3;
 }
+
+// Request structure for Connectivity gRPC method
+message ConnectivityRequest {
+}
+
+message ConnectivityInfo {
+
+    // The agent network node whose connectivity is being described
+    string origin = 1 [json_name="origin"];
+
+    // A list of tool nodes that are possible to reach from the origin
+    //
+    // This might include references into external agent networks, perhaps hosted
+    // on other servers.  Separate calls to those guys will need to be made
+    // in order to gain information about their own connectivity, if this is
+    // actually desired by the client.
+    //
+    // Worth noting that server-side agent descriptions are allowed to
+    // withhold connectivity info they deem private, or too much of an
+    // implementation detail.  That is, connectivity reported is only
+    // as much as the server wants a client to know.
+    repeated string tools = 2 [json_name="tools"];
+}
+
+
+// Response structure for Connectivity gRPC method
+message ConnectivityResponse {
+
+    // The description of the agent network's internal connectivity
+    // ... as far as the agent wants the outside world to know..
+    repeated ConnectivityInfo connectivity_info = 1 [json_name="connectivity_info"];
+
+    // Enum describing the status
+    // See the definition of the Status enum above for details
+    // on how to respond.
+    AgentStatus status = 2;
+}
+

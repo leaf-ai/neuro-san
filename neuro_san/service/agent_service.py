@@ -134,6 +134,50 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         return response
 
     # pylint: disable=no-member
+    def Connectivity(self, request: service_messages.ConnectivityRequest,
+                     context: grpc.ServicerContext) \
+            -> service_messages.ConnectivityResponse:
+        """
+        Allows a client to get connectivity information for the agent
+        served by this service.
+
+        :param request: a ConnectivityRequest
+        :param context: a grpc.ServicerContext
+        :return: a ConnectivityResponse
+        """
+        self.request_counter.increment()
+        request_log = None
+        log_marker: str = "connectivity request"
+        if "Connectivity" not in DO_NOT_LOG_REQUESTS:
+            request_log = self.request_logger.start_request(f"{self.agent_name}.Connectivity",
+                                                            log_marker, context)
+
+        # Get the metadata to forward on to another service
+        metadata = self.forwarder.forward(context)
+
+        # Get our args in order to pass to grpc-free session level
+        request_dict: Dict[str, Any] = MessageToDict(request)
+
+        # Delegate to Direct*Session
+        session = DirectAgentSession(chat_session_map=self.chat_session_map,
+                                     tool_registry=self.tool_registry,
+                                     asyncio_executor=self.asyncio_executor,
+                                     metadata=metadata,
+                                     security_cfg=self.security_cfg)
+        response_dict = session.connectivity(request_dict)
+
+        # Convert the response dictionary to a grpc message
+        response_string = json.dumps(response_dict)
+        response = service_messages.ConnectivityResponse()
+        Parse(response_string, response)
+
+        if request_log is not None:
+            self.request_logger.finish_request(f"{self.agent_name}.Connectivity", log_marker, request_log)
+
+        self.request_counter.decrement()
+        return response
+
+    # pylint: disable=no-member
     def Chat(self, request: service_messages.ChatRequest,
              context: grpc.ServicerContext) \
             -> service_messages.ChatResponse:

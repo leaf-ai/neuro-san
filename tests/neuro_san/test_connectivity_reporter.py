@@ -13,18 +13,12 @@ from typing import Any
 from typing import Dict
 from typing import List
 
-import asyncio
-import json
-
 from unittest import TestCase
 
 from neuro_san.internals.chat.connectivity_reporter import ConnectivityReporter
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.graph.registry.agent_tool_registry_restorer import AgentToolRegistryRestorer
-from neuro_san.internals.journals.message_journal import MessageJournal
 from neuro_san.internals.utils.file_of_class import FileOfClass
-
-from tests.neuro_san.list_hopper import ListHopper
 
 
 class TestConnectivityReporter(TestCase):
@@ -37,8 +31,7 @@ class TestConnectivityReporter(TestCase):
         Can we construct?
         """
         agent_tool_registry: AgentToolRegistry = None
-        journal: MessageJournal = None
-        reporter = ConnectivityReporter(agent_tool_registry, journal)
+        reporter = ConnectivityReporter(agent_tool_registry)
         self.assertIsNotNone(reporter)
 
     def get_sample_registry(self, hocon_file: str) -> AgentToolRegistry:
@@ -51,42 +44,18 @@ class TestConnectivityReporter(TestCase):
         agent_tool_registry: AgentToolRegistry = restorer.restore(file_reference=file_reference)
         return agent_tool_registry
 
-    def decode_dict(self, message: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        :param message: A message to decode
-        :return: A dictionary with the json content of the message
-        """
-        content: str = message.get("text")
-        if content is None:
-            return None
-
-        content_split: List[str] = content.split("```json")
-        if len(content_split) <= 1:
-            return None
-
-        content_split = content_split[1].split("```")
-        if len(content_split) == 0:
-            return None
-
-        json_string: str = content_split[0]
-        content_dict: Dict[str, Any] = json.loads(json_string)
-        return content_dict
-
     def test_hello_world(self):
         """
         Tests the connectivity of the hello world hocon
         """
-        hopper = ListHopper()
         agent_tool_registry: AgentToolRegistry = self.get_sample_registry("hello_world.hocon")
-        reporter = ConnectivityReporter(agent_tool_registry, MessageJournal(hopper))
+        reporter = ConnectivityReporter(agent_tool_registry)
 
-        asyncio.run(reporter.report_network_connectivity())
-
-        messages: List[Dict[str, Any]] = hopper.get_items()
+        messages: List[Dict[str, Any]] = reporter.report_network_connectivity()
         self.assertEqual(len(messages), 2)
 
         # First guy is the front-man and he only has a single tool
-        connectivity: Dict[str, Any] = self.decode_dict(messages[0])
+        connectivity: Dict[str, Any] = messages[0]
         self.assertIsNotNone(connectivity)
 
         tools: List[str] = connectivity.get("tools")
@@ -95,7 +64,7 @@ class TestConnectivityReporter(TestCase):
         self.assertEqual(tools[0], "synonymizer")
 
         # Next guy is the synonymizer and has no tools
-        connectivity: Dict[str, Any] = self.decode_dict(messages[1])
+        connectivity: Dict[str, Any] = messages[1]
         self.assertIsNotNone(connectivity)
 
         tools: List[str] = connectivity.get("tools")
