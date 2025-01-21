@@ -376,6 +376,10 @@ All choices require an agent name.
                     with open(self.args.thinking_file, "a", encoding="utf-8") as thinking:
                         thinking.write(text)
                         thinking.write("\n")
+                elif message_type == ChatMessageType.AGENT_FRAMEWORK:
+                    # Skip over the connectivity messages for this text-only client
+                    if response.get("origin") is None:
+                        print(f"{text}")
                 else:
                     print(f"Response: {text}")
                     last_chat_response = text

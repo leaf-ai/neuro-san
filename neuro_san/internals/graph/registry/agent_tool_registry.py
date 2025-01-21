@@ -74,7 +74,7 @@ class AgentToolRegistry(AgentToolFactory):
 
         # Try reach-around directory if still nothing to start with
         if agent_tool_path is None:
-            file_of_class = FileOfClass(__file__, "../../coded_tools")
+            file_of_class = FileOfClass(__file__, "../../../coded_tools")
             agent_tool_path = file_of_class.get_basis()
 
         # If we are dealing with file paths, convert that to something resolvable
@@ -83,12 +83,17 @@ class AgentToolRegistry(AgentToolFactory):
             # Find the best of many resolution paths in the PYTHONPATH
             resolved_tool_path: str = str(Path(agent_tool_path).resolve())
             best_path = ""
-            pythonpath_split = os.environ.get("PYTHONPATH").split(":")
-            for one_path in pythonpath_split:
-                resolved_path: str = str(Path(one_path).resolve())
-                if resolved_tool_path.startswith(resolved_path) and \
-                        len(resolved_path) > len(best_path):
-                    best_path = resolved_path
+            pythonpath: str = os.environ.get("PYTHONPATH")
+            if pythonpath is None:
+                # Trust what we have already
+                best_path = agent_tool_path
+            else:
+                pythonpath_split = pythonpath.split(":")
+                for one_path in pythonpath_split:
+                    resolved_path: str = str(Path(one_path).resolve())
+                    if resolved_tool_path.startswith(resolved_path) and \
+                            len(resolved_path) > len(best_path):
+                        best_path = resolved_path
 
             if len(best_path) == 0:
                 raise ValueError(f"No reasonable agent tool path found in PYTHONPATH for {agent_tool_path}")
@@ -130,15 +135,23 @@ class AgentToolRegistry(AgentToolFactory):
         if agent_spec is None:
             return
 
+        name: str = self.get_name_from_spec(agent_spec)
+        if self.first_agent is None:
+            self.first_agent = name
+
+        self.agent_spec_map[name] = agent_spec
+
+    def get_name_from_spec(self, agent_spec: Dict[str, Any]) -> str:
+        """
+        :param agent_spec: A single agent to register
+        :return: The agent name as per the spec
+        """
         extractor = FieldExtractor()
         name = extractor.get_field(agent_spec, "function.name")
         if name is None:
             name = agent_spec.get("name")
 
-        if self.first_agent is None:
-            self.first_agent = name
-
-        self.agent_spec_map[name] = agent_spec
+        return name
 
     def get_agent_tool_spec(self, name: str) -> Dict[str, Any]:
         """

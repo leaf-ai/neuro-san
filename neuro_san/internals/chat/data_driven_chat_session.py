@@ -22,6 +22,7 @@ from openai import BadRequestError
 
 from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.internals.chat.chat_session import ChatSession
+from neuro_san.internals.chat.connectivity_reporter import ConnectivityReporter
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.graph.tools.front_man import FrontMan
 from neuro_san.internals.journals.compatibility_journal import CompatibilityJournal
@@ -129,6 +130,10 @@ class DataDrivenChatSession(ChatSession):
         # in a read-only fashion.
         if sly_data is not None:
             self.sly_data.update(sly_data)
+
+        # Report on network connectivity for clients that care.
+        connectivity_reporter = ConnectivityReporter(self.registry, self.journal)
+        await connectivity_reporter.report_network_connectivity()
 
         try:
             await self.journal.write("consulting chat agent(s)...")
