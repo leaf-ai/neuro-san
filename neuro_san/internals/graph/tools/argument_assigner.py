@@ -90,7 +90,7 @@ class ArgumentAssigner:
         elif value_type == "array" or isinstance(args_value, List):
             str_values = []
             for item in args_value:
-                item_str: str = self._get_args_value_as_string(item)
+                item_str: str = self.get_args_value_as_string(item)
                 str_values.append(item_str)
             args_value_str = ", ".join(str_values)
 
