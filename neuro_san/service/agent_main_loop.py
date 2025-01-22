@@ -31,10 +31,10 @@ from neuro_san.service.agent_server import DEFAULT_SERVER_NAME
 from neuro_san.service.agent_server import DEFAULT_SERVER_NAME_FOR_LOGS
 from neuro_san.service.agent_server import DEFAULT_REQUEST_LIMIT
 from neuro_san.service.agent_service import AgentService
-from neuro_san.service.registry_manifest_restorer import RegistryManifestRestorer
 from neuro_san.session.agent_service_stub import DEFAULT_SERVICE_PREFIX
 from neuro_san.session.agent_session import AgentSession
 from neuro_san.session.chat_session_map import ChatSessionMap
+from neuro_san.session.registry_manifest_restorer import RegistryManifestRestorer
 
 # A *single* global variable which contains a mapping of
 # string keys -> ChatSession implementations
