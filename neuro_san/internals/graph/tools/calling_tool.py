@@ -96,7 +96,17 @@ class CallingTool(ToolCaller):
         """
         :return: The string prompt for framing the problem in terms of purpose.
         """
-        return self.agent_tool_spec.get("instructions")
+        instructions: str = self.agent_tool_spec.get("instructions")
+        if instructions is None:
+            agent_name: str = self.get_component_name()
+            message: str = f"""
+The agent named "{agent_name}" has no instructions specified for it.
+
+Every agent must have instructions providing the natural-language
+context with which it will proces input, essentially telling it what to do.
+"""
+            raise ValueError(message)
+        return instructions
 
     def get_factory(self) -> AgentToolFactory:
         """
