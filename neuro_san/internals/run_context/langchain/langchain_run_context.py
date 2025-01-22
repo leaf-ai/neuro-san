@@ -43,6 +43,7 @@ from neuro_san.internals.run_context.langchain.langchain_run import LangChainRun
 from neuro_san.internals.run_context.langchain.langchain_openai_function_tool \
     import LangChainOpenAIFunctionTool
 from neuro_san.internals.run_context.langchain.llm_factory import LlmFactory
+from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
 
 
@@ -136,7 +137,7 @@ class LangChainRunContext(RunContext):
         if agent_spec is None:
 
             # See if the agent name given could reference an external agent.
-            if not ExternalToolAdapter.is_external_agent(name):
+            if not ExternalAgentParsing.is_external_agent(name):
                 return None
 
             # Use the ExternalToolAdapter to get the function specification
