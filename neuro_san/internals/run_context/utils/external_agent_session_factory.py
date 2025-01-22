@@ -24,8 +24,16 @@ class ExternalAgentSessionFactory:
     Creates AgentSessions for external agents.
     """
 
-    @staticmethod
-    def create_session(agent_url: str) -> AgentSession:
+    def __init__(self, use_direct: bool = False):
+        """
+        Constructuor
+
+        :param use_direct: When True, will use a Direct session for
+                    external agents that would reside on the same server.
+        """
+        self.use_direct: bool = use_direct
+
+    def create_session(self, agent_url: str) -> AgentSession:
         """
         :param agent_url: A url string pointing to an external agent that came from
                     a tools list in an agent spec.
@@ -33,11 +41,10 @@ class ExternalAgentSessionFactory:
         """
 
         agent_location: Dict[str, str] = ExternalAgentParsing.parse_external_agent(agent_url)
-        session = ExternalAgentSessionFactory.create_session(agent_location)
+        session = self.create_session(agent_location)
         return session
 
-    @staticmethod
-    def create_session_from_location_dict(agent_location: Dict[str, str]) -> AgentSession:
+    def create_session_from_location_dict(self, agent_location: Dict[str, str]) -> AgentSession:
         """
         :param agent_location: An agent location dictionary returned by
                     ExternalAgentParsing.parse_external_agent()

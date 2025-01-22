@@ -46,7 +46,8 @@ class ExternalToolAdapter:
         if self.function_json is None:
 
             # Lazily get the information about the service
-            self.session = ExternalAgentSessionFactory.create_session(self.agent_url)
+            factory = ExternalAgentSessionFactory()
+            self.session = factory.create_session(self.agent_url)
 
             # Set up the request. Turns out we don't need much.
             request_dict: Dict[str, Any] = {}

@@ -70,7 +70,8 @@ class ExternalTool(CallableTool):
 
         # Create an AgentSession if necessary
         if self.session is None:
-            self.session = ExternalAgentSessionFactory.create_session(self.agent_url)
+            factory = ExternalAgentSessionFactory()
+            self.session = factory.create_session(self.agent_url)
 
         # Send off the input
         chat_request: Dict[str, Any] = self.gather_input(f"```json\n{json.dumps(self.arguments)}```",
