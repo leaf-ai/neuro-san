@@ -139,6 +139,19 @@ class AgentToolRegistry(AgentToolFactory):
         if self.first_agent is None:
             self.first_agent = name
 
+        if name in self.agent_spec_map:
+            message: str = f"""
+The agent named "{name}" appears to have a duplicate entry in its hocon file.
+Agent names must be unique within the scope of a single hocon file.
+
+Some things to try:
+1. Rename one of the agents named "{name}". Don't forget to scrutinize all the
+   tools references from other agents connecting to it.
+2. If one definition is an alternate implementation, consider commenting out
+   one of them with "#"-style comments.  (Yes, you can do that in a hocon file).
+"""
+            raise ValueError(message)
+
         self.agent_spec_map[name] = agent_spec
 
     def get_name_from_spec(self, agent_spec: Dict[str, Any]) -> str:
