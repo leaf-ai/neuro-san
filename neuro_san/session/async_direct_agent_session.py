@@ -26,14 +26,12 @@ from neuro_san.internals.chat.connectivity_reporter import ConnectivityReporter
 from neuro_san.internals.chat.data_driven_chat_session import DataDrivenChatSession
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.graph.tools.front_man import FrontMan
-from neuro_san.session.agent_session import AgentSession
 from neuro_san.session.chat_session_map import ChatSessionMap
 
 
-class AsyncDirectAgentSession(AgentSession):
+class AsyncDirectAgentSession:
     """
-    Service-agnostic guts for a AgentSession.
-    This could be used by a Flask/Quart app or a gRPC service.
+    Direct guts for an AgentSession.
     """
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
