@@ -15,7 +15,6 @@ from typing import Dict
 from grpc import StatusCode
 from grpc.aio import AioRpcError
 
-from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 from neuro_san.internals.run_context.utils.external_agent_session_factory \
     import ExternalAgentSessionFactory
 # The only reach-around from internals outward.
@@ -47,8 +46,7 @@ class ExternalToolAdapter:
         if self.function_json is None:
 
             # Lazily get the information about the service
-            agent_location: Dict[str, Any] = ExternalAgentParsing.parse_external_agent(self.agent_url)
-            self.session = ExternalAgentSessionFactory.create_session(agent_location)
+            self.session = ExternalAgentSessionFactory.create_session(self.agent_url)
 
             # Set up the request. Turns out we don't need much.
             request_dict: Dict[str, Any] = {}

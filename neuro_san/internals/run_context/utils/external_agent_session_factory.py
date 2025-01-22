@@ -13,6 +13,7 @@ from typing import Dict
 
 import logging
 
+from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 # The only reach-around from internals outward.
 from neuro_san.session.agent_session import AgentSession
 from neuro_san.session.async_service_agent_session import AsyncServiceAgentSession
@@ -25,7 +26,19 @@ class ExternalAgentSessionFactory:
     """
 
     @staticmethod
-    def create_session(agent_location: Dict[str, str]) -> AgentSession:
+    def create_session(agent_url: str) -> AgentSession:
+        """
+        :param agent_url: A url string pointing to an external agent that came from
+                    a tools list in an agent spec.
+        :return: An AgentSession through which communications about the external agent can be made.
+        """
+
+        agent_location: Dict[str, str] = ExternalAgentParsing.parse_external_agent(agent_url)
+        session = ExternalAgentSessionFactory.create_session(agent_location)
+        return session
+
+    @staticmethod
+    def create_session_from_location_dict(agent_location: Dict[str, str]) -> AgentSession:
         """
         :param agent_location: An agent location dictionary returned by
                     ExternalAgentParsing.parse_external_agent()
