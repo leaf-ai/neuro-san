@@ -25,6 +25,7 @@ from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 from leaf_server_common.server.server_loop_callbacks import ServerLoopCallbacks
 
 from neuro_san.internals.chat.chat_session import ChatSession
+from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.service.agent_server import AgentServer
 from neuro_san.service.agent_server import DEFAULT_SERVER_NAME
@@ -34,7 +35,6 @@ from neuro_san.service.agent_service import AgentService
 from neuro_san.session.agent_service_stub import DEFAULT_SERVICE_PREFIX
 from neuro_san.session.agent_session import AgentSession
 from neuro_san.session.chat_session_map import ChatSessionMap
-from neuro_san.session.registry_manifest_restorer import RegistryManifestRestorer
 
 # A *single* global variable which contains a mapping of
 # string keys -> ChatSession implementations
