@@ -26,6 +26,7 @@ from neuro_san.internals.chat.connectivity_reporter import ConnectivityReporter
 from neuro_san.internals.chat.data_driven_chat_session import DataDrivenChatSession
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.graph.tools.front_man import FrontMan
+from neuro_san.session.agent_session import AgentSession
 from neuro_san.session.chat_session_map import ChatSessionMap
 
 
@@ -79,8 +80,9 @@ class AsyncDirectAgentSession:
                 "function" - the dictionary description of the function
                 "status" - status for finding the function.
         """
+        _ = request_dict
         response_dict: Dict[str, Any] = {
-            "status": self.NOT_FOUND
+            "status": AgentSession.NOT_FOUND
         }
 
         front_man: FrontMan = self.tool_registry.create_front_man(None, None)
@@ -90,7 +92,7 @@ class AsyncDirectAgentSession:
             function: Dict[str, Any] = spec.get("function", empty)
             response_dict = {
                 "function": function,
-                "status": self.FOUND
+                "status": AgentSession.FOUND
             }
 
         return response_dict
@@ -107,15 +109,16 @@ class AsyncDirectAgentSession:
                                     wants the client ot know about.
                 "status" - status for finding the function.
         """
+        _ = request_dict
         response_dict: Dict[str, Any] = {
-            "status": self.NOT_FOUND
+            "status": AgentSession.NOT_FOUND
         }
 
         reporter = ConnectivityReporter(self.tool_registry)
         connectivity_info: List[Dict[str, Any]] = reporter.report_network_connectivity()
         response_dict = {
             "connectivity_info": connectivity_info,
-            "status": self.FOUND
+            "status": AgentSession.FOUND
         }
 
         return response_dict
@@ -160,22 +163,22 @@ class AsyncDirectAgentSession:
 
         session_id: str = request_dict.get("session_id")
         sly_data: Dict[str, Any] = request_dict.get("sly_data")
-        status: int = self.NOT_FOUND
+        status: int = AgentSession.NOT_FOUND
 
         chat_session: ChatSession = self.chat_session_map.get_chat_session(session_id)
         if chat_session is None:
             if session_id is None:
                 # Initiate a new conversation.
-                status = self.CREATED
+                status = AgentSession.CREATED
                 chat_session = DataDrivenChatSession(registry=self.tool_registry)
                 session_id = self.chat_session_map.register_chat_session(chat_session)
             else:
                 # We got an session_id, but this service instance has no knowledge
                 # of it.
-                status = self.NOT_FOUND
+                status = AgentSession.NOT_FOUND
         else:
             # We have seen this session_id before and can register new user input.
-            status = self.FOUND
+            status = AgentSession.FOUND
 
         # Prepare the response dictionary
         template_response_dict = {
