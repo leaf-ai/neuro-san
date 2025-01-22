@@ -18,6 +18,7 @@ import uuid
 
 from leaf_common.parsers.field_extractor import FieldExtractor
 
+from neuro_san.internals.graph.tools.argument_assigner import ArgumentAssigner
 from neuro_san.internals.graph.tools.calling_tool import CallingTool
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.message_utils import generate_response
@@ -82,84 +83,13 @@ class BranchTool(CallingTool, CallableTool):
         # Properties describe the function arguments
         properties: Dict[str, Any] = extractor.get_field(agent_spec, "function.parameters.properties", empty)
 
-        # Attributions describe how we tell the tool what the values of its function arguments are
-        attributions: Dict[str, str] = extractor.get_field(agent_spec, "attributions", empty)
+        assigner = ArgumentAssigner(properties)
+        assignments: List[str] = assigner.assign(self.arguments)
 
         # Start to build the specific instructions, with one sentence for each property
         # listed (exception for name and description).
-        specific_instructions: str = ""
-        for one_property, attributes in properties.items():
-
-            if one_property in ("name", "description"):
-                # Skip, as this does not need to be in the specific intructions
-                continue
-
-            args_value: Any = self.arguments.get(one_property)
-            if args_value is None:
-                # If we do not have an argument value for the property,
-                # do not add anything to the specific instructions
-                continue
-
-            args_value_str: str = self._get_args_value_as_string(args_value,
-                                                                 attributes.get("type"))
-
-            # Determine which attribution to use.
-            # First we look in the agent spec to see if there is something
-            # specific to use given the property/arg name.
-            attribution: str = attributions.get(one_property)
-            if attribution is None:
-
-                # No specific attribution text, so we make up a boilerplate
-                # one where it give the property/arg name <is/are> and the value.
-
-                # Figure out the attribution verb for singular vs plural
-                assignment_verb: str = "is"
-                if attributes.get("type") == "array":
-                    assignment_verb = "are"
-
-                attribution = f"The {one_property} {assignment_verb}"
-
-            # Put together the assignment statement
-            assignment: str = f"{attribution} {args_value_str}.\n"
-
-            # Add the assignment statement to the overall specific instructions.
-            specific_instructions = specific_instructions + assignment
-
+        specific_instructions: str = "\n".join(assignments)
         return specific_instructions
-
-    @staticmethod
-    def _get_args_value_as_string(args_value: Any, value_type: str = None) -> str:
-        """
-        Get the string value of the value provided in the arguments
-        """
-        args_value_str: str = None
-
-        if value_type == "dict" or isinstance(args_value, Dict):
-            args_value_str = json.dumps(args_value)
-            # Strip the begin/end braces as gpt-4o doesn't like them.
-            # This means that anything within the json-y braces for a dictionary
-            # value gets interpreted as "this is an input value that has
-            # to come from the code" when that is not the case at all.
-            # Unclear why this is an issue with gpt-4o and not gpt-4-turbo.
-            args_value_str = args_value_str[1:-1]
-        elif value_type == "array" or isinstance(args_value, List):
-            str_values = []
-            for item in args_value:
-                item_str: str = BranchTool._get_args_value_as_string(item)
-                str_values.append(item_str)
-            args_value_str = ", ".join(str_values)
-        elif value_type == "string":
-            args_value_str = f'"{args_value}"'
-            # Per https://github.com/langchain-ai/langchain/issues/1660
-            # We need to use double curly braces in order to pass values
-            # that actually have curly braces in them so they will not
-            # be mistaken for string placeholders for input.
-            args_value_str = args_value_str.replace("{", "{{")
-            args_value_str = args_value_str.replace("}", "}}")
-        else:
-            args_value_str = str(args_value)
-
-        return args_value_str
 
     def get_takes_awhile(self) -> bool:
         """
