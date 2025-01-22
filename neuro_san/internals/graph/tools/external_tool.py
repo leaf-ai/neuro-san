@@ -21,6 +21,8 @@ from neuro_san.internals.messages.chat_message_type import ChatMessageType
 from neuro_san.internals.run_context.interfaces.callable_tool import CallableTool
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
+from neuro_san.internals.run_context.utils.external_agent_session_factory \
+    import ExternalAgentSessionFactory
 from neuro_san.session.agent_session import AgentSession
 
 
@@ -45,7 +47,7 @@ class ExternalTool(CallableTool):
         :param journal: The Journal that captures messages for user output
         :param agent_url: The string url to find the external agent.
                         Theoretically this has already been verified by use of an
-                        ExternalToolAdapter.
+                        ExternalAgentParsing method.
         :param arguments: A dictionary of the tool function arguments passed in
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be an empty dictionary.
@@ -70,7 +72,7 @@ class ExternalTool(CallableTool):
         # Create an AgentSession if necessary
         if self.session is None:
             agent_location: Dict[str, str] = ExternalAgentParsing.parse_external_agent(self.agent_url)
-            self.session = ExternalAgentParsing.create_session(agent_location)
+            self.session = ExternalAgentSessionFactory.create_session(agent_location)
 
         # Send off the input
         chat_request: Dict[str, Any] = self.gather_input(f"```json\n{json.dumps(self.arguments)}```",

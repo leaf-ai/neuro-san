@@ -12,14 +12,8 @@
 from typing import Dict
 from typing import List
 
-import logging
-
 from urllib.parse import ParseResult
 from urllib.parse import urlparse
-
-# The only reach-around from internals outward.
-from neuro_san.session.agent_session import AgentSession
-from neuro_san.session.async_service_agent_session import AsyncServiceAgentSession
 
 
 class ExternalAgentParsing:
@@ -119,31 +113,3 @@ class ExternalAgentParsing:
             safe_name = "__" + agent_location.get("agent_name")
 
         return safe_name
-
-    @staticmethod
-    def create_session(agent_location: Dict[str, str]) -> AgentSession:
-        """
-        :param agent_location: An agent location dictionary returned by parse_external_agent()
-        :return: An AgentSession through which communications about the external agent can be made.
-        """
-        if agent_location is None:
-            return None
-
-        # Create the session.
-        host = agent_location.get("host")
-        port = agent_location.get("port")
-        agent_name = agent_location.get("agent_name")
-        service_prefix = agent_location.get("service_prefix")
-
-        # Optimization:
-        #   It's possible we might want to create a different kind of session
-        #   to minimize socket usage, but for now use the AsyncServiceAgentSession
-        #   so as to ensure proper logging even on the same server (localhost).
-        session = AsyncServiceAgentSession(host, port, agent_name=agent_name,
-                                           service_prefix=service_prefix)
-
-        # Quiet any logging from leaf-common grpc stuff.
-        quiet_please = logging.getLogger("leaf_common.session.grpc_client_retry")
-        quiet_please.setLevel(logging.WARNING)
-
-        return session
