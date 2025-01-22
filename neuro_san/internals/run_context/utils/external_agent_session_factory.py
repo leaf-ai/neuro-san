@@ -19,7 +19,6 @@ from neuro_san.session.agent_session import AgentSession
 from neuro_san.session.async_service_agent_session import AsyncServiceAgentSession
 
 
-# pylint: disable=too-few-public-methods
 class ExternalAgentSessionFactory:
     """
     Creates AgentSessions for external agents.
