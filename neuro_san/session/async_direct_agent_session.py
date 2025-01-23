@@ -59,6 +59,7 @@ class AsyncDirectAgentSession:
         # These aren't used yet
         self._metadata: Dict[str, Any] = metadata
         self._security_cfg: Dict[str, Any] = security_cfg
+
         self.chat_session_map: ChatSessionMap = chat_session_map
         self.asyncio_executor: AsyncioExecutor = asyncio_executor
         self.we_created_executor: bool = False

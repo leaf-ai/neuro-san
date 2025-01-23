@@ -225,14 +225,15 @@ Some things to try:
         return agent_tool
 
     def create_front_man(self, journal: Journal = None,
-                         sly_data: Dict[str, Any] = None) -> FrontMan:
+                         sly_data: Dict[str, Any] = None,
+                         parent_run_context: RunContext = None) -> FrontMan:
         """
         Find and create the FrontMan for chat
         """
         front_man_name: str = self.find_front_man()
 
         agent_tool_spec: Dict[str, Any] = self.get_agent_tool_spec(front_man_name)
-        front_man = FrontMan(None, journal, self, agent_tool_spec, sly_data)
+        front_man = FrontMan(parent_run_context, journal, self, agent_tool_spec, sly_data)
         return front_man
 
     def find_front_man(self) -> str:

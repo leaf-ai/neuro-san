@@ -30,6 +30,9 @@ from neuro_san.internals.messages.agent_framework_message import AgentFrameworkM
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
 from neuro_san.internals.messages.message_utils import convert_to_chat_message
 from neuro_san.internals.messages.message_utils import pretty_the_messages
+from neuro_san.internals.run_context.factory.run_context_factory import RunContextFactory
+from neuro_san.internals.run_context.interfaces.run_context import RunContext
+from neuro_san.internals.run_context.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
 
 
 # pylint: disable=too-many-instance-attributes
@@ -41,14 +44,14 @@ class DataDrivenChatSession(ChatSession):
 
     def __init__(self, registry: AgentToolRegistry,
                  journal: Journal = None,
-                 setup: bool = False):
+                 session_factory: AsyncAgentSessionFactory = None):
         """
         Constructor
 
         :param registry: The AgentToolRegistry to use.
         :param journal: The Journal that captures messages for user output
-        :param setup: Whether or not set_up() should be called
-                    by the constructor. Default is False.
+        :param session_factory: The AsyncSessionFactory instance used to create
+                        new sessions for external agents
         """
 
         self.registry: AgentToolRegistry = registry
@@ -58,13 +61,11 @@ class DataDrivenChatSession(ChatSession):
         self.sly_data: Dict[str, Any] = {}
         self.queue: AsyncCollatingQueue = AsyncCollatingQueue()
         self.last_streamed_index: int = 0
+        self.session_factory: AsyncAgentSessionFactory = session_factory
 
         self.journal: Journal = journal
         if journal is None:
             self.journal = CompatibilityJournal(self.queue)
-
-        if setup:
-            self.set_up()
 
     def get_queue(self) -> AsyncCollatingQueue:
         """
@@ -72,7 +73,7 @@ class DataDrivenChatSession(ChatSession):
         """
         return self.queue
 
-    async def set_up(self):
+    async def set_up(self, ):
         """
         Resets or sets the instance up for the first time.
         """
@@ -88,7 +89,9 @@ class DataDrivenChatSession(ChatSession):
         # Reset what we might have created before.
         await self.delete_resources()
 
-        self.front_man = self.registry.create_front_man(self.journal, self.sly_data)
+        run_context: RunContext = RunContextFactory.create_run_context(None, None,
+                                                                       session_factory=self.session_factory)
+        self.front_man = self.registry.create_front_man(self.journal, self.sly_data, run_context)
         await self.front_man.create_resources()
 
     async def chat(self, user_input: str, sly_data: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
