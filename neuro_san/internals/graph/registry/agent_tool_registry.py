@@ -224,7 +224,8 @@ Some things to try:
 
         return agent_tool
 
-    def create_front_man(self, journal: Journal, sly_data: Dict[str, Any]) -> FrontMan:
+    def create_front_man(self, journal: Journal = None,
+                         sly_data: Dict[str, Any] = None) -> FrontMan:
         """
         Find and create the FrontMan for chat
         """

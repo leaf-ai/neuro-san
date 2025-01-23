@@ -85,7 +85,7 @@ class AsyncDirectAgentSession:
             "status": AgentSession.NOT_FOUND
         }
 
-        front_man: FrontMan = self.tool_registry.create_front_man(None, None)
+        front_man: FrontMan = self.tool_registry.create_front_man()
         if front_man is not None:
             spec: Dict[str, Any] = front_man.get_agent_tool_spec()
             empty: Dict[str, Any] = {}
