@@ -9,10 +9,10 @@ from google.protobuf.json_format import Parse
 from neuro_san.client.agent_session_factory import AgentSessionFactory
 
 # pylint: disable=no-name-in-module
-from neuro_san.api.grpc.agent_pb2 import ConnectivityRequest, ConnectivityResponse
+from neuro_san.api.grpc.agent_pb2 import FunctionRequest, FunctionResponse
 
 
-class ConnectivityHandler:
+class FunctionHandler:
 
     def build(self, port: int, agent_name: str, method_name: str):
         def get(self):
@@ -23,7 +23,7 @@ class ConnectivityHandler:
 
                 data: Dict[str, Any] = {}
                 grpc_session = AgentSessionFactory().create_session("service", agent_name, port=port)
-                result_dict: Dict[str, Any] = grpc_session.connectivity(data)
+                result_dict: Dict[str, Any] = grpc_session.function(data)
 
                 # Return gRPC response to the HTTP client
                 self.set_header("Content-Type", "application/json")
