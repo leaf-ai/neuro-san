@@ -15,9 +15,9 @@ from typing import Dict
 from grpc import StatusCode
 from grpc.aio import AioRpcError
 
-from neuro_san.internals.run_context.utils.external_agent_session_factory \
-    import ExternalAgentSessionFactory
-# The only reach-around from internals outward.
+from neuro_san.internals.run_context.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
+
+# The only reach-arounds from internals outward.
 from neuro_san.session.agent_session import AgentSession
 
 
@@ -28,7 +28,7 @@ class ExternalToolAdapter:
     so that its agents can be used as tools.
     """
 
-    def __init__(self, agent_url: str):
+    def __init__(self, session_factory: AsyncAgentSessionFactory, agent_url: str):
         """
         Constructor
 
@@ -36,7 +36,7 @@ class ExternalToolAdapter:
         """
 
         self.agent_url: str = agent_url
-        self.session: AgentSession = None
+        self.session_factory: AsyncAgentSessionFactory = session_factory
         self.function_json: Dict[str, Any] = None
 
     async def get_function_json(self) -> Dict[str, Any]:
@@ -46,15 +46,14 @@ class ExternalToolAdapter:
         if self.function_json is None:
 
             # Lazily get the information about the service
-            factory = ExternalAgentSessionFactory()
-            self.session = factory.create_session(self.agent_url)
+            session: AgentSession = self.session_factory.create_session(self.agent_url)
 
             # Set up the request. Turns out we don't need much.
             request_dict: Dict[str, Any] = {}
 
             # Get the function spec so we can call it as a tool later.
             try:
-                function_response: Dict[str, Any] = await self.session.function(request_dict)
+                function_response: Dict[str, Any] = await session.function(request_dict)
                 self.function_json = function_response.get("function")
             except AioRpcError as exception:
                 message: str = f"Problem accessing external agent {self.agent_url}.\n"

@@ -13,24 +13,33 @@ from typing import Dict
 
 import logging
 
+from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
+
+from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
+from neuro_san.internals.run_context.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
-# The only reach-around from internals outward.
-from neuro_san.session.agent_session import AgentSession
+from neuro_san.session.async_direct_agent_session import AsyncDirectAgentSession
 from neuro_san.session.async_service_agent_session import AsyncServiceAgentSession
+from neuro_san.session.agent_session import AgentSession
 
 
-class ExternalAgentSessionFactory:
+# DEF - need to get this into FrontMan RunContext
+class ExternalAgentSessionFactory(AsyncAgentSessionFactory):
     """
     Creates AgentSessions for external agents.
     """
 
-    def __init__(self, use_direct: bool = False):
+    def __init__(self, asyncio_executor: AsyncioExecutor,
+                 use_direct: bool = False):
         """
         Constructuor
 
+        :param asyncio_executor: The global AsyncioExecutor for running
+                        stuff in the background.
         :param use_direct: When True, will use a Direct session for
                     external agents that would reside on the same server.
         """
+        self.asyncio_executor: AsyncioExecutor = asyncio_executor
         self.use_direct: bool = use_direct
 
     def create_session(self, agent_url: str) -> AgentSession:
@@ -59,12 +68,18 @@ class ExternalAgentSessionFactory:
         agent_name = agent_location.get("agent_name")
         service_prefix = agent_location.get("service_prefix")
 
-        # Optimization:
-        #   It's possible we might want to create a different kind of session
-        #   to minimize socket usage, but for now use the AsyncServiceAgentSession
-        #   so as to ensure proper logging even on the same server (localhost).
-        session = AsyncServiceAgentSession(host, port, agent_name=agent_name,
-                                           service_prefix=service_prefix)
+        session: AgentSession = None
+        if self.use_direct and (host is None or len(host) == 0 or host == "localhost"):
+            # Optimization: We want to create a different kind of session to minimize socket usage
+            # and potentially relieve the direct user of the burden of having to start a server
+
+            chat_session_map = None
+            tool_registry: AgentToolRegistry = None     # DEF make this real
+            session = AsyncDirectAgentSession(chat_session_map, tool_registry, self.asyncio_executor)
+
+        if session is None:
+            session = AsyncServiceAgentSession(host, port, agent_name=agent_name,
+                                               service_prefix=service_prefix)
 
         # Quiet any logging from leaf-common grpc stuff.
         quiet_please = logging.getLogger("leaf_common.session.grpc_client_retry")

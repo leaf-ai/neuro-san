@@ -19,6 +19,7 @@ from typing import List
 
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.run_context.interfaces.agent_spec_provider import AgentSpecProvider
+from neuro_san.internals.run_context.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
 from neuro_san.internals.run_context.interfaces.run import Run
 
 
@@ -83,5 +84,11 @@ class RunContext(AgentSpecProvider):
     def get_agent_tool_spec(self) -> Dict[str, Any]:
         """
         :return: the dictionary describing the data-driven agent
+        """
+        raise NotImplementedError
+
+    def get_session_factory(self) -> AsyncAgentSessionFactory:
+        """
+        :return: The AsyncAgentSessionFactory to use when querying external agents
         """
         raise NotImplementedError

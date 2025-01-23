@@ -78,7 +78,8 @@ class CallingTool(ToolCaller):
             "llm_config": llm_config
         }
         self.run_context: RunContext = RunContextFactory.create_run_context(parent_run_context,
-                                                                            self, run_context_config)
+                                                                            self,
+                                                                            config=run_context_config)
 
     def get_agent_tool_spec(self) -> Dict[str, Any]:
         """

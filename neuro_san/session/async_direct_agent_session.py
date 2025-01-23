@@ -165,13 +165,16 @@ class AsyncDirectAgentSession:
         sly_data: Dict[str, Any] = request_dict.get("sly_data")
         status: int = AgentSession.NOT_FOUND
 
-        chat_session: ChatSession = self.chat_session_map.get_chat_session(session_id)
+        chat_session: ChatSession = None
+        if self.chat_session_map is not None:
+            chat_session = self.chat_session_map.get_chat_session(session_id)
         if chat_session is None:
             if session_id is None:
                 # Initiate a new conversation.
                 status = AgentSession.CREATED
                 chat_session = DataDrivenChatSession(registry=self.tool_registry)
-                session_id = self.chat_session_map.register_chat_session(chat_session)
+                if self.chat_session_map is not None:
+                    session_id = self.chat_session_map.register_chat_session(chat_session)
             else:
                 # We got an session_id, but this service instance has no knowledge
                 # of it.

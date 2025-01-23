@@ -20,8 +20,8 @@ from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
 from neuro_san.internals.run_context.interfaces.callable_tool import CallableTool
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
-from neuro_san.internals.run_context.utils.external_agent_session_factory \
-    import ExternalAgentSessionFactory
+from neuro_san.internals.run_context.interfaces.async_agent_session_factory \
+    import AsyncAgentSessionFactory
 from neuro_san.session.agent_session import AgentSession
 
 
@@ -53,7 +53,8 @@ class ExternalTool(CallableTool):
                  This gets passed along as a distinct argument to the referenced python class's
                  invoke() method.
         """
-        _ = parent_run_context, journal
+        _ = journal
+        self.run_context: RunContext = parent_run_context
         self.agent_url: str = agent_url
         self.arguments: Dict[str, Any] = arguments
         self.sly_data: Dict[str, Any] = sly_data
@@ -70,7 +71,7 @@ class ExternalTool(CallableTool):
 
         # Create an AgentSession if necessary
         if self.session is None:
-            factory = ExternalAgentSessionFactory()
+            factory: AsyncAgentSessionFactory = self.run_context.get_agent_session_factory()
             self.session = factory.create_session(self.agent_url)
 
         # Send off the input
