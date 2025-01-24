@@ -193,7 +193,7 @@ class DirectAgentSession(AgentSession):
             # sockets stay open.
             asyncio_executor: AsyncioExecutor = self.invocation_context.get_asyncio_executor()
             future: Future = asyncio_executor.submit(session_id, chat_session.chat,
-                                                     user_input, sly_data)
+                                                     user_input, self.invocation_context, sly_data)
             _ = future
 
             # Allow the task to be scheduled. Let the client poll via logs().
@@ -381,7 +381,7 @@ class DirectAgentSession(AgentSession):
         # sockets stay open.
         asyncio_executor: AsyncioExecutor = self.invocation_context.get_asyncio_executor()
         future: Future = asyncio_executor.submit(session_id, chat_session.streaming_chat,
-                                                 user_input, sly_data)
+                                                 user_input, self.invocation_context, sly_data)
         # Ignore the future. Live in the now.
         _ = future
 
