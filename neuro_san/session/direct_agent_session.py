@@ -166,6 +166,9 @@ class DirectAgentSession(AgentSession):
         sly_data: Dict[str, Any] = request_dict.get("sly_data")
         status: int = self.NOT_FOUND
 
+        chat_session: ChatSession = None
+        if self.chat_session_map is not None:
+            chat_session = self.chat_session_map.get_chat_session(session_id)
         chat_session: ChatSession = self.chat_session_map.get_chat_session(session_id)
         if chat_session is None:
             if session_id is None:
@@ -173,7 +176,8 @@ class DirectAgentSession(AgentSession):
                 status = self.CREATED
                 chat_session = DataDrivenChatSession(registry=self.tool_registry,
                                                      invocation_context=self.invocation_context)
-                session_id = self.chat_session_map.register_chat_session(chat_session)
+                if self.chat_session_map is not None: 
+                    session_id = self.chat_session_map.register_chat_session(chat_session)
             else:
                 # We got an session_id, but this service instance has no knowledge
                 # of it.
@@ -237,7 +241,9 @@ class DirectAgentSession(AgentSession):
         the_logs: List[str] = None
         chat_response: str = None
 
-        chat_session: ChatSession = self.chat_session_map.get_chat_session(session_id)
+        chat_session: ChatSession = None
+        if self.chat_session_map is not None:
+            chat_session = self.chat_session_map.get_chat_session(session_id)
         if chat_session is not None:
             # We have seen this session_id before and can poll for a new response.
             status = self.FOUND
@@ -281,7 +287,9 @@ class DirectAgentSession(AgentSession):
         session_id: str = request_dict.get("session_id")
         status: int = self.NOT_FOUND
 
-        chat_session: ChatSession = self.chat_session_map.get_chat_session(session_id)
+        chat_session: ChatSession = None
+        if self.chat_session_map is not None:
+            chat_session = self.chat_session_map.get_chat_session(session_id)
         if chat_session is not None:
             # We have seen this session_id before and can poll for a new response.
             status = self.FOUND
@@ -337,14 +345,17 @@ class DirectAgentSession(AgentSession):
         sly_data: Dict[str, Any] = request_dict.get("sly_data")
         status: int = self.NOT_FOUND
 
-        chat_session: ChatSession = self.chat_session_map.get_chat_session(session_id)
+        chat_session: ChatSession = None
+        if self.chat_session_map is not None:
+            chat_session = self.chat_session_map.get_chat_session(session_id)
         if chat_session is None:
             if session_id is None:
                 # Initiate a new conversation.
                 status = self.CREATED
                 chat_session = DataDrivenChatSession(registry=self.tool_registry,
                                                      invocation_context=self.invocation_context)
-                session_id = self.chat_session_map.register_chat_session(chat_session)
+                if self.chat_session_map is not None:
+                    session_id = self.chat_session_map.register_chat_session(chat_session)
             else:
                 # We got an session_id, but this service instance has no knowledge
                 # of it.
