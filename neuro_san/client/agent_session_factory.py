@@ -24,12 +24,15 @@ class AgentSessionFactory:
     def create_session(self, session_type: str,
                        agent_name: str,
                        hostname: str = None,
-                       port: int = None) -> AgentSession:
+                       port: int = None,
+                       use_direct: bool = False) -> AgentSession:
         """
         :param session_type: The type of session to create
         :param agent_name: The name of the agent to use for the session.
         :param hostname: The name of the host to connect to (if applicable)
         :param port: The port on the host to connect to (if applicable)
+        :param use_direct: When True, will use a Direct session for
+                    external agents that would reside on the same server.
         """
         session: AgentSession = None
 
@@ -38,7 +41,7 @@ class AgentSessionFactory:
         #           actually checked for positive use.
         if session_type == "direct":
             factory = DirectAgentSessionFactory()
-            session = factory.create_session(agent_name)
+            session = factory.create_session(agent_name, use_direct=use_direct)
         elif session_type == "service":
             session = ServiceAgentSession(host=hostname, port=port, agent_name=agent_name)
         else:

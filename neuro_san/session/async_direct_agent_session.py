@@ -67,7 +67,8 @@ class AsyncDirectAgentSession:
         self.tool_registry: AgentToolRegistry = tool_registry
 
         # For convenience
-        if self.invocation_context.get_asyncio_executor() is None:
+        if self.invocation_context is not None and \
+                self.invocation_context.get_asyncio_executor() is None:
             self.we_created_executor = True
             asyncio_executor = AsyncioExecutor()
             self.invocation_context.set_asyncio_executor(asyncio_executor)
@@ -223,6 +224,9 @@ class AsyncDirectAgentSession:
         """
         Tears down resources created
         """
+        if self.invocation_context is None:
+            return
+
         asyncio_executor: AsyncioExecutor = self.invocation_context.get_asyncio_executor()
         if self.we_created_executor and asyncio_executor is not None:
             asyncio_executor.shutdown()

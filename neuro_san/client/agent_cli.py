@@ -192,6 +192,15 @@ All choices require an agent name.
                                 help="Use a service connection")
         arg_parser.add_argument("--direct", dest="connection", action="store_const", const="direct",
                                 help="Use a direct/library call for the chat")
+        arg_parser.add_argument("--local-externals-direct", default=False, action="store_true",
+                                help="""
+Have external tools that can be found in the local agent manifest use a
+direct connection instead of requiring a service to be stood up.
+                                """)
+        arg_parser.add_argument("--local-externals-service", dest="local_externals_direct", action="store_false",
+                                help="""
+Have external tools that can be found in the local agent manifest use a service connection
+                                """)
         arg_parser.add_argument("--max_input", type=int, default=1000000,
                                 help="Maximum rounds of input to go before exiting")
         arg_parser.add_argument("--one_shot", dest="max_input", action="store_const", const=1,
@@ -208,7 +217,7 @@ All choices require an agent name.
         # Open a session with the factory
         factory: AgentSessionFactory = self.get_agent_session_factory()
         self.session = factory.create_session(self.args.connection, self.args.agent,
-                                              hostname, self.args.port)
+                                              hostname, self.args.port, self.args.local_externals_direct)
 
         # Clear out the previous thinking file
         #

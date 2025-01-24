@@ -27,6 +27,7 @@ from neuro_san.internals.chat.connectivity_reporter import ConnectivityReporter
 from neuro_san.internals.chat.data_driven_chat_session import DataDrivenChatSession
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.graph.tools.front_man import FrontMan
+from neuro_san.internals.run_context.interfaces.invocation_context import InvocationContext
 from neuro_san.session.agent_session import AgentSession
 from neuro_san.session.chat_session_map import ChatSessionMap
 
@@ -41,7 +42,7 @@ class DirectAgentSession(AgentSession):
     def __init__(self,
                  chat_session_map: ChatSessionMap,
                  tool_registry: AgentToolRegistry,
-                 asyncio_executor: AsyncioExecutor,
+                 invocation_context: InvocationContext,
                  metadata: Dict[str, Any] = None,
                  security_cfg: Dict[str, Any] = None):
         """
@@ -49,8 +50,8 @@ class DirectAgentSession(AgentSession):
 
         :param chat_session_map: The global ChatSessionMap for the service.
         :param tool_registry: The AgentToolRegistry to use for the session.
-        :param asyncio_executor: The global AsyncioExecutor for running
-                        stuff in the background.
+        :param invocation_context: The InvocationContext to use to consult
+                        for policy objects scoped at the invocation level.
         :param metadata: A dictionary of request metadata to be forwarded
                         to subsequent yet-to-be-made requests.
         :param security_cfg: A dictionary of parameters used to
@@ -62,15 +63,17 @@ class DirectAgentSession(AgentSession):
         self._metadata: Dict[str, Any] = metadata
         self._security_cfg: Dict[str, Any] = security_cfg
         self.chat_session_map: ChatSessionMap = chat_session_map
-        self.asyncio_executor: AsyncioExecutor = asyncio_executor
+        self.invocation_context: InvocationContext = invocation_context
         self.we_created_executor: bool = False
         self.tool_registry: AgentToolRegistry = tool_registry
 
         # For convenience
-        if self.asyncio_executor is None:
+        if self.invocation_context is not None and \
+                self.invocation_context.get_asyncio_executor() is None:
             self.we_created_executor = True
-            self.asyncio_executor = AsyncioExecutor()
-            self.asyncio_executor.start()
+            asyncio_executor = AsyncioExecutor()
+            self.invocation_context.set_asyncio_executor(asyncio_executor)
+            asyncio_executor.start()
 
     def function(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -183,8 +186,9 @@ class DirectAgentSession(AgentSession):
             # Create an asynchronous background task to process the user input.
             # This might take a few minutes, which can be longer than some
             # sockets stay open.
-            future: Future = self.asyncio_executor.submit(session_id, chat_session.chat,
-                                                          user_input, sly_data)
+            asyncio_executor: AsyncioExecutor = self.invocation_context.get_asyncio_executor()
+            future: Future = asyncio_executor.submit(session_id, chat_session.chat,
+                                                     user_input, sly_data)
             _ = future
 
             # Allow the task to be scheduled. Let the client poll via logs().
@@ -280,7 +284,8 @@ class DirectAgentSession(AgentSession):
         if chat_session is not None:
             # We have seen this session_id before and can poll for a new response.
             status = self.FOUND
-            future: Future = self.asyncio_executor.submit(session_id, chat_session.set_up)
+            asyncio_executor: AsyncioExecutor = self.invocation_context.get_asyncio_executor()
+            future: Future = asyncio_executor.submit(session_id, chat_session.set_up)
             _ = future
 
         response_dict = {
@@ -361,8 +366,9 @@ class DirectAgentSession(AgentSession):
         # Create an asynchronous background task to process the user input.
         # This might take a few minutes, which can be longer than some
         # sockets stay open.
-        future: Future = self.asyncio_executor.submit(session_id, chat_session.streaming_chat,
-                                                      user_input, sly_data)
+        asyncio_executor: AsyncioExecutor = self.invocation_context.get_asyncio_executor()
+        future: Future = asyncio_executor.submit(session_id, chat_session.streaming_chat,
+                                                 user_input, sly_data)
         # Ignore the future. Live in the now.
         _ = future
 
@@ -370,7 +376,7 @@ class DirectAgentSession(AgentSession):
         # chat.ChatMessage dictionaries to come back asynchronously from the submit()
         # above until there are no more from the input.
         empty: Dict[str, Any] = {}
-        generator = AsyncToSyncGenerator(self.asyncio_executor, session_id,
+        generator = AsyncToSyncGenerator(asyncio_executor, session_id,
                                          generated_type=Dict,
                                          keep_alive_result=empty,
                                          keep_alive_timeout_seconds=10.0)
@@ -386,6 +392,10 @@ class DirectAgentSession(AgentSession):
         """
         Tears down resources created
         """
-        if self.we_created_executor and self.asyncio_executor is not None:
-            self.asyncio_executor.shutdown()
-            self.asyncio_executor = None
+        if self.invocation_context is None:
+            return
+
+        asyncio_executor: AsyncioExecutor = self.invocation_context.get_asyncio_executor()
+        if self.we_created_executor and asyncio_executor is not None:
+            asyncio_executor.shutdown()
+            self.invocation_context.set_asyncio_executor(None)

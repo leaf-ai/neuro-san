@@ -16,9 +16,11 @@ from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 
 from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
+from neuro_san.internals.run_context.interfaces.invocation_context import InvocationContext
 from neuro_san.session.agent_session import AgentSession
 from neuro_san.session.chat_session_map import ChatSessionMap
 from neuro_san.session.direct_agent_session import DirectAgentSession
+from neuro_san.session.external_agent_session_factory import ExternalAgentSessionFactory
 
 
 # pylint: disable=too-few-public-methods
@@ -47,9 +49,11 @@ class DirectAgentSessionFactory:
 
         self.asyncio_executor.start()
 
-    def create_session(self, agent_name: str) -> AgentSession:
+    def create_session(self, agent_name: str, use_direct: bool = False) -> AgentSession:
         """
         :param agent_name: The name of the agent to use for the session.
+        :param use_direct: When True, will use a Direct session for
+                    external agents that would reside on the same server.
         """
         tool_registry: AgentToolRegistry = self.manifest_tool_registries.get(agent_name)
         if tool_registry is None:
@@ -70,7 +74,9 @@ Some things to check:
 """
             raise ValueError(message)
 
-        session: DirectAgentSession = DirectAgentSession(self.chat_session_map,
-                                                         tool_registry,
-                                                         self.asyncio_executor)
+        factory = ExternalAgentSessionFactory(use_direct=use_direct)
+        invocation_context = InvocationContext(factory, self.asyncio_executor)
+        session: DirectAgentSession = DirectAgentSession(chat_session_map=self.chat_session_map,
+                                                         tool_registry=tool_registry,
+                                                         invocation_context=invocation_context)
         return session

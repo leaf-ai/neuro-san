@@ -24,21 +24,27 @@ class InvocationContext:
     """
 
     def __init__(self, async_session_factory: AsyncAgentSessionFactory,
-                 journal: Journal,
-                 asyncio_executor: AsyncioExecutor = None):
+                 asyncio_executor: AsyncioExecutor = None,
+                 journal: Journal = None):
         """
         Constructor
 
         :param async_session_factory: The AsyncAgentSessionFactory to use
                         when connecting with external agents.
-        :parma journal: The Journal to use within the scope of the invocation
         :param asyncio_executor: The AsyncioExecutor to use for running
                         stuff in the background asynchronously.
+        :parma journal: The Journal to use within the scope of the invocation
         """
 
         self.async_session_factory: AsyncAgentSessionFactory = async_session_factory
-        self.journal: Journal = journal
         self.asyncio_executor: AsyncioExecutor = asyncio_executor
+        self.journal: Journal = journal
+
+    def get_async_session_factory(self) -> AsyncAgentSessionFactory:
+        """
+        :return: The AsyncAgentSessionFactory associated with the invocation
+        """
+        return self.async_session_factory
 
     def get_asyncio_executor(self) -> AsyncioExecutor:
         """
@@ -52,14 +58,14 @@ class InvocationContext:
         """
         self.asyncio_executor = asyncio_executor
 
-    def get_async_session_factory(self) -> AsyncAgentSessionFactory:
-        """
-        :return: The AsyncAgentSessionFactory associated with the invocation
-        """
-        return self.async_session_factory
-
     def get_journal(self) -> Journal:
         """
         :return: The Journal associated with the invocation
         """
         return self.journal
+
+    def set_journal(self, journal: Journal):
+        """
+        :param journal: The Journal to associate with the invocation
+        """
+        self.journal = journal
