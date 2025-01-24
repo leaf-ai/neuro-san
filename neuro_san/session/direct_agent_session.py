@@ -176,7 +176,7 @@ class DirectAgentSession(AgentSession):
                 status = self.CREATED
                 chat_session = DataDrivenChatSession(registry=self.tool_registry,
                                                      invocation_context=self.invocation_context)
-                if self.chat_session_map is not None: 
+                if self.chat_session_map is not None:
                     session_id = self.chat_session_map.register_chat_session(chat_session)
             else:
                 # We got an session_id, but this service instance has no knowledge
