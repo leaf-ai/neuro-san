@@ -10,9 +10,11 @@
 #
 # END COPYRIGHT
 from typing import Dict
+from os import environ
 
 import logging
 
+from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.run_context.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
 from neuro_san.internals.run_context.interfaces.invocation_context import InvocationContext
@@ -74,7 +76,11 @@ class ExternalAgentSessionFactory(AsyncAgentSessionFactory):
             # and potentially relieve the direct user of the burden of having to start a server
 
             chat_session_map = None
-            tool_registry: AgentToolRegistry = None     # DEF make this real
+
+            manifest_restorer = RegistryManifestRestorer()
+            manifest_tool_registries: Dict[str, AgentToolRegistry] = manifest_restorer.restore()
+
+            tool_registry: AgentToolRegistry = self.get_tool_registry(agent_name, manifest_tool_registries)
             session = AsyncDirectAgentSession(chat_session_map, tool_registry, invocation_context)
 
         if session is None:
@@ -86,3 +92,33 @@ class ExternalAgentSessionFactory(AsyncAgentSessionFactory):
         quiet_please.setLevel(logging.WARNING)
 
         return session
+
+    @staticmethod
+    def get_tool_registry(agent_name: str,
+                          manifest_tool_registries: Dict[str, AgentToolRegistry]) -> AgentToolRegistry:
+        """
+        :param agent_name: The name of the agent to use for the session.
+        :param manifest_tool_registries: Dictionary of AgentToolRegistries from the manifest
+        :return: The AgentToolRegistry corresponding to the agent_name
+        """
+
+        tool_registry: AgentToolRegistry = manifest_tool_registries.get(agent_name)
+        if tool_registry is None:
+            message = f"""
+Agent named "{agent_name}" not found in manifest file: {environ.get("AGENT_MANIFEST_FILE")}.
+
+Some things to check:
+1. If the manifest file named above is None, know that the default points
+   to the one provided with the neuro-san library for a smoother out-of-box
+   experience.  If the agent you wanted is not part of that standard distribution,
+   you need to set the AGENT_MANIFEST_FILE environment variable to point to a
+   manifest.hocon file associated with your own project(s).
+2. Check that the environment variable AGENT_MANIFEST_FILE is pointing to
+   the manifest.hocon file that you expect and has no typos.
+3. Does your manifest.hocon file contain a key for the agent specified?
+4. Does the value for the key in the manifest file have a value of 'true'?
+5. Does your agent name have a typo either in the hocon file or on the command line?
+"""
+            raise ValueError(message)
+
+        return tool_registry

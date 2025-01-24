@@ -9,7 +9,6 @@
 # neuro-san SDK Software in commercial settings.
 #
 # END COPYRIGHT
-from os import environ
 from typing import Dict
 
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
@@ -55,26 +54,10 @@ class DirectAgentSessionFactory:
         :param use_direct: When True, will use a Direct session for
                     external agents that would reside on the same server.
         """
-        tool_registry: AgentToolRegistry = self.manifest_tool_registries.get(agent_name)
-        if tool_registry is None:
-            message = f"""
-Agent named "{agent_name}" not found in manifest file: {environ.get("AGENT_MANIFEST_FILE")}.
-
-Some things to check:
-1. If the manifest file named above is None, know that the default points
-   to the one provided with the neuro-san library for a smoother out-of-box
-   experience.  If the agent you wanted is not part of that standard distribution,
-   you need to set the AGENT_MANIFEST_FILE environment variable to point to a
-   manifest.hocon file associated with your own project(s).
-2. Check that the environment variable AGENT_MANIFEST_FILE is pointing to
-   the manifest.hocon file that you expect and has no typos.
-3. Does your manifest.hocon file contain a key for the agent specified?
-4. Does the value for the key in the manifest file have a value of 'true'?
-5. Does your agent name have a typo either in the hocon file or on the command line?
-"""
-            raise ValueError(message)
 
         factory = ExternalAgentSessionFactory(use_direct=use_direct)
+        tool_registry: AgentToolRegistry = factory.get_tool_registry(agent_name, self.manifest_tool_registries)
+
         invocation_context = InvocationContext(factory, self.asyncio_executor)
         session: DirectAgentSession = DirectAgentSession(chat_session_map=self.chat_session_map,
                                                          tool_registry=tool_registry,
