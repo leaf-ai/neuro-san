@@ -26,6 +26,7 @@ from neuro_san.internals.chat.connectivity_reporter import ConnectivityReporter
 from neuro_san.internals.chat.data_driven_chat_session import DataDrivenChatSession
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.graph.tools.front_man import FrontMan
+from neuro_san.internals.run_context.interfaces.invocation_context import InvocationContext
 from neuro_san.session.agent_session import AgentSession
 from neuro_san.session.chat_session_map import ChatSessionMap
 
@@ -39,7 +40,7 @@ class AsyncDirectAgentSession:
     def __init__(self,
                  chat_session_map: ChatSessionMap,
                  tool_registry: AgentToolRegistry,
-                 asyncio_executor: AsyncioExecutor,
+                 invocation_context: InvocationContext,
                  metadata: Dict[str, Any] = None,
                  security_cfg: Dict[str, Any] = None):
         """
@@ -47,8 +48,8 @@ class AsyncDirectAgentSession:
 
         :param chat_session_map: The global ChatSessionMap for the service.
         :param tool_registry: The AgentToolRegistry to use for the session.
-        :param asyncio_executor: The global AsyncioExecutor for running
-                        stuff in the background.
+        :param invocation_context: The InvocationContext to use to consult
+                        for policy objects scoped at the invocation level.
         :param metadata: A dictionary of request metadata to be forwarded
                         to subsequent yet-to-be-made requests.
         :param security_cfg: A dictionary of parameters used to
@@ -61,15 +62,16 @@ class AsyncDirectAgentSession:
         self._security_cfg: Dict[str, Any] = security_cfg
 
         self.chat_session_map: ChatSessionMap = chat_session_map
-        self.asyncio_executor: AsyncioExecutor = asyncio_executor
+        self.invocation_context: InvocationContext = invocation_context
         self.we_created_executor: bool = False
         self.tool_registry: AgentToolRegistry = tool_registry
 
         # For convenience
-        if self.asyncio_executor is None:
+        if self.invocation_context.get_asyncio_executor() is None:
             self.we_created_executor = True
-            self.asyncio_executor = AsyncioExecutor()
-            self.asyncio_executor.start()
+            asyncio_executor = AsyncioExecutor()
+            self.invocation_context.set_asyncio_executor(asyncio_executor)
+            asyncio_executor.start()
 
     async def function(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -199,8 +201,9 @@ class AsyncDirectAgentSession:
         # Create an asynchronous background task to process the user input.
         # This might take a few minutes, which can be longer than some
         # sockets stay open.
-        future: Future = self.asyncio_executor.submit(session_id, chat_session.streaming_chat,
-                                                      user_input, sly_data)
+        asyncio_executor: AsyncioExecutor = self.invocation_context.get_asyncio_executor()
+        future: Future = asyncio_executor.submit(session_id, chat_session.streaming_chat,
+                                                 user_input, sly_data)
         # Ignore the future. Live in the now.
         _ = future
 
@@ -220,6 +223,7 @@ class AsyncDirectAgentSession:
         """
         Tears down resources created
         """
-        if self.we_created_executor and self.asyncio_executor is not None:
-            self.asyncio_executor.shutdown()
-            self.asyncio_executor = None
+        asyncio_executor: AsyncioExecutor = self.invocation_context.get_asyncio_executor()
+        if self.we_created_executor and asyncio_executor is not None:
+            asyncio_executor.shutdown()
+            self.invocation_context.set_asyncio_executor(None)
