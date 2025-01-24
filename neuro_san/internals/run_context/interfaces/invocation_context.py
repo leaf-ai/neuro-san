@@ -12,7 +12,6 @@
 
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 
-from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.run_context.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
 
 
@@ -24,8 +23,7 @@ class InvocationContext:
     """
 
     def __init__(self, async_session_factory: AsyncAgentSessionFactory,
-                 asyncio_executor: AsyncioExecutor = None,
-                 journal: Journal = None):
+                 asyncio_executor: AsyncioExecutor = None):
         """
         Constructor
 
@@ -33,12 +31,10 @@ class InvocationContext:
                         when connecting with external agents.
         :param asyncio_executor: The AsyncioExecutor to use for running
                         stuff in the background asynchronously.
-        :parma journal: The Journal to use within the scope of the invocation
         """
 
         self.async_session_factory: AsyncAgentSessionFactory = async_session_factory
         self.asyncio_executor: AsyncioExecutor = asyncio_executor
-        self.journal: Journal = journal
 
     def get_async_session_factory(self) -> AsyncAgentSessionFactory:
         """
@@ -57,15 +53,3 @@ class InvocationContext:
         :param asyncio_executor: The AsyncioExecutor to associate with the invocation
         """
         self.asyncio_executor = asyncio_executor
-
-    def get_journal(self) -> Journal:
-        """
-        :return: The Journal associated with the invocation
-        """
-        return self.journal
-
-    def set_journal(self, journal: Journal):
-        """
-        :param journal: The Journal to associate with the invocation
-        """
-        self.journal = journal
