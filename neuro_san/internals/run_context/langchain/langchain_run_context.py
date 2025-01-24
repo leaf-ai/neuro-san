@@ -154,7 +154,7 @@ class LangChainRunContext(RunContext):
             # Optimization:
             #   It's possible we might want to cache these results somehow to minimize
             #   network calls.
-            session_factory: AsyncAgentSessionFactory = self.invocation_context.get_session_factory()
+            session_factory: AsyncAgentSessionFactory = self.invocation_context.get_async_session_factory()
             adapter = ExternalToolAdapter(session_factory, name)
             function_json = await adapter.get_function_json()
         else:
