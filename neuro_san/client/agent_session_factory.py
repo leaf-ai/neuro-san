@@ -15,7 +15,7 @@ from neuro_san.session.agent_session import AgentSession
 from neuro_san.session.service_agent_session import ServiceAgentSession
 
 
-# pylint: disable=too-few-public-methods
+# pylint: disable=too-few-public-methods,too-many-arguments,too-many-positional-arguments
 class AgentSessionFactory:
     """
     Factory class for agent sessions.

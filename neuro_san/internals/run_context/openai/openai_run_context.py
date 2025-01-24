@@ -25,8 +25,8 @@ from leaf_common.config.dictionary_overlay import DictionaryOverlay
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.message_utils import pretty_the_messages
 from neuro_san.internals.messages.message_utils import get_last_message_with_content
-from neuro_san.internals.run_context.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
+from neuro_san.internals.run_context.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.run_context.interfaces.run import Run
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 from neuro_san.internals.run_context.interfaces.tool_caller import ToolCaller
@@ -41,7 +41,7 @@ class OpenAIRunContext(RunContext):
     """
 
     def __init__(self, llm_config: Dict[str, Any], parent_run_context: RunContext,
-                 tool_caller: ToolCaller):
+                 tool_caller: ToolCaller, invocation_context: InvocationContext):
         """
         Constructor
 
@@ -51,6 +51,8 @@ class OpenAIRunContext(RunContext):
                              down its resources to a new RunContext created by
                              this call.
         :param tool_caller: The tool caller to use
+        :param invocation_context: The InvocationContext policy container that pertains to the invocation
+                    of the agent.
         """
 
         # This might get modified in create_resources() (for now)
@@ -70,6 +72,7 @@ class OpenAIRunContext(RunContext):
         # Other state initialized later
         self.thread_id: str = None
         self.assistant_id: str = None
+        self.invocation_context: InvocationContext = invocation_context
 
     async def create_resources(self, assistant_name: str,
                                instructions: str,
@@ -238,9 +241,9 @@ class OpenAIRunContext(RunContext):
 
         return self.tool_caller.get_agent_tool_spec()
 
-    def get_session_factory(self) -> AsyncAgentSessionFactory:
+    def get_invocation_context(self) -> InvocationContext:
         """
-        :return: The AsyncAgentSessionFactory to use when querying external agents
+        :return: The InvocationContext policy container that pertains to the invocation
+                    of the agent.
         """
-        # OpenAI assistants cannot do external agents
-        return None
+        return self.invocation_context

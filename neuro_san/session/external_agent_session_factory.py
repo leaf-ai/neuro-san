@@ -22,7 +22,6 @@ from neuro_san.session.async_service_agent_session import AsyncServiceAgentSessi
 from neuro_san.session.agent_session import AgentSession
 
 
-# DEF - need to get this into FrontMan RunContext
 class ExternalAgentSessionFactory(AsyncAgentSessionFactory):
     """
     Creates AgentSessions for external agents.

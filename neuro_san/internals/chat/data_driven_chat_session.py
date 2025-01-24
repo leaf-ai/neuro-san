@@ -31,8 +31,8 @@ from neuro_san.internals.messages.chat_message_type import ChatMessageType
 from neuro_san.internals.messages.message_utils import convert_to_chat_message
 from neuro_san.internals.messages.message_utils import pretty_the_messages
 from neuro_san.internals.run_context.factory.run_context_factory import RunContextFactory
+from neuro_san.internals.run_context.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
-from neuro_san.internals.run_context.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
 
 
 # pylint: disable=too-many-instance-attributes
@@ -43,15 +43,15 @@ class DataDrivenChatSession(ChatSession):
     """
 
     def __init__(self, registry: AgentToolRegistry,
-                 journal: Journal = None,
-                 session_factory: AsyncAgentSessionFactory = None):
+                 invocation_context: InvocationContext,
+                 journal: Journal = None):
         """
         Constructor
 
         :param registry: The AgentToolRegistry to use.
+        :param invocation_context: The context policy container that pertains to the invocation
+                    of the agent.
         :param journal: The Journal that captures messages for user output
-        :param session_factory: The AsyncSessionFactory instance used to create
-                        new sessions for external agents
         """
 
         self.registry: AgentToolRegistry = registry
@@ -61,7 +61,7 @@ class DataDrivenChatSession(ChatSession):
         self.sly_data: Dict[str, Any] = {}
         self.queue: AsyncCollatingQueue = AsyncCollatingQueue()
         self.last_streamed_index: int = 0
-        self.session_factory: AsyncAgentSessionFactory = session_factory
+        self.invocation_context: InvocationContext = invocation_context
 
         self.journal: Journal = journal
         if journal is None:
@@ -90,15 +90,19 @@ class DataDrivenChatSession(ChatSession):
         await self.delete_resources()
 
         run_context: RunContext = RunContextFactory.create_run_context(None, None,
-                                                                       session_factory=self.session_factory)
+                                                                       invocation_context=self.invocation_context)
         self.front_man = self.registry.create_front_man(self.journal, self.sly_data, run_context)
         await self.front_man.create_resources()
 
-    async def chat(self, user_input: str, sly_data: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
+    async def chat(self, user_input: str,
+                   invocation_context: InvocationContext,
+                   sly_data: Dict[str, Any] = None) -> Iterator[Dict[str, Any]]:
         """
         Main entry-point method for accepting new user input
 
         :param user_input: A string with the user's input
+        :param invocation_context: The context policy container that pertains to the invocation
+                    of the agent.
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be None.
         :return: An Iterator over dictionary representation of chat messages.
@@ -160,11 +164,15 @@ class DataDrivenChatSession(ChatSession):
 
         return iter(chat_messages)
 
-    async def streaming_chat(self, user_input: str, sly_data: Dict[str, Any]):
+    async def streaming_chat(self, user_input: str,
+                             invocation_context: InvocationContext,
+                             sly_data: Dict[str, Any] = None):
         """
         Main streaming entry-point method for accepting new user input
 
         :param user_input: A string with the user's input
+        :param invocation_context: The context policy container that pertains to the invocation
+                    of the agent.
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be None.
         :return: Nothing.  Response values are put on a queue whose consumtion is
@@ -173,7 +181,7 @@ class DataDrivenChatSession(ChatSession):
         # Queue Producer from this:
         #   https://stackoverflow.com/questions/74130544/asyncio-yielding-results-from-multiple-futures-as-they-arrive
         # DEF - These put()s will eventually be pushed down into the library.
-        chat_messages: Iterator[Dict[str, Any]] = await self.chat(user_input, sly_data)
+        chat_messages: Iterator[Dict[str, Any]] = await self.chat(user_input, invocation_context, sly_data)
         for index, chat_message in enumerate(chat_messages):
 
             # For now filter what we send in the service.
