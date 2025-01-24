@@ -73,7 +73,7 @@ class DataDrivenChatSession(ChatSession):
         """
         return self.queue
 
-    async def set_up(self, ):
+    async def set_up(self):
         """
         Resets or sets the instance up for the first time.
         """
