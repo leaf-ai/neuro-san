@@ -192,12 +192,12 @@ All choices require an agent name.
                                 help="Use a service connection")
         arg_parser.add_argument("--direct", dest="connection", action="store_const", const="direct",
                                 help="Use a direct/library call for the chat")
-        arg_parser.add_argument("--local-externals-direct", default=False, action="store_true",
+        arg_parser.add_argument("--local_externals_direct", default=False, action="store_true",
                                 help="""
 Have external tools that can be found in the local agent manifest use a
 direct connection instead of requiring a service to be stood up.
                                 """)
-        arg_parser.add_argument("--local-externals-service", dest="local_externals_direct", action="store_false",
+        arg_parser.add_argument("--local_externals_service", dest="local_externals_direct", action="store_false",
                                 help="""
 Have external tools that can be found in the local agent manifest use a service connection
                                 """)
