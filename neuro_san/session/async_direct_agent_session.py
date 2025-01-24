@@ -213,7 +213,7 @@ class AsyncDirectAgentSession:
         # chat.ChatMessage dictionaries to come back asynchronously from the submit()
         # above until there are no more from the input.
         generator = chat_session.get_queue()
-        for message in generator:
+        async for message in generator:
 
             response_dict: Dict[str, Any] = copy(template_response_dict)
             if any(message):
