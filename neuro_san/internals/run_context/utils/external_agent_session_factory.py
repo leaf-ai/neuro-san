@@ -41,7 +41,7 @@ class ExternalAgentSessionFactory:
         """
 
         agent_location: Dict[str, str] = ExternalAgentParsing.parse_external_agent(agent_url)
-        session = self.create_session(agent_location)
+        session = self.create_session_from_location_dict(agent_location)
         return session
 
     def create_session_from_location_dict(self, agent_location: Dict[str, str]) -> AgentSession:
