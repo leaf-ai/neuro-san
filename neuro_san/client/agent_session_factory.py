@@ -11,7 +11,7 @@
 # END COPYRIGHT
 
 from neuro_san.client.direct_agent_session_factory import DirectAgentSessionFactory
-from neuro_san.session.agent_session import AgentSession
+from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.session.service_agent_session import ServiceAgentSession
 
 

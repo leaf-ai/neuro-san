@@ -16,13 +16,13 @@ from typing import List
 
 import json
 
+from neuro_san.interfaces.async_agent_session import AsyncAgentSession
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
 from neuro_san.internals.run_context.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
 from neuro_san.internals.run_context.interfaces.callable_tool import CallableTool
 from neuro_san.internals.run_context.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
-from neuro_san.session.agent_session import AgentSession
 
 
 class ExternalTool(CallableTool):
@@ -59,7 +59,7 @@ class ExternalTool(CallableTool):
         self.arguments: Dict[str, Any] = arguments
         self.sly_data: Dict[str, Any] = sly_data
 
-        self.session: AgentSession = None
+        self.session: AsyncAgentSession = None
         self.session_id: str = None
 
     async def build(self) -> List[Any]:
@@ -69,7 +69,7 @@ class ExternalTool(CallableTool):
         """
         message_list: List[Dict[str, Any]] = []
 
-        # Create an AgentSession if necessary
+        # Create an AsyncAgentSession if necessary
         if self.session is None:
             invocation_context: InvocationContext = self.run_context.get_invocation_context()
             factory: AsyncAgentSessionFactory = invocation_context.get_async_session_factory()

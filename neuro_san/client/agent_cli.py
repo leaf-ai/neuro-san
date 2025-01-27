@@ -26,9 +26,9 @@ from grpc import RpcError
 from grpc import StatusCode
 
 from neuro_san.client.agent_session_factory import AgentSessionFactory
+from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
 from neuro_san.internals.utils.file_of_class import FileOfClass
-from neuro_san.session.agent_session import AgentSession
 
 
 class AgentCli:

@@ -13,10 +13,10 @@ from typing import Dict
 
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 
+from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.run_context.interfaces.invocation_context import InvocationContext
-from neuro_san.session.agent_session import AgentSession
 from neuro_san.session.chat_session_map import ChatSessionMap
 from neuro_san.session.direct_agent_session import DirectAgentSession
 from neuro_san.session.external_agent_session_factory import ExternalAgentSessionFactory

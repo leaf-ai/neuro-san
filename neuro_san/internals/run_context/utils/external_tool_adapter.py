@@ -15,10 +15,8 @@ from typing import Dict
 from grpc import StatusCode
 from grpc.aio import AioRpcError
 
+from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.run_context.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
-
-# The only reach-arounds from internals outward.
-from neuro_san.session.agent_session import AgentSession
 
 
 # pylint: disable=too-few-public-methods
