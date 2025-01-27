@@ -29,10 +29,10 @@ from leaf_server_common.server.request_logger import RequestLogger
 from neuro_san.api.grpc import agent_pb2 as service_messages
 from neuro_san.api.grpc import agent_pb2_grpc
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
-from neuro_san.internals.run_context.interfaces.invocation_context import InvocationContext
 from neuro_san.session.chat_session_map import ChatSessionMap
 from neuro_san.session.direct_agent_session import DirectAgentSession
 from neuro_san.session.external_agent_session_factory import ExternalAgentSessionFactory
+from neuro_san.session.session_invocation_context import SessionInvocationContext
 
 # A list of methods to not log requests for
 # Some of these can be way to chatty
@@ -207,7 +207,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
 
         # Delegate to Direct*Session
         factory = ExternalAgentSessionFactory(use_direct=False)
-        invocation_context = InvocationContext(factory, self.asyncio_executor)
+        invocation_context = SessionInvocationContext(factory, self.asyncio_executor)
         session = DirectAgentSession(chat_session_map=self.chat_session_map,
                                      tool_registry=self.tool_registry,
                                      invocation_context=invocation_context,
@@ -300,7 +300,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
 
         # Delegate to Direct*Session
         factory = ExternalAgentSessionFactory(use_direct=False)
-        invocation_context = InvocationContext(factory, self.asyncio_executor)
+        invocation_context = SessionInvocationContext(factory, self.asyncio_executor)
         session = DirectAgentSession(chat_session_map=self.chat_session_map,
                                      tool_registry=self.tool_registry,
                                      invocation_context=invocation_context,
@@ -347,7 +347,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
 
         # Delegate to Direct*Session
         factory = ExternalAgentSessionFactory(use_direct=False)
-        invocation_context = InvocationContext(factory, self.asyncio_executor)
+        invocation_context = SessionInvocationContext(factory, self.asyncio_executor)
         session = DirectAgentSession(chat_session_map=self.chat_session_map,
                                      tool_registry=self.tool_registry,
                                      invocation_context=invocation_context,

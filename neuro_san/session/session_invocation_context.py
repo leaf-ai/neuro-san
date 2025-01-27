@@ -12,12 +12,13 @@
 
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 
-from neuro_san.internals.run_context.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
+from neuro_san.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
+from neuro_san.interfaces.invocation_context import InvocationContext
 
 
-class InvocationContext:
+class SessionInvocationContext(InvocationContext):
     """
-    Class for encapsulating specific policy classes that pertain to
+    Implementation of InvocationContext which encapsulates specific policy classes that pertain to
     a single invocation of an AgentSession, whether by way of a
     service call or library call.
     """

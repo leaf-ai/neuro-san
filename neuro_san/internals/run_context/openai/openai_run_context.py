@@ -22,11 +22,11 @@ import time
 
 from leaf_common.config.dictionary_overlay import DictionaryOverlay
 
+from neuro_san.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.message_utils import pretty_the_messages
 from neuro_san.internals.messages.message_utils import get_last_message_with_content
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
-from neuro_san.internals.run_context.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.run_context.interfaces.run import Run
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 from neuro_san.internals.run_context.interfaces.tool_caller import ToolCaller

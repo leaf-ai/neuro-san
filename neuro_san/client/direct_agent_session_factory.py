@@ -16,10 +16,10 @@ from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
-from neuro_san.internals.run_context.interfaces.invocation_context import InvocationContext
 from neuro_san.session.chat_session_map import ChatSessionMap
 from neuro_san.session.direct_agent_session import DirectAgentSession
 from neuro_san.session.external_agent_session_factory import ExternalAgentSessionFactory
+from neuro_san.session.session_invocation_context import SessionInvocationContext
 
 
 # pylint: disable=too-few-public-methods
@@ -58,7 +58,7 @@ class DirectAgentSessionFactory:
         factory = ExternalAgentSessionFactory(use_direct=use_direct)
         tool_registry: AgentToolRegistry = factory.get_tool_registry(agent_name, self.manifest_tool_registries)
 
-        invocation_context = InvocationContext(factory, self.asyncio_executor)
+        invocation_context = SessionInvocationContext(factory, self.asyncio_executor)
         session: DirectAgentSession = DirectAgentSession(chat_session_map=self.chat_session_map,
                                                          tool_registry=tool_registry,
                                                          invocation_context=invocation_context)
