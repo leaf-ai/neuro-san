@@ -30,7 +30,7 @@ from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.callable_tool import CallableTool
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
-from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
+from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 from neuro_san.internals.utils.file_of_class import FileOfClass
 
 
@@ -191,7 +191,7 @@ Some things to try:
         agent_tool_spec: Dict[str, Any] = self.get_agent_tool_spec(name)
         if agent_tool_spec is None:
 
-            if not ExternalToolAdapter.is_external_agent(name):
+            if not ExternalAgentParsing.is_external_agent(name):
                 raise ValueError(f"No agent_tool_spec for {name}")
 
             # For external tools, we want to redact the sly data based on

@@ -25,7 +25,7 @@ from neuro_san.internals.run_context.interfaces.run import Run
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 from neuro_san.internals.run_context.interfaces.tool_call import ToolCall
 from neuro_san.internals.run_context.interfaces.tool_caller import ToolCaller
-from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
+from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 
 
 class CallingTool(ToolCaller):
@@ -162,7 +162,7 @@ context with which it will proces input, essentially telling it what to do.
             return tool_dict
 
         for tool in tool_list:
-            safe_name: str = ExternalToolAdapter.get_safe_agent_name(tool)
+            safe_name: str = ExternalAgentParsing.get_safe_agent_name(tool)
             tool_dict[safe_name] = tool
 
         return tool_dict
