@@ -24,6 +24,7 @@ from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.internals.chat.chat_session import ChatSession
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.graph.tools.front_man import FrontMan
+from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.compatibility_journal import CompatibilityJournal
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.agent_framework_message import AgentFrameworkMessage
@@ -31,7 +32,6 @@ from neuro_san.internals.messages.chat_message_type import ChatMessageType
 from neuro_san.internals.messages.message_utils import convert_to_chat_message
 from neuro_san.internals.messages.message_utils import pretty_the_messages
 from neuro_san.internals.run_context.factory.run_context_factory import RunContextFactory
-from neuro_san.internals.run_context.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 
 

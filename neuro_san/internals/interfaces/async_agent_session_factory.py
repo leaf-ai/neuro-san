@@ -11,16 +11,16 @@
 # END COPYRIGHT
 from typing import Any
 
-from neuro_san.session.agent_session import AgentSession
+from neuro_san.interfaces.async_agent_session import AsyncAgentSession
 
 
 # pylint: disable=too-few-public-methods
 class AsyncAgentSessionFactory:
     """
-    Creates asynchronous AgentSessions for external agents.
+    Creates asynchronous AsyncAgentSessions for external agents.
     """
 
-    def create_session(self, agent_url: str, invocation_context: Any) -> AgentSession:
+    def create_session(self, agent_url: str, invocation_context: Any) -> AsyncAgentSession:
         """
         :param agent_url: A url string pointing to an external agent that came from
                     a tools list in an agent spec.
@@ -30,7 +30,7 @@ class AsyncAgentSessionFactory:
                     Note: At this interface level we are typing this as Any to avoid
                     an import cycle.  This will always be an InvocationContext.
 
-        :return: An asynchronous implementation of AgentSession through which
+        :return: An implementation of AsyncAgentSession through which
                  communications about external agents can be made.
         """
         raise NotImplementedError

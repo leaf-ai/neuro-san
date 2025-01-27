@@ -22,13 +22,13 @@ from leaf_common.asyncio.async_to_sync_generator import AsyncToSyncGenerator
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
+from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.chat.chat_session import ChatSession
 from neuro_san.internals.chat.connectivity_reporter import ConnectivityReporter
 from neuro_san.internals.chat.data_driven_chat_session import DataDrivenChatSession
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.graph.tools.front_man import FrontMan
-from neuro_san.internals.run_context.interfaces.invocation_context import InvocationContext
-from neuro_san.session.agent_session import AgentSession
+from neuro_san.session.session_invocation_context import SessionInvocationContext
 from neuro_san.session.chat_session_map import ChatSessionMap
 
 
@@ -42,7 +42,7 @@ class DirectAgentSession(AgentSession):
     def __init__(self,
                  chat_session_map: ChatSessionMap,
                  tool_registry: AgentToolRegistry,
-                 invocation_context: InvocationContext,
+                 invocation_context: SessionInvocationContext,
                  metadata: Dict[str, Any] = None,
                  security_cfg: Dict[str, Any] = None):
         """
@@ -50,7 +50,7 @@ class DirectAgentSession(AgentSession):
 
         :param chat_session_map: The global ChatSessionMap for the service.
         :param tool_registry: The AgentToolRegistry to use for the session.
-        :param invocation_context: The InvocationContext to use to consult
+        :param invocation_context: The SessionInvocationContext to use to consult
                         for policy objects scoped at the invocation level.
         :param metadata: A dictionary of request metadata to be forwarded
                         to subsequent yet-to-be-made requests.
@@ -63,7 +63,7 @@ class DirectAgentSession(AgentSession):
         self._metadata: Dict[str, Any] = metadata
         self._security_cfg: Dict[str, Any] = security_cfg
         self.chat_session_map: ChatSessionMap = chat_session_map
-        self.invocation_context: InvocationContext = invocation_context
+        self.invocation_context: SessionInvocationContext = invocation_context
         self.we_created_executor: bool = False
         self.tool_registry: AgentToolRegistry = tool_registry
 
@@ -85,6 +85,7 @@ class DirectAgentSession(AgentSession):
                 "function" - the dictionary description of the function
                 "status" - status for finding the function.
         """
+        _ = request_dict
         response_dict: Dict[str, Any] = {
             "status": self.NOT_FOUND
         }
@@ -113,6 +114,7 @@ class DirectAgentSession(AgentSession):
                                     wants the client ot know about.
                 "status" - status for finding the function.
         """
+        _ = request_dict
         response_dict: Dict[str, Any] = {
             "status": self.NOT_FOUND
         }

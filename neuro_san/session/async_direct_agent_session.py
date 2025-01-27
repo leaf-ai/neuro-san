@@ -21,26 +21,26 @@ from copy import copy
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
+from neuro_san.interfaces.async_agent_session import AsyncAgentSession
 from neuro_san.internals.chat.chat_session import ChatSession
 from neuro_san.internals.chat.connectivity_reporter import ConnectivityReporter
 from neuro_san.internals.chat.data_driven_chat_session import DataDrivenChatSession
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.graph.tools.front_man import FrontMan
-from neuro_san.internals.run_context.interfaces.invocation_context import InvocationContext
-from neuro_san.session.agent_session import AgentSession
 from neuro_san.session.chat_session_map import ChatSessionMap
+from neuro_san.session.session_invocation_context import SessionInvocationContext
 
 
-class AsyncDirectAgentSession:
+class AsyncDirectAgentSession(AsyncAgentSession):
     """
-    Direct guts for an AgentSession.
+    Direct guts for an AsyncAgentSession.
     """
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self,
                  chat_session_map: ChatSessionMap,
                  tool_registry: AgentToolRegistry,
-                 invocation_context: InvocationContext,
+                 invocation_context: SessionInvocationContext,
                  metadata: Dict[str, Any] = None,
                  security_cfg: Dict[str, Any] = None):
         """
@@ -48,7 +48,7 @@ class AsyncDirectAgentSession:
 
         :param chat_session_map: The global ChatSessionMap for the service.
         :param tool_registry: The AgentToolRegistry to use for the session.
-        :param invocation_context: The InvocationContext to use to consult
+        :param invocation_context: The SessionInvocationContext to use to consult
                         for policy objects scoped at the invocation level.
         :param metadata: A dictionary of request metadata to be forwarded
                         to subsequent yet-to-be-made requests.
@@ -62,7 +62,7 @@ class AsyncDirectAgentSession:
         self._security_cfg: Dict[str, Any] = security_cfg
 
         self.chat_session_map: ChatSessionMap = chat_session_map
-        self.invocation_context: InvocationContext = invocation_context
+        self.invocation_context: SessionInvocationContext = invocation_context
         self.we_created_executor: bool = False
         self.tool_registry: AgentToolRegistry = tool_registry
 
@@ -86,7 +86,7 @@ class AsyncDirectAgentSession:
         """
         _ = request_dict
         response_dict: Dict[str, Any] = {
-            "status": AgentSession.NOT_FOUND
+            "status": self.NOT_FOUND
         }
 
         front_man: FrontMan = self.tool_registry.create_front_man()
@@ -96,7 +96,7 @@ class AsyncDirectAgentSession:
             function: Dict[str, Any] = spec.get("function", empty)
             response_dict = {
                 "function": function,
-                "status": AgentSession.FOUND
+                "status": self.FOUND
             }
 
         return response_dict
@@ -115,14 +115,14 @@ class AsyncDirectAgentSession:
         """
         _ = request_dict
         response_dict: Dict[str, Any] = {
-            "status": AgentSession.NOT_FOUND
+            "status": self.NOT_FOUND
         }
 
         reporter = ConnectivityReporter(self.tool_registry)
         connectivity_info: List[Dict[str, Any]] = reporter.report_network_connectivity()
         response_dict = {
             "connectivity_info": connectivity_info,
-            "status": AgentSession.FOUND
+            "status": self.FOUND
         }
 
         return response_dict
@@ -167,7 +167,7 @@ class AsyncDirectAgentSession:
 
         session_id: str = request_dict.get("session_id")
         sly_data: Dict[str, Any] = request_dict.get("sly_data")
-        status: int = AgentSession.NOT_FOUND
+        status: int = self.NOT_FOUND
 
         chat_session: ChatSession = None
         if self.chat_session_map is not None:
@@ -175,7 +175,7 @@ class AsyncDirectAgentSession:
         if chat_session is None:
             if session_id is None:
                 # Initiate a new conversation.
-                status = AgentSession.CREATED
+                status = self.CREATED
                 chat_session = DataDrivenChatSession(registry=self.tool_registry,
                                                      invocation_context=self.invocation_context)
                 if self.chat_session_map is not None:
@@ -183,10 +183,10 @@ class AsyncDirectAgentSession:
             else:
                 # We got an session_id, but this service instance has no knowledge
                 # of it.
-                status = AgentSession.NOT_FOUND
+                status = self.NOT_FOUND
         else:
             # We have seen this session_id before and can register new user input.
-            status = AgentSession.FOUND
+            status = self.FOUND
 
         # Prepare the response dictionary
         template_response_dict = {
