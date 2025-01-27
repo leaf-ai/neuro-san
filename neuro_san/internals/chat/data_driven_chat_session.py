@@ -20,11 +20,11 @@ from datetime import datetime
 
 from openai import BadRequestError
 
-from neuro_san.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.internals.chat.chat_session import ChatSession
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.graph.tools.front_man import FrontMan
+from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.compatibility_journal import CompatibilityJournal
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.agent_framework_message import AgentFrameworkMessage

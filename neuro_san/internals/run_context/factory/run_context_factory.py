@@ -12,7 +12,7 @@
 from typing import Any
 from typing import Dict
 
-from neuro_san.interfaces.invocation_context import InvocationContext
+from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 from neuro_san.internals.run_context.interfaces.tool_caller import ToolCaller
 from neuro_san.internals.run_context.langchain.langchain_run_context import LangChainRunContext

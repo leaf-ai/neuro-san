@@ -12,7 +12,7 @@
 
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 
-from neuro_san.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
+from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
 
 
 class InvocationContext:

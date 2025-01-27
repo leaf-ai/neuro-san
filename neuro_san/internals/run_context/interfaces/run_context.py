@@ -17,7 +17,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 
-from neuro_san.interfaces.invocation_context import InvocationContext
+from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.run_context.interfaces.agent_spec_provider import AgentSpecProvider
 from neuro_san.internals.run_context.interfaces.run import Run

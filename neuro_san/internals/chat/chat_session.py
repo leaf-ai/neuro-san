@@ -13,8 +13,8 @@ from typing import Any
 from typing import Dict
 from typing import Iterator
 
-from neuro_san.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
+from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
 
 

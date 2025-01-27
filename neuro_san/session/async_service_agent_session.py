@@ -17,9 +17,9 @@ from typing import AsyncGenerator
 from leaf_common.session.async_abstract_service_session import AsyncAbstractServiceSession
 from leaf_common.time.timeout import Timeout
 
+from neuro_san.api.grpc import agent_pb2 as service_messages
 from neuro_san.interfaces.async_agent_session import AsyncAgentSession
 from neuro_san.session.agent_service_stub import AgentServiceStub
-from neuro_san.api.grpc import agent_pb2 as service_messages
 
 
 class AsyncServiceAgentSession(AsyncAbstractServiceSession, AsyncAgentSession):

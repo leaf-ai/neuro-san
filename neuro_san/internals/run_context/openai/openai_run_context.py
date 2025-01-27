@@ -22,7 +22,7 @@ import time
 
 from leaf_common.config.dictionary_overlay import DictionaryOverlay
 
-from neuro_san.interfaces.invocation_context import InvocationContext
+from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.message_utils import pretty_the_messages
 from neuro_san.internals.messages.message_utils import get_last_message_with_content
