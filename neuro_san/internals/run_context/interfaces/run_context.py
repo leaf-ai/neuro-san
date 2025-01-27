@@ -19,6 +19,7 @@ from typing import List
 
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.run_context.interfaces.agent_spec_provider import AgentSpecProvider
+from neuro_san.internals.run_context.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.run_context.interfaces.run import Run
 
 
@@ -83,5 +84,12 @@ class RunContext(AgentSpecProvider):
     def get_agent_tool_spec(self) -> Dict[str, Any]:
         """
         :return: the dictionary describing the data-driven agent
+        """
+        raise NotImplementedError
+
+    def get_invocation_context(self) -> InvocationContext:
+        """
+        :return: The InvocationContext policy container that pertains to the invocation
+                    of the agent.
         """
         raise NotImplementedError

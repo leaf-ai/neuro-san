@@ -36,6 +36,8 @@ from langchain_core.tools import BaseTool
 from neuro_san.internals.errors.error_detector import ErrorDetector
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
+from neuro_san.internals.run_context.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
+from neuro_san.internals.run_context.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.run_context.interfaces.run import Run
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 from neuro_san.internals.run_context.interfaces.tool_caller import ToolCaller
@@ -59,13 +61,17 @@ class LangChainRunContext(RunContext):
     Note that "tools" can be just a list of OpenAI functions JSON.
     """
 
-    def __init__(self, llm_config: Dict[str, Any], tool_caller: ToolCaller):
+    def __init__(self, llm_config: Dict[str, Any],
+                 tool_caller: ToolCaller,
+                 invocation_context: InvocationContext):
         """
         Constructor
 
         :param llm_config: The default llm_config to use as an overlay
                             for the tool-specific llm_config
         :param tool_caller: The tool caller to use
+        :param invocation_context: The context policy container that pertains to the invocation
+                    of the agent.
         """
 
         # This might get modified in create_resources() (for now)
@@ -79,6 +85,7 @@ class LangChainRunContext(RunContext):
         self.error_detector: ErrorDetector = None
         self.recent_human_message: HumanMessage = None
         self.tool_caller: ToolCaller = tool_caller
+        self.invocation_context: InvocationContext = invocation_context
 
     async def create_resources(self, assistant_name: str,
                                instructions: str,
@@ -147,7 +154,8 @@ class LangChainRunContext(RunContext):
             # Optimization:
             #   It's possible we might want to cache these results somehow to minimize
             #   network calls.
-            adapter = ExternalToolAdapter(name)
+            session_factory: AsyncAgentSessionFactory = self.invocation_context.get_async_session_factory()
+            adapter = ExternalToolAdapter(session_factory, name)
             function_json = await adapter.get_function_json()
         else:
             function_json = agent_spec.get("function")
@@ -401,3 +409,10 @@ class LangChainRunContext(RunContext):
             return None
 
         return self.tool_caller.get_agent_tool_spec()
+
+    def get_invocation_context(self) -> InvocationContext:
+        """
+        :return: The InvocationContext policy container that pertains to the invocation
+                    of the agent.
+        """
+        return self.invocation_context
