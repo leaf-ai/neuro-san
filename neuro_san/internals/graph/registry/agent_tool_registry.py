@@ -30,7 +30,7 @@ from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.callable_tool import CallableTool
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
-from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
+from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 from neuro_san.internals.utils.file_of_class import FileOfClass
 
 
@@ -191,7 +191,7 @@ Some things to try:
         agent_tool_spec: Dict[str, Any] = self.get_agent_tool_spec(name)
         if agent_tool_spec is None:
 
-            if not ExternalToolAdapter.is_external_agent(name):
+            if not ExternalAgentParsing.is_external_agent(name):
                 raise ValueError(f"No agent_tool_spec for {name}")
 
             # For external tools, we want to redact the sly data based on
@@ -224,14 +224,16 @@ Some things to try:
 
         return agent_tool
 
-    def create_front_man(self, journal: Journal, sly_data: Dict[str, Any]) -> FrontMan:
+    def create_front_man(self, journal: Journal = None,
+                         sly_data: Dict[str, Any] = None,
+                         parent_run_context: RunContext = None) -> FrontMan:
         """
         Find and create the FrontMan for chat
         """
         front_man_name: str = self.find_front_man()
 
         agent_tool_spec: Dict[str, Any] = self.get_agent_tool_spec(front_man_name)
-        front_man = FrontMan(None, journal, self, agent_tool_spec, sly_data)
+        front_man = FrontMan(parent_run_context, journal, self, agent_tool_spec, sly_data)
         return front_man
 
     def find_front_man(self) -> str:

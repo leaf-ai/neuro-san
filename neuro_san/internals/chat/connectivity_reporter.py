@@ -17,7 +17,7 @@ from typing import Set
 from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
-from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
+from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 
 
 class ConnectivityReporter:
@@ -94,7 +94,7 @@ class ConnectivityReporter:
         connectivity_list: List[Dict[str, Any]] = []
         agent_spec: Dict[str, Any] = None
 
-        if not ExternalToolAdapter.is_external_agent(agent_name):
+        if not ExternalAgentParsing.is_external_agent(agent_name):
 
             # This is not an external agent, so get its spec to report on
             agent_spec: Dict[str, Any] = self.registry.get_agent_tool_spec(agent_name)
