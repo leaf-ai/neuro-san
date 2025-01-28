@@ -416,3 +416,10 @@ class LangChainRunContext(RunContext):
                     of the agent.
         """
         return self.invocation_context
+
+    def get_origin(self) -> List[str]:
+        """
+        :return: A List of strings indicating the origin of the run.
+                The origin can be considered a path to the original call to the front-man.
+        """
+        raise NotImplementedError
