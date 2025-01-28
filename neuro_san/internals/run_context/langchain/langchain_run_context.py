@@ -12,6 +12,7 @@
 from typing import Any
 from typing import Dict
 from typing import List
+from copy import copy
 
 import json
 import uuid
@@ -62,6 +63,7 @@ class LangChainRunContext(RunContext):
     """
 
     def __init__(self, llm_config: Dict[str, Any],
+                 parent_run_context: RunContext,
                  tool_caller: ToolCaller,
                  invocation_context: InvocationContext):
         """
@@ -69,6 +71,7 @@ class LangChainRunContext(RunContext):
 
         :param llm_config: The default llm_config to use as an overlay
                             for the tool-specific llm_config
+        :param parent_run_context: The parent RunContext that is calling this one. Can be None.
         :param tool_caller: The tool caller to use
         :param invocation_context: The context policy container that pertains to the invocation
                     of the agent.
@@ -86,6 +89,18 @@ class LangChainRunContext(RunContext):
         self.recent_human_message: HumanMessage = None
         self.tool_caller: ToolCaller = tool_caller
         self.invocation_context: InvocationContext = invocation_context
+
+        # Set up the origin by copying the list from its parent run context
+        self.origin: List[str] = []
+        if parent_run_context is not None:
+            self.origin = copy(parent_run_context.get_origin())
+
+        # Add the name from the spec to the origin, if we have it.
+        if tool_caller is not None:
+            agent_spec: Dict[str, Any] = tool_caller.get_agent_tool_spec()
+            factory: AgentToolFactory = tool_caller.get_factory()
+            agent_name: str = factory.get_name_from_spec(agent_spec)
+            self.origin.append(agent_name)
 
     async def create_resources(self, assistant_name: str,
                                instructions: str,

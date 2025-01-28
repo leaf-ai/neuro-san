@@ -74,11 +74,11 @@ class RunContextFactory:
             run_context = OpenAIRunContext(default_llm_config, parent_run_context,
                                            tool_caller, use_invocation_context)
         elif context_type.startswith("langchain"):
-            run_context = LangChainRunContext(default_llm_config, tool_caller,
-                                              use_invocation_context)
+            run_context = LangChainRunContext(default_llm_config, parent_run_context,
+                                              tool_caller, use_invocation_context)
         else:
             # Default case
-            run_context = LangChainRunContext(default_llm_config, tool_caller,
-                                              use_invocation_context)
+            run_context = LangChainRunContext(default_llm_config, parent_run_context,
+                                              tool_caller, use_invocation_context)
 
         return run_context
