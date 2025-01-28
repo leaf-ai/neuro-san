@@ -1,1 +1,3 @@
 neuro_san/api/grpc/agent.proto
+neuro_san/api/grpc/chat.proto
+neuro_san/api/grpc/mime_data.proto

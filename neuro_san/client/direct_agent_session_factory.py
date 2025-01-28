@@ -1,5 +1,5 @@
 
-# Copyright (C) 2023-2024 Cognizant Digital Business, Evolutionary AI.
+# Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
 # All Rights Reserved.
 # Issued under the Academic Public License.
 #
@@ -11,13 +11,15 @@
 # END COPYRIGHT
 from typing import Dict
 
-from leaf_server_common.utils.asyncio_executor import AsyncioExecutor
+from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 
-from neuro_san.graph.registry.agent_tool_registry import AgentToolRegistry
-from neuro_san.service.registry_manifest_restorer import RegistryManifestRestorer
-from neuro_san.session.agent_session import AgentSession
+from neuro_san.interfaces.agent_session import AgentSession
+from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
+from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.session.chat_session_map import ChatSessionMap
 from neuro_san.session.direct_agent_session import DirectAgentSession
+from neuro_san.session.external_agent_session_factory import ExternalAgentSessionFactory
+from neuro_san.session.session_invocation_context import SessionInvocationContext
 
 
 # pylint: disable=too-few-public-methods
@@ -46,12 +48,18 @@ class DirectAgentSessionFactory:
 
         self.asyncio_executor.start()
 
-    def create_session(self, agent_name: str) -> AgentSession:
+    def create_session(self, agent_name: str, use_direct: bool = False) -> AgentSession:
         """
         :param agent_name: The name of the agent to use for the session.
+        :param use_direct: When True, will use a Direct session for
+                    external agents that would reside on the same server.
         """
-        tool_registry: AgentToolRegistry = self.manifest_tool_registries.get(agent_name)
-        session: DirectAgentSession = DirectAgentSession(self.chat_session_map,
-                                                         tool_registry,
-                                                         self.asyncio_executor)
+
+        factory = ExternalAgentSessionFactory(use_direct=use_direct)
+        tool_registry: AgentToolRegistry = factory.get_tool_registry(agent_name, self.manifest_tool_registries)
+
+        invocation_context = SessionInvocationContext(factory, self.asyncio_executor)
+        session: DirectAgentSession = DirectAgentSession(chat_session_map=self.chat_session_map,
+                                                         tool_registry=tool_registry,
+                                                         invocation_context=invocation_context)
         return session

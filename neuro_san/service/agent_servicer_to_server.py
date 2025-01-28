@@ -1,5 +1,5 @@
 
-# Copyright (C) 2023-2024 Cognizant Digital Business, Evolutionary AI.
+# Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
 # All Rights Reserved.
 # Issued under the Academic Public License.
 #
@@ -15,6 +15,7 @@ from grpc import GenericRpcHandler
 from grpc import RpcMethodHandler
 from grpc import Server
 from grpc import method_handlers_generic_handler
+from grpc import unary_stream_rpc_method_handler
 from grpc import unary_unary_rpc_method_handler
 
 from neuro_san.session.agent_service_stub import AgentServiceStub
@@ -56,6 +57,18 @@ class AgentServicerToServer:
                     request_deserializer=agent__pb2.FunctionRequest.FromString,
                     response_serializer=agent__pb2.FunctionResponse.SerializeToString,
             ),
+            'Connectivity': unary_unary_rpc_method_handler(
+                    self.servicer.Connectivity,
+                    request_deserializer=agent__pb2.ConnectivityRequest.FromString,
+                    response_serializer=agent__pb2.ConnectivityResponse.SerializeToString,
+            ),
+            'StreamingChat': unary_stream_rpc_method_handler(
+                    self.servicer.StreamingChat,
+                    request_deserializer=agent__pb2.ChatRequest.FromString,
+                    response_serializer=agent__pb2.ChatResponse.SerializeToString,
+            ),
+
+            # Below here are deprecated
             'Chat': unary_unary_rpc_method_handler(
                     self.servicer.Chat,
                     request_deserializer=agent__pb2.ChatRequest.FromString,

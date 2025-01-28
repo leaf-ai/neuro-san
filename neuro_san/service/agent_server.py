@@ -1,5 +1,5 @@
 
-# Copyright (C) 2023-2024 Cognizant Digital Business, Evolutionary AI.
+# Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
 # All Rights Reserved.
 # Issued under the Academic Public License.
 #
@@ -11,22 +11,23 @@
 # END COPYRIGHT
 
 from typing import Dict
+from typing import List
 
 import logging
 import os
 
+from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 from leaf_server_common.logging.logging_setup import setup_logging
 from leaf_server_common.server.server_lifetime import ServerLifetime
 from leaf_server_common.server.server_loop_callbacks import ServerLoopCallbacks
-from leaf_server_common.utils.asyncio_executor import AsyncioExecutor
 
 from neuro_san.api.grpc import agent_pb2
 
-from neuro_san.graph.registry.agent_tool_registry import AgentToolRegistry
+from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
+from neuro_san.internals.utils.file_of_class import FileOfClass
 from neuro_san.service.agent_servicer_to_server import AgentServicerToServer
 from neuro_san.service.agent_service import AgentService
 from neuro_san.session.chat_session_map import ChatSessionMap
-from neuro_san.utils.file_of_class import FileOfClass
 
 DEFAULT_SERVER_NAME: str = 'neuro-san.Agent'
 DEFAULT_SERVER_NAME_FOR_LOGS: str = 'Agent Server'
@@ -96,6 +97,13 @@ class AgentServer:
         self.server_name_for_logs: str = server_name_for_logs
         self.request_limit: int = request_limit
         self.service_prefix: str = service_prefix
+        self.services: List[AgentService] = []
+
+    def get_services(self) -> List[AgentService]:
+        """
+        :return: A list of the AgentServices being served up by this instance
+        """
+        return self.services
 
     def serve(self):
         """
@@ -108,7 +116,7 @@ class AgentServer:
                                          request_limit=self.request_limit,
                                          # Used for health checking. Probably needs agent-specific love.
                                          protocol_services_by_name_values=values,
-                                         loop_sleep_seconds=5,
+                                         loop_sleep_seconds=5.0,
                                          server_loop_callbacks=self.server_loop_callbacks)
 
         server = server_lifetime.create_server()
@@ -123,6 +131,8 @@ class AgentServer:
                                    self.asyncio_executor,
                                    agent_name,
                                    tool_registry)
+            self.services.append(service)
+
             servicer_to_server = AgentServicerToServer(service, agent_name=agent_name,
                                                        service_prefix=self.service_prefix)
             servicer_to_server.add_rpc_handlers(server)

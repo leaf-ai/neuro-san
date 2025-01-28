@@ -1,5 +1,5 @@
 
-# Copyright (C) 2023-2024 Cognizant Digital Business, Evolutionary AI.
+# Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
 # All Rights Reserved.
 # Issued under the Academic Public License.
 #
@@ -13,29 +13,28 @@
 See class comment for details
 """
 from typing import Dict
+from typing import List
 
 import logging
 
 import os
 
 from argparse import ArgumentParser
-from pathlib import Path
 
+from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 from leaf_server_common.server.server_loop_callbacks import ServerLoopCallbacks
-from leaf_server_common.utils.asyncio_executor import AsyncioExecutor
 
-from neuro_san.chat.chat_session import ChatSession
-from neuro_san.graph.registry.agent_tool_registry import AgentToolRegistry
-from neuro_san.graph.registry.agent_tool_registry_restorer import AgentToolRegistryRestorer
+from neuro_san.interfaces.agent_session import AgentSession
+from neuro_san.internals.chat.chat_session import ChatSession
+from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
+from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.service.agent_server import AgentServer
 from neuro_san.service.agent_server import DEFAULT_SERVER_NAME
 from neuro_san.service.agent_server import DEFAULT_SERVER_NAME_FOR_LOGS
 from neuro_san.service.agent_server import DEFAULT_REQUEST_LIMIT
-from neuro_san.service.registry_manifest_restorer import RegistryManifestRestorer
+from neuro_san.service.agent_service import AgentService
 from neuro_san.session.agent_service_stub import DEFAULT_SERVICE_PREFIX
-from neuro_san.session.agent_session import AgentSession
 from neuro_san.session.chat_session_map import ChatSessionMap
-from neuro_san.utils.file_of_class import FileOfClass
 
 # A *single* global variable which contains a mapping of
 # string keys -> ChatSession implementations
@@ -50,8 +49,6 @@ class AgentMainLoop(ServerLoopCallbacks):
     """
     This class handles the service main loop.
     """
-
-    DEFAULT_TOOL_REGISTRY_FILE: str = "esp_decision_assistant.hocon"
 
     def __init__(self, service_prefix: str = DEFAULT_SERVICE_PREFIX):
         """
@@ -77,6 +74,7 @@ class AgentMainLoop(ServerLoopCallbacks):
         self.server_name_for_logs: str = DEFAULT_SERVER_NAME_FOR_LOGS
         self.request_limit: int = DEFAULT_REQUEST_LIMIT
         self.service_prefix: str = service_prefix
+        self.server: AgentServer = None
 
     def parse_args(self):
         """
@@ -85,15 +83,6 @@ class AgentMainLoop(ServerLoopCallbacks):
         # Set up the CLI parser
         arg_parser = ArgumentParser()
 
-        # If we are using a manifest file, allow all the tools in the manifest
-        default_tool_registry_file: str = ""
-        if os.environ.get("AGENT_MANIFEST_FILE") is None:
-            # If there is no manifest, then fall back to a default
-            default_tool_registry_file = self.DEFAULT_TOOL_REGISTRY_FILE
-
-        arg_parser.add_argument("--tool_registry_file", type=str,
-                                default=default_tool_registry_file,
-                                help=".hocon or .json file defining the AgentToolRegistry for the service")
         arg_parser.add_argument("--port", type=int,
                                 default=int(os.environ.get("AGENT_PORT", AgentSession.DEFAULT_PORT)),
                                 help="Port number for the service")
@@ -124,46 +113,8 @@ class AgentMainLoop(ServerLoopCallbacks):
         manifest_restorer = RegistryManifestRestorer()
         manifest_tool_registries: Dict[str, AgentToolRegistry] = manifest_restorer.restore()
 
-        registry_name: str = None
-        tool_registry: AgentToolRegistry = None
-        tool_registry_file: str = args.tool_registry_file
-        if tool_registry_file is not None and len(tool_registry_file) > 0:
-            # Check the path to avoid Path Traversal issues from scans.
-            tool_registry_file = FileOfClass.check_file(tool_registry_file, basis="~")
-
-            # Incorrectly flagged as destination of Path Traversal 3
-            #   Reason: This is the method in which we are actually trying to do
-            #           the path traversal check itself. CheckMarx does not recognize
-            #           the call to check_file as a valid means to resolve these kinds
-            #           of issues.
-            registry_name = Path(tool_registry_file).stem
-            tool_registry = manifest_tool_registries.get(registry_name)
-
-        found_status: str = ""
-        if tool_registry is None and registry_name is not None:
-            # Not found in the registry. Maybe it wasn't updated.
-            # Look for the file in the registries area.
-            this_file_dir: str = Path(__file__).parent.resolve()
-            registry_dir: str = (Path(this_file_dir) / ".." / "registries").resolve()
-
-            # Inside here is incorrectly flagged as destination of Path Traversal 7
-            #   Reason: The lines above ensure that the path of registry_dir is within
-            #           this source base. CheckMarx does not recognize
-            #           the calls to Pathlib/__file__  as a valid means to resolve
-            #           these kinds of issues.
-            registry_restorer = AgentToolRegistryRestorer(registry_dir)
-            tool_registry_file = FileOfClass.check_file(tool_registry_file, basis=registry_dir)
-            tool_registry = registry_restorer.restore(file_reference=tool_registry_file)
-
-        if tool_registry is not None:
-            # If a tool_registry was found, only prepare one.
-            self.tool_registries = {
-                registry_name: tool_registry
-            }
-            print(f"Single tool_registry {registry_name} {found_status} found")
-        else:
-            self.tool_registries = manifest_tool_registries
-            print(f"tool_registries found: {list(self.tool_registries.keys())}")
+        self.tool_registries = manifest_tool_registries
+        print(f"tool_registries found: {list(self.tool_registries.keys())}")
 
     def main_loop(self):
         """
@@ -174,7 +125,7 @@ class AgentMainLoop(ServerLoopCallbacks):
         # Start up the background thread which will process asyncio stuff
         self.asyncio_executor.start()
 
-        grpc_server = AgentServer(self.port,
+        self.server = AgentServer(self.port,
                                   server_loop_callbacks=self,
                                   chat_session_map=self.chat_session_map,
                                   tool_registries=self.tool_registries,
@@ -183,13 +134,23 @@ class AgentMainLoop(ServerLoopCallbacks):
                                   server_name_for_logs=self.server_name_for_logs,
                                   request_limit=self.request_limit,
                                   service_prefix=self.service_prefix)
-        grpc_server.serve()
+        self.server.serve()
 
-    def loop_callback(self):
+    def loop_callback(self) -> bool:
         """
         Periodically called by the main server loop of ServerLifetime.
         """
         self.chat_session_map.prune()
+
+        # Report back on service activity so the ServerLifetime that calls
+        # this method can properly yield/sleep depending on how many requests
+        # are in motion.
+        agent_services: List[AgentService] = self.server.get_services()
+        for agent_service in agent_services:
+            if agent_service.get_request_count() > 0:
+                return True
+
+        return False
 
     def shutdown_callback(self):
         """

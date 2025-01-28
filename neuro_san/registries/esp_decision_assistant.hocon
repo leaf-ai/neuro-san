@@ -1,5 +1,5 @@
 
-# Copyright (C) 2023-2024 Cognizant Digital Business, Evolutionary AI.
+# Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
 # All Rights Reserved.
 # Issued under the Academic Public License.
 #
@@ -82,6 +82,7 @@ As part of your query, you will declare the needed expertise, and the
 type and values of the context as well as defining the action and outcome
 attributes.
 The prescriptor function will return the list of action values for the given context.
+When communicating to tools, never use curly braces to describe choices.
 """,
             "tools": [
                 "prescriptor"
@@ -93,12 +94,6 @@ The prescriptor function will return the list of action values for the given con
         # below as tools to use in getting his job done.
         {
             "name": "prescriptor",
-            "attributions": {
-                "context_defs": "The context attributes are",
-                "actions_defs": "The actions attributes are",
-                "outcomes_defs": "The outcome attributes are",
-                "context_vals": "The context values are"
-            },
             "function": {
                 "description": """
 Creates a prescriptor assistant by taking the list of context, actions, and outcomes attributes, "
@@ -172,14 +167,6 @@ For each outcome, a certainty value between 0 and 1 will also be returned.
         # He is called by the prescriptor.
         {
             "name": "predictor",
-            "attributions": {
-                "expertise": "You are an expert in",
-                "context_defs": "The context attributes are",
-                "actions_defs": "The actions attributes are",
-                "outcomes_defs": "The outcome attributes are",
-                "context_vals": "The context values are",
-                "actions_vals": "The actions values we are considering are"
-            },
             "function": {
                 "description": """
 Creates a predictor assistant with a specific expertise,

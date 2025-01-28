@@ -1,5 +1,5 @@
 
-# Copyright (C) 2023-2024 Cognizant Digital Business, Evolutionary AI.
+# Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
 # All Rights Reserved.
 # Issued under the Academic Public License.
 #
@@ -14,6 +14,7 @@ import os
 
 from grpc import Channel
 from grpc import UnaryUnaryMultiCallable
+from grpc import UnaryStreamMultiCallable
 
 import neuro_san.api.grpc.agent_pb2 as agent__pb2
 
@@ -22,6 +23,7 @@ import neuro_san.api.grpc.agent_pb2 as agent__pb2
 DEFAULT_SERVICE_PREFIX: str = ""
 
 
+# pylint: disable=too-many-instance-attributes
 class AgentServiceStub:
     """
     The service comprises all the exchanges to the backend in support of agent services.
@@ -41,6 +43,10 @@ class AgentServiceStub:
         # note that thare are more defined on grpc.Channel if needed (see the source).
         # pylint: disable=invalid-name
         self.Function: UnaryUnaryMultiCallable = None
+        self.Connectivity: UnaryUnaryMultiCallable = None
+        self.StreamingChat: UnaryStreamMultiCallable = None
+
+        # Below here are deprecated
         self.Chat: UnaryUnaryMultiCallable = None
         self.Logs: UnaryUnaryMultiCallable = None
         self.Reset: UnaryUnaryMultiCallable = None
@@ -79,6 +85,18 @@ class AgentServiceStub:
                 request_serializer=agent__pb2.FunctionRequest.SerializeToString,
                 response_deserializer=agent__pb2.FunctionResponse.FromString,
                 )
+        self.Connectivity = channel.unary_unary(
+                f"/{service_name}/Connectivity",
+                request_serializer=agent__pb2.ConnectivityRequest.SerializeToString,
+                response_deserializer=agent__pb2.ConnectivityResponse.FromString,
+                )
+        self.StreamingChat = channel.unary_stream(
+                f"/{service_name}/StreamingChat",
+                request_serializer=agent__pb2.ChatRequest.SerializeToString,
+                response_deserializer=agent__pb2.ChatResponse.FromString,
+                )
+
+        # Below here are deprecated
         self.Chat = channel.unary_unary(
                 f"/{service_name}/Chat",
                 request_serializer=agent__pb2.ChatRequest.SerializeToString,

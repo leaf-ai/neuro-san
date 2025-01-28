@@ -1,5 +1,5 @@
 
-# Copyright (C) 2023-2024 Cognizant Digital Business, Evolutionary AI.
+# Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
 # All Rights Reserved.
 # Issued under the Academic Public License.
 #
@@ -14,7 +14,7 @@ from typing import List
 
 from asyncio import run
 
-from neuro_san.run_context.openai.openai_client import OpenAIClient
+from neuro_san.internals.run_context.openai.openai_client import OpenAIClient
 
 
 class ResourcesCli:

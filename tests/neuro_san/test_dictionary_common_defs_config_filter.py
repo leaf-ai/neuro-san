@@ -1,5 +1,5 @@
 
-# Copyright (C) 2023-2024 Cognizant Digital Business, Evolutionary AI.
+# Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
 # All Rights Reserved.
 # Issued under the Academic Public License.
 #
@@ -17,7 +17,7 @@ import json
 from unittest import TestCase
 
 from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
-from neuro_san.graph.registry.dictionary_common_defs_config_filter \
+from neuro_san.internals.graph.registry.dictionary_common_defs_config_filter \
     import DictionaryCommonDefsConfigFilter
 
 

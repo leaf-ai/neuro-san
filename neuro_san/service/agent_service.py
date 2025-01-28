@@ -1,5 +1,5 @@
 
-# Copyright (C) 2023-2024 Cognizant Digital Business, Evolutionary AI.
+# Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
 # All Rights Reserved.
 # Issued under the Academic Public License.
 #
@@ -12,6 +12,7 @@
 
 from typing import Any
 from typing import Dict
+from typing import Iterator
 
 import json
 
@@ -20,16 +21,18 @@ import grpc
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.json_format import Parse
 
+from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
+from leaf_server_common.server.atomic_counter import AtomicCounter
 from leaf_server_common.server.grpc_metadata_forwarder import GrpcMetadataForwarder
 from leaf_server_common.server.request_logger import RequestLogger
-from leaf_server_common.utils.asyncio_executor import AsyncioExecutor
 
 from neuro_san.api.grpc import agent_pb2 as service_messages
 from neuro_san.api.grpc import agent_pb2_grpc
-
-from neuro_san.graph.registry.agent_tool_registry import AgentToolRegistry
+from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.session.chat_session_map import ChatSessionMap
 from neuro_san.session.direct_agent_session import DirectAgentSession
+from neuro_san.session.external_agent_session_factory import ExternalAgentSessionFactory
+from neuro_san.session.session_invocation_context import SessionInvocationContext
 
 # A list of methods to not log requests for
 # Some of these can be way to chatty
@@ -38,6 +41,7 @@ DO_NOT_LOG_REQUESTS = [
 ]
 
 
+# pylint: disable=too-many-instance-attributes
 class AgentService(agent_pb2_grpc.AgentServiceServicer):
     """
     A gRPC implementation of the Neuro-San Agent Service.
@@ -79,6 +83,13 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         self.asyncio_executor: AsyncioExecutor = asyncio_executor
         self.tool_registry: AgentToolRegistry = tool_registry
         self.agent_name: str = agent_name
+        self.request_counter = AtomicCounter()
+
+    def get_request_count(self) -> int:
+        """
+        :return: The number of currently active requests
+        """
+        return self.request_counter.get_count()
 
     # pylint: disable=no-member
     def Function(self, request: service_messages.FunctionRequest,
@@ -92,6 +103,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         :param context: a grpc.ServicerContext
         :return: a FunctionResponse
         """
+        self.request_counter.increment()
         request_log = None
         log_marker: str = "function request"
         if "Function" not in DO_NOT_LOG_REQUESTS:
@@ -107,7 +119,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         # Delegate to Direct*Session
         session = DirectAgentSession(chat_session_map=self.chat_session_map,
                                      tool_registry=self.tool_registry,
-                                     asyncio_executor=self.asyncio_executor,
+                                     invocation_context=None,
                                      metadata=metadata,
                                      security_cfg=self.security_cfg)
         response_dict = session.function(request_dict)
@@ -120,6 +132,51 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         if request_log is not None:
             self.request_logger.finish_request(f"{self.agent_name}.Function", log_marker, request_log)
 
+        self.request_counter.decrement()
+        return response
+
+    # pylint: disable=no-member
+    def Connectivity(self, request: service_messages.ConnectivityRequest,
+                     context: grpc.ServicerContext) \
+            -> service_messages.ConnectivityResponse:
+        """
+        Allows a client to get connectivity information for the agent
+        served by this service.
+
+        :param request: a ConnectivityRequest
+        :param context: a grpc.ServicerContext
+        :return: a ConnectivityResponse
+        """
+        self.request_counter.increment()
+        request_log = None
+        log_marker: str = "connectivity request"
+        if "Connectivity" not in DO_NOT_LOG_REQUESTS:
+            request_log = self.request_logger.start_request(f"{self.agent_name}.Connectivity",
+                                                            log_marker, context)
+
+        # Get the metadata to forward on to another service
+        metadata = self.forwarder.forward(context)
+
+        # Get our args in order to pass to grpc-free session level
+        request_dict: Dict[str, Any] = MessageToDict(request)
+
+        # Delegate to Direct*Session
+        session = DirectAgentSession(chat_session_map=self.chat_session_map,
+                                     tool_registry=self.tool_registry,
+                                     invocation_context=None,
+                                     metadata=metadata,
+                                     security_cfg=self.security_cfg)
+        response_dict = session.connectivity(request_dict)
+
+        # Convert the response dictionary to a grpc message
+        response_string = json.dumps(response_dict)
+        response = service_messages.ConnectivityResponse()
+        Parse(response_string, response)
+
+        if request_log is not None:
+            self.request_logger.finish_request(f"{self.agent_name}.Connectivity", log_marker, request_log)
+
+        self.request_counter.decrement()
         return response
 
     # pylint: disable=no-member
@@ -135,6 +192,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         :return: a ChatResponse which indicates that the request
                  was successful
         """
+        self.request_counter.increment()
         request_log = None
         log_marker = f"'{request.user_input}' on assistant {request.session_id}"
         if "Chat" not in DO_NOT_LOG_REQUESTS:
@@ -148,9 +206,11 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         request_dict: Dict[str, Any] = MessageToDict(request)
 
         # Delegate to Direct*Session
+        factory = ExternalAgentSessionFactory(use_direct=False)
+        invocation_context = SessionInvocationContext(factory, self.asyncio_executor)
         session = DirectAgentSession(chat_session_map=self.chat_session_map,
                                      tool_registry=self.tool_registry,
-                                     asyncio_executor=self.asyncio_executor,
+                                     invocation_context=invocation_context,
                                      metadata=metadata,
                                      security_cfg=self.security_cfg)
         response_dict = session.chat(request_dict)
@@ -164,6 +224,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         if request_log is not None:
             self.request_logger.finish_request(f"{self.agent_name}.Chat", log_marker, request_log)
 
+        self.request_counter.decrement()
         return response
 
     # pylint: disable=no-member
@@ -179,6 +240,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         :return: a LogsResponse which indicates that the request
                  was successful
         """
+        self.request_counter.increment()
         request_log = None
         log_marker = f"Polling for logs on assistant {request.session_id}"
         if "Logs" not in DO_NOT_LOG_REQUESTS:
@@ -194,7 +256,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         # Delegate to Direct*Session
         session = DirectAgentSession(chat_session_map=self.chat_session_map,
                                      tool_registry=self.tool_registry,
-                                     asyncio_executor=self.asyncio_executor,
+                                     invocation_context=None,
                                      metadata=metadata,
                                      security_cfg=self.security_cfg)
         response_dict = session.logs(request_dict)
@@ -208,6 +270,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         if request_log is not None:
             self.request_logger.finish_request(f"{self.agent_name}.Logs", log_marker, request_log)
 
+        self.request_counter.decrement()
         return response
 
     # pylint: disable=no-member
@@ -222,6 +285,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         :return: a ResetResponse which indicates that the request
                  was successful
         """
+        self.request_counter.increment()
         request_log = None
         log_marker = f"Reset assistant {request.session_id}"
         if "Reset" not in DO_NOT_LOG_REQUESTS:
@@ -235,9 +299,11 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         request_dict: Dict[str, Any] = MessageToDict(request)
 
         # Delegate to Direct*Session
+        factory = ExternalAgentSessionFactory(use_direct=False)
+        invocation_context = SessionInvocationContext(factory, self.asyncio_executor)
         session = DirectAgentSession(chat_session_map=self.chat_session_map,
                                      tool_registry=self.tool_registry,
-                                     asyncio_executor=self.asyncio_executor,
+                                     invocation_context=invocation_context,
                                      metadata=metadata,
                                      security_cfg=self.security_cfg)
         response_dict = session.reset(request_dict)
@@ -251,4 +317,61 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         if request_log is not None:
             self.request_logger.finish_request(f"{self.agent_name}.Reset", log_marker, request_log)
 
+        self.request_counter.decrement()
         return response
+
+    # pylint: disable=no-member
+    def StreamingChat(self, request: service_messages.ChatRequest,
+                      context: grpc.ServicerContext) \
+            -> Iterator[service_messages.ChatResponse]:
+        """
+        Initiates or continues the agent chat with the session_id
+        context in the request.
+
+        :param request: a ChatRequest
+        :param context: a grpc.ServicerContext
+        :return: an iterator for (eventually) returned ChatResponses
+        """
+        self.request_counter.increment()
+        request_log = None
+        log_marker = f"'{request.user_input}' on assistant {request.session_id}"
+        if "StreamingChat" not in DO_NOT_LOG_REQUESTS:
+            request_log = self.request_logger.start_request(f"{self.agent_name}.StreamingChat",
+                                                            log_marker, context)
+
+        # Get the metadata to forward on to another service
+        metadata = self.forwarder.forward(context)
+
+        # Get our args in order to pass to grpc-free session level
+        request_dict: Dict[str, Any] = MessageToDict(request)
+
+        # Delegate to Direct*Session
+        factory = ExternalAgentSessionFactory(use_direct=False)
+        invocation_context = SessionInvocationContext(factory, self.asyncio_executor)
+        session = DirectAgentSession(chat_session_map=self.chat_session_map,
+                                     tool_registry=self.tool_registry,
+                                     invocation_context=invocation_context,
+                                     metadata=metadata,
+                                     security_cfg=self.security_cfg)
+        response_dict_iterator: Iterator[Dict[str, Any]] = session.streaming_chat(request_dict)
+
+        for response_dict in response_dict_iterator:
+            response_dict["request"] = request_dict
+
+            # Convert the response dictionary to a grpc message
+            response_string = json.dumps(response_dict)
+            response = service_messages.ChatResponse()
+            Parse(response_string, response)
+
+            # Yield-ing a single response allows one response to be returned
+            # over the connection while keeping it open to wait for more.
+            # Grpc client code handling response streaming knows to construct an
+            # iterator on its side to do said waiting over there.
+            yield response
+
+        # Iterator has finally signaled that there are no more responses to be had.
+        # Log that we are done.
+        if request_log is not None:
+            self.request_logger.finish_request(f"{self.agent_name}.StreamingChat", log_marker, request_log)
+
+        self.request_counter.decrement()

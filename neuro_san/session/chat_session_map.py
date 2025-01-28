@@ -1,5 +1,5 @@
 
-# Copyright (C) 2023-2024 Cognizant Digital Business, Evolutionary AI.
+# Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
 # All Rights Reserved.
 # Issued under the Academic Public License.
 #
@@ -23,9 +23,9 @@ from asyncio import gather
 from datetime import datetime
 from datetime import timedelta
 
-from leaf_server_common.utils.asyncio_executor import AsyncioExecutor
+from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 
-from neuro_san.chat.chat_session import ChatSession
+from neuro_san.internals.chat.chat_session import ChatSession
 
 
 class ChatSessionMap:

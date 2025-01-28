@@ -1,5 +1,5 @@
 
-# Copyright (C) 2023-2024 Cognizant Digital Business, Evolutionary AI.
+# Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
 # All Rights Reserved.
 # Issued under the Academic Public License.
 #
@@ -99,5 +99,5 @@ ENV TOOL_REGISTRY_FILE=${TOOL_REGISTRY_FILE}
 ENV AGENT_SERVICE_LOG_JSON=${PACKAGE_DEPLOY}/logging.json
 
 # ENTRYPOINT ls ${APP_SOURCE}
-ENTRYPOINT "${APP_ENTRYPOINT}" --tool_registry_file="${TOOL_REGISTRY_FILE}"
+ENTRYPOINT "${APP_ENTRYPOINT}"
 

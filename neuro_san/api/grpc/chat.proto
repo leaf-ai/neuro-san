@@ -1,0 +1,78 @@
+
+// Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
+// All Rights Reserved.
+// Issued under the Academic Public License.
+//
+// You can be released from the terms, and requirements of the Academic Public
+// License by purchasing a commercial license.
+// Purchase of a commercial license is mandatory for any use of the
+// neuro-san SDK Software in commercial settings.
+//
+// END COPYRIGHT
+
+// To obtain information concerning the code generation that is used by this Interface Definition Language
+// please see the following:
+//
+// Go - https://developers.google.com/protocol-buffers/docs/reference/go-generated
+// Python - https://developers.google.com/protocol-buffers/docs/reference/python-generated
+//
+syntax = "proto3";
+
+package dev.cognizant_ai.neuro_san.api.grpc.chat;
+
+option go_package = "github.com/leaf-ai/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/chat/v1;chat";
+
+import "neuro_san/api/grpc/mime_data.proto";
+
+
+// Structure describing a single chat message.
+// This could be a single response, or a list of these might comprise
+// a chat history.
+message ChatMessage {
+
+    // Type of message corresponding to basic langchain message types
+    // that are in common usage.  This needs to match what is in the
+    // ChatMessageType enum in the neuro-san codebase.
+    enum ChatMessageType {
+        UNKNOWN = 0;    // Note: UNKNOWN is not a langchain thing.
+        SYSTEM = 1;
+        HUMAN = 2;
+        TOOL = 3;
+        AI = 4;
+
+        // These are not out-of-the-box langchain messages
+        AGENT = 100;
+        AGENT_FRAMEWORK = 101;
+        LEGACY_LOGS = 102;      // Deprecated. Used for backwards compatibility
+    }
+
+    // The type of chat message
+    ChatMessageType type = 1;
+
+    // String contents of any chat message
+    string text = 2;
+
+    // Optional bytes for any non-text media referenced by this message.
+    // For some chat sources, the string text field might also be populated as a
+    // reference for how the data was created.  If this happens, then
+    // it should be safe to assume that the text is enough to represent the
+    // message in any history carried forward.
+    //
+    // As of 1/13/25 this is a forward-looking, experimental field not likely
+    // to be used in regular operation until we can get proper plumbing of such
+    // data in place.
+    repeated mime_data.MimeData mime_data = 3 [json_name="mime_data"];
+
+    // Optional string describing the origin of the chat message.
+    // The intent here is to be able to distiguish responses from nested agents.
+    // Each string is returned in a URI format:
+    //
+    //          [host:]/agent1/agent2/...
+    //
+    // ... where the host is optional and each agent name represents an agent
+    // in a single agent hierarchy.
+    //
+    // For each top-level agent/front-man (perhaps on another server) that is called,
+    // an extra string is added to the list.
+    repeated string origin = 4 [json_name="origin"];
+}
