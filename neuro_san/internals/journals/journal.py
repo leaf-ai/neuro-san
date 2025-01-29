@@ -21,9 +21,11 @@ class Journal:
     An interface for journaling chat messages.
     """
 
-    async def write(self, entry: Union[str, bytes]):
+    async def write(self, entry: Union[str, bytes], origin: List[str]):
         """
         Writes a single string entry into the journal.
+        :param entry: The logs entry to write
+        :param origin: A list of strings describing the originating agent of the information
         """
         raise NotImplementedError
 
@@ -33,10 +35,10 @@ class Journal:
         """
         raise NotImplementedError
 
-    async def write_message(self, message: BaseMessage, origin: Union[str, List[str]] = None):
+    async def write_message(self, message: BaseMessage, origin: List[str]):
         """
         Writes a BaseMessage entry into the journal
         :param message: The BaseMessage instance to write to the journal
-        :param origin: A string or list of strings describing the originating agent of the information
+        :param origin: A list of strings describing the originating agent of the information
         """
         raise NotImplementedError

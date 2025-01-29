@@ -33,12 +33,14 @@ class CompoundJournal(Journal):
         if self.journals is None:
             self.journals = []
 
-    async def write(self, entry: Union[str, bytes]):
+    async def write(self, entry: Union[str, bytes], origin: List[str]):
         """
         Writes a single string entry into each journal.
+        :param entry: The logs entry to write
+        :param origin: A list of strings describing the originating agent of the information
         """
         for journal in self.journals:
-            await journal.write(entry)
+            await journal.write(entry, origin)
 
     def get_logs(self) -> List[Any]:
         """
@@ -59,11 +61,11 @@ class CompoundJournal(Journal):
         """
         self.journals.append(journal)
 
-    async def write_message(self, message: BaseMessage, origin: Union[str, List[str]] = None):
+    async def write_message(self, message: BaseMessage, origin: List[str]):
         """
         Writes a BaseMessage entry into the journal
         :param message: The BaseMessage instance to write to the journal
-        :param origin: A string or list of strings describing the originating agent of the information
+        :param origin: A list of strings describing the originating agent of the information
         """
         for journal in self.journals:
             await journal.write_message(message, origin)

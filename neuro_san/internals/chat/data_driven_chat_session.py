@@ -79,7 +79,6 @@ class DataDrivenChatSession(ChatSession):
         """
         # Reset the journal
         self.journal = CompatibilityJournal(self.queue)
-        await self.journal.write("setting up chat agent(s)...")
 
         # Reset any sly data
         # This ends up being the one reference to the sly_data that gets passed around
@@ -91,6 +90,8 @@ class DataDrivenChatSession(ChatSession):
 
         run_context: RunContext = RunContextFactory.create_run_context(None, None,
                                                                        invocation_context=self.invocation_context)
+        await self.journal.write("setting up chat agent(s)...", run_context.get_origin())
+
         self.front_man = self.registry.create_front_man(self.journal, self.sly_data, run_context)
         await self.front_man.create_resources()
 
@@ -138,7 +139,7 @@ class DataDrivenChatSession(ChatSession):
             self.sly_data.update(sly_data)
 
         try:
-            await self.journal.write("consulting chat agent(s)...")
+            await self.journal.write("consulting chat agent(s)...", self.front_man.run_context.get_origin())
 
             # DEF - drill further down for iterator from here to enable getting
             #       messages from downstream agents.

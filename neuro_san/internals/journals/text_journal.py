@@ -28,10 +28,11 @@ class TextJournal(Journal):
         """
         self.log_content = []
 
-    async def write(self, entry: Union[str, bytes]):
+    async def write(self, entry: Union[str, bytes], origin: List[str]):
         """
         :param entry: Add a string-ish entry to the logs.
                     Can be either a string or bytes.
+        :param origin: A list of strings describing the originating agent of the information
         """
         # Decoding bytes to string if necessary
         if isinstance(entry, bytes):
@@ -44,11 +45,11 @@ class TextJournal(Journal):
         """
         return self.log_content
 
-    async def write_message(self, message: BaseMessage, origin: Union[str, List[str]] = None):
+    async def write_message(self, message: BaseMessage, origin: List[str]):
         """
         Writes a BaseMessage entry into the journal
         :param message: The BaseMessage instance to write to the journal
-        :param origin: A string or list of strings describing the originating agent of the information
+        :param origin: A list of strings describing the originating agent of the information
         """
         # Do nothing
-        _ = message
+        _ = message, origin

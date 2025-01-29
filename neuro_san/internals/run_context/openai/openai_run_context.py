@@ -182,7 +182,8 @@ class OpenAIRunContext(RunContext):
                 number_of_new_messages = len(latest_messages) - len(messages)
                 new_messages = latest_messages[-number_of_new_messages:]
                 if journal is not None:
-                    await journal.write(pretty_the_messages(new_messages))
+                    await journal.write(pretty_the_messages(new_messages),
+                                        self.get_origin())
                 messages = latest_messages
 
             run = OpenAIRun(openai_run)
@@ -253,4 +254,4 @@ class OpenAIRunContext(RunContext):
         :return: A List of strings indicating the origin of the run.
                 The origin can be considered a path to the original call to the front-man.
         """
-        raise NotImplementedError
+        return None
