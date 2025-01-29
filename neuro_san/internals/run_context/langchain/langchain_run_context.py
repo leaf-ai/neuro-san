@@ -83,7 +83,6 @@ class LangChainRunContext(RunContext):
 
         self.tools: List[BaseTool] = []
         self.chat_history: List[BaseMessage] = []
-        self.assistant_name: str = None
         self.agent: Agent = None
         self.error_detector: ErrorDetector = None
         self.recent_human_message: HumanMessage = None
@@ -112,15 +111,18 @@ class LangChainRunContext(RunContext):
         :param tool_names: The list of registered tool names to use.
                     Default is None implying no tool is to be called.
         """
+        # DEF - Remove the arg if possible
+        _ = assistant_name
+
         # Create the model we will use.
         llm: BaseLanguageModel = LlmFactory.create_llm(self.llm_config)
 
-        self.assistant_name = assistant_name
+        full_name: str = self.get_full_name_from_origin()
 
         agent_spec: Dict[str, Any] = self.tool_caller.get_agent_tool_spec()
 
         # Now that we have a name, we can create an ErrorDetector for the output.
-        self.error_detector = ErrorDetector(assistant_name,
+        self.error_detector = ErrorDetector(full_name,
                                             error_formatter_name=agent_spec.get("error_formatter"),
                                             system_error_fragments=["Agent stopped"],
                                             agent_error_fragments=agent_spec.get("error_fragments"))
@@ -223,7 +225,8 @@ class LangChainRunContext(RunContext):
         try:
             self.recent_human_message = HumanMessage(user_message)
         except ValidationError as exception:
-            message = f"ValidationError in {self.assistant_name} with message: {user_message}"
+            full_name: str = self.get_full_name_from_origin()
+            message = f"ValidationError in {full_name} with message: {user_message}"
             raise ValueError(message) from exception
 
         # Create a run to return
@@ -443,3 +446,14 @@ class LangChainRunContext(RunContext):
             factory: AgentToolFactory = self.tool_caller.get_factory()
             agent_name: str = factory.get_name_from_spec(agent_spec)
             self.origin.append(agent_name)
+
+    def get_full_name_from_origin(self) -> str:
+        """
+        :return: A single string name given an origin path/list
+        """
+        # Connect all the elements of the origin by the delimiter "."
+        name: str = ".".join(self.origin)
+        # Simple replacement of local external agents.
+        # DEF - need better recognition of external agent
+        name = name.replace("./", "/")
+        return name
