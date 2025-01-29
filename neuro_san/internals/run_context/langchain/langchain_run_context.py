@@ -94,13 +94,7 @@ class LangChainRunContext(RunContext):
         self.origin: List[str] = []
         if parent_run_context is not None:
             self.origin = copy(parent_run_context.get_origin())
-
-        # Add the name from the spec to the origin, if we have it.
-        if tool_caller is not None:
-            agent_spec: Dict[str, Any] = tool_caller.get_agent_tool_spec()
-            factory: AgentToolFactory = tool_caller.get_factory()
-            agent_name: str = factory.get_name_from_spec(agent_spec)
-            self.origin.append(agent_name)
+        self.add_name_to_origin()
 
     async def create_resources(self, assistant_name: str,
                                instructions: str,
@@ -437,4 +431,15 @@ class LangChainRunContext(RunContext):
         :return: A List of strings indicating the origin of the run.
                 The origin can be considered a path to the original call to the front-man.
         """
-        raise NotImplementedError
+        return self.origin
+
+    def add_name_to_origin(self):
+        """
+        Adds the agent name to the origin.
+        """
+        # Add the name from the spec to the origin, if we have it.
+        if self.tool_caller is not None:
+            agent_spec: Dict[str, Any] = self.tool_caller.get_agent_tool_spec()
+            factory: AgentToolFactory = self.tool_caller.get_factory()
+            agent_name: str = factory.get_name_from_spec(agent_spec)
+            self.origin.append(agent_name)
