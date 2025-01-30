@@ -160,7 +160,7 @@ class DataDrivenChatSession(ChatSession):
 
         chat_messages: List[Dict[str, Any]] = []
         for raw_message in raw_messages:
-            chat_message: Dict[str, Any] = convert_to_chat_message(raw_message)
+            chat_message: Dict[str, Any] = convert_to_chat_message(raw_message, self.front_man.run_context.get_origin())
             chat_messages.append(chat_message)
 
         return iter(chat_messages)
