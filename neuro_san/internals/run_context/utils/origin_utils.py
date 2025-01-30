@@ -16,7 +16,7 @@ from neuro_san.internals.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.interfaces.tool_caller import ToolCaller
 
 
-class OriginUtil:
+class OriginUtils:
     """
     Static utility class for common code that manipulates origin information.
     """
