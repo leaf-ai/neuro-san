@@ -180,16 +180,15 @@ class DataDrivenChatSession(ChatSession):
         """
         # Queue Producer from this:
         #   https://stackoverflow.com/questions/74130544/asyncio-yielding-results-from-multiple-futures-as-they-arrive
-        # DEF - These put()s will eventually be pushed down into the library.
-        chat_messages: Iterator[Dict[str, Any]] = await self.chat(user_input, invocation_context, sly_data)
-        for index, chat_message in enumerate(chat_messages):
 
-            # For now filter what we send in the service.
-            # This responsibility will eventually largely move to the client.
-            if self.is_streamable_message(chat_message, index):
-                # The consumer await-s for self.queue.get()
-                await self.queue.put(chat_message)
-                self.last_streamed_index = index
+        chat_messages: Iterator[Dict[str, Any]] = await self.chat(user_input, sly_data)
+        message_list: List[Dict[str, Any]] = list(chat_messages)
+        index: int = len(message_list) - 1
+        chat_message: Dict[str, Any] = message_list[index]
+
+        # The consumer await-s for self.queue.get()
+        await self.queue.put(chat_message)
+        self.last_streamed_index = index
 
         # Put an end-marker on the queue to tell the consumer we truly are done
         # and it doesn't need to wait for any more messages.
