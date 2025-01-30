@@ -151,7 +151,7 @@ class BranchTool(CallingTool, CallableTool):
         upper_component = component_name.upper()
         await self.journal.write(f"{upper_component} CALLED>>> {specific_instructions}", origin)
         if self.get_takes_awhile():
-            await self.journal.write("This may take awhile...")
+            await self.journal.write("This may take awhile...", origin)
 
         command = self.get_command()
         run: Run = await self.run_context.submit_message(command)
