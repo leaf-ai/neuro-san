@@ -89,9 +89,9 @@ class DataDrivenChatSession(ChatSession):
 
         run_context: RunContext = RunContextFactory.create_run_context(None, None,
                                                                        invocation_context=self.invocation_context)
-        await self.journal.write("setting up chat agent(s)...", run_context.get_origin())
-
         self.front_man = self.registry.create_front_man(self.journal, self.sly_data, run_context)
+
+        await self.journal.write("setting up chat agent(s)...", self.front_man.get_origin())
         await self.front_man.create_resources()
 
     async def chat(self, user_input: str,

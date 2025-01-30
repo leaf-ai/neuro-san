@@ -115,6 +115,12 @@ context with which it will proces input, essentially telling it what to do.
         """
         return self.factory
 
+    def get_origin(self) -> List[str]:
+        """
+        :return: The list of strings describing the origin associated with this node
+        """
+        return self.run_context.get_origin()
+
     async def create_resources(self, component_name: str = None,
                                specific_instructions: str = None):
         """
