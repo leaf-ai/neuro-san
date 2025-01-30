@@ -94,7 +94,7 @@ class LangChainRunContext(RunContext):
         self.origin: List[str] = []
         if parent_run_context is not None:
             self.origin = copy(parent_run_context.get_origin())
-        self.origin = OriginUtils.add_name_to_origin(self.origin, tool_caller)
+        self.origin = OriginUtils.add_spec_name_to_origin(self.origin, tool_caller)
 
     async def create_resources(self, assistant_name: str,
                                instructions: str,

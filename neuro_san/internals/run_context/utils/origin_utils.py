@@ -12,8 +12,8 @@ from typing import Any
 from typing import Dict
 from typing import List
 
-from neuro_san.internals.interfaces.agent_tool_factory import AgentToolFactory
-from neuro_san.internals.interfaces.tool_caller import ToolCaller
+from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
+from neuro_san.internals.run_context.interfaces.tool_caller import ToolCaller
 
 
 class OriginUtils:
