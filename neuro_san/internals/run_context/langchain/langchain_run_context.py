@@ -48,6 +48,7 @@ from neuro_san.internals.run_context.langchain.langchain_openai_function_tool \
 from neuro_san.internals.run_context.langchain.llm_factory import LlmFactory
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
+from neuro_san.internals.run_context.utils.origin_utils import OriginUtils
 
 
 MINUTES: float = 60.0
@@ -93,7 +94,7 @@ class LangChainRunContext(RunContext):
         self.origin: List[str] = []
         if parent_run_context is not None:
             self.origin = copy(parent_run_context.get_origin())
-        self.add_name_to_origin()
+        self.origin = OriginUtils.add_name_to_origin(self.origin, tool_caller)
 
     async def create_resources(self, assistant_name: str,
                                instructions: str,
@@ -117,7 +118,7 @@ class LangChainRunContext(RunContext):
         # Create the model we will use.
         llm: BaseLanguageModel = LlmFactory.create_llm(self.llm_config)
 
-        full_name: str = self.get_full_name_from_origin()
+        full_name: str = OriginUtils.get_full_name_from_origin(self.origin)
 
         agent_spec: Dict[str, Any] = self.tool_caller.get_agent_tool_spec()
 
@@ -225,7 +226,7 @@ class LangChainRunContext(RunContext):
         try:
             self.recent_human_message = HumanMessage(user_message)
         except ValidationError as exception:
-            full_name: str = self.get_full_name_from_origin()
+            full_name: str = OriginUtils.get_full_name_from_origin(self.origin)
             message = f"ValidationError in {full_name} with message: {user_message}"
             raise ValueError(message) from exception
 
@@ -446,14 +447,3 @@ class LangChainRunContext(RunContext):
             factory: AgentToolFactory = self.tool_caller.get_factory()
             agent_name: str = factory.get_name_from_spec(agent_spec)
             self.origin.append(agent_name)
-
-    def get_full_name_from_origin(self) -> str:
-        """
-        :return: A single string name given an origin path/list
-        """
-        # Connect all the elements of the origin by the delimiter "."
-        name: str = ".".join(self.origin)
-        # Simple replacement of local external agents.
-        # DEF - need better recognition of external agent
-        name = name.replace("./", "/")
-        return name
