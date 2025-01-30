@@ -195,28 +195,6 @@ class DataDrivenChatSession(ChatSession):
         # and it doesn't need to wait for any more messages.
         await self.queue.put_final_item()
 
-    def is_streamable_message(self, chat_message: Dict[str, Any], index: int) -> bool:
-        """
-        Filter chat messages from the full logs that are in/appropriate for streaming.
-
-        :param chat_message: A Chat message dictionary of the form in chat.ChatMessage proto
-        :param index: The place in the chat history the message has
-        :return: True if the given message should be streamed back. False if not.
-        """
-
-        message_type: int = chat_message.get("type")
-
-        # Only report messages that are important enough to send back as part of chat
-        # (for now).  This includes any response for an AI (read: LLM), a tool, or
-        # agent or framework messages.
-        if message_type is None or message_type < ChatMessageType.AI:
-            return False
-
-        if index <= self.last_streamed_index:
-            return False
-
-        return True
-
     def get_journal(self) -> Journal:
         """
         :return: The Journal which has been capturing all the "thinking" messages.
