@@ -17,7 +17,7 @@ from copy import copy
 
 class Origination:
     """
-    An instance for Common coode and state that manipulates and keeps track of origin information
+    An instance for common code and state that manipulates and keeps track of origin information
     on a per-AgentSession basis.
 
     A full origin description is a List of Dictionaries indicating the origin of a chat message.
