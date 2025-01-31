@@ -16,52 +16,49 @@ from typing import Union
 
 from langchain_core.messages.base import BaseMessage
 
-from neuro_san.internals.interfaces.async_hopper import AsyncHopper
 from neuro_san.internals.journals.journal import Journal
-from neuro_san.internals.messages.legacy_logs_message import LegacyLogsMessage
-from neuro_san.internals.messages.message_utils import convert_to_chat_message
 
 
-class MessageJournal(Journal):
+class OriginatingJournal(Journal):
     """
-    Journal implementation for putting entries into a Hopper
-    for storage for later processing.
+    A Journal implementation that has an origin.
     """
 
-    def __init__(self, hopper: AsyncHopper):
+    def __init__(self, journal: Journal, origin: List[Dict[str, Any]]):
         """
         Constructor
 
-        :param hopper: A handle to an AsyncHopper implementation, onto which
-                       any message will be put().
+        :param journal: The Journal that this implementation wraps
+        :param origin: The origin that will be applied to all messages.
         """
-        self.hopper: AsyncHopper = hopper
+        self.journal: Journal = journal
+        self.origin: List[Dict[str, Any]] = origin
 
-    async def write(self, entry: Union[str, bytes], origin: List[Dict[str, Any]]):
+    async def write(self, entry: Union[str, bytes], origin: List[Dict[str, Any]] = None):
         """
-        :param entry: Add a string-ish entry to the logs.
-                    Can be either a string or bytes.
+        Writes a single string entry into the journal.
+        :param entry: The logs entry to write
         :param origin: A List of origin dictionaries indicating the origin of the run.
                 The origin can be considered a path to the original call to the front-man.
                 Origin dictionaries themselves each have the following keys:
                     "tool"                  The string name of the tool in the spec
                     "instantiation_index"   An integer indicating which incarnation
                                             of the tool is being dealt with.
+                For this particular implementation we expect this to be None
         """
-        # Decoding bytes to string if necessary
-        if isinstance(entry, bytes):
-            entry = entry.decode('utf-8')
+        use_origin: List[Dict[str, Any]] = self.origin
+        if origin is not None:
+            use_origin = origin
+        self.journal.write(entry, use_origin)
 
-        legacy = LegacyLogsMessage(content=entry)
-        await self.write_message(legacy, origin)
-
-    def get_logs(self) -> List[str]:
+    def get_logs(self) -> List[Any]:
         """
-        :return: A list of strings corresponding to log entries written with write()
+        :return: A list of strings corresponding to journal entries.
         """
-        return None
+        # Pass-through
+        return self.journal.get_logs()
 
-    async def write_message(self, message: BaseMessage, origin: List[Dict[str, Any]]):
+    async def write_message(self, message: BaseMessage, origin: List[Dict[str, Any]] = None):
         """
         Writes a BaseMessage entry into the journal
         :param message: The BaseMessage instance to write to the journal
@@ -71,7 +68,9 @@ class MessageJournal(Journal):
                     "tool"                  The string name of the tool in the spec
                     "instantiation_index"   An integer indicating which incarnation
                                             of the tool is being dealt with.
+                For this particular implementation we expect this to be None
         """
-        message_dict: Dict[str, Any] = convert_to_chat_message(message, origin)
-
-        await self.hopper.put(message_dict)
+        use_origin: List[Dict[str, Any]] = self.origin
+        if origin is not None:
+            use_origin = origin
+        self.journal.write_message(message, use_origin)
