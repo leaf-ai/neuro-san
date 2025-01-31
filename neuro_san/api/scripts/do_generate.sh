@@ -109,7 +109,9 @@ do
     MESSAGE_FILE="${PROTO_FILE/.proto/_pb2.py}"
     SERVICE_FILE="${PROTO_FILE/.proto/_pb2_grpc.py}"
 
-    cat ${COPYRIGHT_FILE} | cat - ${MESSAGE_FILE} > temp && mv temp ${MESSAGE_FILE}
-    cat ${COPYRIGHT_FILE} | cat - ${SERVICE_FILE} > temp && mv temp ${SERVICE_FILE}
+    TEMPFILE=$(mktemp)
+    cat ${COPYRIGHT_FILE} | cat - ${MESSAGE_FILE} > ${TEMPFILE} && mv ${TEMPFILE} ${MESSAGE_FILE}
+    TEMPFILE=$(mktemp)
+    cat ${COPYRIGHT_FILE} | cat - ${SERVICE_FILE} > ${TEMPFILE} && mv ${TEMPFILE} ${SERVICE_FILE}
 
 done
