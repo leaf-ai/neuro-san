@@ -66,7 +66,7 @@ class Origination:
         # Prepare the origin dictionary to append
         origin_dict: Dict[str, Any] = {
             "tool": agent_name,
-            "instatiation_index": instantiation_index
+            "instantiation_index": instantiation_index
         }
         new_origin.append(origin_dict)
 
