@@ -36,6 +36,7 @@ from neuro_san.internals.messages.origination import Origination
 from neuro_san.internals.utils.file_of_class import FileOfClass
 
 
+# pylint: disable=too-many-instance-attributes
 class AgentCli:
     """
     Command line tool for communicating with a Agent service
@@ -56,6 +57,7 @@ class AgentCli:
         self.session_id: str = None
         self.thinking_dir: str = None
 
+    # pylint: disable=too-many=branches
     def main(self):
         """
         Main entry point for command line user interaction
