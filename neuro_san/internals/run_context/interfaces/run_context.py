@@ -93,3 +93,10 @@ class RunContext(AgentSpecProvider):
                     of the agent.
         """
         raise NotImplementedError
+
+    def get_origin(self) -> List[str]:
+        """
+        :return: A List of strings indicating the origin of the run.
+                The origin can be considered a path to the original call to the front-man.
+        """
+        raise NotImplementedError

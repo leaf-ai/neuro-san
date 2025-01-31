@@ -139,17 +139,19 @@ class BranchTool(CallingTool, CallableTool):
         instructions = self.get_instructions()
         instructions = instructions + specific_instructions
 
+        origin: List[str] = self.run_context.get_origin()
+
         decision_name = self.get_decision_name()
         component_name = self.get_component_name()
         assistant_name = f"{decision_name}_{component_name}"
-        await self.journal.write(f"setting up {component_name} assistant...")
+        await self.journal.write(f"setting up {component_name} assistant...", origin)
 
         await self.create_resources(assistant_name, instructions)
 
         upper_component = component_name.upper()
-        await self.journal.write(f"{upper_component} CALLED>>> {specific_instructions}")
+        await self.journal.write(f"{upper_component} CALLED>>> {specific_instructions}", origin)
         if self.get_takes_awhile():
-            await self.journal.write("This may take awhile...")
+            await self.journal.write("This may take awhile...", origin)
 
         command = self.get_command()
         run: Run = await self.run_context.submit_message(command)
@@ -160,7 +162,7 @@ class BranchTool(CallingTool, CallableTool):
         messages = await self.integrate_callable_response(run, messages)
 
         response = generate_response(messages)
-        await self.journal.write(f"{upper_component} RETURNED>>> {response}")
+        await self.journal.write(f"{upper_component} RETURNED>>> {response}", origin)
         return response
 
     async def use_tool(self, tool_name: str, tool_args: Dict[str, Any], sly_data: Dict[str, Any]) -> str:

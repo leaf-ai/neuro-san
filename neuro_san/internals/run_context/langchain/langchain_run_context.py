@@ -12,6 +12,7 @@
 from typing import Any
 from typing import Dict
 from typing import List
+from copy import copy
 
 import json
 import uuid
@@ -47,6 +48,7 @@ from neuro_san.internals.run_context.langchain.langchain_openai_function_tool \
 from neuro_san.internals.run_context.langchain.llm_factory import LlmFactory
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
+from neuro_san.internals.run_context.utils.origin_utils import OriginUtils
 
 
 MINUTES: float = 60.0
@@ -62,6 +64,7 @@ class LangChainRunContext(RunContext):
     """
 
     def __init__(self, llm_config: Dict[str, Any],
+                 parent_run_context: RunContext,
                  tool_caller: ToolCaller,
                  invocation_context: InvocationContext):
         """
@@ -69,6 +72,7 @@ class LangChainRunContext(RunContext):
 
         :param llm_config: The default llm_config to use as an overlay
                             for the tool-specific llm_config
+        :param parent_run_context: The parent RunContext that is calling this one. Can be None.
         :param tool_caller: The tool caller to use
         :param invocation_context: The context policy container that pertains to the invocation
                     of the agent.
@@ -80,12 +84,17 @@ class LangChainRunContext(RunContext):
 
         self.tools: List[BaseTool] = []
         self.chat_history: List[BaseMessage] = []
-        self.assistant_name: str = None
         self.agent: Agent = None
         self.error_detector: ErrorDetector = None
         self.recent_human_message: HumanMessage = None
         self.tool_caller: ToolCaller = tool_caller
         self.invocation_context: InvocationContext = invocation_context
+
+        # Set up the origin by copying the list from its parent run context
+        self.origin: List[str] = []
+        if parent_run_context is not None:
+            self.origin = copy(parent_run_context.get_origin())
+        self.origin = OriginUtils.add_spec_name_to_origin(self.origin, tool_caller)
 
     async def create_resources(self, assistant_name: str,
                                instructions: str,
@@ -103,15 +112,18 @@ class LangChainRunContext(RunContext):
         :param tool_names: The list of registered tool names to use.
                     Default is None implying no tool is to be called.
         """
+        # DEF - Remove the arg if possible
+        _ = assistant_name
+
         # Create the model we will use.
         llm: BaseLanguageModel = LlmFactory.create_llm(self.llm_config)
 
-        self.assistant_name = assistant_name
+        full_name: str = OriginUtils.get_full_name_from_origin(self.origin)
 
         agent_spec: Dict[str, Any] = self.tool_caller.get_agent_tool_spec()
 
         # Now that we have a name, we can create an ErrorDetector for the output.
-        self.error_detector = ErrorDetector(assistant_name,
+        self.error_detector = ErrorDetector(full_name,
                                             error_formatter_name=agent_spec.get("error_formatter"),
                                             system_error_fragments=["Agent stopped"],
                                             agent_error_fragments=agent_spec.get("error_fragments"))
@@ -214,7 +226,8 @@ class LangChainRunContext(RunContext):
         try:
             self.recent_human_message = HumanMessage(user_message)
         except ValidationError as exception:
-            message = f"ValidationError in {self.assistant_name} with message: {user_message}"
+            full_name: str = OriginUtils.get_full_name_from_origin(self.origin)
+            message = f"ValidationError in {full_name} with message: {user_message}"
             raise ValueError(message) from exception
 
         # Create a run to return
@@ -416,3 +429,21 @@ class LangChainRunContext(RunContext):
                     of the agent.
         """
         return self.invocation_context
+
+    def get_origin(self) -> List[str]:
+        """
+        :return: A List of strings indicating the origin of the run.
+                The origin can be considered a path to the original call to the front-man.
+        """
+        return self.origin
+
+    def add_name_to_origin(self):
+        """
+        Adds the agent name to the origin.
+        """
+        # Add the name from the spec to the origin, if we have it.
+        if self.tool_caller is not None:
+            agent_spec: Dict[str, Any] = self.tool_caller.get_agent_tool_spec()
+            factory: AgentToolFactory = self.tool_caller.get_factory()
+            agent_name: str = factory.get_name_from_spec(agent_spec)
+            self.origin.append(agent_name)

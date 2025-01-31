@@ -121,11 +121,12 @@ def get_content(message: Any) -> str:
     raise ValueError(f"Don't know how to handle message type {message.__class__.__name__}")
 
 
-def convert_to_chat_message(message: BaseMessage) -> Dict[str, Any]:
+def convert_to_chat_message(message: BaseMessage, origin: List[str] = None) -> Dict[str, Any]:
     """
     Convert the BaseMessage to a chat.ChatMessage dictionary
 
     :param message: The BaseMessage to convert
+    :param origin: A list of strings indicating the origin of the message
     :return: The ChatMessage in dictionary form
     """
 
@@ -134,7 +135,10 @@ def convert_to_chat_message(message: BaseMessage) -> Dict[str, Any]:
         "type": message_type,
         "text": message.content,
         # No mime_data for now
-        # No origin for now
     }
+
+    # Handle the origin information if we have it
+    if origin is not None:
+        chat_message["origin"] = origin
 
     return chat_message

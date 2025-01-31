@@ -28,7 +28,6 @@ from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.compatibility_journal import CompatibilityJournal
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.agent_framework_message import AgentFrameworkMessage
-from neuro_san.internals.messages.chat_message_type import ChatMessageType
 from neuro_san.internals.messages.message_utils import convert_to_chat_message
 from neuro_san.internals.messages.message_utils import pretty_the_messages
 from neuro_san.internals.run_context.factory.run_context_factory import RunContextFactory
@@ -79,7 +78,6 @@ class DataDrivenChatSession(ChatSession):
         """
         # Reset the journal
         self.journal = CompatibilityJournal(self.queue)
-        await self.journal.write("setting up chat agent(s)...")
 
         # Reset any sly data
         # This ends up being the one reference to the sly_data that gets passed around
@@ -92,6 +90,8 @@ class DataDrivenChatSession(ChatSession):
         run_context: RunContext = RunContextFactory.create_run_context(None, None,
                                                                        invocation_context=self.invocation_context)
         self.front_man = self.registry.create_front_man(self.journal, self.sly_data, run_context)
+
+        await self.journal.write("setting up chat agent(s)...", self.front_man.get_origin())
         await self.front_man.create_resources()
 
     async def chat(self, user_input: str,
@@ -138,7 +138,7 @@ class DataDrivenChatSession(ChatSession):
             self.sly_data.update(sly_data)
 
         try:
-            await self.journal.write("consulting chat agent(s)...")
+            await self.journal.write("consulting chat agent(s)...", self.front_man.run_context.get_origin())
 
             # DEF - drill further down for iterator from here to enable getting
             #       messages from downstream agents.
@@ -159,7 +159,7 @@ class DataDrivenChatSession(ChatSession):
 
         chat_messages: List[Dict[str, Any]] = []
         for raw_message in raw_messages:
-            chat_message: Dict[str, Any] = convert_to_chat_message(raw_message)
+            chat_message: Dict[str, Any] = convert_to_chat_message(raw_message, self.front_man.run_context.get_origin())
             chat_messages.append(chat_message)
 
         return iter(chat_messages)
@@ -193,28 +193,6 @@ class DataDrivenChatSession(ChatSession):
         # Put an end-marker on the queue to tell the consumer we truly are done
         # and it doesn't need to wait for any more messages.
         await self.queue.put_final_item()
-
-    def is_streamable_message(self, chat_message: Dict[str, Any], index: int) -> bool:
-        """
-        Filter chat messages from the full logs that are in/appropriate for streaming.
-
-        :param chat_message: A Chat message dictionary of the form in chat.ChatMessage proto
-        :param index: The place in the chat history the message has
-        :return: True if the given message should be streamed back. False if not.
-        """
-
-        message_type: int = chat_message.get("type")
-
-        # Only report messages that are important enough to send back as part of chat
-        # (for now).  This includes any response for an AI (read: LLM), a tool, or
-        # agent or framework messages.
-        if message_type is None or message_type < ChatMessageType.AI:
-            return False
-
-        if index <= self.last_streamed_index:
-            return False
-
-        return True
 
     def get_journal(self) -> Journal:
         """

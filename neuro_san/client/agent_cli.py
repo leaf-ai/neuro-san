@@ -13,6 +13,7 @@
 from typing import Any
 from typing import Dict
 from typing import Generator
+from typing import List
 
 from copy import copy
 from time import sleep
@@ -28,6 +29,7 @@ from grpc import StatusCode
 from neuro_san.client.agent_session_factory import AgentSessionFactory
 from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
+from neuro_san.internals.run_context.utils.origin_utils import OriginUtils
 from neuro_san.internals.utils.file_of_class import FileOfClass
 
 
@@ -378,19 +380,19 @@ Have external tools that can be found in the local agent manifest use a service 
             message_type: ChatMessageType = ChatMessageType.from_response_type(response_type)
 
             text: str = response.get("text")
+            origin: List[str] = response.get("origin")
+            origin_str: str = OriginUtils.get_full_name_from_origin(origin)
 
             # Update chat response and maybe prompt.
             if text is not None:
                 if message_type == ChatMessageType.LEGACY_LOGS:
                     with open(self.args.thinking_file, "a", encoding="utf-8") as thinking:
+                        thinking.write(f"[{origin_str}]:\n")
                         thinking.write(text)
                         thinking.write("\n")
-                elif message_type == ChatMessageType.AGENT_FRAMEWORK:
-                    # Skip over the connectivity messages for this text-only client
-                    if response.get("origin") is None:
-                        print(f"{text}")
                 else:
-                    print(f"Response: {text}")
+                    print(f"Response from {origin_str}:")
+                    print(f"{text}")
                     last_chat_response = text
 
             return_state = {
