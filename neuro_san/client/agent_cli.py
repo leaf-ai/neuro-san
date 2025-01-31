@@ -57,7 +57,7 @@ class AgentCli:
         self.session_id: str = None
         self.thinking_dir: str = None
 
-    # pylint: disable=too-many=branches
+    # pylint: disable=too-many-branches
     def main(self):
         """
         Main entry point for command line user interaction
