@@ -115,9 +115,14 @@ context with which it will proces input, essentially telling it what to do.
         """
         return self.factory
 
-    def get_origin(self) -> List[str]:
+    def get_origin(self) -> List[Dict[str, Any]]:
         """
-        :return: The list of strings describing the origin associated with this node
+        :return: A List of origin dictionaries indicating the origin of the run.
+                The origin can be considered a path to the original call to the front-man.
+                Origin dictionaries themselves each have the following keys:
+                    "tool"                  The string name of the tool in the spec
+                    "instantiation_index"   An integer indicating which incarnation
+                                            of the tool is being dealt with. Starts at 0.
         """
         return self.run_context.get_origin()
 

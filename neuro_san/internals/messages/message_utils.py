@@ -121,12 +121,17 @@ def get_content(message: Any) -> str:
     raise ValueError(f"Don't know how to handle message type {message.__class__.__name__}")
 
 
-def convert_to_chat_message(message: BaseMessage, origin: List[str] = None) -> Dict[str, Any]:
+def convert_to_chat_message(message: BaseMessage, origin: List[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
     Convert the BaseMessage to a chat.ChatMessage dictionary
 
     :param message: The BaseMessage to convert
-    :param origin: A list of strings indicating the origin of the message
+    :param origin: A List of origin dictionaries indicating the origin of the run.
+            The origin can be considered a path to the original call to the front-man.
+            Origin dictionaries themselves each have the following keys:
+                "tool"                  The string name of the tool in the spec
+                "instantiation_index"   An integer indicating which incarnation
+                                        of the tool is being dealt with. Starts at 0.
     :return: The ChatMessage in dictionary form
     """
 

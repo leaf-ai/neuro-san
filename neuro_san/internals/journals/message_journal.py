@@ -37,11 +37,16 @@ class MessageJournal(Journal):
         """
         self.hopper = hopper
 
-    async def write(self, entry: Union[str, bytes], origin: List[str]):
+    async def write(self, entry: Union[str, bytes], origin: List[Dict[str, Any]]):
         """
         :param entry: Add a string-ish entry to the logs.
                     Can be either a string or bytes.
-        :param origin: A list of strings describing the originating agent of the information
+        :param origin: A List of origin dictionaries indicating the origin of the run.
+                The origin can be considered a path to the original call to the front-man.
+                Origin dictionaries themselves each have the following keys:
+                    "tool"                  The string name of the tool in the spec
+                    "instantiation_index"   An integer indicating which incarnation
+                                            of the tool is being dealt with. Starts at 0.
         """
         # Decoding bytes to string if necessary
         if isinstance(entry, bytes):
@@ -56,11 +61,16 @@ class MessageJournal(Journal):
         """
         return None
 
-    async def write_message(self, message: BaseMessage, origin: List[str]):
+    async def write_message(self, message: BaseMessage, origin: List[Dict[str, Any]]):
         """
         Writes a BaseMessage entry into the journal
         :param message: The BaseMessage instance to write to the journal
-        :param origin: A list of strings describing the originating agent of the information
+        :param origin: A List of origin dictionaries indicating the origin of the run.
+                The origin can be considered a path to the original call to the front-man.
+                Origin dictionaries themselves each have the following keys:
+                    "tool"                  The string name of the tool in the spec
+                    "instantiation_index"   An integer indicating which incarnation
+                                            of the tool is being dealt with. Starts at 0.
         """
         message_dict: Dict[str, Any] = convert_to_chat_message(message, origin)
 

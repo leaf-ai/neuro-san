@@ -91,7 +91,7 @@ class LangChainRunContext(RunContext):
         self.invocation_context: InvocationContext = invocation_context
 
         # Set up the origin by copying the list from its parent run context
-        self.origin: List[str] = []
+        self.origin: List[Dict[str, Any]] = []
         if parent_run_context is not None:
             self.origin = copy(parent_run_context.get_origin())
         self.origin = OriginUtils.add_spec_name_to_origin(self.origin, tool_caller)
@@ -430,20 +430,13 @@ class LangChainRunContext(RunContext):
         """
         return self.invocation_context
 
-    def get_origin(self) -> List[str]:
+    def get_origin(self) -> List[Dict[str, Any]]:
         """
-        :return: A List of strings indicating the origin of the run.
+        :return: A List of origin dictionaries indicating the origin of the run.
                 The origin can be considered a path to the original call to the front-man.
+                Origin dictionaries themselves each have the following keys:
+                    "tool"                  The string name of the tool in the spec
+                    "instantiation_index"   An integer indicating which incarnation
+                                            of the tool is being dealt with. Starts at 0.
         """
         return self.origin
-
-    def add_name_to_origin(self):
-        """
-        Adds the agent name to the origin.
-        """
-        # Add the name from the spec to the origin, if we have it.
-        if self.tool_caller is not None:
-            agent_spec: Dict[str, Any] = self.tool_caller.get_agent_tool_spec()
-            factory: AgentToolFactory = self.tool_caller.get_factory()
-            agent_name: str = factory.get_name_from_spec(agent_spec)
-            self.origin.append(agent_name)

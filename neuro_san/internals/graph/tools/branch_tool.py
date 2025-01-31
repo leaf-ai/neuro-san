@@ -139,7 +139,7 @@ class BranchTool(CallingTool, CallableTool):
         instructions = self.get_instructions()
         instructions = instructions + specific_instructions
 
-        origin: List[str] = self.run_context.get_origin()
+        origin: List[Dict[str, Any]] = self.run_context.get_origin()
 
         decision_name = self.get_decision_name()
         component_name = self.get_component_name()

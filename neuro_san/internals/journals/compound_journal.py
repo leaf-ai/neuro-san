@@ -10,6 +10,7 @@
 #
 # END COPYRIGHT
 from typing import Any
+from typing import Dict
 from typing import List
 from typing import Union
 
@@ -33,11 +34,16 @@ class CompoundJournal(Journal):
         if self.journals is None:
             self.journals = []
 
-    async def write(self, entry: Union[str, bytes], origin: List[str]):
+    async def write(self, entry: Union[str, bytes], origin: List[Dict[str, Any]]):
         """
         Writes a single string entry into each journal.
         :param entry: The logs entry to write
-        :param origin: A list of strings describing the originating agent of the information
+        :param origin: A List of origin dictionaries indicating the origin of the run.
+                The origin can be considered a path to the original call to the front-man.
+                Origin dictionaries themselves each have the following keys:
+                    "tool"                  The string name of the tool in the spec
+                    "instantiation_index"   An integer indicating which incarnation
+                                            of the tool is being dealt with. Starts at 0.
         """
         for journal in self.journals:
             await journal.write(entry, origin)
@@ -61,11 +67,16 @@ class CompoundJournal(Journal):
         """
         self.journals.append(journal)
 
-    async def write_message(self, message: BaseMessage, origin: List[str]):
+    async def write_message(self, message: BaseMessage, origin: List[Dict[str, Any]]):
         """
         Writes a BaseMessage entry into the journal
         :param message: The BaseMessage instance to write to the journal
-        :param origin: A list of strings describing the originating agent of the information
+        :param origin: A List of origin dictionaries indicating the origin of the run.
+                The origin can be considered a path to the original call to the front-man.
+                Origin dictionaries themselves each have the following keys:
+                    "tool"                  The string name of the tool in the spec
+                    "instantiation_index"   An integer indicating which incarnation
+                                            of the tool is being dealt with. Starts at 0.
         """
         for journal in self.journals:
             await journal.write_message(message, origin)
