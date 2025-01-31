@@ -24,9 +24,10 @@ class Origination:
     Origin dictionaries themselves each have the following keys:
         "tool"                  The string name of the tool in the spec
         "instantiation_index"   An integer indicating which incarnation
-                                of the tool is being dealt with. Starts at 0.
+                                of the tool is being dealt with.
     """
 
+    INSTANTIATION_START: int = 1
     NUM_INSTANTIATION_INDEX_DIGITS: int = 2
 
     def __init__(self):
@@ -44,7 +45,7 @@ class Origination:
                 Origin dictionaries themselves each have the following keys:
                     "tool"                  The string name of the tool in the spec
                     "instantiation_index"   An integer indicating which incarnation
-                                            of the tool is being dealt with. Starts at 0.
+                                            of the tool is being dealt with.
         :param agent_name: The agent name to be added to the list.
         :return: The new origin with the agent name at the end of the list
         """
@@ -80,7 +81,7 @@ class Origination:
                 Origin dictionaries themselves each have the following keys:
                     "tool"                  The string name of the tool in the spec
                     "instantiation_index"   An integer indicating which incarnation
-                                            of the tool is being dealt with. Starts at 0.
+                                            of the tool is being dealt with.
         :return: A single string name given an origin path/list
         """
         if origin is None:
@@ -91,7 +92,7 @@ class Origination:
         for origin_dict in origin:
 
             # Get basic fields from the dict
-            instantiation_index: int = origin_dict.get("instantiation_index", 0)
+            instantiation_index: int = origin_dict.get("instantiation_index", Origination.INSTANTIATION_START)
             tool: str = origin_dict.get("tool")
             if tool is None:
                 # No information of value will be conveyed with no tool set in the dict.
@@ -99,7 +100,7 @@ class Origination:
 
             # Figure out how we will deal with the index
             index_str: str = ""
-            if instantiation_index > 0:
+            if instantiation_index > Origination.INSTANTIATION_START:
                 # zfill() adds leading 0's up to the number of characters provided
                 index_str = f"-{str(instantiation_index).zfill(Origination.NUM_INSTANTIATION_INDEX_DIGITS)}"
 

@@ -125,7 +125,7 @@ context with which it will proces input, essentially telling it what to do.
                 Origin dictionaries themselves each have the following keys:
                     "tool"                  The string name of the tool in the spec
                     "instantiation_index"   An integer indicating which incarnation
-                                            of the tool is being dealt with. Starts at 0.
+                                            of the tool is being dealt with.
         """
         return self.run_context.get_origin()
 

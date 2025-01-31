@@ -131,7 +131,7 @@ def convert_to_chat_message(message: BaseMessage, origin: List[Dict[str, Any]] =
             Origin dictionaries themselves each have the following keys:
                 "tool"                  The string name of the tool in the spec
                 "instantiation_index"   An integer indicating which incarnation
-                                        of the tool is being dealt with. Starts at 0.
+                                        of the tool is being dealt with.
     :return: The ChatMessage in dictionary form
     """
 

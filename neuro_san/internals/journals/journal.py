@@ -31,7 +31,7 @@ class Journal:
                 Origin dictionaries themselves each have the following keys:
                     "tool"                  The string name of the tool in the spec
                     "instantiation_index"   An integer indicating which incarnation
-                                            of the tool is being dealt with. Starts at 0.
+                                            of the tool is being dealt with.
         """
         raise NotImplementedError
 
@@ -50,6 +50,6 @@ class Journal:
                 Origin dictionaries themselves each have the following keys:
                     "tool"                  The string name of the tool in the spec
                     "instantiation_index"   An integer indicating which incarnation
-                                            of the tool is being dealt with. Starts at 0.
+                                            of the tool is being dealt with.
         """
         raise NotImplementedError
