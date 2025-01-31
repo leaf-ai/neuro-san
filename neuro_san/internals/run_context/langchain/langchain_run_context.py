@@ -12,7 +12,6 @@
 from typing import Any
 from typing import Dict
 from typing import List
-from copy import copy
 
 import json
 import uuid
@@ -48,7 +47,7 @@ from neuro_san.internals.run_context.langchain.langchain_openai_function_tool \
 from neuro_san.internals.run_context.langchain.llm_factory import LlmFactory
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
-from neuro_san.internals.run_context.utils.origin_utils import OriginUtils
+from neuro_san.internals.run_context.utils.origination import Origination
 
 
 MINUTES: float = 60.0
@@ -93,8 +92,8 @@ class LangChainRunContext(RunContext):
         # Set up the origin by copying the list from its parent run context
         self.origin: List[Dict[str, Any]] = []
         if parent_run_context is not None:
-            self.origin = copy(parent_run_context.get_origin())
-        self.origin = OriginUtils.add_spec_name_to_origin(self.origin, tool_caller)
+            origination = Origination()
+            self.origin = origination.add_spec_name_to_origin(parent_run_context.get_origin(), tool_caller)
 
     async def create_resources(self, assistant_name: str,
                                instructions: str,
@@ -118,7 +117,7 @@ class LangChainRunContext(RunContext):
         # Create the model we will use.
         llm: BaseLanguageModel = LlmFactory.create_llm(self.llm_config)
 
-        full_name: str = OriginUtils.get_full_name_from_origin(self.origin)
+        full_name: str = Origination.get_full_name_from_origin(self.origin)
 
         agent_spec: Dict[str, Any] = self.tool_caller.get_agent_tool_spec()
 
@@ -226,7 +225,7 @@ class LangChainRunContext(RunContext):
         try:
             self.recent_human_message = HumanMessage(user_message)
         except ValidationError as exception:
-            full_name: str = OriginUtils.get_full_name_from_origin(self.origin)
+            full_name: str = Origination.get_full_name_from_origin(self.origin)
             message = f"ValidationError in {full_name} with message: {user_message}"
             raise ValueError(message) from exception
 

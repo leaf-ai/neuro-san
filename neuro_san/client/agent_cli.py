@@ -29,7 +29,7 @@ from grpc import StatusCode
 from neuro_san.client.agent_session_factory import AgentSessionFactory
 from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
-from neuro_san.internals.run_context.utils.origin_utils import OriginUtils
+from neuro_san.internals.run_context.utils.origination import Origination
 from neuro_san.internals.utils.file_of_class import FileOfClass
 
 
@@ -381,7 +381,7 @@ Have external tools that can be found in the local agent manifest use a service 
 
             text: str = response.get("text")
             origin: List[str] = response.get("origin")
-            origin_str: str = OriginUtils.get_full_name_from_origin(origin)
+            origin_str: str = Origination.get_full_name_from_origin(origin)
 
             # Update chat response and maybe prompt.
             if text is not None:

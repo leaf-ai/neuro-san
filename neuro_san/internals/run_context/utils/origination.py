@@ -12,13 +12,15 @@ from typing import Any
 from typing import Dict
 from typing import List
 
+from copy import copy
+
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.tool_caller import ToolCaller
 
 
-class OriginUtils:
+class Origination:
     """
-    Static utility class for common code that manipulates origin information.
+    Common coode and state that manipulates and keeps track of origin information.
 
     A full origin description is a List of Dictionaries indicating the origin of a chat message.
     An origin can be considered a path to the original call to the front-man.
@@ -30,12 +32,17 @@ class OriginUtils:
 
     NUM_INSTANTIATION_INDEX_DIGITS: int = 2
 
-    @staticmethod
-    def add_spec_name_to_origin(origin: List[Dict[str, Any]], tool_caller: ToolCaller) \
+    def __init__(self):
+        """
+        Constructor
+        """
+        self.tool_to_index_map: Dict[str, int] = {}
+
+    def add_spec_name_to_origin(self, origin: List[Dict[str, Any]], tool_caller: ToolCaller) \
             -> List[Dict[str, Any]]:
         """
-        Adds the agent name to the origin.
-        :param origin: A List of origin dictionaries indicating the origin of the run.
+        Adds a single component origin dictionary to the given origin list.
+        :param origin: A new List of origin dictionaries indicating the origin of the run.
                 The origin can be considered a path to the original call to the front-man.
                 Origin dictionaries themselves each have the following keys:
                     "tool"                  The string name of the tool in the spec
@@ -48,20 +55,31 @@ class OriginUtils:
             origin = []
 
         # Add the name from the spec to the origin, if we have it.
-        if tool_caller is not None:
-            # Get the agent name
-            agent_spec: Dict[str, Any] = tool_caller.get_agent_tool_spec()
-            factory: AgentToolFactory = tool_caller.get_factory()
-            agent_name: str = factory.get_name_from_spec(agent_spec)
+        if tool_caller is None:
+            return origin
 
-            # Prepare the origin dictionary to append
-            origin_dict: Dict[str, Any] = {
-                "tool": agent_name,
-                "instatiation_index": 0
-            }
-            origin.append(origin_dict)
+        # Make a shallow copy of the list, as we are going to modify it
+        # and don't want to muck with the original
+        new_origin: List[Dict[str, Any]] = copy(origin)
 
-        return origin
+        # Get the agent name
+        agent_spec: Dict[str, Any] = tool_caller.get_agent_tool_spec()
+        factory: AgentToolFactory = tool_caller.get_factory()
+        agent_name: str = factory.get_name_from_spec(agent_spec)
+
+        # Find the current instantiation index for the tool
+        # and increment it in the map for later use
+        instantiation_index: int = self.tool_to_index_map.get(agent_name, 0)
+        self.tool_to_index_map[agent_name] = instantiation_index + 1
+
+        # Prepare the origin dictionary to append
+        origin_dict: Dict[str, Any] = {
+            "tool": agent_name,
+            "instatiation_index": instantiation_index
+        }
+        new_origin.append(origin_dict)
+
+        return new_origin
 
     @staticmethod
     def get_full_name_from_origin(origin: List[Dict[str, Any]]) -> str:
@@ -92,7 +110,7 @@ class OriginUtils:
             index_str: str = ""
             if instantiation_index > 0:
                 # zfill() adds leading 0's up to the number of characters provided
-                index_str = f"-{str(instantiation_index).zfill(OriginUtils.NUM_INSTANTIATION_INDEX_DIGITS)}"
+                index_str = f"-{str(instantiation_index).zfill(Origination.NUM_INSTANTIATION_INDEX_DIGITS)}"
 
             # Figure out the single origin string
             origin_str: str = f"{tool}{index_str}"
