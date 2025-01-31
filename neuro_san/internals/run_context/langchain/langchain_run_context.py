@@ -92,8 +92,15 @@ class LangChainRunContext(RunContext):
         # Set up the origin by copying the list from its parent run context
         self.origin: List[Dict[str, Any]] = []
         if parent_run_context is not None:
-            origination = Origination()
-            self.origin = origination.add_spec_name_to_origin(parent_run_context.get_origin(), tool_caller)
+
+            # Get the agent name
+            agent_spec: Dict[str, Any] = tool_caller.get_agent_tool_spec()
+            factory: AgentToolFactory = tool_caller.get_factory()
+            agent_name: str = factory.get_name_from_spec(agent_spec)
+
+            # Settle the origin
+            origination: Origination = self.invocation_context.get_origination()
+            self.origin = origination.add_spec_name_to_origin(parent_run_context.get_origin(), agent_name)
 
     async def create_resources(self, assistant_name: str,
                                instructions: str,

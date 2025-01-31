@@ -14,13 +14,10 @@ from typing import List
 
 from copy import copy
 
-from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
-from neuro_san.internals.run_context.interfaces.tool_caller import ToolCaller
-
 
 class Origination:
     """
-    Common coode and state that manipulates and keeps track of origin information.
+    Originator implementation for Common coode and state that manipulates and keeps track of origin information.
 
     A full origin description is a List of Dictionaries indicating the origin of a chat message.
     An origin can be considered a path to the original call to the front-man.
@@ -38,7 +35,7 @@ class Origination:
         """
         self.tool_to_index_map: Dict[str, int] = {}
 
-    def add_spec_name_to_origin(self, origin: List[Dict[str, Any]], tool_caller: ToolCaller) \
+    def add_spec_name_to_origin(self, origin: List[Dict[str, Any]], agent_name: str) \
             -> List[Dict[str, Any]]:
         """
         Adds a single component origin dictionary to the given origin list.
@@ -48,24 +45,18 @@ class Origination:
                     "tool"                  The string name of the tool in the spec
                     "instantiation_index"   An integer indicating which incarnation
                                             of the tool is being dealt with. Starts at 0.
-        :param tool_caller: The ToolCaller whose agent name is to be added to the list.
+        :param agent_name: The agent name to be added to the list.
         :return: The new origin with the agent name at the end of the list
         """
-        if origin is None:
-            origin = []
+        new_origin: List[Dict[str, Any]] = []
 
         # Add the name from the spec to the origin, if we have it.
-        if tool_caller is None:
-            return origin
+        if origin is None or agent_name is None:
+            return new_origin
 
         # Make a shallow copy of the list, as we are going to modify it
         # and don't want to muck with the original
-        new_origin: List[Dict[str, Any]] = copy(origin)
-
-        # Get the agent name
-        agent_spec: Dict[str, Any] = tool_caller.get_agent_tool_spec()
-        factory: AgentToolFactory = tool_caller.get_factory()
-        agent_name: str = factory.get_name_from_spec(agent_spec)
+        new_origin = copy(origin)
 
         # Find the current instantiation index for the tool
         # and increment it in the map for later use
