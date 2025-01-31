@@ -87,11 +87,14 @@ class CallingTool(ToolCaller):
         """
         return self.agent_tool_spec
 
-    def get_component_name(self) -> str:
+    def get_name(self) -> str:
         """
-        :return: The string name of the component
+        :return: the name of the data-driven agent as it comes from the spec
         """
-        return self.agent_tool_spec.get("name")
+        agent_spec: Dict[str, Any] = self.get_agent_tool_spec()
+        factory: AgentToolFactory = self.get_factory()
+        agent_name: str = factory.get_name_from_spec(agent_spec)
+        return agent_name
 
     def get_instructions(self) -> str:
         """
@@ -99,7 +102,7 @@ class CallingTool(ToolCaller):
         """
         instructions: str = self.agent_tool_spec.get("instructions")
         if instructions is None:
-            agent_name: str = self.get_component_name()
+            agent_name: str = self.get_name()
             message: str = f"""
 The agent named "{agent_name}" has no instructions specified for it.
 
@@ -137,7 +140,7 @@ context with which it will proces input, essentially telling it what to do.
         """
         name = component_name
         if name is None:
-            name = self.get_component_name()
+            name = self.get_name()
 
         instructions = specific_instructions
         if instructions is None:

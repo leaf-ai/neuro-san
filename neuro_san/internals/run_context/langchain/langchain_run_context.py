@@ -89,16 +89,11 @@ class LangChainRunContext(RunContext):
         self.tool_caller: ToolCaller = tool_caller
         self.invocation_context: InvocationContext = invocation_context
 
-        # Set up the origin by copying the list from its parent run context
         self.origin: List[Dict[str, Any]] = []
         if parent_run_context is not None:
 
-            # Get the agent name
-            agent_spec: Dict[str, Any] = tool_caller.get_agent_tool_spec()
-            factory: AgentToolFactory = tool_caller.get_factory()
-            agent_name: str = factory.get_name_from_spec(agent_spec)
-
-            # Settle the origin
+            # Settle the origin.
+            agent_name: str = tool_caller.get_name()
             origination: Origination = self.invocation_context.get_origination()
             self.origin = origination.add_spec_name_to_origin(parent_run_context.get_origin(), agent_name)
 

@@ -142,7 +142,7 @@ class BranchTool(CallingTool, CallableTool):
         origin: List[Dict[str, Any]] = self.run_context.get_origin()
 
         decision_name = self.get_decision_name()
-        component_name = self.get_component_name()
+        component_name = self.get_name()
         assistant_name = f"{decision_name}_{component_name}"
         await self.journal.write(f"setting up {component_name} assistant...", origin)
 
