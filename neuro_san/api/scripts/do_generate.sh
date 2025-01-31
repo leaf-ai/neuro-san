@@ -36,6 +36,8 @@ echo "PROTO_PATH is ${PROTO_PATH}"
 # Inputs to the script
 LOCAL_PROTO_FILES=$(< "${DIR}"/protobuf_manifest.txt)
 
+COPYRIGHT_FILE="${TOP_LEVEL}/build_scripts/source_available_copyright.txt"
+
 # Where output files go.
 PYTHON_OUT=${TOP_LEVEL}
 
@@ -102,4 +104,12 @@ do
         --python_out="${PYTHON_OUT}" \
         --grpc_python_out="${PYTHON_OUT}" \
         "${PROTO_FILE}"
+
+    # Prepend copyrights to output files
+    MESSAGE_FILE="${PROTO_FILE/.proto/_pb2.py}"
+    SERVICE_FILE="${PROTO_FILE/.proto/_pb2_grpc.py}"
+
+    cat ${COPYRIGHT_FILE} | cat - ${MESSAGE_FILE} > temp && mv temp ${MESSAGE_FILE}
+    cat ${COPYRIGHT_FILE} | cat - ${SERVICE_FILE} > temp && mv temp ${SERVICE_FILE}
+
 done
