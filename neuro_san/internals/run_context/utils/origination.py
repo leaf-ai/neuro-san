@@ -17,7 +17,8 @@ from copy import copy
 
 class Origination:
     """
-    Originator implementation for Common coode and state that manipulates and keeps track of origin information.
+    An instance for Common coode and state that manipulates and keeps track of origin information
+    on a per-AgentSession basis.
 
     A full origin description is a List of Dictionaries indicating the origin of a chat message.
     An origin can be considered a path to the original call to the front-man.
