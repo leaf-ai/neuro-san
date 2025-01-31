@@ -105,8 +105,11 @@ Some suggestions:
         initial_prompt: str = function.get("description")
         print(f"\n{initial_prompt}\n")
 
-        print("To see the thinking involved with the agent:\n"
-              f"    tail -f {self.args.thinking_file}\n")
+        print("To see the thinking involved with the agent:\n")
+        if not self.args.thinking_dir:
+            print(f"    tail -f {self.args.thinking_file}\n")
+        else:
+            print(f"    See any one of the files in {self.thinking_dir} for agent network chat details.\n")
 
         state: Dict[str, Any] = {
             "last_logs": [],
