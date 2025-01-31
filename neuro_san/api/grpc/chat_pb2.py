@@ -26,7 +26,7 @@ from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
 from neuro_san.api.grpc import mime_data_pb2 as neuro__san_dot_api_dot_grpc_dot_mime__data__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1dneuro_san/api/grpc/chat.proto\x12(dev.cognizant_ai.neuro_san.api.grpc.chat\x1a\x1cgoogle/protobuf/struct.proto\x1a\"neuro_san/api/grpc/mime_data.proto\"M\n\x06Origin\x12\x12\n\x04tool\x18\x01 \x01(\tR\x04tool\x12/\n\x12instatiation_index\x18\x02 \x01(\x05R\x13instantiation_index\"\xb7\x03\n\x0b\x43hatMessage\x12S\n\x04type\x18\x01 \x01(\x0e\x32\x45.dev.cognizant_ai.neuro_san.api.grpc.chat.ChatMessage.ChatMessageType\x12\x0c\n\x04text\x18\x02 \x01(\t\x12U\n\tmime_data\x18\x03 \x03(\x0b\x32\x37.dev.cognizant_ai.neuro_san.api.grpc.mime_data.MimeDataR\tmime_data\x12H\n\x06origin\x18\x04 \x03(\x0b\x32\x30.dev.cognizant_ai.neuro_san.api.grpc.chat.OriginR\x06origin\x12*\n\tstructure\x18\x05 \x01(\x0b\x32\x17.google.protobuf.Struct\"x\n\x0f\x43hatMessageType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\n\n\x06SYSTEM\x10\x01\x12\t\n\x05HUMAN\x10\x02\x12\x08\n\x04TOOL\x10\x03\x12\x06\n\x02\x41I\x10\x04\x12\t\n\x05\x41GENT\x10\x64\x12\x13\n\x0f\x41GENT_FRAMEWORK\x10\x65\x12\x0f\n\x0bLEGACY_LOGS\x10\x66\x42\\ZZgithub.com/leaf-ai/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/chat/v1;chatb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1dneuro_san/api/grpc/chat.proto\x12(dev.cognizant_ai.neuro_san.api.grpc.chat\x1a\x1cgoogle/protobuf/struct.proto\x1a\"neuro_san/api/grpc/mime_data.proto\"N\n\x06Origin\x12\x12\n\x04tool\x18\x01 \x01(\tR\x04tool\x12\x30\n\x13instantiation_index\x18\x02 \x01(\x05R\x13instantiation_index\"\xb7\x03\n\x0b\x43hatMessage\x12S\n\x04type\x18\x01 \x01(\x0e\x32\x45.dev.cognizant_ai.neuro_san.api.grpc.chat.ChatMessage.ChatMessageType\x12\x0c\n\x04text\x18\x02 \x01(\t\x12U\n\tmime_data\x18\x03 \x03(\x0b\x32\x37.dev.cognizant_ai.neuro_san.api.grpc.mime_data.MimeDataR\tmime_data\x12H\n\x06origin\x18\x04 \x03(\x0b\x32\x30.dev.cognizant_ai.neuro_san.api.grpc.chat.OriginR\x06origin\x12*\n\tstructure\x18\x05 \x01(\x0b\x32\x17.google.protobuf.Struct\"x\n\x0f\x43hatMessageType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\n\n\x06SYSTEM\x10\x01\x12\t\n\x05HUMAN\x10\x02\x12\x08\n\x04TOOL\x10\x03\x12\x06\n\x02\x41I\x10\x04\x12\t\n\x05\x41GENT\x10\x64\x12\x13\n\x0f\x41GENT_FRAMEWORK\x10\x65\x12\x0f\n\x0bLEGACY_LOGS\x10\x66\x42\\ZZgithub.com/leaf-ai/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/chat/v1;chatb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -35,9 +35,9 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['DESCRIPTOR']._options = None
   _globals['DESCRIPTOR']._serialized_options = b'ZZgithub.com/leaf-ai/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/chat/v1;chat'
   _globals['_ORIGIN']._serialized_start=141
-  _globals['_ORIGIN']._serialized_end=218
-  _globals['_CHATMESSAGE']._serialized_start=221
-  _globals['_CHATMESSAGE']._serialized_end=660
-  _globals['_CHATMESSAGE_CHATMESSAGETYPE']._serialized_start=540
-  _globals['_CHATMESSAGE_CHATMESSAGETYPE']._serialized_end=660
+  _globals['_ORIGIN']._serialized_end=219
+  _globals['_CHATMESSAGE']._serialized_start=222
+  _globals['_CHATMESSAGE']._serialized_end=661
+  _globals['_CHATMESSAGE_CHATMESSAGETYPE']._serialized_start=541
+  _globals['_CHATMESSAGE_CHATMESSAGETYPE']._serialized_end=661
 # @@protoc_insertion_point(module_scope)

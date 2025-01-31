@@ -32,7 +32,7 @@ message Origin {
     // Some tools can be called more than once my one or more different paths.
     // Allow for an instantiation index to distinguish these in the chat stream.
     // Index counting starts at 0.
-    int32 instatiation_index = 2 [json_name="instantiation_index"];
+    int32 instantiation_index = 2 [json_name="instantiation_index"];
 }
 
 
