@@ -13,7 +13,7 @@
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
-from neuro_san.internals.run_context.utils.origination import Origination
+from neuro_san.internals.messages.origination import Origination
 
 
 class InvocationContext:

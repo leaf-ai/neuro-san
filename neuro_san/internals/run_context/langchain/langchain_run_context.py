@@ -37,6 +37,7 @@ from neuro_san.internals.errors.error_detector import ErrorDetector
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
+from neuro_san.internals.messages.origination import Origination
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.run import Run
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
@@ -47,7 +48,6 @@ from neuro_san.internals.run_context.langchain.langchain_openai_function_tool \
 from neuro_san.internals.run_context.langchain.llm_factory import LlmFactory
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
-from neuro_san.internals.run_context.utils.origination import Origination
 
 
 MINUTES: float = 60.0
