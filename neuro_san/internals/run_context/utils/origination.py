@@ -61,7 +61,7 @@ class Origination:
 
         # Find the current instantiation index for the tool
         # and increment it in the map for later use
-        instantiation_index: int = self.tool_to_index_map.get(agent_name, 0)
+        instantiation_index: int = self.tool_to_index_map.get(agent_name, Origination.INSTANTIATION_START)
         self.tool_to_index_map[agent_name] = instantiation_index + 1
 
         # Prepare the origin dictionary to append
