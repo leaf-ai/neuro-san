@@ -193,7 +193,7 @@ class DirectAgentSession(AgentSession):
             # Create an asynchronous background task to process the user input.
             # This might take a few minutes, which can be longer than some
             # sockets stay open.
-            asyncio_executor: AsyncioExecutor = self.invocation_context.get_asyncio_executor()
+            asyncio_executor: AsyncioExecutor = chat_session.get_invocation_context().get_asyncio_executor()
             future: Future = asyncio_executor.submit(session_id, chat_session.chat,
                                                      user_input, sly_data)
             _ = future
@@ -295,7 +295,7 @@ class DirectAgentSession(AgentSession):
         if chat_session is not None:
             # We have seen this session_id before and can poll for a new response.
             status = self.FOUND
-            asyncio_executor: AsyncioExecutor = self.invocation_context.get_asyncio_executor()
+            asyncio_executor: AsyncioExecutor = chat_session.get_invocation_context().get_asyncio_executor()
             future: Future = asyncio_executor.submit(session_id, chat_session.set_up)
             _ = future
 
@@ -381,7 +381,7 @@ class DirectAgentSession(AgentSession):
         # Create an asynchronous background task to process the user input.
         # This might take a few minutes, which can be longer than some
         # sockets stay open.
-        asyncio_executor: AsyncioExecutor = self.invocation_context.get_asyncio_executor()
+        asyncio_executor: AsyncioExecutor = chat_session.get_invocation_context().get_asyncio_executor()
         future: Future = asyncio_executor.submit(session_id, chat_session.streaming_chat,
                                                  user_input, sly_data)
         # Ignore the future. Live in the now.
@@ -395,7 +395,7 @@ class DirectAgentSession(AgentSession):
                                          generated_type=Dict,
                                          keep_alive_result=empty,
                                          keep_alive_timeout_seconds=10.0)
-        for message in generator.synchronously_iterate(self.invocation_context.get_queue()):
+        for message in generator.synchronously_iterate(chat_session.get_invocation_context().get_queue()):
 
             response_dict: Dict[str, Any] = copy(template_response_dict)
             if any(message):

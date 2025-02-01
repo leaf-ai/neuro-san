@@ -203,7 +203,7 @@ class AsyncDirectAgentSession(AsyncAgentSession):
         # Create an asynchronous background task to process the user input.
         # This might take a few minutes, which can be longer than some
         # sockets stay open.
-        asyncio_executor: AsyncioExecutor = self.invocation_context.get_asyncio_executor()
+        asyncio_executor: AsyncioExecutor = chat_session.get_invocation_context().get_asyncio_executor()
         future: Future = asyncio_executor.submit(session_id, chat_session.streaming_chat,
                                                  user_input, sly_data)
         # Ignore the future. Live in the now.
@@ -212,7 +212,7 @@ class AsyncDirectAgentSession(AsyncAgentSession):
         # The generator below will asynchronously block waiting for
         # chat.ChatMessage dictionaries to come back asynchronously from the submit()
         # above until there are no more from the input.
-        generator = self.invocation_context.get_queue()
+        generator = chat_session.get_invocation_context().get_queue()
         async for message in generator:
 
             response_dict: Dict[str, Any] = copy(template_response_dict)
