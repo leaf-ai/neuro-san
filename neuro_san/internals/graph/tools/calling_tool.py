@@ -62,24 +62,41 @@ class CallingTool(ToolCaller):
         self.factory: AgentToolFactory = factory
         self.agent_tool_spec: Dict[str, Any] = agent_tool_spec
         self.sly_data: Dict[str, Any] = sly_data
-
-        empty: Dict[str, Any] = {}
-        overlayer = DictionaryOverlay()
+        self.run_context: RunContext = None
 
         # Get the llm config as a combination of defaults from different places in the config
-        config: Dict[str, Any] = self.factory.get_config()
-        llm_config = config.get("llm_config", empty)
-        llm_config = overlayer.overlay(llm_config, self.agent_tool_spec.get("llm_config", empty))
+        agent_network_config: Dict[str, Any] = self.factory.get_config()
+        spec_llm_config: Dict[str, Any] = self.agent_tool_spec.get("llm_config")
+        run_context_config: Dict[str, Any] = self.prepare_run_context_config(agent_network_config,
+                                                                             spec_llm_config)
+        self.run_context = RunContextFactory.create_run_context(parent_run_context, self,
+                                                                config=run_context_config)
+
+    @staticmethod
+    def prepare_run_context_config(agent_network_config: Dict[str, Any],
+                                   spec_llm_config: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Get the llm config as a combination of defaults from different places in the config
+
+        :param agent_network_config: The entirety of the agent network's config
+        :param spec_llm_config: The llm config for the agent spec
+        :return: A merged llm config to use for a RunContext
+        """
+        empty: Dict[str, Any] = {}
+        if spec_llm_config is None:
+            spec_llm_config = empty
+
+        overlayer = DictionaryOverlay()
+        llm_config = agent_network_config.get("llm_config", empty)
+        llm_config = overlayer.overlay(llm_config, spec_llm_config)
         if len(llm_config.keys()) == 0:
             llm_config = None
 
         run_context_config: Dict[str, Any] = {
-            "context_type": config.get("context_type"),
+            "context_type": agent_network_config.get("context_type"),
             "llm_config": llm_config
         }
-        self.run_context: RunContext = RunContextFactory.create_run_context(parent_run_context,
-                                                                            self,
-                                                                            config=run_context_config)
+        return run_context_config
 
     def get_agent_tool_spec(self) -> Dict[str, Any]:
         """
