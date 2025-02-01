@@ -12,8 +12,11 @@
 
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 
+from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
+from neuro_san.internals.journals.compatibility_journal import CompatibilityJournal
+from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.origination import Origination
 
 
@@ -38,6 +41,8 @@ class SessionInvocationContext(InvocationContext):
         self.async_session_factory: AsyncAgentSessionFactory = async_session_factory
         self.asyncio_executor: AsyncioExecutor = asyncio_executor
         self.origination: Origination = Origination()
+        self.queue: AsyncCollatingQueue = AsyncCollatingQueue()
+        self.journal: Journal = CompatibilityJournal(self.queue)
 
     def get_async_session_factory(self) -> AsyncAgentSessionFactory:
         """
@@ -57,6 +62,20 @@ class SessionInvocationContext(InvocationContext):
                 during the course of the AgentSession.
         """
         return self.origination
+
+    def get_journal(self) -> Journal:
+        """
+        :return: The Journal instance that allows message reporting
+                during the course of the AgentSession.
+        """
+        return self.journal
+
+    def get_queue(self) -> AsyncCollatingQueue:
+        """
+        :return: The AsyncCollatingQueue instance via which messages are streamed to the
+                AgentSession mechanics
+        """
+        return self.queue
 
     def set_asyncio_executor(self, asyncio_executor: AsyncioExecutor):
         """

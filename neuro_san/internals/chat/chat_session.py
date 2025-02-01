@@ -13,9 +13,7 @@ from typing import Any
 from typing import Dict
 from typing import Iterator
 
-from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
-from neuro_san.internals.journals.journal import Journal
 
 
 class ChatSession:
@@ -32,14 +30,11 @@ class ChatSession:
         raise NotImplementedError
 
     async def chat(self, user_input: str,
-                   invocation_context: InvocationContext,
                    sly_data: Dict[str, Any] = None) -> Iterator[Dict[str, Any]]:
         """
         Main entry-point method for accepting new user input
 
         :param user_input: A string with the user's input
-        :param invocation_context: The context policy container that pertains to the invocation
-                    of the agent.
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be None.
         :return: An Iterator over dictionary representation of chat messages.
@@ -62,30 +57,15 @@ class ChatSession:
         raise NotImplementedError
 
     async def streaming_chat(self, user_input: str,
-                             invocation_context: InvocationContext,
                              sly_data: Dict[str, Any] = None):
         """
         Main entry-point method for accepting new user input
 
         :param user_input: A string with the user's input
-        :param invocation_context: The context policy container that pertains to the invocation
-                    of the agent.
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be None.
         :return: Nothing.  Response values are put on a queue whose consumtion is
-                managed by AsyncCollatingQueue returned by get_queue().
-        """
-        raise NotImplementedError
-
-    def get_queue(self) -> AsyncCollatingQueue:
-        """
-        :return: The AsyncCollatingQueue associated with this ChatSession instance.
-        """
-        raise NotImplementedError
-
-    def get_journal(self) -> Journal:
-        """
-        :return: The Journal which has been capturing all the "thinking" messages.
+                managed by AsyncCollatingQueue in the InvocationContext
         """
         raise NotImplementedError
 
@@ -112,5 +92,11 @@ class ChatSession:
         """
         :return: The result of datetime.now() when the chat agent
                 last received input.
+        """
+        raise NotImplementedError
+
+    def get_invocation_context(self) -> InvocationContext:
+        """
+        :return: The context policy container that pertains to the invocation of the agent network.
         """
         raise NotImplementedError

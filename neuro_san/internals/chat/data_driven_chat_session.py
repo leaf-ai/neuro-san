@@ -25,7 +25,6 @@ from neuro_san.internals.chat.chat_session import ChatSession
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.graph.tools.front_man import FrontMan
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
-from neuro_san.internals.journals.compatibility_journal import CompatibilityJournal
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.agent_framework_message import AgentFrameworkMessage
 from neuro_san.internals.messages.message_utils import convert_to_chat_message
@@ -42,15 +41,13 @@ class DataDrivenChatSession(ChatSession):
     """
 
     def __init__(self, registry: AgentToolRegistry,
-                 invocation_context: InvocationContext,
-                 journal: Journal = None):
+                 invocation_context: InvocationContext):
         """
         Constructor
 
         :param registry: The AgentToolRegistry to use.
         :param invocation_context: The context policy container that pertains to the invocation
                     of the agent.
-        :param journal: The Journal that captures messages for user output
         """
 
         self.registry: AgentToolRegistry = registry
@@ -58,26 +55,13 @@ class DataDrivenChatSession(ChatSession):
         self.latest_response = None
         self.last_input_timestamp = datetime.now()
         self.sly_data: Dict[str, Any] = {}
-        self.queue: AsyncCollatingQueue = AsyncCollatingQueue()
         self.last_streamed_index: int = 0
         self.invocation_context: InvocationContext = invocation_context
-
-        self.journal: Journal = journal
-        if journal is None:
-            self.journal = CompatibilityJournal(self.queue)
-
-    def get_queue(self) -> AsyncCollatingQueue:
-        """
-        :return: The AsyncCollatingQueue associated with this ChatSession instance.
-        """
-        return self.queue
 
     async def set_up(self):
         """
         Resets or sets the instance up for the first time.
         """
-        # Reset the journal
-        self.journal = CompatibilityJournal(self.queue)
 
         # Reset any sly data
         # This ends up being the one reference to the sly_data that gets passed around
@@ -89,20 +73,19 @@ class DataDrivenChatSession(ChatSession):
 
         run_context: RunContext = RunContextFactory.create_run_context(None, None,
                                                                        invocation_context=self.invocation_context)
-        self.front_man = self.registry.create_front_man(self.journal, self.sly_data, run_context)
 
-        await self.journal.write("setting up chat agent(s)...", self.front_man.get_origin())
+        journal: Journal = self.invocation_context.get_journal()
+        self.front_man = self.registry.create_front_man(journal, self.sly_data, run_context)
+        await journal.write("setting up chat agent(s)...", self.front_man.get_origin())
+
         await self.front_man.create_resources()
 
     async def chat(self, user_input: str,
-                   invocation_context: InvocationContext,
                    sly_data: Dict[str, Any] = None) -> Iterator[Dict[str, Any]]:
         """
         Main entry-point method for accepting new user input
 
         :param user_input: A string with the user's input
-        :param invocation_context: The context policy container that pertains to the invocation
-                    of the agent.
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be None.
         :return: An Iterator over dictionary representation of chat messages.
@@ -137,8 +120,9 @@ class DataDrivenChatSession(ChatSession):
         if sly_data is not None:
             self.sly_data.update(sly_data)
 
+        journal: Journal = self.invocation_context.get_journal()
         try:
-            await self.journal.write("consulting chat agent(s)...", self.front_man.run_context.get_origin())
+            await journal.write("consulting chat agent(s)...", self.front_man.run_context.get_origin())
 
             # DEF - drill further down for iterator from here to enable getting
             #       messages from downstream agents.
@@ -165,18 +149,15 @@ class DataDrivenChatSession(ChatSession):
         return iter(chat_messages)
 
     async def streaming_chat(self, user_input: str,
-                             invocation_context: InvocationContext,
                              sly_data: Dict[str, Any] = None):
         """
         Main streaming entry-point method for accepting new user input
 
         :param user_input: A string with the user's input
-        :param invocation_context: The context policy container that pertains to the invocation
-                    of the agent.
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be None.
         :return: Nothing.  Response values are put on a queue whose consumtion is
-                managed by the Iterator aspect of AsyncCollatingQueue returned by get_queue().
+                managed by the Iterator aspect of AsyncCollatingQueue on the InvocationContext.
         """
         # Queue Producer from this:
         #   https://stackoverflow.com/questions/74130544/asyncio-yielding-results-from-multiple-futures-as-they-arrive
@@ -186,19 +167,14 @@ class DataDrivenChatSession(ChatSession):
         index: int = len(message_list) - 1
         chat_message: Dict[str, Any] = message_list[index]
 
-        # The consumer await-s for self.queue.get()
-        await self.queue.put(chat_message)
+        # The consumer await-s for queue.get()
+        queue: AsyncCollatingQueue = self.invocation_context.get_queue()
+        await queue.put(chat_message)
         self.last_streamed_index = index
 
         # Put an end-marker on the queue to tell the consumer we truly are done
         # and it doesn't need to wait for any more messages.
-        await self.queue.put_final_item()
-
-    def get_journal(self) -> Journal:
-        """
-        :return: The Journal which has been capturing all the "thinking" messages.
-        """
-        return self.journal
+        await queue.put_final_item()
 
     def get_latest_response(self) -> str:
         """
@@ -227,3 +203,9 @@ class DataDrivenChatSession(ChatSession):
                 last received input.
         """
         return self.last_input_timestamp
+
+    def get_invocation_context(self) -> InvocationContext:
+        """
+        :return: The context policy container that pertains to the invocation of the agent network.
+        """
+        return self.invocation_context

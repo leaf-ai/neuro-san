@@ -195,7 +195,7 @@ class DirectAgentSession(AgentSession):
             # sockets stay open.
             asyncio_executor: AsyncioExecutor = self.invocation_context.get_asyncio_executor()
             future: Future = asyncio_executor.submit(session_id, chat_session.chat,
-                                                     user_input, self.invocation_context, sly_data)
+                                                     user_input, sly_data)
             _ = future
 
             # Allow the task to be scheduled. Let the client poll via logs().
@@ -249,7 +249,7 @@ class DirectAgentSession(AgentSession):
         if chat_session is not None:
             # We have seen this session_id before and can poll for a new response.
             status = self.FOUND
-            the_logs = chat_session.get_journal().get_logs()
+            the_logs = chat_session.get_invocation_context().get_journal().get_logs()
             chat_response = chat_session.get_latest_response()
             if chat_response is not None:
                 # So as not to give the same response over multiple polls to logs().
@@ -383,7 +383,7 @@ class DirectAgentSession(AgentSession):
         # sockets stay open.
         asyncio_executor: AsyncioExecutor = self.invocation_context.get_asyncio_executor()
         future: Future = asyncio_executor.submit(session_id, chat_session.streaming_chat,
-                                                 user_input, self.invocation_context, sly_data)
+                                                 user_input, sly_data)
         # Ignore the future. Live in the now.
         _ = future
 
@@ -395,7 +395,7 @@ class DirectAgentSession(AgentSession):
                                          generated_type=Dict,
                                          keep_alive_result=empty,
                                          keep_alive_timeout_seconds=10.0)
-        for message in generator.synchronously_iterate(chat_session.get_queue()):
+        for message in generator.synchronously_iterate(self.invocation_context.get_queue()):
 
             response_dict: Dict[str, Any] = copy(template_response_dict)
             if any(message):
