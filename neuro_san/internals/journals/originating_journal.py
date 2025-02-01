@@ -26,13 +26,14 @@ class OriginatingJournal(Journal):
 
     def __init__(self, wrapped_journal: Journal,
                  origin: List[Dict[str, Any]],
-                 chat_history: List[BaseMessage]):
+                 chat_history: List[BaseMessage] = None):
         """
         Constructor
 
         :param wrapped_journal: The Journal that this implementation wraps
         :param origin: The origin that will be applied to all messages.
         :param chat_history: The chat history list instance to store write_message() results in.
+                            Can be None (the default).
         """
         self.wrapped_journal: Journal = wrapped_journal
         self.origin: List[Dict[str, Any]] = origin
@@ -80,7 +81,8 @@ class OriginatingJournal(Journal):
         if origin is not None:
             use_origin = origin
 
-        self.chat_history.append(message)
+        if self.chat_history is not None:
+            self.chat_history.append(message)
         await self.wrapped_journal.write_message(message, use_origin)
 
     def get_chat_history(self) -> List[BaseMessage]:
