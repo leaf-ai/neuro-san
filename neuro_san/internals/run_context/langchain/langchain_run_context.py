@@ -80,6 +80,7 @@ class LangChainRunContext(RunContext):
         # This block contains top candidates for state storage that needs to be
         # retained when session_ids go away.
         self.chat_history: List[BaseMessage] = []
+        self.journal: OriginatingJournal = None
         self.agent: Agent = None
 
         # This might get modified in create_resources() (for now)
@@ -92,7 +93,6 @@ class LangChainRunContext(RunContext):
         self.tool_caller: ToolCaller = tool_caller
         self.invocation_context: InvocationContext = invocation_context
         self.origin: List[Dict[str, Any]] = []
-        self.journal: OriginatingJournal = None
 
         if parent_run_context is not None:
             # Initialize the origin.
