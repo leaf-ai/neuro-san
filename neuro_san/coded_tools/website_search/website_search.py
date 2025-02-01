@@ -1,9 +1,8 @@
-import duckduckgo_search
 from typing import Any
 from typing import Dict
 from typing import Union
-
 from neuro_san.interfaces.coded_tool import CodedTool
+import duckduckgo_search
 
 
 class WebsiteSearch(CodedTool):
@@ -80,14 +79,15 @@ def search_web(query: str, num_results: int = 5) -> list:
 
     return returned_links
 
+
 if __name__ == "__main__":
     # Example usage
-    url_to_scrape = "https://www.amazon.com"
-    search_query = "10.5 white men sneakers"
-    top_n = 5
+    URL_TO_SCRAPE = "https://www.amazon.com"
+    SEARCH_TERMS = "10.5 white men sneakers"
+    TOP_N = 5
 
-    links = search_web(url_to_scrape + " " + search_query, top_n)
+    links = search_web(URL_TO_SCRAPE + " " + SEARCH_TERMS, TOP_N)
 
-    print(f"Top {top_n} search result links for '{search_query}' from {url_to_scrape}:")
+    print(f"Top {TOP_N} search result links for '{SEARCH_TERMS}' from {URL_TO_SCRAPE}:")
     for i, link in enumerate(links, start=1):
         print(f"{i}. {link}")
