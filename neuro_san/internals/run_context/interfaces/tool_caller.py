@@ -43,3 +43,9 @@ class ToolCaller(AgentSpecProvider):
         :return: the dictionary describing the data-driven agent
         """
         raise NotImplementedError
+
+    def get_name(self) -> str:
+        """
+        :return: the name of the data-driven agent as it comes from the spec
+        """
+        raise NotImplementedError

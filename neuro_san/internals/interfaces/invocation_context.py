@@ -13,6 +13,7 @@
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
+from neuro_san.internals.messages.origination import Origination
 
 
 class InvocationContext:
@@ -31,5 +32,12 @@ class InvocationContext:
     def get_asyncio_executor(self) -> AsyncioExecutor:
         """
         :return: The AsyncioExecutor associated with the invocation
+        """
+        raise NotImplementedError
+
+    def get_origination(self) -> Origination:
+        """
+        :return: The Origination instance carrying state about tool instantation
+                during the course of the AgentSession.
         """
         raise NotImplementedError

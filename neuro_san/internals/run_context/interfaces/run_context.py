@@ -94,9 +94,13 @@ class RunContext(AgentSpecProvider):
         """
         raise NotImplementedError
 
-    def get_origin(self) -> List[str]:
+    def get_origin(self) -> List[Dict[str, Any]]:
         """
-        :return: A List of strings indicating the origin of the run.
+        :return: A List of origin dictionaries indicating the origin of the run.
                 The origin can be considered a path to the original call to the front-man.
+                Origin dictionaries themselves each have the following keys:
+                    "tool"                  The string name of the tool in the spec
+                    "instantiation_index"   An integer indicating which incarnation
+                                            of the tool is being dealt with.
         """
         raise NotImplementedError

@@ -14,6 +14,7 @@ from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
+from neuro_san.internals.messages.origination import Origination
 
 
 class SessionInvocationContext(InvocationContext):
@@ -36,6 +37,7 @@ class SessionInvocationContext(InvocationContext):
 
         self.async_session_factory: AsyncAgentSessionFactory = async_session_factory
         self.asyncio_executor: AsyncioExecutor = asyncio_executor
+        self.origination: Origination = Origination()
 
     def get_async_session_factory(self) -> AsyncAgentSessionFactory:
         """
@@ -48,6 +50,13 @@ class SessionInvocationContext(InvocationContext):
         :return: The AsyncioExecutor associated with the invocation
         """
         return self.asyncio_executor
+
+    def get_origination(self) -> Origination:
+        """
+        :return: The Origination instance carrying state about tool instantation
+                during the course of the AgentSession.
+        """
+        return self.origination
 
     def set_asyncio_executor(self, asyncio_executor: AsyncioExecutor):
         """

@@ -22,7 +22,18 @@ package dev.cognizant_ai.neuro_san.api.grpc.chat;
 
 option go_package = "github.com/leaf-ai/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/chat/v1;chat";
 
+import "google/protobuf/struct.proto";
 import "neuro_san/api/grpc/mime_data.proto";
+
+message Origin {
+    // String name of the originating tool, as per the agent spec.
+    string tool = 1 [json_name="tool"];
+
+    // Some tools can be called more than once my one or more different paths.
+    // Allow for an instantiation index to distinguish these in the chat stream.
+    // Index counting starts at 0.
+    int32 instantiation_index = 2 [json_name="instantiation_index"];
+}
 
 
 // Structure describing a single chat message.
@@ -63,16 +74,19 @@ message ChatMessage {
     // data in place.
     repeated mime_data.MimeData mime_data = 3 [json_name="mime_data"];
 
-    // Optional string describing the origin of the chat message.
+    // Optional list of Origin structures (see above) describing the origin of the chat message.
     // The intent here is to be able to distiguish responses from nested agents.
-    // Each string is returned in a URI format:
-    //
-    //          [host:]/agent1/agent2/...
-    //
-    // ... where the host is optional and each agent name represents an agent
-    // in a single agent hierarchy.
     //
     // For each top-level agent/front-man (perhaps on another server) that is called,
-    // an extra string is added to the list.
-    repeated string origin = 4 [json_name="origin"];
+    // an extra structure is added to the list.
+    repeated Origin origin = 4 [json_name="origin"];
+
+    // Optional structure for a message whose contents are parsed JSON.
+    // The idea is to have the server side do the parsing when requested
+    // by the agent spec.
+    //
+    // As of 1/30/25 this is a forward-looking, experimental field not likely
+    // to be used in regular operation until we can get proper plumbing of such
+    // data in place.
+    google.protobuf.Struct structure = 5;
 }

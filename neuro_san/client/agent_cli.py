@@ -15,6 +15,9 @@ from typing import Dict
 from typing import Generator
 from typing import List
 
+import os
+import shutil
+
 from copy import copy
 from time import sleep
 
@@ -29,10 +32,11 @@ from grpc import StatusCode
 from neuro_san.client.agent_session_factory import AgentSessionFactory
 from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
-from neuro_san.internals.run_context.utils.origin_utils import OriginUtils
+from neuro_san.internals.messages.origination import Origination
 from neuro_san.internals.utils.file_of_class import FileOfClass
 
 
+# pylint: disable=too-many-instance-attributes
 class AgentCli:
     """
     Command line tool for communicating with a Agent service
@@ -51,7 +55,9 @@ class AgentCli:
 
         self.session: AgentSession = None
         self.session_id: str = None
+        self.thinking_dir: str = None
 
+    # pylint: disable=too-many-branches
     def main(self):
         """
         Main entry point for command line user interaction
@@ -101,8 +107,11 @@ Some suggestions:
         initial_prompt: str = function.get("description")
         print(f"\n{initial_prompt}\n")
 
-        print("To see the thinking involved with the agent:\n"
-              f"    tail -f {self.args.thinking_file}\n")
+        print("To see the thinking involved with the agent:\n")
+        if not self.args.thinking_dir:
+            print(f"    tail -f {self.args.thinking_file}\n")
+        else:
+            print(f"    See any one of the files in {self.thinking_dir} for agent network chat details.\n")
 
         state: Dict[str, Any] = {
             "last_logs": [],
@@ -162,26 +171,42 @@ Some suggestions:
         Adds arguments.  Allows subclasses a chance to add their own.
         :param arg_parser: The argparse.ArgumentParser to add.
         """
+        # What agent are we talking to?
+        arg_parser.add_argument("--agent", type=str, default="esp_decision_assistant",
+                                help="Name of the agent to talk to")
+
+        # How are we connecting (if by service/sockets)?
         arg_parser.add_argument("--local", type=bool, default=True,
                                 help="If True (the default), assume we are running against local container")
         arg_parser.add_argument("--host", type=str, default=None,
                                 help="hostname setting if not running locally")
         arg_parser.add_argument("--port", type=int, default=AgentSession.DEFAULT_PORT,
                                 help="TCP/IP port to run the Agent gRPC service on")
-        arg_parser.add_argument("--agent", type=str, default="esp_decision_assistant",
-                                help="Name of the agent to talk to")
+
+        # How are we capturing output?
         arg_parser.add_argument("--thinking_file", type=str, default="/tmp/agent_thinking.txt",
                                 help="File that captures agent thinking. "
                                      "This is a separate text stream from the user/assistant chat")
+        arg_parser.add_argument("--thinking_dir", default=False, action="store_true",
+                                help="Use the basis of the thinking_file as a directory to capture "
+                                     "internal agent chatter in separate files. "
+                                     "This is a separate text stream from the user/assistant chat. "
+                                     "Only available when streaming (the default).")
+
+        # How can we get input to the chat client without typing it in?
         arg_parser.add_argument("--first_prompt_file", type=str,
                                 help="File that captures the first response to the input prompt")
         arg_parser.add_argument("--sly_data", type=str,
                                 help="JSON string containing data that is out-of-band to the chat stream, "
                                      "but is still essential to agent function")
+
+        # How to we receive messages?
         arg_parser.add_argument("--stream", default=True, action="store_true",
                                 help="Use streaming chat instead of polling")
         arg_parser.add_argument("--poll", dest="stream", action="store_false",
                                 help="Use polling chat instead of streaming")
+
+        # How to we set up our session connection?
         arg_parser.add_argument("--connection", default="direct", type=str,
                                 choices=["service", "direct"],
                                 help="""
@@ -194,6 +219,8 @@ All choices require an agent name.
                                 help="Use a service connection")
         arg_parser.add_argument("--direct", dest="connection", action="store_const", const="direct",
                                 help="Use a direct/library call for the chat")
+
+        # How do we handle calls to external agents?
         arg_parser.add_argument("--local_externals_direct", default=False, action="store_true",
                                 help="""
 Have external tools that can be found in the local agent manifest use a
@@ -203,6 +230,8 @@ direct connection instead of requiring a service to be stood up.
                                 help="""
 Have external tools that can be found in the local agent manifest use a service connection
                                 """)
+
+        # How do we handle the number of rounds of input?
         arg_parser.add_argument("--max_input", type=int, default=1000000,
                                 help="Maximum rounds of input to go before exiting")
         arg_parser.add_argument("--one_shot", dest="max_input", action="store_const", const=1,
@@ -221,7 +250,7 @@ Have external tools that can be found in the local agent manifest use a service 
         self.session = factory.create_session(self.args.connection, self.args.agent,
                                               hostname, self.args.port, self.args.local_externals_direct)
 
-        # Clear out the previous thinking file
+        # Clear out the previous thinking file/dir contents
         #
         # Incorrectly flagged as destination of Path Traversal 5
         #   Reason: thinking_file was previously checked with FileOfClass.check_file()
@@ -229,8 +258,21 @@ Have external tools that can be found in the local agent manifest use a service 
         #           recognize pathlib as a valid library with which to resolve these kinds
         #           of issues.  Furthermore, this is a client command line tool that is never
         #           used inside servers which just happens to be part of a library offering.
-        with open(self.args.thinking_file, "w", encoding="utf-8") as thinking:
-            thinking.write("\n")
+        if not self.args.thinking_dir:
+            with open(self.args.thinking_file, "w", encoding="utf-8") as thinking:
+                thinking.write("\n")
+        else:
+            # Use the stem of the the thinking file (i.e. no ".txt" extention) as the
+            # basis for the thinking directory
+            self.thinking_dir, extension = os.path.splitext(self.args.thinking_file)
+            _ = extension
+
+            # Remove any contents that might be there already.
+            # Writing over will existing dir will just confuse output.
+            if os.path.exists(self.thinking_dir):
+                shutil.rmtree(self.thinking_dir)
+            # Create the directory anew
+            os.makedirs(self.thinking_dir)
 
     def get_agent_session_factory(self) -> AgentSessionFactory:
         """
@@ -381,15 +423,12 @@ Have external tools that can be found in the local agent manifest use a service 
 
             text: str = response.get("text")
             origin: List[str] = response.get("origin")
-            origin_str: str = OriginUtils.get_full_name_from_origin(origin)
+            origin_str: str = Origination.get_full_name_from_origin(origin)
 
             # Update chat response and maybe prompt.
             if text is not None:
                 if message_type == ChatMessageType.LEGACY_LOGS:
-                    with open(self.args.thinking_file, "a", encoding="utf-8") as thinking:
-                        thinking.write(f"[{origin_str}]:\n")
-                        thinking.write(text)
-                        thinking.write("\n")
+                    self.write_text(text, origin_str)
                 else:
                     print(f"Response from {origin_str}:")
                     print(f"{text}")
@@ -404,6 +443,27 @@ Have external tools that can be found in the local agent manifest use a service 
             }
 
         return return_state
+
+    def write_text(self, text: str, origin_str: str):
+        """
+        Writes a line of text attributable to the origin, however we are doing that.
+        :param text: The text of the message
+        :param origin_str: The string representing the origin of the message
+        """
+
+        filename: str = self.args.thinking_file
+        if self.args.thinking_dir:
+            filename = os.path.join(self.thinking_dir, origin_str)
+
+        how_to_open_file: str = "a"
+        if not os.path.exists(filename):
+            how_to_open_file = "w"
+
+        with open(filename, how_to_open_file, encoding="utf-8") as thinking:
+            if not self.args.thinking_dir:
+                thinking.write(f"[{origin_str}]:\n")
+            thinking.write(text)
+            thinking.write("\n")
 
     def formulate_chat_request(self, user_input: str, sly_data: Dict[str, Any] = None) -> Dict[str, Any]:
         """
