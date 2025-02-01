@@ -58,11 +58,14 @@ class CallingTool(ToolCaller):
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be an empty dictionary.
         """
+        # This block contains top candidates for state storage that needs to be
+        # retained when session_ids go away.
+        self.run_context: RunContext = None
+
         self.journal: Journal = journal
         self.factory: AgentToolFactory = factory
         self.agent_tool_spec: Dict[str, Any] = agent_tool_spec
         self.sly_data: Dict[str, Any] = sly_data
-        self.run_context: RunContext = None
 
         # Get the llm config as a combination of defaults from different places in the config
         agent_network_config: Dict[str, Any] = self.factory.get_config()

@@ -76,23 +76,24 @@ class LangChainRunContext(RunContext):
         :param invocation_context: The context policy container that pertains to the invocation
                     of the agent.
         """
+        # This block contains top candidates for state storage that needs to be
+        # retained when session_ids go away.
+        self.chat_history: List[BaseMessage] = []
+        self.agent: Agent = None
 
         # This might get modified in create_resources() (for now)
         self.llm_config: Dict[str, Any] = llm_config
         self.run_id_base: str = str(uuid.uuid4())
 
         self.tools: List[BaseTool] = []
-        self.chat_history: List[BaseMessage] = []
-        self.agent: Agent = None
         self.error_detector: ErrorDetector = None
         self.recent_human_message: HumanMessage = None
         self.tool_caller: ToolCaller = tool_caller
         self.invocation_context: InvocationContext = invocation_context
-
         self.origin: List[Dict[str, Any]] = []
-        if parent_run_context is not None:
 
-            # Settle the origin.
+        if parent_run_context is not None:
+            # Initialize the origin.
             agent_name: str = tool_caller.get_name()
             origination: Origination = self.invocation_context.get_origination()
             self.origin = origination.add_spec_name_to_origin(parent_run_context.get_origin(), agent_name)

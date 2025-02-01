@@ -49,9 +49,11 @@ class DataDrivenChatSession(ChatSession):
         :param invocation_context: The context policy container that pertains to the invocation
                     of the agent.
         """
+        # This block contains top candidates for state storage that needs to be
+        # retained when session_ids go away.
+        self.front_man: FrontMan = None
 
         self.registry: AgentToolRegistry = registry
-        self.front_man: FrontMan = None
         self.latest_response = None
         self.last_input_timestamp = datetime.now()
         self.sly_data: Dict[str, Any] = {}
