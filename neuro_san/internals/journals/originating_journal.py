@@ -24,19 +24,23 @@ class OriginatingJournal(Journal):
     A Journal implementation that has an origin.
     """
 
-    def __init__(self, journal: Journal, origin: List[Dict[str, Any]]):
+    def __init__(self, wrapped_journal: Journal,
+                 origin: List[Dict[str, Any]],
+                 chat_history: List[BaseMessage]):
         """
         Constructor
 
-        :param journal: The Journal that this implementation wraps
+        :param wrapped_journal: The Journal that this implementation wraps
         :param origin: The origin that will be applied to all messages.
+        :param chat_history: The chat history list instance to store write_message() results in.
         """
-        self.journal: Journal = journal
+        self.wrapped_journal: Journal = wrapped_journal
         self.origin: List[Dict[str, Any]] = origin
+        self.chat_history: List[BaseMessage] = chat_history
 
     async def write(self, entry: Union[str, bytes], origin: List[Dict[str, Any]] = None):
         """
-        Writes a single string entry into the journal.
+        Writes a single string entry into the wrapped_journal.
         :param entry: The logs entry to write
         :param origin: A List of origin dictionaries indicating the origin of the run.
                 The origin can be considered a path to the original call to the front-man.
@@ -49,19 +53,21 @@ class OriginatingJournal(Journal):
         use_origin: List[Dict[str, Any]] = self.origin
         if origin is not None:
             use_origin = origin
-        self.journal.write(entry, use_origin)
+        await self.wrapped_journal.write(entry, use_origin)
 
     def get_logs(self) -> List[Any]:
         """
-        :return: A list of strings corresponding to journal entries.
+        :return: A list of strings corresponding to wrapped_journal entries.
         """
         # Pass-through
-        return self.journal.get_logs()
+        return self.wrapped_journal.get_logs()
 
     async def write_message(self, message: BaseMessage, origin: List[Dict[str, Any]] = None):
         """
-        Writes a BaseMessage entry into the journal
-        :param message: The BaseMessage instance to write to the journal
+        Writes a BaseMessage entry into the wrapped_journal
+        and appends to the chat history.
+
+        :param message: The BaseMessage instance to write to the wrapped_journal
         :param origin: A List of origin dictionaries indicating the origin of the run.
                 The origin can be considered a path to the original call to the front-man.
                 Origin dictionaries themselves each have the following keys:
@@ -73,4 +79,12 @@ class OriginatingJournal(Journal):
         use_origin: List[Dict[str, Any]] = self.origin
         if origin is not None:
             use_origin = origin
-        self.journal.write_message(message, use_origin)
+
+        self.chat_history.append(message)
+        await self.wrapped_journal.write_message(message, use_origin)
+
+    def get_chat_history(self) -> List[BaseMessage]:
+        """
+        :return: The chat history list of base messages associated with the instance.
+        """
+        return self.chat_history
