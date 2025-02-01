@@ -1,8 +1,8 @@
 from typing import Any
 from typing import Dict
 from typing import Union
-from neuro_san.interfaces.coded_tool import CodedTool
 import duckduckgo_search
+from neuro_san.interfaces.coded_tool import CodedTool
 
 
 class WebsiteSearch(CodedTool):
