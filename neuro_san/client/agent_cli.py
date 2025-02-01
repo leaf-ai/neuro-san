@@ -200,13 +200,13 @@ Some suggestions:
                                 help="JSON string containing data that is out-of-band to the chat stream, "
                                      "but is still essential to agent function")
 
-        # How to we receive messages?
+        # How do we receive messages?
         arg_parser.add_argument("--stream", default=True, action="store_true",
                                 help="Use streaming chat instead of polling")
         arg_parser.add_argument("--poll", dest="stream", action="store_false",
                                 help="Use polling chat instead of streaming")
 
-        # How to we set up our session connection?
+        # How do we set up our session connection?
         arg_parser.add_argument("--connection", default="direct", type=str,
                                 choices=["service", "direct"],
                                 help="""
