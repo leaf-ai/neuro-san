@@ -90,7 +90,7 @@ class StreamingInputProcessor(AbstractInputProcessor):
                     # Now that we are sending messages from deep within the infrastructure,
                     # write those.  The LEGACY_LOGS messages should be redundant with these.
                     self.write_text(text, origin_str)
-                elif len(origin) == 1 and message_type == ChatMessageType.AI:
+                if len(origin) == 1 and message_type == ChatMessageType.AI:
                     # The messages from the front man (origin len 1) that are
                     # AI messages are effectively "the answer".  These are what
                     # we want to communicate back to the user in an up-front fashion.
