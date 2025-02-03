@@ -89,12 +89,12 @@ class StreamingInputProcessor(AbstractInputProcessor):
                 if message_type != ChatMessageType.LEGACY_LOGS:
                     # Now that we are sending messages from deep within the infrastructure,
                     # write those.  The LEGACY_LOGS messages should be redundant with these.
-                    self.write_text(text, origin_str)
+                    self.write_response(response, origin_str)
                 if len(origin) == 1 and message_type == ChatMessageType.AI:
                     # The messages from the front man (origin len 1) that are
                     # AI messages are effectively "the answer".  These are what
                     # we want to communicate back to the user in an up-front fashion.
-                    print(f"Response from {origin_str}:")
+                    print(f"\nResponse from {origin_str}:")
                     print(f"{text}")
                     last_chat_response = text
 
@@ -108,12 +108,18 @@ class StreamingInputProcessor(AbstractInputProcessor):
 
         return return_state
 
-    def write_text(self, text: str, origin_str: str):
+    def write_response(self, response: Dict[str, Any], origin_str: str):
         """
         Writes a line of text attributable to the origin, however we are doing that.
-        :param text: The text of the message
+        :param response: The message to write
         :param origin_str: The string representing the origin of the message
         """
+
+        response_type: str = response.get("type")
+        message_type: ChatMessageType = ChatMessageType.from_response_type(response_type)
+        message_type_str: str = ChatMessageType.to_string(message_type)
+
+        text: str = response.get("text")
 
         filename: str = self.thinking_file
         if self.thinking_dir:
@@ -124,7 +130,9 @@ class StreamingInputProcessor(AbstractInputProcessor):
             how_to_open_file = "w"
 
         with open(filename, how_to_open_file, encoding="utf-8") as thinking:
+            use_origin: str = ""
             if not self.thinking_dir:
-                thinking.write(f"[{origin_str}]:\n")
+                use_origin = f" from {origin_str}"
+            thinking.write(f"\n[{message_type_str}{use_origin}]:\n")
             thinking.write(text)
             thinking.write("\n")
