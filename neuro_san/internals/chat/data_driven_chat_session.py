@@ -167,11 +167,12 @@ class DataDrivenChatSession(ChatSession):
         chat_messages: Iterator[Dict[str, Any]] = await self.chat(user_input, sly_data)
         message_list: List[Dict[str, Any]] = list(chat_messages)
         index: int = len(message_list) - 1
-        chat_message: Dict[str, Any] = message_list[index]
 
         # The consumer await-s for queue.get()
         queue: AsyncCollatingQueue = self.invocation_context.get_queue()
-        await queue.put(chat_message)
+
+        # chat_message: Dict[str, Any] = message_list[index]
+        # await queue.put(chat_message)
         self.last_streamed_index = index
 
         # Put an end-marker on the queue to tell the consumer we truly are done

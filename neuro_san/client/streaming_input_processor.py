@@ -86,9 +86,14 @@ class StreamingInputProcessor(AbstractInputProcessor):
 
             # Update chat response and maybe prompt.
             if text is not None:
-                if message_type == ChatMessageType.LEGACY_LOGS:
+                if message_type != ChatMessageType.LEGACY_LOGS:
+                    # Now that we are sending messages from deep within the infrastructure,
+                    # write those.  The LEGACY_LOGS messages should be redundant with these.
                     self.write_text(text, origin_str)
-                else:
+                elif len(origin) == 1 and message_type == ChatMessageType.AI:
+                    # The messages from the front man (origin len 1) that are
+                    # AI messages are effectively "the answer".  These are what
+                    # we want to communicate back to the user in an up-front fashion.
                     print(f"Response from {origin_str}:")
                     print(f"{text}")
                     last_chat_response = text
