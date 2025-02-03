@@ -128,6 +128,7 @@ Some suggestions:
                                                       self.session,
                                                       self.thinking_dir)
         else:
+            # Note: Polling is deprecated
             input_processor = PollingInputProcessor(self.default_prompt,
                                                     self.default_input,
                                                     self.input_timeout_seconds,

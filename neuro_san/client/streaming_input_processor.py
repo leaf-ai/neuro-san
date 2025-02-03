@@ -23,7 +23,7 @@ from neuro_san.internals.messages.chat_message_type import ChatMessageType
 from neuro_san.internals.messages.origination import Origination
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-arguments,too-many-positional-arguments
 class StreamingInputProcessor(AbstractInputProcessor):
     """
     Processes AgentCli input by using the neuro-san streaming API.

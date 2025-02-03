@@ -20,10 +20,13 @@ from neuro_san.client.abstract_input_processor import AbstractInputProcessor
 from neuro_san.interfaces.agent_session import AgentSession
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-arguments,too-many-positional-arguments
 class PollingInputProcessor(AbstractInputProcessor):
     """
     Processes AgentCli input by using the neuro-san polling API.
+
+    Note that the polling API is deprecated.
+    If you are looking for a better example, take a look at the StreamingInputProcessor.
     """
 
     def __init__(self, default_prompt: str,
