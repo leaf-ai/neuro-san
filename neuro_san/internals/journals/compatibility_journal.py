@@ -9,6 +9,7 @@
 # neuro-san SDK Software in commercial settings.
 #
 # END COPYRIGHT
+from typing import Any
 from typing import List
 
 from neuro_san.internals.interfaces.async_hopper import AsyncHopper
@@ -24,12 +25,19 @@ class CompatibilityJournal(CompoundJournal):
     Journal instances needed for servicing streaming and polling chat.
     """
 
-    def __init__(self, hopper: AsyncHopper):
+    def __init__(self, hopper: AsyncHopper, logs: List[Any] = None):
         """
         Constructor
         """
         journals: List[Journal] = [
-            TextJournal(),
+            TextJournal(logs),
             MessageJournal(hopper)
         ]
         super().__init__(journals=journals)
+        self.text_journal: TextJournal = journals[0]
+
+    def set_logs(self, logs: List[Any]):
+        """
+        :param logs: A list of strings corresponding to journal entries.
+        """
+        self.text_journal.set_logs(logs)

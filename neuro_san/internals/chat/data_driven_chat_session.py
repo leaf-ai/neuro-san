@@ -40,29 +40,28 @@ class DataDrivenChatSession(ChatSession):
     in using data-driven agent tool graphs.
     """
 
-    def __init__(self, registry: AgentToolRegistry,
-                 invocation_context: InvocationContext):
+    def __init__(self, registry: AgentToolRegistry):
         """
         Constructor
 
         :param registry: The AgentToolRegistry to use.
-        :param invocation_context: The context policy container that pertains to the invocation
-                    of the agent.
         """
         # This block contains top candidates for state storage that needs to be
         # retained when session_ids go away.
         self.front_man: FrontMan = None
+        self.logs: List[Any] = None
 
         self.registry: AgentToolRegistry = registry
         self.latest_response = None
         self.last_input_timestamp = datetime.now()
         self.sly_data: Dict[str, Any] = {}
         self.last_streamed_index: int = 0
-        self.invocation_context: InvocationContext = invocation_context
 
-    async def set_up(self):
+    async def set_up(self, invocation_context: InvocationContext):
         """
         Resets or sets the instance up for the first time.
+        :param invocation_context: The context policy container that pertains to the invocation
+                    of the agent.
         """
 
         # Reset any sly data
@@ -74,20 +73,23 @@ class DataDrivenChatSession(ChatSession):
         await self.delete_resources()
 
         run_context: RunContext = RunContextFactory.create_run_context(None, None,
-                                                                       invocation_context=self.invocation_context)
+                                                                       invocation_context=invocation_context)
 
-        journal: Journal = self.invocation_context.get_journal()
+        journal: Journal = invocation_context.get_journal()
         self.front_man = self.registry.create_front_man(journal, self.sly_data, run_context)
         await journal.write("setting up chat agent(s)...", self.front_man.get_origin())
 
         await self.front_man.create_resources()
 
     async def chat(self, user_input: str,
+                   invocation_context: InvocationContext,
                    sly_data: Dict[str, Any] = None) -> Iterator[Dict[str, Any]]:
         """
         Main entry-point method for accepting new user input
 
         :param user_input: A string with the user's input
+        :param invocation_context: The context policy container that pertains to the invocation
+                    of the agent.
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be None.
         :return: An Iterator over dictionary representation of chat messages.
@@ -106,7 +108,9 @@ class DataDrivenChatSession(ChatSession):
         version can take longer than the lifetime of a socket.
         """
         if self.front_man is None:
-            await self.set_up()
+            await self.set_up(invocation_context)
+        else:
+            self.front_man.update_invocation_context(invocation_context)
 
         # Remember when we were last given input
         self.last_input_timestamp = datetime.now()
@@ -122,7 +126,7 @@ class DataDrivenChatSession(ChatSession):
         if sly_data is not None:
             self.sly_data.update(sly_data)
 
-        journal: Journal = self.invocation_context.get_journal()
+        journal: Journal = invocation_context.get_journal()
         try:
             await journal.write("consulting chat agent(s)...", self.front_man.run_context.get_origin())
 
@@ -148,14 +152,20 @@ class DataDrivenChatSession(ChatSession):
             chat_message: Dict[str, Any] = convert_to_chat_message(raw_message, self.front_man.run_context.get_origin())
             chat_messages.append(chat_message)
 
+        # Save the logs from the journal
+        self.logs = journal.get_logs()
+
         return iter(chat_messages)
 
     async def streaming_chat(self, user_input: str,
+                             invocation_context: InvocationContext,
                              sly_data: Dict[str, Any] = None):
         """
         Main streaming entry-point method for accepting new user input
 
         :param user_input: A string with the user's input
+        :param invocation_context: The context policy container that pertains to the invocation
+                    of the agent.
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be None.
         :return: Nothing.  Response values are put on a queue whose consumtion is
@@ -164,15 +174,12 @@ class DataDrivenChatSession(ChatSession):
         # Queue Producer from this:
         #   https://stackoverflow.com/questions/74130544/asyncio-yielding-results-from-multiple-futures-as-they-arrive
 
-        chat_messages: Iterator[Dict[str, Any]] = await self.chat(user_input, sly_data)
+        chat_messages: Iterator[Dict[str, Any]] = await self.chat(user_input, invocation_context, sly_data)
         message_list: List[Dict[str, Any]] = list(chat_messages)
         index: int = len(message_list) - 1
 
         # The consumer await-s for queue.get()
-        queue: AsyncCollatingQueue = self.invocation_context.get_queue()
-
-        # chat_message: Dict[str, Any] = message_list[index]
-        # await queue.put(chat_message)
+        queue: AsyncCollatingQueue = invocation_context.get_queue()
         self.last_streamed_index = index
 
         # Put an end-marker on the queue to tell the consumer we truly are done
@@ -207,8 +214,8 @@ class DataDrivenChatSession(ChatSession):
         """
         return self.last_input_timestamp
 
-    def get_invocation_context(self) -> InvocationContext:
+    def get_logs(self) -> List[Any]:
         """
-        :return: The context policy container that pertains to the invocation of the agent network.
+        :return: A list of strings corresponding to journal entries.
         """
-        return self.invocation_context
+        return self.logs

@@ -9,6 +9,8 @@
 # neuro-san SDK Software in commercial settings.
 #
 # END COPYRIGHT
+from typing import Any
+from typing import List
 
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 
@@ -82,3 +84,9 @@ class SessionInvocationContext(InvocationContext):
         :param asyncio_executor: The AsyncioExecutor to associate with the invocation
         """
         self.asyncio_executor = asyncio_executor
+
+    def set_logs(self, logs: List[Any]):
+        """
+        :param logs: A list of strings corresponding to journal entries.
+        """
+        self.journal.set_logs(logs)

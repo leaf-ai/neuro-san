@@ -24,11 +24,13 @@ class TextJournal(Journal):
     Journal implementation for capturing entries as a list of strings
     """
 
-    def __init__(self):
+    def __init__(self, logs: List[Any] = None):
         """
         Constructor
         """
-        self.log_content = []
+        self.log_content = logs
+        if logs is None:
+            self.log_content = []
 
     async def write(self, entry: Union[str, bytes], origin: List[Dict[str, Any]]):
         """
@@ -65,3 +67,9 @@ class TextJournal(Journal):
         """
         # Do nothing
         _ = message, origin
+
+    def set_logs(self, logs: List[Any]):
+        """
+        :param logs: A list of strings corresponding to journal entries.
+        """
+        self.log_content = logs

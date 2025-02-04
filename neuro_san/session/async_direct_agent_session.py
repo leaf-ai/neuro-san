@@ -176,8 +176,7 @@ class AsyncDirectAgentSession(AsyncAgentSession):
             if session_id is None:
                 # Initiate a new conversation.
                 status = self.CREATED
-                chat_session = DataDrivenChatSession(registry=self.tool_registry,
-                                                     invocation_context=self.invocation_context)
+                chat_session = DataDrivenChatSession(registry=self.tool_registry)
                 if self.chat_session_map is not None:
                     session_id = self.chat_session_map.register_chat_session(chat_session)
             else:
@@ -187,6 +186,7 @@ class AsyncDirectAgentSession(AsyncAgentSession):
         else:
             # We have seen this session_id before and can register new user input.
             status = self.FOUND
+            self.invocation_context.set_logs(chat_session.get_logs())
 
         # Prepare the response dictionary
         template_response_dict = {
@@ -203,16 +203,16 @@ class AsyncDirectAgentSession(AsyncAgentSession):
         # Create an asynchronous background task to process the user input.
         # This might take a few minutes, which can be longer than some
         # sockets stay open.
-        asyncio_executor: AsyncioExecutor = chat_session.get_invocation_context().get_asyncio_executor()
+        asyncio_executor: AsyncioExecutor = self.invocation_context.get_asyncio_executor()
         future: Future = asyncio_executor.submit(session_id, chat_session.streaming_chat,
-                                                 user_input, sly_data)
+                                                 user_input, self.invocation_context, sly_data)
         # Ignore the future. Live in the now.
         _ = future
 
         # The generator below will asynchronously block waiting for
         # chat.ChatMessage dictionaries to come back asynchronously from the submit()
         # above until there are no more from the input.
-        generator = chat_session.get_invocation_context().get_queue()
+        generator = self.invocation_context.get_queue()
         async for message in generator:
 
             response_dict: Dict[str, Any] = copy(template_response_dict)

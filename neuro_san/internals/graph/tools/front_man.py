@@ -13,6 +13,7 @@ from typing import Any
 from typing import List
 
 from neuro_san.internals.graph.tools.calling_tool import CallingTool
+from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.run_context.interfaces.run import Run
 
 
@@ -55,3 +56,12 @@ class FrontMan(CallingTool):
                 terminate = True
 
         return decision_messages
+
+    def update_invocation_context(self, invocation_context: InvocationContext):
+        """
+        Update internal state based on the InvocationContext instance passed in.
+        :param invocation_context: The context policy container that pertains to the invocation
+        """
+        self.journal = invocation_context.get_journal()
+        if self.run_context is not None:
+            self.run_context.update_invocation_context(invocation_context)
