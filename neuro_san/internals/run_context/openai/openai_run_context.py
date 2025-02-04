@@ -74,8 +74,10 @@ class OpenAIRunContext(RunContext):
         self.assistant_id: str = None
         self.invocation_context: InvocationContext = invocation_context
 
+    # pylint: disable=too-many-locals
     async def create_resources(self, assistant_name: str,
                                instructions: str,
+                               assignments: str,
                                tool_names: List[str] = None):
         """
         Creates the thread resource on the OpenAI service side.
@@ -83,6 +85,7 @@ class OpenAIRunContext(RunContext):
         :param assistant_name: String name of the assistant that can show up in the
                     OpenAI web API.
         :param instructions: string instructions that are used to create the OpenAI assistant
+        :param assignments: string assignments of function parameters that are used as input
         :param tool_names: The list of registered tool names to use.
                     Default is None implying no tool is to be called.
                     Note that this implementation can only handle the 1st tool in the list
@@ -105,10 +108,14 @@ class OpenAIRunContext(RunContext):
 
         model_name: str = self.llm_config.get("model_name")
 
+        use_instructions: str = instructions
+        if assignments is not None:
+            use_instructions = use_instructions + assignments
+
         # Create the assistant
         assistant = await self.openai_client.create_assistant(
             name=assistant_name,
-            instructions=instructions,
+            instructions=use_instructions,
             model=model_name,
         )
         self.assistant_id = assistant.id

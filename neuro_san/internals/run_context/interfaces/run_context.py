@@ -30,12 +30,14 @@ class RunContext(AgentSpecProvider):
 
     async def create_resources(self, assistant_name: str,
                                instructions: str,
+                               assignments: str,
                                tool_names: List[str] = None):
         """
         Creates resources to be used during a run of an assistant.
         The result is stored as a member in this instance for future use.
         :param assistant_name: String name of the assistant.
         :param instructions: string instructions that are used to create the assistant
+        :param assignments: string assignments of function parameters that are used as input
         :param tool_names: The list of registered tool names to use.
                     Default is None implying no tool is to be called.
         """
