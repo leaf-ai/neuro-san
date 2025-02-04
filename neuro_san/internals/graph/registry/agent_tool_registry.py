@@ -25,7 +25,6 @@ from neuro_san.internals.graph.tools.branch_tool import BranchTool
 from neuro_san.internals.graph.tools.class_tool import ClassTool
 from neuro_san.internals.graph.tools.external_tool import ExternalTool
 from neuro_san.internals.graph.tools.front_man import FrontMan
-from neuro_san.internals.graph.tools.method_tool import MethodTool
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.callable_tool import CallableTool
@@ -211,11 +210,6 @@ Some things to try:
             if agent_tool_spec.get("class") is not None:
                 # Agent specifically requested a python class to be run.
                 agent_tool = ClassTool(parent_run_context, journal, self, use_args, agent_tool_spec, sly_data)
-            elif agent_tool_spec.get("method") is not None:
-                # Agent specifically requested a python method to be run.
-                # NOTE: this usage is deprecaded in favor of ClassTools so as to
-                # discourage tool implementations with Static Cling.
-                agent_tool = MethodTool(parent_run_context, journal, self, use_args, agent_tool_spec, sly_data)
             else:
                 agent_tool = BranchTool(parent_run_context, journal, self, use_args, agent_tool_spec, sly_data)
         else:
