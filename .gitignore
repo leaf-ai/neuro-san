@@ -1,6 +1,7 @@
 # virtualenv folders
 venv/
 venv3/
+.venv/
 
 # Python byte code
 *.pyc
