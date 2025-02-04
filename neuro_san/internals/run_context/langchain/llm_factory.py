@@ -181,7 +181,7 @@ LLM_ENTRIES = {
         "class": ChatOllama,
         "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
     },
-    "deepseek-r1:14b": { # Does not support tools
+    "deepseek-r1:14b": {  # Does not support tools
         "class": ChatOllama,
         "max_tokens": 4096
     },
@@ -254,7 +254,6 @@ DEFAULT_CONFIG = {
     "openai_api_type": None,                # The string type to use when accessing an Azure OpenAI model.
                                             # By default this value is None, which indicates the value
                                             # should come from the OS environment variable OPENAI_API_TYPE.
-    
     # The following keys are used with Azure OpenAI models.
     "nvidia_api_key": None,
 }
@@ -380,7 +379,7 @@ class LlmFactory:
             llm = ChatNVIDIA(
                             temperature=use_config.get("temperature", DEFAULT_TEMPERATURE),
                             nvidia_api_key=LlmFactory.get_value_or_env(use_config, api_key,
-                                                                          "NVIDIA_API_KEY"),
+                                                                       "NVIDIA_API_KEY"),
                             max_tokens=use_max_tokens,
                             model=use_model_name)
         else:
