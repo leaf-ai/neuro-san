@@ -197,6 +197,12 @@ LLM_ENTRIES = {
         "api_key": "nvidia_api_key",
         "max_tokens": 4096  # From https://python.langchain.com/docs/integrations/chat/nvidia_ai_endpoints/
     },
+    "nvidia-deepseek-r1": {
+        "use_model_name": "deepseek-ai/deepseek-r1",
+        "class": ChatNVIDIA,
+        "api_key": "nvidia_api_key",
+        "max_tokens": 4096  # From https://python.langchain.com/docs/integrations/chat/nvidia_ai_endpoints/
+    },
 }
 
 
