@@ -153,6 +153,10 @@ LLM_ENTRIES = {
         "class": ChatOllama,
         "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
     },
+    "llama3": {
+        "class": ChatOllama,
+        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
+    },
     "llama3.1": {
         "class": ChatOllama,
         "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
