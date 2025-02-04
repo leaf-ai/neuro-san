@@ -181,10 +181,11 @@ Some suggestions:
         arg_parser.add_argument("--poll", dest="stream", action="store_false",
                                 help="Use polling chat instead of streaming")
         arg_parser.add_argument("--connection", default="direct", type=str,
-                                choices=["service", "direct"],
+                                choices=["service", "direct", "http"],
                                 help="""
 The type of connection to initiate. Choices are to connect to:
     "service"   - an agent service via gRPC. (The default).  Needs host and port.
+    "http"      - an agent service via http. Needs host and port.
     "direct"    - a session via library.
 All choices require an agent name.
 """)

@@ -8,6 +8,7 @@ from tornado.ioloop import IOLoop
 from neuro_san.http_sidecar.handler_factory import HandlerFactory
 from neuro_san.http_sidecar.handlers.connectivity_handler import ConnectivityHandler
 from neuro_san.http_sidecar.handlers.function_handler import FunctionHandler
+from neuro_san.http_sidecar.handlers.streaming_chat_handler import StreamingChatHandler
 
 
 class HttpSidecar:
@@ -34,6 +35,10 @@ class HttpSidecar:
             route: str = f"/api/v1/{agent_name}/function"
             print(f"Registering: {route}")
             handler_class = FunctionHandler().build(self.port, agent_name, "function")
+            handlers.append((route, handler_class,))
+            route: str = f"/api/v1/{agent_name}/streaming_chat"
+            print(f"Registering: {route}")
+            handler_class = StreamingChatHandler().build(self.port, agent_name, "streaming_chat")
             handlers.append((route, handler_class,))
 
         return Application(handlers)

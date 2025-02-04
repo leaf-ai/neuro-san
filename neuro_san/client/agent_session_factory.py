@@ -13,6 +13,7 @@
 from neuro_san.client.direct_agent_session_factory import DirectAgentSessionFactory
 from neuro_san.session.agent_session import AgentSession
 from neuro_san.session.service_agent_session import ServiceAgentSession
+from neuro_san.session.http_service_agent_session import HttpServiceAgentSession
 
 
 # pylint: disable=too-few-public-methods
@@ -41,6 +42,8 @@ class AgentSessionFactory:
             session = factory.create_session(agent_name)
         elif session_type == "service":
             session = ServiceAgentSession(host=hostname, port=port, agent_name=agent_name)
+        elif session_type == "http":
+            session = HttpServiceAgentSession(host=hostname, port=port, agent_name=agent_name)
         else:
             # Incorrectly flagged as destination of Trust Boundary Violation 2
             #   Reason: This is the place where the session_type enforced-string argument is
