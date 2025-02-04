@@ -52,14 +52,14 @@ LLM_ENTRIES = {
     "gpt-4o": {
         "class": ChatOpenAI,
         "api_key": "openai_api_key",
-        "max_tokens": 4096  # https://platform.openai.com/docs/models says 128,000
+        "max_tokens": 4096  # https://platform.openai.com/docs/models says 16,384
                             # but that is for input, and empirical evidence shows this is
                             # the number required for output.
     },
     "gpt-4o-mini": {
         "class": ChatOpenAI,
         "api_key": "openai_api_key",
-        "max_tokens": 4096  # https://platform.openai.com/docs/models says 128,000
+        "max_tokens": 4096  # https://platform.openai.com/docs/models says 16,384
                             # but that is for input, and empirical evidence shows this is
                             # the number required for output.
     },
