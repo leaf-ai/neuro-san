@@ -69,10 +69,9 @@ class BranchTool(CallingTool, CallableTool):
             decision_name = str(uuid.uuid4())
         return decision_name
 
-    def get_specific_instructions(self) -> str:
+    def get_assignments(self) -> str:
         """
-        :return: The string prompt for framing the problem in terms of expertise,
-                 context, actions and outcomes.
+        :return: The string prompt for assigning values to the arguments to the agent.
         """
         # Get the properties of the function
         extractor: FieldExtractor = FieldExtractor()
@@ -86,10 +85,10 @@ class BranchTool(CallingTool, CallableTool):
         assigner = ArgumentAssigner(properties)
         assignments: List[str] = assigner.assign(self.arguments)
 
-        # Start to build the specific instructions, with one sentence for each property
+        # Start to build a single assignments string, with one sentence for each property
         # listed (exception for name and description).
-        specific_instructions: str = "\n".join(assignments)
-        return specific_instructions
+        assignments_str: str = "\n".join(assignments)
+        return assignments_str
 
     def get_takes_awhile(self) -> bool:
         """
@@ -135,9 +134,8 @@ class BranchTool(CallingTool, CallableTool):
         :return: A List of messages produced during this process.
         """
 
-        specific_instructions = self.get_specific_instructions()
+        assignments = self.get_assignments()
         instructions = self.get_instructions()
-        instructions = instructions + specific_instructions
 
         origin: List[Dict[str, Any]] = self.run_context.get_origin()
 
@@ -146,10 +144,10 @@ class BranchTool(CallingTool, CallableTool):
         assistant_name = f"{decision_name}_{component_name}"
         await self.journal.write(f"setting up {component_name} assistant...", origin)
 
-        await self.create_resources(assistant_name, instructions)
+        await self.create_resources(assistant_name, instructions, assignments)
 
         upper_component = component_name.upper()
-        await self.journal.write(f"{upper_component} CALLED>>> {specific_instructions}", origin)
+        await self.journal.write(f"{upper_component} CALLED>>> {instructions}{assignments}", origin)
         if self.get_takes_awhile():
             await self.journal.write("This may take awhile...", origin)
 

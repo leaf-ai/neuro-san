@@ -12,6 +12,7 @@
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Tuple
 
 import json
 import uuid
@@ -106,6 +107,7 @@ class LangChainRunContext(RunContext):
 
     async def create_resources(self, assistant_name: str,
                                instructions: str,
+                               assignments: str,
                                tool_names: List[str] = None):
         """
         Creates resources for later use within the RunContext instance.
@@ -117,6 +119,7 @@ class LangChainRunContext(RunContext):
         :param assistant_name: String name of the assistant
         :param instructions: string instructions that are used
                     to create the assistant/agent
+        :param assignments: string assignments of function parameters that are used as input
         :param tool_names: The list of registered tool names to use.
                     Default is None implying no tool is to be called.
         """
@@ -142,7 +145,7 @@ class LangChainRunContext(RunContext):
                 if tool is not None:
                     self.tools.append(tool)
 
-        prompt_template: ChatPromptTemplate = await self._create_prompt_template(instructions)
+        prompt_template: ChatPromptTemplate = await self._create_prompt_template(instructions, assignments)
 
         if len(self.tools) > 0:
             self.agent = create_tool_calling_agent(llm, self.tools, prompt_template)
@@ -199,21 +202,33 @@ class LangChainRunContext(RunContext):
                                                                                  self.tool_caller)
         return function_tool
 
-    async def _create_prompt_template(self, instructions: str) -> ChatPromptTemplate:
+    async def _create_prompt_template(self, instructions: str, assignments: str) -> ChatPromptTemplate:
         """
         Creates a ChatPromptTemplate given the generic instructions
         """
+        # Assemble the prompt message list
+        message_list: List[Tuple[str, str]] = []
+
         # Add to our own chat history which is updated in write_message()
         system_message = SystemMessage(instructions)
         await self.journal.write_message(system_message)
+        message_list.append(("system", instructions))
 
-        # Make a prompt per the docs for create_tooling_agent()
-        message_list = [
-            ("system", instructions),
+        # If we have assignments, add them
+        if assignments is not None and len(assignments) > 0:
+            system_message = SystemMessage(assignments)
+            await self.journal.write_message(system_message)
+            message_list.append(("system", assignments))
+
+        # Fill out the rest of the prompt per the docs for create_tooling_agent()
+        # Note we are not write_message()-ing the chat history because that is redundant
+        # Unclear if we should somehow/someplace write_message() the agent_scratchpad at all.
+        message_list.extend([
             ("placeholder", "{chat_history}"),
             ("human", "{input}"),
             ("placeholder", "{agent_scratchpad}"),
-        ]
+        ])
+
         prompt: ChatPromptTemplate = ChatPromptTemplate.from_messages(message_list)
 
         return prompt
@@ -411,7 +426,10 @@ class LangChainRunContext(RunContext):
         tool_result_dict = tool_chat_list[-1]
 
         # Turn that guy into a BaseMessage
-        # DEF - Should this be ToolMessage?
+        # You might expect that this should be a ToolMessage, but making that
+        # kind of conversion at this point runs into problems with OpenAI models
+        # that process them.  So, to make things continue to work, report the
+        # content as an AI message - as if the bot came up with the answer itself.
         tool_message = AIMessage(content=tool_result_dict.get("content"))
 
         return_messages: List[BaseMessage] = [tool_message]

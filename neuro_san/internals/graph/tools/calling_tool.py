@@ -150,24 +150,27 @@ context with which it will proces input, essentially telling it what to do.
         return self.run_context.get_origin()
 
     async def create_resources(self, component_name: str = None,
-                               specific_instructions: str = None):
+                               instructions: str = None,
+                               assignments: str = ""):
         """
         Creates resources that will be used throughout the lifetime of the component.
         :param component_name: Optional string for labelling the component.
                         Defaults to the agent name if not set.
-        :param specific_instructions: Optional string for setting
-                        more fine-grained instructions. Defaults to agent instructions.
+        :param instructions: Optional string for setting more fine-grained instructions.
+                        Defaults to agent instructions if not set.
+        :param assignments: Optional string for assigning agent functional arguments.
+                        Defaults to an empty string if not set.
         """
         name = component_name
         if name is None:
             name = self.get_name()
 
-        instructions = specific_instructions
+        use_instructions = instructions
         if instructions is None:
-            instructions = self.get_instructions()
+            use_instructions = self.get_instructions()
 
         tool_names: List[str] = self.get_callable_tool_names(self.agent_tool_spec)
-        await self.run_context.create_resources(name, instructions, tool_names=tool_names)
+        await self.run_context.create_resources(name, use_instructions, assignments, tool_names=tool_names)
 
     @staticmethod
     def get_callable_tool_names(agent_tool_spec: Dict[str, Any]) -> List[str]:
