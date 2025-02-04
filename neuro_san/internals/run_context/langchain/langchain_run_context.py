@@ -428,9 +428,6 @@ class LangChainRunContext(RunContext):
         self.agent = None
         self.recent_human_message = None
 
-        # Reset the journal to the new chat history list
-        self.journal = OriginatingJournal(self.invocation_context.get_journal(), self.origin, self.chat_history)
-
     def get_agent_tool_spec(self) -> Dict[str, Any]:
         """
         :return: the dictionary describing the data-driven agent
