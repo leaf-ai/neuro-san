@@ -25,12 +25,12 @@ class CompatibilityJournal(CompoundJournal):
     Journal instances needed for servicing streaming and polling chat.
     """
 
-    def __init__(self, hopper: AsyncHopper, logs: List[Any] = None):
+    def __init__(self, hopper: AsyncHopper):
         """
         Constructor
         """
         journals: List[Journal] = [
-            TextJournal(logs),
+            TextJournal(),
             MessageJournal(hopper)
         ]
         super().__init__(journals=journals)
