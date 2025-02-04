@@ -35,7 +35,7 @@ class MessageJournal(Journal):
         :param hopper: A handle to an AsyncHopper implementation, onto which
                        any message will be put().
         """
-        self.hopper = hopper
+        self.hopper: AsyncHopper = hopper
 
     async def write(self, entry: Union[str, bytes], origin: List[Dict[str, Any]]):
         """

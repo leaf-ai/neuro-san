@@ -176,17 +176,17 @@ class DirectAgentSession(AgentSession):
             if session_id is None:
                 # Initiate a new conversation.
                 status = self.CREATED
-                chat_session = DataDrivenChatSession(registry=self.tool_registry,
-                                                     invocation_context=self.invocation_context)
+                chat_session = DataDrivenChatSession(registry=self.tool_registry)
                 if self.chat_session_map is not None:
                     session_id = self.chat_session_map.register_chat_session(chat_session)
             else:
-                # We got an session_id, but this service instance has no knowledge
+                # We got a session_id, but this service instance has no knowledge
                 # of it.
                 status = self.NOT_FOUND
         else:
             # We have seen this session_id before and can register new user input.
             status = self.FOUND
+            self.invocation_context.set_logs(chat_session.get_logs())
 
         if chat_session is not None and user_input is not None:
 
@@ -249,7 +249,7 @@ class DirectAgentSession(AgentSession):
         if chat_session is not None:
             # We have seen this session_id before and can poll for a new response.
             status = self.FOUND
-            the_logs = chat_session.get_journal().get_logs()
+            the_logs = chat_session.get_logs()
             chat_response = chat_session.get_latest_response()
             if chat_response is not None:
                 # So as not to give the same response over multiple polls to logs().
@@ -296,7 +296,7 @@ class DirectAgentSession(AgentSession):
             # We have seen this session_id before and can poll for a new response.
             status = self.FOUND
             asyncio_executor: AsyncioExecutor = self.invocation_context.get_asyncio_executor()
-            future: Future = asyncio_executor.submit(session_id, chat_session.set_up)
+            future: Future = asyncio_executor.submit(session_id, chat_session.set_up, self.invocation_context)
             _ = future
 
         response_dict = {
@@ -354,17 +354,17 @@ class DirectAgentSession(AgentSession):
             if session_id is None:
                 # Initiate a new conversation.
                 status = self.CREATED
-                chat_session = DataDrivenChatSession(registry=self.tool_registry,
-                                                     invocation_context=self.invocation_context)
+                chat_session = DataDrivenChatSession(registry=self.tool_registry)
                 if self.chat_session_map is not None:
                     session_id = self.chat_session_map.register_chat_session(chat_session)
             else:
-                # We got an session_id, but this service instance has no knowledge
+                # We got a session_id, but this service instance has no knowledge
                 # of it.
                 status = self.NOT_FOUND
         else:
             # We have seen this session_id before and can register new user input.
             status = self.FOUND
+            self.invocation_context.set_logs(chat_session.get_logs())
 
         # Prepare the response dictionary
         template_response_dict = {
@@ -395,7 +395,7 @@ class DirectAgentSession(AgentSession):
                                          generated_type=Dict,
                                          keep_alive_result=empty,
                                          keep_alive_timeout_seconds=10.0)
-        for message in generator.synchronously_iterate(chat_session.get_queue()):
+        for message in generator.synchronously_iterate(self.invocation_context.get_queue()):
 
             response_dict: Dict[str, Any] = copy(template_response_dict)
             if any(message):

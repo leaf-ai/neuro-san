@@ -90,6 +90,17 @@ class ChatMessageType(IntEnum):
         role: str = _MESSAGE_TYPE_TO_ROLE.get(base_message_type)
         return role
 
+    @classmethod
+    def to_string(cls, chat_message_type: ChatMessageType) -> str:
+        """
+        :param chat_message_type: A ChatMessageType instance
+        :return: A string corresponding to the chat_message_type
+        """
+        message_type_str: str = _CHAT_MESSAGE_TYPE_TO_STRING.get(chat_message_type)
+        if message_type_str is None:
+            message_type_str = _CHAT_MESSAGE_TYPE_TO_STRING.get(cls.UNKNOWN_MESSAGE_TYPE)
+        return message_type_str
+
 
 # Convenience mappings going between constants and class types
 _MESSAGE_TYPE_TO_CHAT_MESSAGE_TYPE: Dict[Type[BaseMessage], ChatMessageType] = {
@@ -112,4 +123,18 @@ _MESSAGE_TYPE_TO_ROLE: Dict[Type[BaseMessage], str] = {
     AgentMessage: "agent",
     AgentFrameworkMessage: "agent-framework",
     LegacyLogsMessage: "legacy-logs",
+}
+
+_CHAT_MESSAGE_TYPE_TO_STRING: Dict[ChatMessageType, str] = {
+
+    ChatMessageType.UNKNOWN_MESSAGE_TYPE: "UNKNOWN",
+
+    ChatMessageType.SYSTEM: "SYSTEM",
+    ChatMessageType.HUMAN: "HUMAN",
+    ChatMessageType.TOOL: "TOOL",
+    ChatMessageType.AI: "AI",
+
+    ChatMessageType.AGENT: "AGENT",
+    ChatMessageType.AGENT_FRAMEWORK: "AGENT_FRAMEWORK",
+    ChatMessageType.LEGACY_LOGS: "LEGACY_LOGS",
 }

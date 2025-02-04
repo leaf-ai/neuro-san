@@ -37,6 +37,7 @@ from neuro_san.internals.errors.error_detector import ErrorDetector
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
+from neuro_san.internals.journals.originating_journal import OriginatingJournal
 from neuro_san.internals.messages.origination import Origination
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.run import Run
@@ -76,26 +77,32 @@ class LangChainRunContext(RunContext):
         :param invocation_context: The context policy container that pertains to the invocation
                     of the agent.
         """
+        # This block contains top candidates for state storage that needs to be
+        # retained when session_ids go away.
+        self.chat_history: List[BaseMessage] = []
+        self.journal: OriginatingJournal = None
+        self.agent: Agent = None
 
         # This might get modified in create_resources() (for now)
         self.llm_config: Dict[str, Any] = llm_config
         self.run_id_base: str = str(uuid.uuid4())
 
         self.tools: List[BaseTool] = []
-        self.chat_history: List[BaseMessage] = []
-        self.agent: Agent = None
         self.error_detector: ErrorDetector = None
         self.recent_human_message: HumanMessage = None
         self.tool_caller: ToolCaller = tool_caller
         self.invocation_context: InvocationContext = invocation_context
-
         self.origin: List[Dict[str, Any]] = []
-        if parent_run_context is not None:
 
-            # Settle the origin.
+        if parent_run_context is not None:
+            # Initialize the origin.
             agent_name: str = tool_caller.get_name()
             origination: Origination = self.invocation_context.get_origination()
             self.origin = origination.add_spec_name_to_origin(parent_run_context.get_origin(), agent_name)
+
+        if invocation_context is not None:
+            base_journal: Journal = self.invocation_context.get_journal()
+            self.journal = OriginatingJournal(base_journal, self.origin, self.chat_history)
 
     async def create_resources(self, assistant_name: str,
                                instructions: str,
@@ -135,7 +142,7 @@ class LangChainRunContext(RunContext):
                 if tool is not None:
                     self.tools.append(tool)
 
-        prompt_template: ChatPromptTemplate = self._create_prompt_template(instructions)
+        prompt_template: ChatPromptTemplate = await self._create_prompt_template(instructions)
 
         if len(self.tools) > 0:
             self.agent = create_tool_calling_agent(llm, self.tools, prompt_template)
@@ -192,14 +199,13 @@ class LangChainRunContext(RunContext):
                                                                                  self.tool_caller)
         return function_tool
 
-    def _create_prompt_template(self, instructions: str) \
-            -> ChatPromptTemplate:
+    async def _create_prompt_template(self, instructions: str) -> ChatPromptTemplate:
         """
         Creates a ChatPromptTemplate given the generic instructions
         """
-        # Add to our own chat history
+        # Add to our own chat history which is updated in write_message()
         system_message = SystemMessage(instructions)
-        self.chat_history.append(system_message)
+        await self.journal.write_message(system_message)
 
         # Make a prompt per the docs for create_tooling_agent()
         message_list = [
@@ -262,7 +268,9 @@ class LangChainRunContext(RunContext):
 
         run: Run = LangChainRun(self.run_id_base, self.chat_history)
 
-        self.chat_history.append(self.recent_human_message)
+        # Chat history is updated in write_message
+        await self.journal.write_message(self.recent_human_message)
+
         inputs = {
             "chat_history": self.chat_history,
             "input": self.recent_human_message
@@ -323,7 +331,9 @@ class LangChainRunContext(RunContext):
 
         return_message: BaseMessage = AIMessage(output)
 
-        self.chat_history.append(return_message)
+        # Chat history is updated in write_message
+        await self.journal.write_message(return_message)
+
         return run
 
     async def get_response(self) -> List[Any]:
@@ -342,8 +352,10 @@ class LangChainRunContext(RunContext):
         if tool_outputs is not None and len(tool_outputs) > 0:
             for tool_output in tool_outputs:
                 tool_messages: List[BaseMessage] = self.parse_tool_output(tool_output)
-                if tool_messages is not None and len(tool_messages) > 0:
-                    self.chat_history.extend(tool_messages)
+                if tool_messages is not None:
+                    for tool_message in tool_messages:
+                        # Chat history is updated in write_message()
+                        await self.journal.write_message(tool_message)
         else:
             print("No tool_outputs")
 
@@ -399,6 +411,7 @@ class LangChainRunContext(RunContext):
         tool_result_dict = tool_chat_list[-1]
 
         # Turn that guy into a BaseMessage
+        # DEF - Should this be ToolMessage?
         tool_message = AIMessage(content=tool_result_dict.get("content"))
 
         return_messages: List[BaseMessage] = [tool_message]
@@ -441,3 +454,13 @@ class LangChainRunContext(RunContext):
                                             of the tool is being dealt with.
         """
         return self.origin
+
+    def update_invocation_context(self, invocation_context: InvocationContext):
+        """
+        Update internal state based on the InvocationContext instance passed in.
+        :param invocation_context: The context policy container that pertains to the invocation
+        """
+        self.invocation_context = invocation_context
+
+        base_journal: Journal = self.invocation_context.get_journal()
+        self.journal = OriginatingJournal(base_journal, self.origin, self.chat_history)

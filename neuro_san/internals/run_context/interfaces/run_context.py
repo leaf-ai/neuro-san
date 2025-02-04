@@ -104,3 +104,10 @@ class RunContext(AgentSpecProvider):
                                             of the tool is being dealt with.
         """
         raise NotImplementedError
+
+    def update_invocation_context(self, invocation_context: InvocationContext):
+        """
+        Update internal state based on the InvocationContext instance passed in.
+        :param invocation_context: The context policy container that pertains to the invocation
+        """
+        raise NotImplementedError

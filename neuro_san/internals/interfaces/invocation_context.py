@@ -12,7 +12,9 @@
 
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 
+from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
+from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.origination import Origination
 
 
@@ -39,5 +41,19 @@ class InvocationContext:
         """
         :return: The Origination instance carrying state about tool instantation
                 during the course of the AgentSession.
+        """
+        raise NotImplementedError
+
+    def get_journal(self) -> Journal:
+        """
+        :return: The Journal instance that allows message reporting
+                during the course of the AgentSession.
+        """
+        raise NotImplementedError
+
+    def get_queue(self) -> AsyncCollatingQueue:
+        """
+        :return: The AsyncCollatingQueue instance via which messages are streamed to the
+                AgentSession mechanics
         """
         raise NotImplementedError

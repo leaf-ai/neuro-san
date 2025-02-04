@@ -259,3 +259,10 @@ class OpenAIRunContext(RunContext):
                                             of the tool is being dealt with.
         """
         return []
+
+    def update_invocation_context(self, invocation_context: InvocationContext):
+        """
+        Update internal state based on the InvocationContext instance passed in.
+        :param invocation_context: The context policy container that pertains to the invocation
+        """
+        self.invocation_context = invocation_context

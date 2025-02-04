@@ -12,10 +12,9 @@
 from typing import Any
 from typing import Dict
 from typing import Iterator
+from typing import List
 
-from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
-from neuro_san.internals.journals.journal import Journal
 
 
 class ChatSession:
@@ -25,9 +24,11 @@ class ChatSession:
     last between multiple calls to a service.
     """
 
-    async def set_up(self):
+    async def set_up(self, invocation_context: InvocationContext):
         """
         Resets or sets the instance up for the first time.
+        :param invocation_context: The context policy container that pertains to the invocation
+                    of the agent.
         """
         raise NotImplementedError
 
@@ -73,19 +74,7 @@ class ChatSession:
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be None.
         :return: Nothing.  Response values are put on a queue whose consumtion is
-                managed by AsyncCollatingQueue returned by get_queue().
-        """
-        raise NotImplementedError
-
-    def get_queue(self) -> AsyncCollatingQueue:
-        """
-        :return: The AsyncCollatingQueue associated with this ChatSession instance.
-        """
-        raise NotImplementedError
-
-    def get_journal(self) -> Journal:
-        """
-        :return: The Journal which has been capturing all the "thinking" messages.
+                managed by AsyncCollatingQueue in the InvocationContext
         """
         raise NotImplementedError
 
@@ -112,5 +101,11 @@ class ChatSession:
         """
         :return: The result of datetime.now() when the chat agent
                 last received input.
+        """
+        raise NotImplementedError
+
+    def get_logs(self) -> List[Any]:
+        """
+        :return: A list of strings corresponding to journal entries.
         """
         raise NotImplementedError
