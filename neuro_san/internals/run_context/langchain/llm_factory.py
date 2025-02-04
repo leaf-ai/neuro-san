@@ -16,7 +16,8 @@ from typing import Dict
 import os
 
 from langchain_anthropic.chat_models import ChatAnthropic
-from langchain_community.chat_models.ollama import ChatOllama
+from langchain_ollama import ChatOllama
+from langchain_nvidia_ai_endpoints import ChatNVIDIA
 from langchain_core.language_models.base import BaseLanguageModel
 from langchain_openai.chat_models.base import ChatOpenAI
 from langchain_openai.chat_models.azure import AzureChatOpenAI
@@ -36,7 +37,8 @@ DEFAULT_TEMPERATURE = 0.7
 DEFAULT_PROMPT_TOKEN_FRACTION = 0.5
 
 LLM_ENTRIES = {
-
+    # Model context and output tokens: https://platform.openai.com/docs/models
+    # Model compatibility: https://platform.openai.com/docs/models#model-endpoint-compatibility
     "gpt-3.5-turbo": {
         "class": ChatOpenAI,
         "api_key": "openai_api_key",
@@ -50,7 +52,14 @@ LLM_ENTRIES = {
     "gpt-4o": {
         "class": ChatOpenAI,
         "api_key": "openai_api_key",
-        "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4-turbo says 12800
+        "max_tokens": 4096  # https://platform.openai.com/docs/models says 16,384
+                            # but that is for input, and empirical evidence shows this is
+                            # the number required for output.
+    },
+    "gpt-4o-mini": {
+        "class": ChatOpenAI,
+        "api_key": "openai_api_key",
+        "max_tokens": 4096  # https://platform.openai.com/docs/models says 16,384
                             # but that is for input, and empirical evidence shows this is
                             # the number required for output.
     },
@@ -148,6 +157,10 @@ LLM_ENTRIES = {
         "class": ChatOllama,
         "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
     },
+    "llama3.1": {
+        "class": ChatOllama,
+        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
+    },
     "llama3:70b": {
         "class": ChatOllama,
         "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
@@ -160,9 +173,39 @@ LLM_ENTRIES = {
         "class": ChatOllama,
         "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
     },
+    "mistral-nemo": {
+        "class": ChatOllama,
+        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
+    },
     "mixtral": {
         "class": ChatOllama,
         "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
+    },
+    "qwen2.5:14b": {
+        "class": ChatOllama,
+        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
+    },
+    "deepseek-r1:14b": {  # Does not support tools
+        "class": ChatOllama,
+        "max_tokens": 4096
+    },
+    "nvidia-llama-3.1-405b-instruct": {
+        "use_model_name": "meta/llama-3.1-405b-instruct",
+        "class": ChatNVIDIA,
+        "api_key": "nvidia_api_key",
+        "max_tokens": 4096  # From https://python.langchain.com/docs/integrations/chat/nvidia_ai_endpoints/
+    },
+    "nvidia-llama-3.3-70b-instruct": {
+        "use_model_name": "meta/llama-3.3-70b-instruct",
+        "class": ChatNVIDIA,
+        "api_key": "nvidia_api_key",
+        "max_tokens": 4096  # From https://python.langchain.com/docs/integrations/chat/nvidia_ai_endpoints/
+    },
+    "nvidia-deepseek-r1": {
+        "use_model_name": "deepseek-ai/deepseek-r1",
+        "class": ChatNVIDIA,
+        "api_key": "nvidia_api_key",
+        "max_tokens": 4096  # From https://python.langchain.com/docs/integrations/chat/nvidia_ai_endpoints/
     },
 }
 
@@ -221,6 +264,8 @@ DEFAULT_CONFIG = {
     "openai_api_type": None,                # The string type to use when accessing an Azure OpenAI model.
                                             # By default this value is None, which indicates the value
                                             # should come from the OS environment variable OPENAI_API_TYPE.
+    # The following keys are used with Azure OpenAI models.
+    "nvidia_api_key": None,
 }
 
 
@@ -261,6 +306,7 @@ class LlmFactory:
         "openai_api_version"        with Azure-hosted OpenAI models
         "openai_proxy"
         "openai_api_type"
+        "nvidia_api_key"
     """
 
     @staticmethod
@@ -336,8 +382,16 @@ class LlmFactory:
             # Higher temperature is more random
             llm = ChatOllama(
                             temperature=use_config.get("temperature", DEFAULT_TEMPERATURE),
+                            num_predict=use_max_tokens,
+                            model=use_model_name)
+        elif base_class == ChatNVIDIA:
+            # Higher temperature is more random
+            llm = ChatNVIDIA(
+                            temperature=use_config.get("temperature", DEFAULT_TEMPERATURE),
+                            nvidia_api_key=LlmFactory.get_value_or_env(use_config, api_key,
+                                                                       "NVIDIA_API_KEY"),
                             max_tokens=use_max_tokens,
-                            model_name=use_model_name)
+                            model=use_model_name)
         else:
             raise ValueError(f"Class {base_class.__name__} for model_name {model_name} unknown")
 

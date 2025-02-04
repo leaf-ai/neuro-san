@@ -35,19 +35,25 @@ class MessageJournal(Journal):
         :param hopper: A handle to an AsyncHopper implementation, onto which
                        any message will be put().
         """
-        self.hopper = hopper
+        self.hopper: AsyncHopper = hopper
 
-    async def write(self, entry: Union[str, bytes]):
+    async def write(self, entry: Union[str, bytes], origin: List[Dict[str, Any]]):
         """
         :param entry: Add a string-ish entry to the logs.
                     Can be either a string or bytes.
+        :param origin: A List of origin dictionaries indicating the origin of the run.
+                The origin can be considered a path to the original call to the front-man.
+                Origin dictionaries themselves each have the following keys:
+                    "tool"                  The string name of the tool in the spec
+                    "instantiation_index"   An integer indicating which incarnation
+                                            of the tool is being dealt with.
         """
         # Decoding bytes to string if necessary
         if isinstance(entry, bytes):
             entry = entry.decode('utf-8')
 
         legacy = LegacyLogsMessage(content=entry)
-        await self.write_message(legacy)
+        await self.write_message(legacy, origin)
 
     def get_logs(self) -> List[str]:
         """
@@ -55,20 +61,17 @@ class MessageJournal(Journal):
         """
         return None
 
-    async def write_message(self, message: BaseMessage, origin: Union[str, List[str]] = None):
+    async def write_message(self, message: BaseMessage, origin: List[Dict[str, Any]]):
         """
         Writes a BaseMessage entry into the journal
         :param message: The BaseMessage instance to write to the journal
-        :param origin: A string or list of strings describing the originating agent of the information
+        :param origin: A List of origin dictionaries indicating the origin of the run.
+                The origin can be considered a path to the original call to the front-man.
+                Origin dictionaries themselves each have the following keys:
+                    "tool"                  The string name of the tool in the spec
+                    "instantiation_index"   An integer indicating which incarnation
+                                            of the tool is being dealt with.
         """
-        message_dict: Dict[str, Any] = convert_to_chat_message(message)
-
-        # Handle the origin information
-        if origin is not None:
-            origin_list: List[str] = origin
-            if isinstance(origin, str):
-                # Handle the case of a single string
-                origin_list = [origin]
-            message_dict["origin"] = origin_list
+        message_dict: Dict[str, Any] = convert_to_chat_message(message, origin)
 
         await self.hopper.put(message_dict)

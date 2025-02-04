@@ -17,7 +17,7 @@ from unittest import TestCase
 
 from neuro_san.internals.chat.connectivity_reporter import ConnectivityReporter
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
-from neuro_san.internals.graph.registry.agent_tool_registry_restorer import AgentToolRegistryRestorer
+from neuro_san.internals.graph.persistence.agent_tool_registry_restorer import AgentToolRegistryRestorer
 from neuro_san.internals.utils.file_of_class import FileOfClass
 
 

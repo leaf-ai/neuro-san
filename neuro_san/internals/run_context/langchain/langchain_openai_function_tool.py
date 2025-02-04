@@ -27,7 +27,7 @@ from neuro_san.internals.run_context.langchain.base_model_dictionary_converter \
     import BaseModelDictionaryConverter
 from neuro_san.internals.run_context.langchain.pydantic_argument_dictionary_converter \
     import PydanticArgumentDictionaryConverter
-from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
+from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 
 
 class LangChainOpenAIFunctionTool(BaseTool):
@@ -134,8 +134,8 @@ It's function_json is described thusly:
 
         # Check for external tools.
         name: str = function_json.get("name")
-        if ExternalToolAdapter.is_external_agent(name):
-            tool.name = ExternalToolAdapter.get_safe_agent_name(name)
+        if ExternalAgentParsing.is_external_agent(name):
+            tool.name = ExternalAgentParsing.get_safe_agent_name(name)
 
         # These next post-assignments satisfy the requirements of
         # convert_pydantic_to_openai_function() in that it wants to call

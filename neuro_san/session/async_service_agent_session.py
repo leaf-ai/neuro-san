@@ -17,17 +17,17 @@ from typing import AsyncGenerator
 from leaf_common.session.async_abstract_service_session import AsyncAbstractServiceSession
 from leaf_common.time.timeout import Timeout
 
-from neuro_san.session.agent_service_stub import AgentServiceStub
-from neuro_san.session.agent_session import AgentSession
 from neuro_san.api.grpc import agent_pb2 as service_messages
+from neuro_san.interfaces.async_agent_session import AsyncAgentSession
+from neuro_san.session.agent_service_stub import AgentServiceStub
 
 
-class AsyncServiceAgentSession(AsyncAbstractServiceSession):
+class AsyncServiceAgentSession(AsyncAbstractServiceSession, AsyncAgentSession):
     """
-    Implementation of AgentSession that talks to a gRPC service asynchronously.
+    Implementation of AsyncAgentSession that talks to a gRPC service asynchronously.
     """
 
-    DEFAULT_PORT: int = AgentSession.DEFAULT_PORT
+    DEFAULT_PORT: int = AsyncAgentSession.DEFAULT_PORT
     DEFAULT_AGENT_NAME: str = "esp_decision_assistant"
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
@@ -41,7 +41,7 @@ class AsyncServiceAgentSession(AsyncAbstractServiceSession):
                  agent_name: str = DEFAULT_AGENT_NAME,
                  service_prefix: str = None):
         """
-        Creates a AgentSession that connects to the
+        Creates an AsyncAgentSession that connects to the
         Agent Service and delegates its implementations to the service.
 
         :param host: the service host to connect to

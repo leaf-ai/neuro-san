@@ -17,6 +17,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 
+from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.run_context.interfaces.agent_spec_provider import AgentSpecProvider
 from neuro_san.internals.run_context.interfaces.run import Run
@@ -29,12 +30,14 @@ class RunContext(AgentSpecProvider):
 
     async def create_resources(self, assistant_name: str,
                                instructions: str,
+                               assignments: str,
                                tool_names: List[str] = None):
         """
         Creates resources to be used during a run of an assistant.
         The result is stored as a member in this instance for future use.
         :param assistant_name: String name of the assistant.
         :param instructions: string instructions that are used to create the assistant
+        :param assignments: string assignments of function parameters that are used as input
         :param tool_names: The list of registered tool names to use.
                     Default is None implying no tool is to be called.
         """
@@ -83,5 +86,30 @@ class RunContext(AgentSpecProvider):
     def get_agent_tool_spec(self) -> Dict[str, Any]:
         """
         :return: the dictionary describing the data-driven agent
+        """
+        raise NotImplementedError
+
+    def get_invocation_context(self) -> InvocationContext:
+        """
+        :return: The InvocationContext policy container that pertains to the invocation
+                    of the agent.
+        """
+        raise NotImplementedError
+
+    def get_origin(self) -> List[Dict[str, Any]]:
+        """
+        :return: A List of origin dictionaries indicating the origin of the run.
+                The origin can be considered a path to the original call to the front-man.
+                Origin dictionaries themselves each have the following keys:
+                    "tool"                  The string name of the tool in the spec
+                    "instantiation_index"   An integer indicating which incarnation
+                                            of the tool is being dealt with.
+        """
+        raise NotImplementedError
+
+    def update_invocation_context(self, invocation_context: InvocationContext):
+        """
+        Update internal state based on the InvocationContext instance passed in.
+        :param invocation_context: The context policy container that pertains to the invocation
         """
         raise NotImplementedError

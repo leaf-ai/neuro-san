@@ -37,6 +37,8 @@ langchain==0.3.7
 langchain-anthropic==0.2.4
 langchain-community==0.3.5
 langchain-openai==0.2.5
+langchain-nvidia-ai-endpoints==0.3.8
+langchain-ollama==0.2.3
 openai==1.54.1
 tiktoken==0.8.0
 bs4==0.0.2

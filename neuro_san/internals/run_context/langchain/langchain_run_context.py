@@ -12,6 +12,7 @@
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Tuple
 
 import json
 import uuid
@@ -34,7 +35,11 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.tools import BaseTool
 
 from neuro_san.internals.errors.error_detector import ErrorDetector
+from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
+from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
+from neuro_san.internals.journals.originating_journal import OriginatingJournal
+from neuro_san.internals.messages.origination import Origination
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.run import Run
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
@@ -43,6 +48,7 @@ from neuro_san.internals.run_context.langchain.langchain_run import LangChainRun
 from neuro_san.internals.run_context.langchain.langchain_openai_function_tool \
     import LangChainOpenAIFunctionTool
 from neuro_san.internals.run_context.langchain.llm_factory import LlmFactory
+from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
 
 
@@ -58,29 +64,50 @@ class LangChainRunContext(RunContext):
     Note that "tools" can be just a list of OpenAI functions JSON.
     """
 
-    def __init__(self, llm_config: Dict[str, Any], tool_caller: ToolCaller):
+    def __init__(self, llm_config: Dict[str, Any],
+                 parent_run_context: RunContext,
+                 tool_caller: ToolCaller,
+                 invocation_context: InvocationContext):
         """
         Constructor
 
         :param llm_config: The default llm_config to use as an overlay
                             for the tool-specific llm_config
+        :param parent_run_context: The parent RunContext that is calling this one. Can be None.
         :param tool_caller: The tool caller to use
+        :param invocation_context: The context policy container that pertains to the invocation
+                    of the agent.
         """
+        # This block contains top candidates for state storage that needs to be
+        # retained when session_ids go away.
+        self.chat_history: List[BaseMessage] = []
+        self.journal: OriginatingJournal = None
+        self.agent: Agent = None
 
         # This might get modified in create_resources() (for now)
         self.llm_config: Dict[str, Any] = llm_config
         self.run_id_base: str = str(uuid.uuid4())
 
         self.tools: List[BaseTool] = []
-        self.chat_history: List[BaseMessage] = []
-        self.assistant_name: str = None
-        self.agent: Agent = None
         self.error_detector: ErrorDetector = None
         self.recent_human_message: HumanMessage = None
         self.tool_caller: ToolCaller = tool_caller
+        self.invocation_context: InvocationContext = invocation_context
+        self.origin: List[Dict[str, Any]] = []
+
+        if parent_run_context is not None:
+            # Initialize the origin.
+            agent_name: str = tool_caller.get_name()
+            origination: Origination = self.invocation_context.get_origination()
+            self.origin = origination.add_spec_name_to_origin(parent_run_context.get_origin(), agent_name)
+
+        if invocation_context is not None:
+            base_journal: Journal = self.invocation_context.get_journal()
+            self.journal = OriginatingJournal(base_journal, self.origin, self.chat_history)
 
     async def create_resources(self, assistant_name: str,
                                instructions: str,
+                               assignments: str,
                                tool_names: List[str] = None):
         """
         Creates resources for later use within the RunContext instance.
@@ -92,18 +119,22 @@ class LangChainRunContext(RunContext):
         :param assistant_name: String name of the assistant
         :param instructions: string instructions that are used
                     to create the assistant/agent
+        :param assignments: string assignments of function parameters that are used as input
         :param tool_names: The list of registered tool names to use.
                     Default is None implying no tool is to be called.
         """
+        # DEF - Remove the arg if possible
+        _ = assistant_name
+
         # Create the model we will use.
         llm: BaseLanguageModel = LlmFactory.create_llm(self.llm_config)
 
-        self.assistant_name = assistant_name
+        full_name: str = Origination.get_full_name_from_origin(self.origin)
 
         agent_spec: Dict[str, Any] = self.tool_caller.get_agent_tool_spec()
 
         # Now that we have a name, we can create an ErrorDetector for the output.
-        self.error_detector = ErrorDetector(assistant_name,
+        self.error_detector = ErrorDetector(full_name,
                                             error_formatter_name=agent_spec.get("error_formatter"),
                                             system_error_fragments=["Agent stopped"],
                                             agent_error_fragments=agent_spec.get("error_fragments"))
@@ -114,7 +145,7 @@ class LangChainRunContext(RunContext):
                 if tool is not None:
                     self.tools.append(tool)
 
-        prompt_template: ChatPromptTemplate = self._create_prompt_template(instructions)
+        prompt_template: ChatPromptTemplate = await self._create_prompt_template(instructions, assignments)
 
         if len(self.tools) > 0:
             self.agent = create_tool_calling_agent(llm, self.tools, prompt_template)
@@ -136,7 +167,7 @@ class LangChainRunContext(RunContext):
         if agent_spec is None:
 
             # See if the agent name given could reference an external agent.
-            if not ExternalToolAdapter.is_external_agent(name):
+            if not ExternalAgentParsing.is_external_agent(name):
                 return None
 
             # Use the ExternalToolAdapter to get the function specification
@@ -146,7 +177,8 @@ class LangChainRunContext(RunContext):
             # Optimization:
             #   It's possible we might want to cache these results somehow to minimize
             #   network calls.
-            adapter = ExternalToolAdapter(name)
+            session_factory: AsyncAgentSessionFactory = self.invocation_context.get_async_session_factory()
+            adapter = ExternalToolAdapter(session_factory, name)
             function_json = await adapter.get_function_json()
         else:
             function_json = agent_spec.get("function")
@@ -170,22 +202,33 @@ class LangChainRunContext(RunContext):
                                                                                  self.tool_caller)
         return function_tool
 
-    def _create_prompt_template(self, instructions: str) \
-            -> ChatPromptTemplate:
+    async def _create_prompt_template(self, instructions: str, assignments: str) -> ChatPromptTemplate:
         """
         Creates a ChatPromptTemplate given the generic instructions
         """
-        # Add to our own chat history
-        system_message = SystemMessage(instructions)
-        self.chat_history.append(system_message)
+        # Assemble the prompt message list
+        message_list: List[Tuple[str, str]] = []
 
-        # Make a prompt per the docs for create_tooling_agent()
-        message_list = [
-            ("system", instructions),
+        # Add to our own chat history which is updated in write_message()
+        system_message = SystemMessage(instructions)
+        await self.journal.write_message(system_message)
+        message_list.append(("system", instructions))
+
+        # If we have assignments, add them
+        if assignments is not None and len(assignments) > 0:
+            system_message = SystemMessage(assignments)
+            await self.journal.write_message(system_message)
+            message_list.append(("system", assignments))
+
+        # Fill out the rest of the prompt per the docs for create_tooling_agent()
+        # Note we are not write_message()-ing the chat history because that is redundant
+        # Unclear if we should somehow/someplace write_message() the agent_scratchpad at all.
+        message_list.extend([
             ("placeholder", "{chat_history}"),
             ("human", "{input}"),
             ("placeholder", "{agent_scratchpad}"),
-        ]
+        ])
+
         prompt: ChatPromptTemplate = ChatPromptTemplate.from_messages(message_list)
 
         return prompt
@@ -205,7 +248,8 @@ class LangChainRunContext(RunContext):
         try:
             self.recent_human_message = HumanMessage(user_message)
         except ValidationError as exception:
-            message = f"ValidationError in {self.assistant_name} with message: {user_message}"
+            full_name: str = Origination.get_full_name_from_origin(self.origin)
+            message = f"ValidationError in {full_name} with message: {user_message}"
             raise ValueError(message) from exception
 
         # Create a run to return
@@ -239,7 +283,9 @@ class LangChainRunContext(RunContext):
 
         run: Run = LangChainRun(self.run_id_base, self.chat_history)
 
-        self.chat_history.append(self.recent_human_message)
+        # Chat history is updated in write_message
+        await self.journal.write_message(self.recent_human_message)
+
         inputs = {
             "chat_history": self.chat_history,
             "input": self.recent_human_message
@@ -300,7 +346,9 @@ class LangChainRunContext(RunContext):
 
         return_message: BaseMessage = AIMessage(output)
 
-        self.chat_history.append(return_message)
+        # Chat history is updated in write_message
+        await self.journal.write_message(return_message)
+
         return run
 
     async def get_response(self) -> List[Any]:
@@ -319,8 +367,10 @@ class LangChainRunContext(RunContext):
         if tool_outputs is not None and len(tool_outputs) > 0:
             for tool_output in tool_outputs:
                 tool_messages: List[BaseMessage] = self.parse_tool_output(tool_output)
-                if tool_messages is not None and len(tool_messages) > 0:
-                    self.chat_history.extend(tool_messages)
+                if tool_messages is not None:
+                    for tool_message in tool_messages:
+                        # Chat history is updated in write_message()
+                        await self.journal.write_message(tool_message)
         else:
             print("No tool_outputs")
 
@@ -376,6 +426,10 @@ class LangChainRunContext(RunContext):
         tool_result_dict = tool_chat_list[-1]
 
         # Turn that guy into a BaseMessage
+        # You might expect that this should be a ToolMessage, but making that
+        # kind of conversion at this point runs into problems with OpenAI models
+        # that process them.  So, to make things continue to work, report the
+        # content as an AI message - as if the bot came up with the answer itself.
         tool_message = AIMessage(content=tool_result_dict.get("content"))
 
         return_messages: List[BaseMessage] = [tool_message]
@@ -400,3 +454,31 @@ class LangChainRunContext(RunContext):
             return None
 
         return self.tool_caller.get_agent_tool_spec()
+
+    def get_invocation_context(self) -> InvocationContext:
+        """
+        :return: The InvocationContext policy container that pertains to the invocation
+                    of the agent.
+        """
+        return self.invocation_context
+
+    def get_origin(self) -> List[Dict[str, Any]]:
+        """
+        :return: A List of origin dictionaries indicating the origin of the run.
+                The origin can be considered a path to the original call to the front-man.
+                Origin dictionaries themselves each have the following keys:
+                    "tool"                  The string name of the tool in the spec
+                    "instantiation_index"   An integer indicating which incarnation
+                                            of the tool is being dealt with.
+        """
+        return self.origin
+
+    def update_invocation_context(self, invocation_context: InvocationContext):
+        """
+        Update internal state based on the InvocationContext instance passed in.
+        :param invocation_context: The context policy container that pertains to the invocation
+        """
+        self.invocation_context = invocation_context
+
+        base_journal: Journal = self.invocation_context.get_journal()
+        self.journal = OriginatingJournal(base_journal, self.origin, self.chat_history)

@@ -25,7 +25,7 @@ from neuro_san.internals.run_context.interfaces.run import Run
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 from neuro_san.internals.run_context.interfaces.tool_call import ToolCall
 from neuro_san.internals.run_context.interfaces.tool_caller import ToolCaller
-from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
+from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 
 
 class CallingTool(ToolCaller):
@@ -58,27 +58,48 @@ class CallingTool(ToolCaller):
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be an empty dictionary.
         """
+        # This block contains top candidates for state storage that needs to be
+        # retained when session_ids go away.
+        self.run_context: RunContext = None
+
         self.journal: Journal = journal
         self.factory: AgentToolFactory = factory
         self.agent_tool_spec: Dict[str, Any] = agent_tool_spec
         self.sly_data: Dict[str, Any] = sly_data
 
-        empty: Dict[str, Any] = {}
-        overlayer = DictionaryOverlay()
-
         # Get the llm config as a combination of defaults from different places in the config
-        config: Dict[str, Any] = self.factory.get_config()
-        llm_config = config.get("llm_config", empty)
-        llm_config = overlayer.overlay(llm_config, self.agent_tool_spec.get("llm_config", empty))
+        agent_network_config: Dict[str, Any] = self.factory.get_config()
+        spec_llm_config: Dict[str, Any] = self.agent_tool_spec.get("llm_config")
+        run_context_config: Dict[str, Any] = self.prepare_run_context_config(agent_network_config,
+                                                                             spec_llm_config)
+        self.run_context = RunContextFactory.create_run_context(parent_run_context, self,
+                                                                config=run_context_config)
+
+    @staticmethod
+    def prepare_run_context_config(agent_network_config: Dict[str, Any],
+                                   spec_llm_config: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Get the llm config as a combination of defaults from different places in the config
+
+        :param agent_network_config: The entirety of the agent network's config
+        :param spec_llm_config: The llm config for the agent spec
+        :return: A merged llm config to use for a RunContext
+        """
+        empty: Dict[str, Any] = {}
+        if spec_llm_config is None:
+            spec_llm_config = empty
+
+        overlayer = DictionaryOverlay()
+        llm_config = agent_network_config.get("llm_config", empty)
+        llm_config = overlayer.overlay(llm_config, spec_llm_config)
         if len(llm_config.keys()) == 0:
             llm_config = None
 
         run_context_config: Dict[str, Any] = {
-            "context_type": config.get("context_type"),
+            "context_type": agent_network_config.get("context_type"),
             "llm_config": llm_config
         }
-        self.run_context: RunContext = RunContextFactory.create_run_context(parent_run_context,
-                                                                            self, run_context_config)
+        return run_context_config
 
     def get_agent_tool_spec(self) -> Dict[str, Any]:
         """
@@ -86,11 +107,14 @@ class CallingTool(ToolCaller):
         """
         return self.agent_tool_spec
 
-    def get_component_name(self) -> str:
+    def get_name(self) -> str:
         """
-        :return: The string name of the component
+        :return: the name of the data-driven agent as it comes from the spec
         """
-        return self.agent_tool_spec.get("name")
+        agent_spec: Dict[str, Any] = self.get_agent_tool_spec()
+        factory: AgentToolFactory = self.get_factory()
+        agent_name: str = factory.get_name_from_spec(agent_spec)
+        return agent_name
 
     def get_instructions(self) -> str:
         """
@@ -98,7 +122,7 @@ class CallingTool(ToolCaller):
         """
         instructions: str = self.agent_tool_spec.get("instructions")
         if instructions is None:
-            agent_name: str = self.get_component_name()
+            agent_name: str = self.get_name()
             message: str = f"""
 The agent named "{agent_name}" has no instructions specified for it.
 
@@ -114,25 +138,39 @@ context with which it will proces input, essentially telling it what to do.
         """
         return self.factory
 
+    def get_origin(self) -> List[Dict[str, Any]]:
+        """
+        :return: A List of origin dictionaries indicating the origin of the run.
+                The origin can be considered a path to the original call to the front-man.
+                Origin dictionaries themselves each have the following keys:
+                    "tool"                  The string name of the tool in the spec
+                    "instantiation_index"   An integer indicating which incarnation
+                                            of the tool is being dealt with.
+        """
+        return self.run_context.get_origin()
+
     async def create_resources(self, component_name: str = None,
-                               specific_instructions: str = None):
+                               instructions: str = None,
+                               assignments: str = ""):
         """
         Creates resources that will be used throughout the lifetime of the component.
         :param component_name: Optional string for labelling the component.
                         Defaults to the agent name if not set.
-        :param specific_instructions: Optional string for setting
-                        more fine-grained instructions. Defaults to agent instructions.
+        :param instructions: Optional string for setting more fine-grained instructions.
+                        Defaults to agent instructions if not set.
+        :param assignments: Optional string for assigning agent functional arguments.
+                        Defaults to an empty string if not set.
         """
         name = component_name
         if name is None:
-            name = self.get_component_name()
+            name = self.get_name()
 
-        instructions = specific_instructions
+        use_instructions = instructions
         if instructions is None:
-            instructions = self.get_instructions()
+            use_instructions = self.get_instructions()
 
         tool_names: List[str] = self.get_callable_tool_names(self.agent_tool_spec)
-        await self.run_context.create_resources(name, instructions, tool_names=tool_names)
+        await self.run_context.create_resources(name, use_instructions, assignments, tool_names=tool_names)
 
     @staticmethod
     def get_callable_tool_names(agent_tool_spec: Dict[str, Any]) -> List[str]:
@@ -162,7 +200,7 @@ context with which it will proces input, essentially telling it what to do.
             return tool_dict
 
         for tool in tool_list:
-            safe_name: str = ExternalToolAdapter.get_safe_agent_name(tool)
+            safe_name: str = ExternalAgentParsing.get_safe_agent_name(tool)
             tool_dict[safe_name] = tool
 
         return tool_dict

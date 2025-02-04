@@ -12,6 +12,7 @@
 from typing import Any
 from typing import Dict
 
+from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 from neuro_san.internals.run_context.interfaces.tool_caller import ToolCaller
 from neuro_san.internals.run_context.langchain.langchain_run_context import LangChainRunContext
@@ -27,6 +28,7 @@ class RunContextFactory:
     @staticmethod
     def create_run_context(parent_run_context: RunContext,
                            tool_caller: ToolCaller,
+                           invocation_context: InvocationContext = None,
                            config: Dict[str, Any] = None) \
             -> RunContext:
         """
@@ -37,9 +39,10 @@ class RunContextFactory:
                              this call.
         :param tool_caller: The ToolCaller whose lifespan matches that
                             of the newly created RunContext
+        :param invocation_context: The context policy container that pertains to the invocation
+                    of the agent.
         :param config: The config dictionary which may or may not contain
                        keys for the context_type and default llm_config
-        :param registry:
         """
 
         # Initialize return value
@@ -63,12 +66,19 @@ class RunContextFactory:
             context_type = "langchain"
         context_type = context_type.lower()
 
+        use_invocation_context: InvocationContext = invocation_context
+        if use_invocation_context is None and parent_run_context is not None:
+            use_invocation_context = parent_run_context.get_invocation_context()
+
         if context_type.startswith("openai"):
-            run_context = OpenAIRunContext(default_llm_config, parent_run_context, tool_caller)
+            run_context = OpenAIRunContext(default_llm_config, parent_run_context,
+                                           tool_caller, use_invocation_context)
         elif context_type.startswith("langchain"):
-            run_context = LangChainRunContext(default_llm_config, tool_caller)
+            run_context = LangChainRunContext(default_llm_config, parent_run_context,
+                                              tool_caller, use_invocation_context)
         else:
             # Default case
-            run_context = LangChainRunContext(default_llm_config, tool_caller)
+            run_context = LangChainRunContext(default_llm_config, parent_run_context,
+                                              tool_caller, use_invocation_context)
 
         return run_context

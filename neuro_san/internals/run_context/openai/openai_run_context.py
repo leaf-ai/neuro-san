@@ -22,6 +22,7 @@ import time
 
 from leaf_common.config.dictionary_overlay import DictionaryOverlay
 
+from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.message_utils import pretty_the_messages
 from neuro_san.internals.messages.message_utils import get_last_message_with_content
@@ -40,7 +41,7 @@ class OpenAIRunContext(RunContext):
     """
 
     def __init__(self, llm_config: Dict[str, Any], parent_run_context: RunContext,
-                 tool_caller: ToolCaller):
+                 tool_caller: ToolCaller, invocation_context: InvocationContext):
         """
         Constructor
 
@@ -50,6 +51,8 @@ class OpenAIRunContext(RunContext):
                              down its resources to a new RunContext created by
                              this call.
         :param tool_caller: The tool caller to use
+        :param invocation_context: The InvocationContext policy container that pertains to the invocation
+                    of the agent.
         """
 
         # This might get modified in create_resources() (for now)
@@ -69,9 +72,12 @@ class OpenAIRunContext(RunContext):
         # Other state initialized later
         self.thread_id: str = None
         self.assistant_id: str = None
+        self.invocation_context: InvocationContext = invocation_context
 
+    # pylint: disable=too-many-locals
     async def create_resources(self, assistant_name: str,
                                instructions: str,
+                               assignments: str,
                                tool_names: List[str] = None):
         """
         Creates the thread resource on the OpenAI service side.
@@ -79,6 +85,7 @@ class OpenAIRunContext(RunContext):
         :param assistant_name: String name of the assistant that can show up in the
                     OpenAI web API.
         :param instructions: string instructions that are used to create the OpenAI assistant
+        :param assignments: string assignments of function parameters that are used as input
         :param tool_names: The list of registered tool names to use.
                     Default is None implying no tool is to be called.
                     Note that this implementation can only handle the 1st tool in the list
@@ -101,10 +108,14 @@ class OpenAIRunContext(RunContext):
 
         model_name: str = self.llm_config.get("model_name")
 
+        use_instructions: str = instructions
+        if assignments is not None:
+            use_instructions = use_instructions + assignments
+
         # Create the assistant
         assistant = await self.openai_client.create_assistant(
             name=assistant_name,
-            instructions=instructions,
+            instructions=use_instructions,
             model=model_name,
         )
         self.assistant_id = assistant.id
@@ -178,7 +189,8 @@ class OpenAIRunContext(RunContext):
                 number_of_new_messages = len(latest_messages) - len(messages)
                 new_messages = latest_messages[-number_of_new_messages:]
                 if journal is not None:
-                    await journal.write(pretty_the_messages(new_messages))
+                    await journal.write(pretty_the_messages(new_messages),
+                                        self.get_origin())
                 messages = latest_messages
 
             run = OpenAIRun(openai_run)
@@ -236,3 +248,28 @@ class OpenAIRunContext(RunContext):
             return None
 
         return self.tool_caller.get_agent_tool_spec()
+
+    def get_invocation_context(self) -> InvocationContext:
+        """
+        :return: The InvocationContext policy container that pertains to the invocation
+                    of the agent.
+        """
+        return self.invocation_context
+
+    def get_origin(self) -> List[Dict[str, Any]]:
+        """
+        :return: A List of origin dictionaries indicating the origin of the run.
+                The origin can be considered a path to the original call to the front-man.
+                Origin dictionaries themselves each have the following keys:
+                    "tool"                  The string name of the tool in the spec
+                    "instantiation_index"   An integer indicating which incarnation
+                                            of the tool is being dealt with.
+        """
+        return []
+
+    def update_invocation_context(self, invocation_context: InvocationContext):
+        """
+        Update internal state based on the InvocationContext instance passed in.
+        :param invocation_context: The context policy container that pertains to the invocation
+        """
+        self.invocation_context = invocation_context

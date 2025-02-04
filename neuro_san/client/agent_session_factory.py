@@ -11,12 +11,12 @@
 # END COPYRIGHT
 
 from neuro_san.client.direct_agent_session_factory import DirectAgentSessionFactory
-from neuro_san.session.agent_session import AgentSession
+from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.session.service_agent_session import ServiceAgentSession
 from neuro_san.session.http_service_agent_session import HttpServiceAgentSession
 
 
-# pylint: disable=too-few-public-methods
+# pylint: disable=too-few-public-methods,too-many-arguments,too-many-positional-arguments
 class AgentSessionFactory:
     """
     Factory class for agent sessions.
@@ -25,12 +25,15 @@ class AgentSessionFactory:
     def create_session(self, session_type: str,
                        agent_name: str,
                        hostname: str = None,
-                       port: int = None) -> AgentSession:
+                       port: int = None,
+                       use_direct: bool = False) -> AgentSession:
         """
         :param session_type: The type of session to create
         :param agent_name: The name of the agent to use for the session.
         :param hostname: The name of the host to connect to (if applicable)
         :param port: The port on the host to connect to (if applicable)
+        :param use_direct: When True, will use a Direct session for
+                    external agents that would reside on the same server.
         """
         session: AgentSession = None
 
@@ -39,7 +42,7 @@ class AgentSessionFactory:
         #           actually checked for positive use.
         if session_type == "direct":
             factory = DirectAgentSessionFactory()
-            session = factory.create_session(agent_name)
+            session = factory.create_session(agent_name, use_direct=use_direct)
         elif session_type == "service":
             session = ServiceAgentSession(host=hostname, port=port, agent_name=agent_name)
         elif session_type == "http":

@@ -56,3 +56,10 @@ class AgentToolFactory:
         :return: The path under which tools for this registry should be looked for.
         """
         raise NotImplementedError
+
+    def get_name_from_spec(self, agent_spec: Dict[str, Any]) -> str:
+        """
+        :param agent_spec: A single agent to register
+        :return: The agent name as per the spec
+        """
+        raise NotImplementedError
