@@ -1,7 +1,7 @@
 from typing import Any
 from typing import Dict
 from typing import Union
-import duckduckgo_search
+from duckduckgo_search import DDGS
 from neuro_san.interfaces.coded_tool import CodedTool
 
 
@@ -71,7 +71,7 @@ def search_web(query: str, num_results: int = 5) -> list:
     :return: List of hyperlink strings.
     """
     # Use duckduckgo_search to retrieve results
-    search = duckduckgo_search.DDGS()
+    search = DDGS()
     results = search.text(query, max_results=num_results)
 
     # Extract and return only the URLs from the returned list of dictionaries
@@ -80,14 +80,14 @@ def search_web(query: str, num_results: int = 5) -> list:
     return returned_links
 
 
-if __name__ == "__main__":
-    # Example usage
-    URL_TO_SCRAPE = "https://www.amazon.com"
-    SEARCH_TERMS = "10.5 white men sneakers"
-    TOP_N = 5
-
-    links = search_web(URL_TO_SCRAPE + " " + SEARCH_TERMS, TOP_N)
-
-    print(f"Top {TOP_N} search result links for '{SEARCH_TERMS}' from {URL_TO_SCRAPE}:")
-    for i, link in enumerate(links, start=1):
-        print(f"{i}. {link}")
+# if __name__ == "__main__":
+#     # Example usage
+#     URL_TO_SCRAPE = "https://www.amazon.com"
+#     SEARCH_TERMS = "10.5 white men sneakers"
+#     TOP_N = 5
+#
+#     links = search_web(URL_TO_SCRAPE + " " + SEARCH_TERMS, TOP_N)
+#
+#     print(f"Top {TOP_N} search result links for '{SEARCH_TERMS}' from {URL_TO_SCRAPE}:")
+#     for i, link in enumerate(links, start=1):
+#         print(f"{i}. {link}")
