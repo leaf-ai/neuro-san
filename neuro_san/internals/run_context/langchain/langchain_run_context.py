@@ -411,7 +411,10 @@ class LangChainRunContext(RunContext):
         tool_result_dict = tool_chat_list[-1]
 
         # Turn that guy into a BaseMessage
-        # DEF - Should this be ToolMessage?
+        # You might expect that this should be a ToolMessage, but making that
+        # kind of conversion at this point runs into problems with OpenAI models
+        # that process them.  So, to make things continue to work, report the
+        # content as an AI message - as if the bot came up with the answer itself.
         tool_message = AIMessage(content=tool_result_dict.get("content"))
 
         return_messages: List[BaseMessage] = [tool_message]
