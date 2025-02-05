@@ -13,6 +13,7 @@
     # Currently we list each hocon file we want to serve as a key with a boolean value.
     # Eventually we might have a dictionary value with server specifications for each.
 
+
     "esp_decision_assistant.hocon": true,
     "hello_world.hocon": true,
     "intranet_agents.hocon": true,
@@ -22,4 +23,21 @@
     "retail_ops_and_customer_service.hocon": true,
     "banking_ops.hocon": true,
     "cpg_agents.hocon": true
+
+    # The agent network .hocon files above are examples specific to the neuro-san library
+    # It would be an Easy thing to do to add your own agent network's .hocon file to the
+    # list above, but 99% of the time it is not the right, Simple thing to do.
+    # Why? Because many agent networks drag in dependencies for their CodedTools,
+    # and we are continually trying to keep neuro-san a lean library.
+    # We are quite sure your agent is superlative and special... to you.
+    # If your agent really is the 1% of cases which is so exemplary that we need to show it
+    # off to the world, you will need to be talking to the neuro-san team to make it
+    # the exemplary case you perhaps unintentionally end up meaning it to be by adding
+    # it here, in the neuro-san repo.
+    #
+    # The RIGHT thing to do is to start your own repo with your own registries/ directory,
+    # with your own manifest.hocon file for your own agent network .hocon file projects,
+    # and your own coded_tools directory for those agents.  And when you do that,
+    # you will delete this set of comments, because you will have free reign in your own repo.
+    # Stallions must run, and run free.
 }
