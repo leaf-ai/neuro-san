@@ -13,7 +13,6 @@
     # Currently we list each hocon file we want to serve as a key with a boolean value.
     # Eventually we might have a dictionary value with server specifications for each.
 
-
     "esp_decision_assistant.hocon": true,
     "hello_world.hocon": true,
     "intranet_agents.hocon": true,
@@ -39,5 +38,8 @@
     # with your own manifest.hocon file for your own agent network .hocon file projects,
     # and your own coded_tools directory for those agents.  And when you do that,
     # you will delete this set of comments, because you will have free reign in your own repo.
-    # Stallions must run, and run free.
+    # After all: Stallions must run, and run free.
+    #
+    # Use the AGENT_MANIFEST_FILE and AGENT_TOOL_PATH env vars to direct a generic neuro-san
+    # server to your own repo's agents and CodedTools, respectively.
 }
