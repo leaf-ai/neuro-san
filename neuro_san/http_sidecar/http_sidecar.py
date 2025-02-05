@@ -16,7 +16,6 @@ class HttpSidecar:
         self.port = port
         self.http_port: int = self.port+1
         self.agents = copy.deepcopy(agents)
-        self.factory: HandlerFactory = HandlerFactory(f"localhost:{port}")
 
     def __call__(self):
         app = self.make_app()
