@@ -132,6 +132,9 @@ message ChatRequest {
 
     // Supercedes user_input above
     chat.ChatMessage user_message = 4 [json_name="user_message"];
+
+    // Supercedes session_id above.
+    repeated chat.ChatHistory chat_histories = 5 [json_name="chat_histories"];
 }
 
 // Response structure for Chat gRPC method
