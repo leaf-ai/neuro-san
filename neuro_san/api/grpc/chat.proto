@@ -44,6 +44,20 @@ message ChatHistory {
 }
 
 
+// Message for holding the state of play for any chat session
+// such that should the client send this back to the service,
+// a different server knows exactly where to pick up where the previous
+// conversation left off.
+message ChatState {
+
+    // A potentially full list of chat histories that pertain to the node.
+    // These will typically come in the last message of any particular agent's
+    // chat stream.   Do not expect any or all internal agents will broadcast their
+    // chat history, but you can at least expect the front-man to broadcast his.
+    repeated ChatHistory chat_histories = 1 [json_name="chat_histories"];
+}
+
+
 // Structure describing a single chat message.
 // This could be a single response, or a list of these might comprise
 // a chat history.
@@ -98,9 +112,9 @@ message ChatMessage {
     // data in place.
     google.protobuf.Struct structure = 5 [json_name="structure"];
 
-    // A potentially full list of chat histories that pertain to the node.
-    // These will typically come in the last message of any particular agent's
-    // chat stream.   Do not expect any or all internal agents will broadcast their
-    // chat history, but you can at least expect the front-man to broadcast his.
-    repeated ChatHistory chat_histories = 6 [json_name="chat_histories"];
+    // Message for holding the state of play for any chat session
+    // such that should the client send this back to the service,
+    // a different server knows exactly where to pick up where the previous
+    // conversation left off.
+    ChatState chat_state = 6 [json_name="chat_state"];
 }

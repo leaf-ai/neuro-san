@@ -27,7 +27,7 @@ from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
 from neuro_san.api.grpc import chat_pb2 as neuro__san_dot_api_dot_grpc_dot_chat__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1eneuro_san/api/grpc/agent.proto\x12)dev.cognizant_ai.neuro_san.api.grpc.agent\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1dneuro_san/api/grpc/chat.proto\"\x11\n\x0f\x46unctionRequest\"e\n\x08\x46unction\x12 \n\x0b\x64\x65scription\x18\x01 \x01(\tR\x0b\x64\x65scription\x12\x37\n\nparameters\x18\x02 \x01(\x0b\x32\x17.google.protobuf.StructR\nparameters\"\xab\x01\n\x10\x46unctionResponse\x12O\n\x08\x66unction\x18\x01 \x01(\x0b\x32\x33.dev.cognizant_ai.neuro_san.api.grpc.agent.FunctionR\x08\x66unction\x12\x46\n\x06status\x18\x02 \x01(\x0e\x32\x36.dev.cognizant_ai.neuro_san.api.grpc.agent.AgentStatus\"\xbc\x02\n\x0b\x43hatRequest\x12\x1e\n\nsession_id\x18\x01 \x01(\tR\nsession_id\x12\x1e\n\nuser_input\x18\x02 \x01(\tR\nuser_input\x12\x33\n\x08sly_data\x18\x03 \x01(\x0b\x32\x17.google.protobuf.StructR\x08sly_data\x12Y\n\x0cuser_message\x18\x04 \x01(\x0b\x32\x35.dev.cognizant_ai.neuro_san.api.grpc.chat.ChatMessageR\x0cuser_message\x12]\n\x0e\x63hat_histories\x18\x05 \x03(\x0b\x32\x35.dev.cognizant_ai.neuro_san.api.grpc.chat.ChatHistoryR\x0e\x63hat_histories\"\x92\x02\n\x0c\x43hatResponse\x12G\n\x07request\x18\x01 \x01(\x0b\x32\x36.dev.cognizant_ai.neuro_san.api.grpc.agent.ChatRequest\x12\x1e\n\nsession_id\x18\x02 \x01(\tR\nsession_id\x12\x46\n\x06status\x18\x03 \x01(\x0e\x32\x36.dev.cognizant_ai.neuro_san.api.grpc.agent.AgentStatus\x12Q\n\x08response\x18\x04 \x01(\x0b\x32\x35.dev.cognizant_ai.neuro_san.api.grpc.chat.ChatMessageR\x08response\"-\n\x0bLogsRequest\x12\x1e\n\nsession_id\x18\x01 \x01(\tR\nsession_id\"\xf3\x01\n\x0cLogsResponse\x12G\n\x07request\x18\x01 \x01(\x0b\x32\x36.dev.cognizant_ai.neuro_san.api.grpc.agent.LogsRequest\x12\x1e\n\nsession_id\x18\x02 \x01(\tR\nsession_id\x12\x46\n\x06status\x18\x03 \x01(\x0e\x32\x36.dev.cognizant_ai.neuro_san.api.grpc.agent.AgentStatus\x12$\n\rchat_response\x18\x04 \x01(\tR\rchat_response\x12\x0c\n\x04logs\x18\x05 \x03(\t\".\n\x0cResetRequest\x12\x1e\n\nsession_id\x18\x01 \x01(\tR\nsession_id\"\xc1\x01\n\rResetResponse\x12H\n\x07request\x18\x01 \x01(\x0b\x32\x37.dev.cognizant_ai.neuro_san.api.grpc.agent.ResetRequest\x12\x1e\n\nsession_id\x18\x02 \x01(\tR\nsession_id\x12\x46\n\x06status\x18\x03 \x01(\x0e\x32\x36.dev.cognizant_ai.neuro_san.api.grpc.agent.AgentStatus\"\x15\n\x13\x43onnectivityRequest\"@\n\x10\x43onnectivityInfo\x12\x16\n\x06origin\x18\x01 \x01(\tR\x06origin\x12\x14\n\x05tools\x18\x02 \x03(\tR\x05tools\"\xc9\x01\n\x14\x43onnectivityResponse\x12i\n\x11\x63onnectivity_info\x18\x01 \x03(\x0b\x32;.dev.cognizant_ai.neuro_san.api.grpc.agent.ConnectivityInfoR\x11\x63onnectivity_info\x12\x46\n\x06status\x18\x02 \x01(\x0e\x32\x36.dev.cognizant_ai.neuro_san.api.grpc.agent.AgentStatus*A\n\x0b\x41gentStatus\x12\x0b\n\x07UNKNOWN\x10\x00\x12\t\n\x05\x46OUND\x10\x01\x12\r\n\tNOT_FOUND\x10\x02\x12\x0b\n\x07\x43REATED\x10\x03\x32\xa5\x06\n\x0c\x41gentService\x12\x85\x01\n\x08\x46unction\x12:.dev.cognizant_ai.neuro_san.api.grpc.agent.FunctionRequest\x1a;.dev.cognizant_ai.neuro_san.api.grpc.agent.FunctionResponse\"\x00\x12y\n\x04\x43hat\x12\x36.dev.cognizant_ai.neuro_san.api.grpc.agent.ChatRequest\x1a\x37.dev.cognizant_ai.neuro_san.api.grpc.agent.ChatResponse\"\x00\x12y\n\x04Logs\x12\x36.dev.cognizant_ai.neuro_san.api.grpc.agent.LogsRequest\x1a\x37.dev.cognizant_ai.neuro_san.api.grpc.agent.LogsResponse\"\x00\x12|\n\x05Reset\x12\x37.dev.cognizant_ai.neuro_san.api.grpc.agent.ResetRequest\x1a\x38.dev.cognizant_ai.neuro_san.api.grpc.agent.ResetResponse\"\x00\x12\x84\x01\n\rStreamingChat\x12\x36.dev.cognizant_ai.neuro_san.api.grpc.agent.ChatRequest\x1a\x37.dev.cognizant_ai.neuro_san.api.grpc.agent.ChatResponse\"\x00\x30\x01\x12\x91\x01\n\x0c\x43onnectivity\x12>.dev.cognizant_ai.neuro_san.api.grpc.agent.ConnectivityRequest\x1a?.dev.cognizant_ai.neuro_san.api.grpc.agent.ConnectivityResponse\"\x00\x42^Z\\github.com/leaf-ai/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/agent/v1;agentb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1eneuro_san/api/grpc/agent.proto\x12)dev.cognizant_ai.neuro_san.api.grpc.agent\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1dneuro_san/api/grpc/chat.proto\"\x11\n\x0f\x46unctionRequest\"e\n\x08\x46unction\x12 \n\x0b\x64\x65scription\x18\x01 \x01(\tR\x0b\x64\x65scription\x12\x37\n\nparameters\x18\x02 \x01(\x0b\x32\x17.google.protobuf.StructR\nparameters\"\xab\x01\n\x10\x46unctionResponse\x12O\n\x08\x66unction\x18\x01 \x01(\x0b\x32\x33.dev.cognizant_ai.neuro_san.api.grpc.agent.FunctionR\x08\x66unction\x12\x46\n\x06status\x18\x02 \x01(\x0e\x32\x36.dev.cognizant_ai.neuro_san.api.grpc.agent.AgentStatus\"\xb2\x02\n\x0b\x43hatRequest\x12\x1e\n\nsession_id\x18\x01 \x01(\tR\nsession_id\x12\x1e\n\nuser_input\x18\x02 \x01(\tR\nuser_input\x12\x33\n\x08sly_data\x18\x03 \x01(\x0b\x32\x17.google.protobuf.StructR\x08sly_data\x12Y\n\x0cuser_message\x18\x04 \x01(\x0b\x32\x35.dev.cognizant_ai.neuro_san.api.grpc.chat.ChatMessageR\x0cuser_message\x12S\n\nchat_state\x18\x05 \x01(\x0b\x32\x33.dev.cognizant_ai.neuro_san.api.grpc.chat.ChatStateR\nchat_state\"\x92\x02\n\x0c\x43hatResponse\x12G\n\x07request\x18\x01 \x01(\x0b\x32\x36.dev.cognizant_ai.neuro_san.api.grpc.agent.ChatRequest\x12\x1e\n\nsession_id\x18\x02 \x01(\tR\nsession_id\x12\x46\n\x06status\x18\x03 \x01(\x0e\x32\x36.dev.cognizant_ai.neuro_san.api.grpc.agent.AgentStatus\x12Q\n\x08response\x18\x04 \x01(\x0b\x32\x35.dev.cognizant_ai.neuro_san.api.grpc.chat.ChatMessageR\x08response\"-\n\x0bLogsRequest\x12\x1e\n\nsession_id\x18\x01 \x01(\tR\nsession_id\"\xf3\x01\n\x0cLogsResponse\x12G\n\x07request\x18\x01 \x01(\x0b\x32\x36.dev.cognizant_ai.neuro_san.api.grpc.agent.LogsRequest\x12\x1e\n\nsession_id\x18\x02 \x01(\tR\nsession_id\x12\x46\n\x06status\x18\x03 \x01(\x0e\x32\x36.dev.cognizant_ai.neuro_san.api.grpc.agent.AgentStatus\x12$\n\rchat_response\x18\x04 \x01(\tR\rchat_response\x12\x0c\n\x04logs\x18\x05 \x03(\t\".\n\x0cResetRequest\x12\x1e\n\nsession_id\x18\x01 \x01(\tR\nsession_id\"\xc1\x01\n\rResetResponse\x12H\n\x07request\x18\x01 \x01(\x0b\x32\x37.dev.cognizant_ai.neuro_san.api.grpc.agent.ResetRequest\x12\x1e\n\nsession_id\x18\x02 \x01(\tR\nsession_id\x12\x46\n\x06status\x18\x03 \x01(\x0e\x32\x36.dev.cognizant_ai.neuro_san.api.grpc.agent.AgentStatus\"\x15\n\x13\x43onnectivityRequest\"@\n\x10\x43onnectivityInfo\x12\x16\n\x06origin\x18\x01 \x01(\tR\x06origin\x12\x14\n\x05tools\x18\x02 \x03(\tR\x05tools\"\xc9\x01\n\x14\x43onnectivityResponse\x12i\n\x11\x63onnectivity_info\x18\x01 \x03(\x0b\x32;.dev.cognizant_ai.neuro_san.api.grpc.agent.ConnectivityInfoR\x11\x63onnectivity_info\x12\x46\n\x06status\x18\x02 \x01(\x0e\x32\x36.dev.cognizant_ai.neuro_san.api.grpc.agent.AgentStatus*A\n\x0b\x41gentStatus\x12\x0b\n\x07UNKNOWN\x10\x00\x12\t\n\x05\x46OUND\x10\x01\x12\r\n\tNOT_FOUND\x10\x02\x12\x0b\n\x07\x43REATED\x10\x03\x32\xa5\x06\n\x0c\x41gentService\x12\x85\x01\n\x08\x46unction\x12:.dev.cognizant_ai.neuro_san.api.grpc.agent.FunctionRequest\x1a;.dev.cognizant_ai.neuro_san.api.grpc.agent.FunctionResponse\"\x00\x12y\n\x04\x43hat\x12\x36.dev.cognizant_ai.neuro_san.api.grpc.agent.ChatRequest\x1a\x37.dev.cognizant_ai.neuro_san.api.grpc.agent.ChatResponse\"\x00\x12y\n\x04Logs\x12\x36.dev.cognizant_ai.neuro_san.api.grpc.agent.LogsRequest\x1a\x37.dev.cognizant_ai.neuro_san.api.grpc.agent.LogsResponse\"\x00\x12|\n\x05Reset\x12\x37.dev.cognizant_ai.neuro_san.api.grpc.agent.ResetRequest\x1a\x38.dev.cognizant_ai.neuro_san.api.grpc.agent.ResetResponse\"\x00\x12\x84\x01\n\rStreamingChat\x12\x36.dev.cognizant_ai.neuro_san.api.grpc.agent.ChatRequest\x1a\x37.dev.cognizant_ai.neuro_san.api.grpc.agent.ChatResponse\"\x00\x30\x01\x12\x91\x01\n\x0c\x43onnectivity\x12>.dev.cognizant_ai.neuro_san.api.grpc.agent.ConnectivityRequest\x1a?.dev.cognizant_ai.neuro_san.api.grpc.agent.ConnectivityResponse\"\x00\x42^Z\\github.com/leaf-ai/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/agent/v1;agentb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -35,8 +35,8 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'neuro_san.api.grpc.agent_pb
 if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['DESCRIPTOR']._options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z\\github.com/leaf-ai/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/agent/v1;agent'
-  _globals['_AGENTSTATUS']._serialized_start=1860
-  _globals['_AGENTSTATUS']._serialized_end=1925
+  _globals['_AGENTSTATUS']._serialized_start=1850
+  _globals['_AGENTSTATUS']._serialized_end=1915
   _globals['_FUNCTIONREQUEST']._serialized_start=138
   _globals['_FUNCTIONREQUEST']._serialized_end=155
   _globals['_FUNCTION']._serialized_start=157
@@ -44,23 +44,23 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['_FUNCTIONRESPONSE']._serialized_start=261
   _globals['_FUNCTIONRESPONSE']._serialized_end=432
   _globals['_CHATREQUEST']._serialized_start=435
-  _globals['_CHATREQUEST']._serialized_end=751
-  _globals['_CHATRESPONSE']._serialized_start=754
-  _globals['_CHATRESPONSE']._serialized_end=1028
-  _globals['_LOGSREQUEST']._serialized_start=1030
-  _globals['_LOGSREQUEST']._serialized_end=1075
-  _globals['_LOGSRESPONSE']._serialized_start=1078
-  _globals['_LOGSRESPONSE']._serialized_end=1321
-  _globals['_RESETREQUEST']._serialized_start=1323
-  _globals['_RESETREQUEST']._serialized_end=1369
-  _globals['_RESETRESPONSE']._serialized_start=1372
-  _globals['_RESETRESPONSE']._serialized_end=1565
-  _globals['_CONNECTIVITYREQUEST']._serialized_start=1567
-  _globals['_CONNECTIVITYREQUEST']._serialized_end=1588
-  _globals['_CONNECTIVITYINFO']._serialized_start=1590
-  _globals['_CONNECTIVITYINFO']._serialized_end=1654
-  _globals['_CONNECTIVITYRESPONSE']._serialized_start=1657
-  _globals['_CONNECTIVITYRESPONSE']._serialized_end=1858
-  _globals['_AGENTSERVICE']._serialized_start=1928
-  _globals['_AGENTSERVICE']._serialized_end=2733
+  _globals['_CHATREQUEST']._serialized_end=741
+  _globals['_CHATRESPONSE']._serialized_start=744
+  _globals['_CHATRESPONSE']._serialized_end=1018
+  _globals['_LOGSREQUEST']._serialized_start=1020
+  _globals['_LOGSREQUEST']._serialized_end=1065
+  _globals['_LOGSRESPONSE']._serialized_start=1068
+  _globals['_LOGSRESPONSE']._serialized_end=1311
+  _globals['_RESETREQUEST']._serialized_start=1313
+  _globals['_RESETREQUEST']._serialized_end=1359
+  _globals['_RESETRESPONSE']._serialized_start=1362
+  _globals['_RESETRESPONSE']._serialized_end=1555
+  _globals['_CONNECTIVITYREQUEST']._serialized_start=1557
+  _globals['_CONNECTIVITYREQUEST']._serialized_end=1578
+  _globals['_CONNECTIVITYINFO']._serialized_start=1580
+  _globals['_CONNECTIVITYINFO']._serialized_end=1644
+  _globals['_CONNECTIVITYRESPONSE']._serialized_start=1647
+  _globals['_CONNECTIVITYRESPONSE']._serialized_end=1848
+  _globals['_AGENTSERVICE']._serialized_start=1918
+  _globals['_AGENTSERVICE']._serialized_end=2723
 # @@protoc_insertion_point(module_scope)
