@@ -51,4 +51,6 @@ httpx==0.27.2
 validators>=0.22.0
 
 # For chat-based cli tools not used in deployment
-timedinput
+timedinput>=0.1.1
+
+duckduckgo_search>=7.3.0
