@@ -5,7 +5,6 @@ from typing import Any, Dict
 from tornado.web import Application, RequestHandler
 from tornado.ioloop import IOLoop
 
-from neuro_san.http_sidecar.handler_factory import HandlerFactory
 from neuro_san.http_sidecar.handlers.connectivity_handler import ConnectivityHandler
 from neuro_san.http_sidecar.handlers.function_handler import FunctionHandler
 from neuro_san.http_sidecar.handlers.streaming_chat_handler import StreamingChatHandler
