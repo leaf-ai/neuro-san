@@ -19,8 +19,7 @@ import requests
 
 from leaf_common.time.timeout import Timeout
 
-from neuro_san.session.agent_session import AgentSession
-
+from neuro_san.interfaces.agent_session import AgentSession
 
 
 class HttpServiceAgentSession(AgentSession):

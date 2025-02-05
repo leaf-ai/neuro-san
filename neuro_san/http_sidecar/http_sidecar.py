@@ -21,7 +21,7 @@ class HttpSidecar:
     def __call__(self):
         app = self.make_app()
         app.listen(self.http_port)
-        print(f"Tornado server is running on port {self.http_port}...")
+        print(f"HTTP server is running on port {self.http_port}...")
         print(f"Serving agents: {self.agents.keys()}...")
         IOLoop.current().start()
 
