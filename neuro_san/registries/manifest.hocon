@@ -23,7 +23,7 @@
     "banking_ops.hocon": true,
     "cpg_agents.hocon": true
 
-    # These next 2 go together as an example for agents calling other agents. 
+    # These next 2 go together as an example for agents calling other agents.
     # They are the only reason we have duckduckgo_search listed in the dependencies.
     "website_search.hocon": true,
     "website_search_usage_example.hocon": true,
@@ -33,7 +33,8 @@
     # The agent network .hocon files above are examples specific to the neuro-san library.
     #
     # It would be an Easy thing to do to add your own agent network's .hocon file to the
-    # list above to get started, but 99% of the time it is not the Right, Simple thing to do.
+    # list above to get started, but 99% of the time it is not the Right, Simple thing to do
+    # to make a commit with your agent listed here.
     # Why? Because many agent networks drag in dependencies for their CodedTools,
     # and we are continually trying to keep neuro-san a lean library.
     #
