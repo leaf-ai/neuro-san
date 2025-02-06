@@ -226,7 +226,7 @@ class DataDrivenChatSession(ChatSession):
         """
         return self.logs
 
-    def prepapre_chat_context(self, chat_message_history: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def prepare_chat_context(self, chat_message_history: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         Prepare the chat context.
 
