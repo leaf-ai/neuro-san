@@ -48,7 +48,7 @@ message ChatHistory {
 // such that should the client send this back to the service,
 // a different server knows exactly where to pick up where the previous
 // conversation left off.
-message ChatState {
+message ChatContext {
 
     // A potentially full list of chat histories that pertain to the node.
     // These will typically come in the last message of any particular agent's
@@ -116,5 +116,5 @@ message ChatMessage {
     // such that should the client send this back to the service,
     // a different server knows exactly where to pick up where the previous
     // conversation left off.
-    ChatState chat_state = 6 [json_name="chat_state"];
+    ChatContext chat_context = 6 [json_name="chat_context"];
 }

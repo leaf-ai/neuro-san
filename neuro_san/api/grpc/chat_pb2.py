@@ -27,7 +27,7 @@ from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
 from neuro_san.api.grpc import mime_data_pb2 as neuro__san_dot_api_dot_grpc_dot_mime__data__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1dneuro_san/api/grpc/chat.proto\x12(dev.cognizant_ai.neuro_san.api.grpc.chat\x1a\x1cgoogle/protobuf/struct.proto\x1a\"neuro_san/api/grpc/mime_data.proto\"N\n\x06Origin\x12\x12\n\x04tool\x18\x01 \x01(\tR\x04tool\x12\x30\n\x13instantiation_index\x18\x02 \x01(\x05R\x13instantiation_index\"\xb4\x01\n\x0b\x43hatHistory\x12R\n\x0borigin_path\x18\x01 \x03(\x0b\x32\x30.dev.cognizant_ai.neuro_san.api.grpc.chat.OriginR\x0borigin_path\x12Q\n\x08messages\x18\x02 \x03(\x0b\x32\x35.dev.cognizant_ai.neuro_san.api.grpc.chat.ChatMessageR\x08messages\"j\n\tChatState\x12]\n\x0e\x63hat_histories\x18\x01 \x03(\x0b\x32\x35.dev.cognizant_ai.neuro_san.api.grpc.chat.ChatHistoryR\x0e\x63hat_histories\"\x97\x04\n\x0b\x43hatMessage\x12S\n\x04type\x18\x01 \x01(\x0e\x32\x45.dev.cognizant_ai.neuro_san.api.grpc.chat.ChatMessage.ChatMessageType\x12\x0c\n\x04text\x18\x02 \x01(\t\x12U\n\tmime_data\x18\x03 \x03(\x0b\x32\x37.dev.cognizant_ai.neuro_san.api.grpc.mime_data.MimeDataR\tmime_data\x12H\n\x06origin\x18\x04 \x03(\x0b\x32\x30.dev.cognizant_ai.neuro_san.api.grpc.chat.OriginR\x06origin\x12\x35\n\tstructure\x18\x05 \x01(\x0b\x32\x17.google.protobuf.StructR\tstructure\x12S\n\nchat_state\x18\x06 \x01(\x0b\x32\x33.dev.cognizant_ai.neuro_san.api.grpc.chat.ChatStateR\nchat_state\"x\n\x0f\x43hatMessageType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\n\n\x06SYSTEM\x10\x01\x12\t\n\x05HUMAN\x10\x02\x12\x08\n\x04TOOL\x10\x03\x12\x06\n\x02\x41I\x10\x04\x12\t\n\x05\x41GENT\x10\x64\x12\x13\n\x0f\x41GENT_FRAMEWORK\x10\x65\x12\x0f\n\x0bLEGACY_LOGS\x10\x66\x42\\ZZgithub.com/leaf-ai/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/chat/v1;chatb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1dneuro_san/api/grpc/chat.proto\x12(dev.cognizant_ai.neuro_san.api.grpc.chat\x1a\x1cgoogle/protobuf/struct.proto\x1a\"neuro_san/api/grpc/mime_data.proto\"N\n\x06Origin\x12\x12\n\x04tool\x18\x01 \x01(\tR\x04tool\x12\x30\n\x13instantiation_index\x18\x02 \x01(\x05R\x13instantiation_index\"\xb4\x01\n\x0b\x43hatHistory\x12R\n\x0borigin_path\x18\x01 \x03(\x0b\x32\x30.dev.cognizant_ai.neuro_san.api.grpc.chat.OriginR\x0borigin_path\x12Q\n\x08messages\x18\x02 \x03(\x0b\x32\x35.dev.cognizant_ai.neuro_san.api.grpc.chat.ChatMessageR\x08messages\"l\n\x0b\x43hatContext\x12]\n\x0e\x63hat_histories\x18\x01 \x03(\x0b\x32\x35.dev.cognizant_ai.neuro_san.api.grpc.chat.ChatHistoryR\x0e\x63hat_histories\"\x9d\x04\n\x0b\x43hatMessage\x12S\n\x04type\x18\x01 \x01(\x0e\x32\x45.dev.cognizant_ai.neuro_san.api.grpc.chat.ChatMessage.ChatMessageType\x12\x0c\n\x04text\x18\x02 \x01(\t\x12U\n\tmime_data\x18\x03 \x03(\x0b\x32\x37.dev.cognizant_ai.neuro_san.api.grpc.mime_data.MimeDataR\tmime_data\x12H\n\x06origin\x18\x04 \x03(\x0b\x32\x30.dev.cognizant_ai.neuro_san.api.grpc.chat.OriginR\x06origin\x12\x35\n\tstructure\x18\x05 \x01(\x0b\x32\x17.google.protobuf.StructR\tstructure\x12Y\n\x0c\x63hat_context\x18\x06 \x01(\x0b\x32\x35.dev.cognizant_ai.neuro_san.api.grpc.chat.ChatContextR\x0c\x63hat_context\"x\n\x0f\x43hatMessageType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\n\n\x06SYSTEM\x10\x01\x12\t\n\x05HUMAN\x10\x02\x12\x08\n\x04TOOL\x10\x03\x12\x06\n\x02\x41I\x10\x04\x12\t\n\x05\x41GENT\x10\x64\x12\x13\n\x0f\x41GENT_FRAMEWORK\x10\x65\x12\x0f\n\x0bLEGACY_LOGS\x10\x66\x42\\ZZgithub.com/leaf-ai/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/chat/v1;chatb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -39,10 +39,10 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['_ORIGIN']._serialized_end=219
   _globals['_CHATHISTORY']._serialized_start=222
   _globals['_CHATHISTORY']._serialized_end=402
-  _globals['_CHATSTATE']._serialized_start=404
-  _globals['_CHATSTATE']._serialized_end=510
-  _globals['_CHATMESSAGE']._serialized_start=513
-  _globals['_CHATMESSAGE']._serialized_end=1048
-  _globals['_CHATMESSAGE_CHATMESSAGETYPE']._serialized_start=928
-  _globals['_CHATMESSAGE_CHATMESSAGETYPE']._serialized_end=1048
+  _globals['_CHATCONTEXT']._serialized_start=404
+  _globals['_CHATCONTEXT']._serialized_end=512
+  _globals['_CHATMESSAGE']._serialized_start=515
+  _globals['_CHATMESSAGE']._serialized_end=1056
+  _globals['_CHATMESSAGE_CHATMESSAGETYPE']._serialized_start=936
+  _globals['_CHATMESSAGE_CHATMESSAGETYPE']._serialized_end=1056
 # @@protoc_insertion_point(module_scope)
