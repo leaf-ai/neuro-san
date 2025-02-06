@@ -188,9 +188,9 @@ class DataDrivenChatSession(ChatSession):
 
         # Stream over chat state as the last message
         return_chat_context: Dict[str, Any] = self.prepare_chat_context(message_list)
-        message = AgentFrameworkMessage(chat_context=return_chat_context)
+        message = AgentFrameworkMessage(content="", chat_context=return_chat_context)
         journal: Journal = invocation_context.get_journal()
-        await journal.write_message(message)
+        await journal.write_message(message, origin=None)
 
         # Put an end-marker on the queue to tell the consumer we truly are done
         # and it doesn't need to wait for any more messages.

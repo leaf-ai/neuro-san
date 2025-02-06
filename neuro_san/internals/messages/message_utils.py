@@ -157,7 +157,14 @@ def convert_to_chat_message(message: BaseMessage, origin: List[Dict[str, Any]] =
         "chat_context": "chat_context"
     }
     for src, dest in optionals.items():
-        value: Any = getattr(message, src)
+        value: Any = None
+        try:
+            value = getattr(message, src)
+        except AttributeError:
+            # Not all BaseMessage subclasses have every field we are looking
+            # for, and that is ok.
+            value = None
+
         if value is not None:
             chat_message[dest] = value
 
