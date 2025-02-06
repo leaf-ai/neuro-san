@@ -166,6 +166,7 @@ class AsyncDirectAgentSession(AsyncAgentSession):
         user_input = extractor.get("user_message.text", user_input)
 
         session_id: str = request_dict.get("session_id")
+        chat_context: Dict[str, Any] = request_dict.get("chat_context")
         sly_data: Dict[str, Any] = request_dict.get("sly_data")
         status: int = self.NOT_FOUND
 
@@ -175,10 +176,15 @@ class AsyncDirectAgentSession(AsyncAgentSession):
         if chat_session is None:
             if session_id is None:
                 # Initiate a new conversation.
-                status = self.CREATED
                 chat_session = DataDrivenChatSession(registry=self.tool_registry)
-                if self.chat_session_map is not None:
-                    session_id = self.chat_session_map.register_chat_session(chat_session)
+                if chat_context is None:
+                    status = self.CREATED
+                    if self.chat_session_map is not None:
+                        session_id = self.chat_session_map.register_chat_session(chat_session)
+                else:
+                    # We have chat context to carry on a previous conversation,
+                    # possibly from a different server.
+                    status = self.FOUND
             else:
                 # We got an session_id, but this service instance has no knowledge
                 # of it.
@@ -190,9 +196,10 @@ class AsyncDirectAgentSession(AsyncAgentSession):
 
         # Prepare the response dictionary
         template_response_dict = {
-            "session_id": session_id,
             "status": status
         }
+        if session_id is not None:
+            template_response_dict["session_id"] = session_id
 
         if chat_session is None or user_input is None:
             # Can't go on to chat, so report back early with a single value.
@@ -205,7 +212,8 @@ class AsyncDirectAgentSession(AsyncAgentSession):
         # sockets stay open.
         asyncio_executor: AsyncioExecutor = self.invocation_context.get_asyncio_executor()
         future: Future = asyncio_executor.submit(session_id, chat_session.streaming_chat,
-                                                 user_input, self.invocation_context, sly_data)
+                                                 user_input, self.invocation_context, sly_data,
+                                                 chat_context)
         # Ignore the future. Live in the now.
         _ = future
 
