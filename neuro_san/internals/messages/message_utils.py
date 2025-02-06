@@ -138,12 +138,23 @@ def convert_to_chat_message(message: BaseMessage, origin: List[Dict[str, Any]] =
     message_type: ChatMessageType = ChatMessageType.from_message(message)
     chat_message: Dict[str, Any] = {
         "type": message_type,
-        "text": message.content,
         # No mime_data for now
     }
 
     # Handle the origin information if we have it
     if origin is not None:
         chat_message["origin"] = origin
+
+    # Dictionary of BaseMessage field sources to ChatMessage destinations
+    # Anything in this dictionary is considered optional and we only populate
+    # the field on ChatMessage if it has a value.
+    optionals: Dict[str, str] = {
+        "content": "text",
+        "chat_context": "chat_context"
+    }
+    for src, dest in optionals.items():
+        value: Any = getattr(message, src)
+        if value is not None:
+            chat_message[dest] = value
 
     return chat_message
