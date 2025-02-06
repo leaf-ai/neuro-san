@@ -14,6 +14,7 @@ from typing import Any
 from typing import Dict
 from typing import Generator
 from typing import List
+from copy import copy
 
 import os
 
@@ -67,7 +68,7 @@ class StreamingInputProcessor(AbstractInputProcessor):
         # the conversation.
         chat_request: Dict[str, Any] = self.formulate_chat_request(user_input, sly_data, chat_context)
 
-        return_state: Dict[str, Any] = {}
+        return_state: Dict[str, Any] = copy(state)
         empty = {}
         chat_responses: Generator[Dict[str, Any], None, None] = self.session.streaming_chat(chat_request)
         for chat_response in chat_responses:
@@ -104,7 +105,9 @@ class StreamingInputProcessor(AbstractInputProcessor):
         update = {
             "chat_context": chat_context,
             "num_input": num_input + 1,
-            "last_chat_response": last_chat_response
+            "last_chat_response": last_chat_response,
+            "user_input": None,
+            "sly_data": None,
         }
         return_state.update(update)
 
