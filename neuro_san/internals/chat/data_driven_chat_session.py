@@ -174,16 +174,22 @@ class DataDrivenChatSession(ChatSession):
         # Queue Producer from this:
         #   https://stackoverflow.com/questions/74130544/asyncio-yielding-results-from-multiple-futures-as-they-arrive
 
+        # Save information about chat
         chat_messages: Iterator[Dict[str, Any]] = await self.chat(user_input, invocation_context, sly_data)
         message_list: List[Dict[str, Any]] = list(chat_messages)
         index: int = len(message_list) - 1
-
-        # The consumer await-s for queue.get()
-        queue: AsyncCollatingQueue = invocation_context.get_queue()
         self.last_streamed_index = index
+
+        # Stream over chat state as the last message
+        chat_context: Dict[str, Any] = self.prepare_chat_context(message_list)
+        message = AgentFrameworkMessage(chat_context=chat_context)
+        journal: Journal = invocation_context.get_journal()
+        await journal.write_message(message)
 
         # Put an end-marker on the queue to tell the consumer we truly are done
         # and it doesn't need to wait for any more messages.
+        # The consumer await-s for queue.get()
+        queue: AsyncCollatingQueue = invocation_context.get_queue()
         await queue.put_final_item()
 
     def get_latest_response(self) -> str:
@@ -219,3 +225,10 @@ class DataDrivenChatSession(ChatSession):
         :return: A list of strings corresponding to journal entries.
         """
         return self.logs
+
+    def prepapre_chat_context(self, message_dicts: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Prepare the chat context.
+        """
+        chat_context: Dict[str, Any] = {}
+        return chat_context
