@@ -128,7 +128,7 @@ class DataDrivenChatSession(ChatSession):
 
         journal: Journal = invocation_context.get_journal()
         try:
-            await journal.write("consulting chat agent(s)...", self.front_man.run_context.get_origin())
+            await journal.write("consulting chat agent(s)...", self.front_man.get_origin())
 
             # DEF - drill further down for iterator from here to enable getting
             #       messages from downstream agents.
@@ -149,7 +149,7 @@ class DataDrivenChatSession(ChatSession):
 
         chat_messages: List[Dict[str, Any]] = []
         for raw_message in raw_messages:
-            chat_message: Dict[str, Any] = convert_to_chat_message(raw_message, self.front_man.run_context.get_origin())
+            chat_message: Dict[str, Any] = convert_to_chat_message(raw_message, self.front_man.get_origin())
             chat_messages.append(chat_message)
 
         # Save the logs from the journal
@@ -226,9 +226,26 @@ class DataDrivenChatSession(ChatSession):
         """
         return self.logs
 
-    def prepapre_chat_context(self, message_dicts: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def prepapre_chat_context(self, chat_message_history: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         Prepare the chat context.
+
+        :param chat_message_history: A list of ChatMessage dictionaries that
+                comprise the front man's full chat history.
+        :return: A ChatContext dictionary comprising the full state of play of
+                the conversation such that it could be taken up on a different
+                server instance
         """
-        chat_context: Dict[str, Any] = {}
+        chat_history: Dict[str, Any] = {
+            "origin_path": self.front_man.get_origin(),
+            "messages": chat_message_history
+        }
+
+        # For now, we only send the front man's chat history, as that is the
+        # state we had been preserving since the early days.  It is conceivable
+        # this could expand to other agents in the hierarchy at some point.
+        chat_context: Dict[str, Any] = {
+            "chat_histories": [chat_history]
+        }
+
         return chat_context
