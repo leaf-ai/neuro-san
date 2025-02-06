@@ -158,3 +158,16 @@ def convert_to_chat_message(message: BaseMessage, origin: List[Dict[str, Any]] =
             chat_message[dest] = value
 
     return chat_message
+
+
+def convert_to_base_message(chat_message: Dict[str, Any]) -> BaseMessage:
+    """
+    :param chat_message: A ChatMessage dictionary to convert into BaseMessage
+    :return: A BaseMessage that was converted from the input.
+            Can return None if conversion could not take place
+    """
+    base_message: BaseMessage = None
+    if chat_message is None:
+        return base_message
+
+    return base_message

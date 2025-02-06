@@ -74,4 +74,6 @@ class MessageJournal(Journal):
         """
         message_dict: Dict[str, Any] = convert_to_chat_message(message, origin)
 
+        # Queue Producer from this:
+        #   https://stackoverflow.com/questions/74130544/asyncio-yielding-results-from-multiple-futures-as-they-arrive
         await self.hopper.put(message_dict)
