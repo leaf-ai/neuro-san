@@ -102,7 +102,6 @@ class ExternalTool(CallableTool):
                 session_id: str = chat_response.get("session_id")
                 if session_id is not None:
                     self.session_id = session_id
-                    self.chat_context = None
 
             response_type = response.get("type")
             message_type: ChatMessageType = ChatMessageType.from_response_type(response_type)
