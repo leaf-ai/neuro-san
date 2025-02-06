@@ -69,7 +69,6 @@ class StreamingInputProcessor(AbstractInputProcessor):
         chat_request: Dict[str, Any] = self.formulate_chat_request(user_input, sly_data, chat_context)
 
         return_state: Dict[str, Any] = copy(state)
-        empty = {}
         chat_responses: Generator[Dict[str, Any], None, None] = self.session.streaming_chat(chat_request)
         for chat_response in chat_responses:
 
