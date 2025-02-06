@@ -16,7 +16,11 @@ from typing import List
 
 import json
 
+from langchain_core.messages.ai import AIMessage
 from langchain_core.messages.base import BaseMessage
+from langchain_core.messages.human import HumanMessage
+from langchain_core.messages.system import SystemMessage
+from langchain_core.messages.tool import ToolMessage
 
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
 
@@ -169,5 +173,19 @@ def convert_to_base_message(chat_message: Dict[str, Any]) -> BaseMessage:
     base_message: BaseMessage = None
     if chat_message is None:
         return base_message
+
+    content: str = chat_message.get("text")
+    chat_message_type: ChatMessageType = ChatMessageType.from_response_type(chat_message.get("type"))
+
+    if chat_message_type == ChatMessageType.SYSTEM:
+        base_message = SystemMessage(content=content)
+    elif chat_message_type == ChatMessageType.HUMAN:
+        base_message = HumanMessage(content=content)
+    elif chat_message_type == ChatMessageType.TOOL:
+        base_message = ToolMessage(content=content)
+    elif chat_message_type == ChatMessageType.AI:
+        base_message = AIMessage(content=content)
+
+    # Any other message type we do not want to send to agent as history.
 
     return base_message
