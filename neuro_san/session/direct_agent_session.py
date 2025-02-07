@@ -358,9 +358,9 @@ class DirectAgentSession(AgentSession):
 
         if chat_session is None:
             if session_id is None:
-                chat_session = DataDrivenChatSession(registry=self.tool_registry)
                 # Initiate a new conversation.
                 status = self.CREATED
+                chat_session = DataDrivenChatSession(registry=self.tool_registry)
                 if self.chat_session_map is not None:
                     session_id = self.chat_session_map.register_chat_session(chat_session)
             else:
