@@ -349,20 +349,20 @@ class DirectAgentSession(AgentSession):
         status: int = self.NOT_FOUND
 
         chat_session: ChatSession = None
-        if self.chat_session_map is not None:
+        if chat_context is not None:
+            # We have chat context to carry on a previous conversation,
+            # possibly from a different server.
+            chat_session = DataDrivenChatSession(registry=self.tool_registry)
+        elif self.chat_session_map is not None:
             chat_session = self.chat_session_map.get_chat_session(session_id)
+
         if chat_session is None:
             if session_id is None:
                 chat_session = DataDrivenChatSession(registry=self.tool_registry)
-                if chat_context is None:
-                    # Initiate a new conversation.
-                    status = self.CREATED
-                    if self.chat_session_map is not None:
-                        session_id = self.chat_session_map.register_chat_session(chat_session)
-                else:
-                    # We have chat context to carry on a previous conversation,
-                    # possibly from a different server.
-                    status = self.FOUND
+                # Initiate a new conversation.
+                status = self.CREATED
+                if self.chat_session_map is not None:
+                    session_id = self.chat_session_map.register_chat_session(chat_session)
             else:
                 # We got a session_id, but this service instance has no knowledge
                 # of it.
@@ -370,7 +370,8 @@ class DirectAgentSession(AgentSession):
         else:
             # We have seen this session_id before and can register new user input.
             status = self.FOUND
-            self.invocation_context.set_logs(chat_session.get_logs())
+            if session_id is not None:
+                self.invocation_context.set_logs(chat_session.get_logs())
 
         # Prepare the response dictionary
         template_response_dict = {
