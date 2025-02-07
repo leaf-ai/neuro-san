@@ -17,7 +17,7 @@ import copy
 import logging
 from typing import Any, Dict
 
-from tornado.web import Application, RequestHandler
+from tornado.web import Application
 from tornado.ioloop import IOLoop
 
 from neuro_san.http_sidecar.handlers.connectivity_handler import ConnectivityHandler

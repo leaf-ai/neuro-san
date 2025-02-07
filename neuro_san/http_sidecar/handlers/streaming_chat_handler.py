@@ -12,16 +12,15 @@
 """
 See class comment for details
 """
-from typing import Any, Dict, Type
+from typing import Any, Dict, Generator, Type
 import json
-import grpc
 
 from tornado.web import RequestHandler
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.json_format import Parse
 
 # pylint: disable=no-name-in-module
-from neuro_san.api.grpc.agent_pb2 import ChatRequest, ChatResponse
+from neuro_san.api.grpc.agent_pb2 import ChatRequest
 from neuro_san.client.agent_session_factory import AgentSessionFactory
 
 
@@ -30,6 +29,7 @@ class StreamingChatHandler:
     Factory class for constructing handler class for neuro-san
     streaming chat API call.
     """
+    # pylint: disable=too-few-public-methods
 
     def build(self, port: int, agent_name: str, method_name: str) -> Type:
         """
@@ -74,10 +74,10 @@ class StreamingChatHandler:
                 self.set_status(400)
                 self.write({"error": "Invalid JSON format"})
                 self.flush()
-            except Exception as e:
+            except Exception as exc:  # pylint: disable=broad-exception-caught
                 # Handle unexpected errors
                 self.set_status(500)
-                self.write({"error": "Internal server error"})
+                self.write({"error": f"Internal server error: {exc}"})
                 self.flush()
 
             self.finish()
@@ -85,4 +85,3 @@ class StreamingChatHandler:
         # Dynamically construct Python type implementing RequestHandler
         # for this specific method.
         return type(f"{method_name}_handler", (RequestHandler,), {"post": post})
-
