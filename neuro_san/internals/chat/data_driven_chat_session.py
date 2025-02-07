@@ -243,7 +243,7 @@ class DataDrivenChatSession(ChatSession):
                 server instance
         """
         chat_history: Dict[str, Any] = {
-            "origin_path": self.front_man.get_origin(),
+            "origin": self.front_man.get_origin(),
             "messages": chat_message_history
         }
 
