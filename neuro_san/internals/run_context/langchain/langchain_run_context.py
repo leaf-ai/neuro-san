@@ -250,7 +250,7 @@ class LangChainRunContext(RunContext):
 
                 if index == 0:
                     # Always use the most current instructions
-                    message_tuple = ("system", instructions) 
+                    message_tuple = ("system", instructions)
                 else:
                     message_tuple = convert_to_message_tuple(base_message)
 
