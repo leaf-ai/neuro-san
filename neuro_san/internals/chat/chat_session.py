@@ -64,17 +64,20 @@ class ChatSession:
 
     async def streaming_chat(self, user_input: str,
                              invocation_context: InvocationContext,
-                             sly_data: Dict[str, Any] = None):
+                             sly_data: Dict[str, Any] = None,
+                             chat_context: Dict[str, Any] = None):
         """
-        Main entry-point method for accepting new user input
+        Main streaming entry-point method for accepting new user input
 
         :param user_input: A string with the user's input
         :param invocation_context: The context policy container that pertains to the invocation
                     of the agent.
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be None.
+        :param chat_context: A ChatContext dictionary that contains all the state necessary
+                to carry on a previous conversation, possibly from a different server.
         :return: Nothing.  Response values are put on a queue whose consumtion is
-                managed by AsyncCollatingQueue in the InvocationContext
+                managed by the Iterator aspect of AsyncCollatingQueue on the InvocationContext.
         """
         raise NotImplementedError
 

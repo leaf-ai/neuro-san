@@ -37,20 +37,29 @@ class AbstractInputProcessor:
         """
         raise NotImplementedError
 
-    def formulate_chat_request(self, user_input: str, sly_data: Dict[str, Any] = None) -> Dict[str, Any]:
+    def formulate_chat_request(self, user_input: str,
+                               sly_data: Dict[str, Any] = None,
+                               chat_context: Dict[str, Any] = None) -> Dict[str, Any]:
         """
         Formulates a single chat request given the user_input
         :param user_input: The string to send
         :param sly_data: The sly_data dictionary to send
+        :param chat_context: The chat context dictionary that allows the context of a
+                    conitinuing conversation to be reconstructed on another server.
         :return: A dictionary representing the chat request to send
         """
         chat_request = {
-            "session_id": self.session_id,
             "user_message": {
                 "type": ChatMessageType.HUMAN,
                 "text": user_input
             }
         }
+
+        if chat_context is None:
+            chat_request["session_id"] = self.session_id
+        elif bool(chat_context):
+            # Recall that non-empty dictionaries evaluate to True
+            chat_request["chat_context"] = chat_context
 
         if sly_data is not None and len(sly_data.keys()) > 0:
             chat_request["sly_data"] = sly_data

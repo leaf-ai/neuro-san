@@ -57,11 +57,14 @@ class DataDrivenChatSession(ChatSession):
         self.sly_data: Dict[str, Any] = {}
         self.last_streamed_index: int = 0
 
-    async def set_up(self, invocation_context: InvocationContext):
+    async def set_up(self, invocation_context: InvocationContext,
+                     chat_context: Dict[str, Any] = None):
         """
         Resets or sets the instance up for the first time.
         :param invocation_context: The context policy container that pertains to the invocation
                     of the agent.
+        :param chat_context: A ChatContext dictionary that contains all the state necessary
+                to carry on a previous conversation, possibly from a different server.
         """
 
         # Reset any sly data
@@ -73,7 +76,8 @@ class DataDrivenChatSession(ChatSession):
         await self.delete_resources()
 
         run_context: RunContext = RunContextFactory.create_run_context(None, None,
-                                                                       invocation_context=invocation_context)
+                                                                       invocation_context=invocation_context,
+                                                                       chat_context=chat_context)
 
         journal: Journal = invocation_context.get_journal()
         self.front_man = self.registry.create_front_man(journal, self.sly_data, run_context)
@@ -128,7 +132,7 @@ class DataDrivenChatSession(ChatSession):
 
         journal: Journal = invocation_context.get_journal()
         try:
-            await journal.write("consulting chat agent(s)...", self.front_man.run_context.get_origin())
+            await journal.write("consulting chat agent(s)...", self.front_man.get_origin())
 
             # DEF - drill further down for iterator from here to enable getting
             #       messages from downstream agents.
@@ -149,7 +153,7 @@ class DataDrivenChatSession(ChatSession):
 
         chat_messages: List[Dict[str, Any]] = []
         for raw_message in raw_messages:
-            chat_message: Dict[str, Any] = convert_to_chat_message(raw_message, self.front_man.run_context.get_origin())
+            chat_message: Dict[str, Any] = convert_to_chat_message(raw_message, self.front_man.get_origin())
             chat_messages.append(chat_message)
 
         # Save the logs from the journal
@@ -159,7 +163,8 @@ class DataDrivenChatSession(ChatSession):
 
     async def streaming_chat(self, user_input: str,
                              invocation_context: InvocationContext,
-                             sly_data: Dict[str, Any] = None):
+                             sly_data: Dict[str, Any] = None,
+                             chat_context: Dict[str, Any] = None):
         """
         Main streaming entry-point method for accepting new user input
 
@@ -168,22 +173,29 @@ class DataDrivenChatSession(ChatSession):
                     of the agent.
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be None.
+        :param chat_context: A ChatContext dictionary that contains all the state necessary
+                to carry on a previous conversation, possibly from a different server.
         :return: Nothing.  Response values are put on a queue whose consumtion is
                 managed by the Iterator aspect of AsyncCollatingQueue on the InvocationContext.
         """
-        # Queue Producer from this:
-        #   https://stackoverflow.com/questions/74130544/asyncio-yielding-results-from-multiple-futures-as-they-arrive
+        if self.front_man is None:
+            await self.set_up(invocation_context, chat_context)
 
+        # Save information about chat
         chat_messages: Iterator[Dict[str, Any]] = await self.chat(user_input, invocation_context, sly_data)
         message_list: List[Dict[str, Any]] = list(chat_messages)
-        index: int = len(message_list) - 1
+        self.last_streamed_index = len(message_list) - 1
 
-        # The consumer await-s for queue.get()
-        queue: AsyncCollatingQueue = invocation_context.get_queue()
-        self.last_streamed_index = index
+        # Stream over chat state as the last message
+        return_chat_context: Dict[str, Any] = self.prepare_chat_context(message_list)
+        message = AgentFrameworkMessage(content="", chat_context=return_chat_context)
+        journal: Journal = invocation_context.get_journal()
+        await journal.write_message(message, origin=None)
 
         # Put an end-marker on the queue to tell the consumer we truly are done
         # and it doesn't need to wait for any more messages.
+        # The consumer await-s for queue.get()
+        queue: AsyncCollatingQueue = invocation_context.get_queue()
         await queue.put_final_item()
 
     def get_latest_response(self) -> str:
@@ -219,3 +231,27 @@ class DataDrivenChatSession(ChatSession):
         :return: A list of strings corresponding to journal entries.
         """
         return self.logs
+
+    def prepare_chat_context(self, chat_message_history: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Prepare the chat context.
+
+        :param chat_message_history: A list of ChatMessage dictionaries that
+                comprise the front man's full chat history.
+        :return: A ChatContext dictionary comprising the full state of play of
+                the conversation such that it could be taken up on a different
+                server instance
+        """
+        chat_history: Dict[str, Any] = {
+            "origin_path": self.front_man.get_origin(),
+            "messages": chat_message_history
+        }
+
+        # For now, we only send the front man's chat history, as that is the
+        # state we had been preserving since the early days.  It is conceivable
+        # this could expand to other agents in the hierarchy at some point.
+        chat_context: Dict[str, Any] = {
+            "chat_histories": [chat_history]
+        }
+
+        return chat_context

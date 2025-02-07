@@ -166,12 +166,18 @@ class AsyncDirectAgentSession(AsyncAgentSession):
         user_input = extractor.get("user_message.text", user_input)
 
         session_id: str = request_dict.get("session_id")
+        chat_context: Dict[str, Any] = request_dict.get("chat_context")
         sly_data: Dict[str, Any] = request_dict.get("sly_data")
         status: int = self.NOT_FOUND
 
         chat_session: ChatSession = None
-        if self.chat_session_map is not None:
+        if chat_context is not None:
+            # We have chat context to carry on a previous conversation,
+            # possibly from a different server.
+            chat_session = DataDrivenChatSession(registry=self.tool_registry)
+        elif self.chat_session_map is not None:
             chat_session = self.chat_session_map.get_chat_session(session_id)
+
         if chat_session is None:
             if session_id is None:
                 # Initiate a new conversation.
@@ -186,13 +192,15 @@ class AsyncDirectAgentSession(AsyncAgentSession):
         else:
             # We have seen this session_id before and can register new user input.
             status = self.FOUND
-            self.invocation_context.set_logs(chat_session.get_logs())
+            if session_id is not None:
+                self.invocation_context.set_logs(chat_session.get_logs())
 
         # Prepare the response dictionary
         template_response_dict = {
-            "session_id": session_id,
             "status": status
         }
+        if session_id is not None:
+            template_response_dict["session_id"] = session_id
 
         if chat_session is None or user_input is None:
             # Can't go on to chat, so report back early with a single value.
@@ -205,7 +213,8 @@ class AsyncDirectAgentSession(AsyncAgentSession):
         # sockets stay open.
         asyncio_executor: AsyncioExecutor = self.invocation_context.get_asyncio_executor()
         future: Future = asyncio_executor.submit(session_id, chat_session.streaming_chat,
-                                                 user_input, self.invocation_context, sly_data)
+                                                 user_input, self.invocation_context, sly_data,
+                                                 chat_context)
         # Ignore the future. Live in the now.
         _ = future
 

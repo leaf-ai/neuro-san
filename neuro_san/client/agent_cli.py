@@ -121,9 +121,7 @@ Some suggestions:
 
         input_processor: AbstractInputProcessor = None
         if self.args.stream:
-            input_processor = StreamingInputProcessor(self.default_prompt,
-                                                      self.default_input,
-                                                      self.input_timeout_seconds,
+            input_processor = StreamingInputProcessor(self.default_input,
                                                       self.args.thinking_file,
                                                       self.session,
                                                       self.thinking_dir)

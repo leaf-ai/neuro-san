@@ -61,6 +61,7 @@ class ExternalTool(CallableTool):
 
         self.session: AsyncAgentSession = None
         self.session_id: str = None
+        self.chat_context: Dict[str, Any] = None
 
     async def build(self) -> List[Any]:
         """
@@ -92,9 +93,15 @@ class ExternalTool(CallableTool):
                 # Ignore messages with no response.
                 continue
 
-            session_id: str = chat_response.get("session_id")
-            if session_id is not None:
-                self.session_id = session_id
+            # Prefer chat context when responding
+            chat_context: Dict[str, Any] = chat_response.get("chat_context")
+            if chat_context is not None:
+                self.chat_context = chat_context
+                self.session_id = None
+            else:
+                session_id: str = chat_response.get("session_id")
+                if session_id is not None:
+                    self.session_id = session_id
 
             response_type = response.get("type")
             message_type: ChatMessageType = ChatMessageType.from_response_type(response_type)
@@ -125,12 +132,17 @@ class ExternalTool(CallableTool):
         """
         # Set up a request
         chat_request = {
-            "session_id": self.session_id,
             "user_message": {
-                "type": 1,          # HUMAN from chat.proto
+                "type": ChatMessageType.HUMAN,
                 "text": agent_input
             }
         }
+
+        if self.chat_context is None:
+            chat_request["session_id"] = self.session_id
+        elif bool(self.chat_context):
+            # Recall that non-empty dictionaries evaluate to True
+            chat_request["chat_context"] = self.chat_context
 
         # At some point in the future we might want to block all
         # or parts of the sly_data from going to external agents.

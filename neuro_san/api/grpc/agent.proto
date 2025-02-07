@@ -132,6 +132,14 @@ message ChatRequest {
 
     // Supercedes user_input above
     chat.ChatMessage user_message = 4 [json_name="user_message"];
+
+    // Supercedes session_id above.
+    // Message for holding the state of play for any chat session
+    // such that should the client send this back to the service,
+    // a different server knows exactly where to pick up where the previous
+    // conversation left off.  When this is not present in the request,
+    // a completely new conversation is initiated.
+    chat.ChatContext chat_context = 5 [json_name="chat_context"];
 }
 
 // Response structure for Chat gRPC method

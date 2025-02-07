@@ -36,6 +36,28 @@ message Origin {
 }
 
 
+// A structure for storing chat history for a given node in the graph
+// described by the origin_path.
+message ChatHistory {
+    repeated Origin origin_path = 1 [json_name="origin_path"];
+    repeated ChatMessage messages = 2 [json_name="messages"];
+}
+
+
+// Message for holding the state of play for any chat session
+// such that should the client send this back to the service,
+// a different server knows exactly where to pick up where the previous
+// conversation left off.
+message ChatContext {
+
+    // A potentially full list of chat histories that pertain to the node.
+    // These will typically come in the last message of any particular agent's
+    // chat stream.   Do not expect any or all internal agents will broadcast their
+    // chat history, but you can at least expect the front-man to broadcast his.
+    repeated ChatHistory chat_histories = 1 [json_name="chat_histories"];
+}
+
+
 // Structure describing a single chat message.
 // This could be a single response, or a list of these might comprise
 // a chat history.
@@ -88,5 +110,11 @@ message ChatMessage {
     // As of 1/30/25 this is a forward-looking, experimental field not likely
     // to be used in regular operation until we can get proper plumbing of such
     // data in place.
-    google.protobuf.Struct structure = 5;
+    google.protobuf.Struct structure = 5 [json_name="structure"];
+
+    // Message for holding the state of play for any chat session
+    // such that should the client send this back to the service,
+    // a different server knows exactly where to pick up where the previous
+    // conversation left off.
+    ChatContext chat_context = 6 [json_name="chat_context"];
 }

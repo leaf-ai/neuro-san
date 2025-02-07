@@ -40,6 +40,8 @@ from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.journals.originating_journal import OriginatingJournal
 from neuro_san.internals.messages.origination import Origination
+from neuro_san.internals.messages.message_utils import convert_to_base_message
+from neuro_san.internals.messages.message_utils import convert_to_message_tuple
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.run import Run
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
@@ -64,10 +66,12 @@ class LangChainRunContext(RunContext):
     Note that "tools" can be just a list of OpenAI functions JSON.
     """
 
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(self, llm_config: Dict[str, Any],
                  parent_run_context: RunContext,
                  tool_caller: ToolCaller,
-                 invocation_context: InvocationContext):
+                 invocation_context: InvocationContext,
+                 chat_context: Dict[str, Any]):
         """
         Constructor
 
@@ -77,6 +81,8 @@ class LangChainRunContext(RunContext):
         :param tool_caller: The tool caller to use
         :param invocation_context: The context policy container that pertains to the invocation
                     of the agent.
+        :param chat_context: A ChatContext dictionary that contains all the state necessary
+                to carry on a previous conversation, possibly from a different server.
         """
         # This block contains top candidates for state storage that needs to be
         # retained when session_ids go away.
@@ -93,15 +99,27 @@ class LangChainRunContext(RunContext):
         self.recent_human_message: HumanMessage = None
         self.tool_caller: ToolCaller = tool_caller
         self.invocation_context: InvocationContext = invocation_context
+        self.chat_context: Dict[str, Any] = chat_context
         self.origin: List[Dict[str, Any]] = []
 
+        parent_origin: List[Dict[str, Any]] = []
         if parent_run_context is not None:
+
+            # Get other stuff from parent if not specified
+            if self.invocation_context is None:
+                self.invocation_context = parent_run_context.get_invocation_context()
+            if self.chat_context is None:
+                self.chat_context = parent_run_context.get_chat_context()
+            parent_origin = parent_run_context.get_origin()
+
             # Initialize the origin.
             agent_name: str = tool_caller.get_name()
             origination: Origination = self.invocation_context.get_origination()
-            self.origin = origination.add_spec_name_to_origin(parent_run_context.get_origin(), agent_name)
+            self.origin = origination.add_spec_name_to_origin(parent_origin, agent_name)
 
-        if invocation_context is not None:
+        self.update_from_chat_context(self.chat_context)
+
+        if self.invocation_context is not None:
             base_journal: Journal = self.invocation_context.get_journal()
             self.journal = OriginatingJournal(base_journal, self.origin, self.chat_history)
 
@@ -209,16 +227,35 @@ class LangChainRunContext(RunContext):
         # Assemble the prompt message list
         message_list: List[Tuple[str, str]] = []
 
-        # Add to our own chat history which is updated in write_message()
-        system_message = SystemMessage(instructions)
-        await self.journal.write_message(system_message)
-        message_list.append(("system", instructions))
-
-        # If we have assignments, add them
-        if assignments is not None and len(assignments) > 0:
-            system_message = SystemMessage(assignments)
+        if len(self.chat_history) == 0:
+            # We have not had any chat history just yet, so build it from scratch
+            # Add to our own chat history which is updated in write_message()
+            system_message = SystemMessage(instructions)
             await self.journal.write_message(system_message)
-            message_list.append(("system", assignments))
+            message_list.append(("system", instructions))
+
+            # If we have assignments, add them
+            if assignments is not None and len(assignments) > 0:
+                system_message = SystemMessage(assignments)
+                await self.journal.write_message(system_message)
+                message_list.append(("system", assignments))
+        else:
+            # Build the prompt template from previous chat history
+            # Note that since all of these are from the chat history,
+            # we can consider them already reported so they do not
+            # need to get written to the journal.
+            for index, base_message in enumerate(self.chat_history):
+
+                message_tuple: Tuple[str, Any] = None
+
+                if index == 0:
+                    # Always use the most current instructions
+                    message_tuple = ("system", instructions)
+                else:
+                    message_tuple = convert_to_message_tuple(base_message)
+
+                if message_tuple is not None:
+                    message_list.append(message_tuple)
 
         # Fill out the rest of the prompt per the docs for create_tooling_agent()
         # Note we are not write_message()-ing the chat history because that is redundant
@@ -462,6 +499,14 @@ class LangChainRunContext(RunContext):
         """
         return self.invocation_context
 
+    def get_chat_context(self) -> Dict[str, Any]:
+        """
+        :return: A ChatContext dictionary that contains all the state necessary
+                to carry on a previous conversation, possibly from a different server.
+                Can be None when a new conversation has been started.
+        """
+        return self.chat_context
+
     def get_origin(self) -> List[Dict[str, Any]]:
         """
         :return: A List of origin dictionaries indicating the origin of the run.
@@ -482,3 +527,40 @@ class LangChainRunContext(RunContext):
 
         base_journal: Journal = self.invocation_context.get_journal()
         self.journal = OriginatingJournal(base_journal, self.origin, self.chat_history)
+
+    def update_from_chat_context(self, chat_context: Dict[str, Any]):
+        """
+        :param chat_context: A ChatContext dictionary that contains all the state necessary
+                to carry on a previous conversation, possibly from a different server.
+        """
+        self.chat_context = chat_context
+
+        if self.chat_context is None:
+            return
+
+        # See if our origin appears in the chat histories.
+        # If so, get ours from there.
+        empty: List[Any] = []
+        chat_histories: List[Dict[str, Any]] = self.chat_context.get("chat_histories", empty)
+        our_origin_str: str = Origination.get_full_name_from_origin(self.origin)
+        for one_chat_history in chat_histories:
+
+            # See if the origin matches our own
+            test_origin: List[Dict[str, Any]] = one_chat_history.get("origin_path", empty)
+            test_origin_str: str = Origination.get_full_name_from_origin(test_origin)
+            if test_origin_str != our_origin_str:
+                continue
+
+            one_messages: List[Dict[str, Any]] = one_chat_history.get("messages", empty)
+            if not one_messages:
+                # Empty list - Nothing to convert. Use default empty list.
+                break
+
+            self.chat_history = []
+            for chat_message in one_messages:
+                base_message: BaseMessage = convert_to_base_message(chat_message)
+                if base_message is not None:
+                    self.chat_history.append(base_message)
+
+            # Nothing left to search for
+            break
