@@ -37,9 +37,9 @@ message Origin {
 
 
 // A structure for storing chat history for a given node in the graph
-// described by the origin_path.
+// described by the origin.
 message ChatHistory {
-    repeated Origin origin_path = 1 [json_name="origin_path"];
+    repeated Origin origin = 1 [json_name="origin"];
     repeated ChatMessage messages = 2 [json_name="messages"];
 }
 

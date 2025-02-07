@@ -546,7 +546,7 @@ class LangChainRunContext(RunContext):
         for one_chat_history in chat_histories:
 
             # See if the origin matches our own
-            test_origin: List[Dict[str, Any]] = one_chat_history.get("origin_path", empty)
+            test_origin: List[Dict[str, Any]] = one_chat_history.get("origin", empty)
             test_origin_str: str = Origination.get_full_name_from_origin(test_origin)
             if test_origin_str != our_origin_str:
                 continue
