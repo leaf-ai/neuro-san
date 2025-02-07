@@ -146,10 +146,10 @@ message ChatRequest {
     // conversation left off. There are 2 uses:
     //  1)  When this is not present in the request, a completely new conversation
     //      is initiated.
-    //  2)  To continue an existing conversation: the last AGENT_FRAMEWORK
+    //  2)  To RESTfully continue an existing conversation: The last AGENT_FRAMEWORK
     //      message that was streamed from your previous StreamingChat() call
     //      will have its chat_context field filled in its ChatMessage.
-    //      Simply take the value there and put it here in your next request
+    //      Simply take the value there and put it here for your next request
     //      to continue the conversation (your new user_input adding to the exchange).
     //      No client-side parsing of the ChatContext is explicitly required.
     chat.ChatContext chat_context = 5 [json_name="chat_context"];
