@@ -13,6 +13,7 @@
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Tuple
 
 import json
 
@@ -196,3 +197,16 @@ def convert_to_base_message(chat_message: Dict[str, Any]) -> BaseMessage:
     # Any other message type we do not want to send to agent as history.
 
     return base_message
+
+
+def convert_to_message_tuple(base_message: BaseMessage) -> Tuple[str, Any]:
+    """
+    :param base_message: The base message to convert to a tuple used for a
+                    prompt template.
+    :return: A tuple corresponding to the input
+    """
+    if base_message is None:
+        return None
+
+    message_tuple: Tuple[str, Any] = (base_message.type, base_message.content)
+    return message_tuple

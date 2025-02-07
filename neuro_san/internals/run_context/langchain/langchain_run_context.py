@@ -41,6 +41,7 @@ from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.journals.originating_journal import OriginatingJournal
 from neuro_san.internals.messages.origination import Origination
 from neuro_san.internals.messages.message_utils import convert_to_base_message
+from neuro_san.internals.messages.message_utils import convert_to_message_tuple
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.run import Run
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
@@ -101,20 +102,22 @@ class LangChainRunContext(RunContext):
         self.chat_context: Dict[str, Any] = chat_context
         self.origin: List[Dict[str, Any]] = []
 
+        parent_origin: List[Dict[str, Any]] = []
         if parent_run_context is not None:
 
             # Get other stuff from parent if not specified
-            if invocation_context is None:
+            if self.invocation_context is None:
                 self.invocation_context = parent_run_context.get_invocation_context()
-            if chat_context is None:
+            if self.chat_context is None:
                 self.chat_context = parent_run_context.get_chat_context()
+            parent_origin = parent_run_context.get_origin()
 
             # Initialize the origin.
             agent_name: str = tool_caller.get_name()
             origination: Origination = self.invocation_context.get_origination()
-            self.origin = origination.add_spec_name_to_origin(parent_run_context.get_origin(), agent_name)
+            self.origin = origination.add_spec_name_to_origin(parent_origin, agent_name)
 
-        self.update_from_chat_context(chat_context)
+        self.update_from_chat_context(self.chat_context)
 
         if self.invocation_context is not None:
             base_journal: Journal = self.invocation_context.get_journal()
@@ -224,16 +227,35 @@ class LangChainRunContext(RunContext):
         # Assemble the prompt message list
         message_list: List[Tuple[str, str]] = []
 
-        # Add to our own chat history which is updated in write_message()
-        system_message = SystemMessage(instructions)
-        await self.journal.write_message(system_message)
-        message_list.append(("system", instructions))
-
-        # If we have assignments, add them
-        if assignments is not None and len(assignments) > 0:
-            system_message = SystemMessage(assignments)
+        if len(self.chat_history) == 0:
+            # We have not had any chat history just yet, so build it from scratch
+            # Add to our own chat history which is updated in write_message()
+            system_message = SystemMessage(instructions)
             await self.journal.write_message(system_message)
-            message_list.append(("system", assignments))
+            message_list.append(("system", instructions))
+
+            # If we have assignments, add them
+            if assignments is not None and len(assignments) > 0:
+                system_message = SystemMessage(assignments)
+                await self.journal.write_message(system_message)
+                message_list.append(("system", assignments))
+        else:
+            # Build the prompt template from previous chat history
+            # Note that since all of these are from the chat history,
+            # we can consider them already reported so they do not
+            # need to get written to the journal.
+            for index, base_message in enumerate(self.chat_history):
+
+                message_tuple: Tuple[str, Any] = None
+
+                if index == 0:
+                    # Always use the most current instructions
+                    message_tuple = ("system", instructions) 
+                else:
+                    message_tuple = convert_to_message_tuple(base_message)
+
+                if message_tuple is not None:
+                    message_list.append(message_tuple)
 
         # Fill out the rest of the prompt per the docs for create_tooling_agent()
         # Note we are not write_message()-ing the chat history because that is redundant
