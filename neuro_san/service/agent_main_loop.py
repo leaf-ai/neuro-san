@@ -148,7 +148,6 @@ class AgentMainLoop(ServerLoopCallbacks):
             http_server_process.terminate()
             http_server_process.join()
 
-
     def loop_callback(self) -> bool:
         """
         Periodically called by the main server loop of ServerLifetime.

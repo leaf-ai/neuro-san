@@ -66,6 +66,11 @@ class HttpServiceAgentSession(AgentSession):
         :param service_prefix: The service prefix to use. Default is None,
                         implying the policy in AgentServiceStub takes over.
         """
+        _ = metadata
+        _ = security_cfg
+        _ = umbrella_timeout
+        _ = streaming_timeout_in_seconds
+        _ = service_prefix
         self.use_host: str = "localhost"
         if host is not None:
             self.use_host = host
@@ -75,6 +80,7 @@ class HttpServiceAgentSession(AgentSession):
             self.use_port = port
 
         self.agent_name: str = agent_name
+        self.timeout_in_seconds = timeout_in_seconds
 
     def _get_request_path(self, function: str):
         return f"http://{self.use_host}:{self.use_port}/api/v1/{self.agent_name}/{function}"
@@ -90,7 +96,8 @@ class HttpServiceAgentSession(AgentSession):
                 "status" - status for finding the function.
         """
         path: str = self._get_request_path("function")
-        response = requests.get(path, json=request_dict, timeout=300)
+        response = requests.get(path, json=request_dict,
+                                timeout=self.timeout_in_seconds)
         result_dict = json.loads(response.text)
         return result_dict
 
@@ -107,7 +114,8 @@ class HttpServiceAgentSession(AgentSession):
                 "status" - status for finding the function.
         """
         path: str = self._get_request_path("connectivity")
-        response = requests.get(path, json=request_dict, timeout=300)
+        response = requests.get(path, json=request_dict,
+                                timeout=self.timeout_in_seconds)
         result_dict = json.loads(response.text)
         return result_dict
 
@@ -152,12 +160,13 @@ class HttpServiceAgentSession(AgentSession):
             are produced until the system decides there are no more messages to be sent.
         """
         path: str = self._get_request_path("streaming_chat")
-        with requests.post(path, json=request_dict, stream=True) as response:
+        with requests.post(path, json=request_dict,
+                           stream=True,
+                           timeout=self.timeout_in_seconds) as response:
             response.raise_for_status()
 
             for line in response.iter_lines(decode_unicode=True):
                 if line.strip():  # Skip empty lines
-                    print(f"============ RECEIVED: |{line}|")
+                    #print(f"============ RECEIVED: |{line}|")
                     result_dict = json.loads(line)
                     yield result_dict
-
