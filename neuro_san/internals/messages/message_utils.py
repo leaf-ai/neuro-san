@@ -23,6 +23,7 @@ from langchain_core.messages.human import HumanMessage
 from langchain_core.messages.system import SystemMessage
 from langchain_core.messages.tool import ToolMessage
 
+from neuro_san.internals.messages.agent_tool_result_message import AgentToolResultMessage
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
 
 
@@ -204,7 +205,9 @@ def convert_to_base_message(chat_message: Dict[str, Any]) -> BaseMessage:
     elif chat_message_type == ChatMessageType.AGENT_TOOL_RESULT:
         # Note that langchain does not understand AgentToolResult messages,
         # so when we convert, we use AIMessage.
-        base_message = AIMessage(content=content)
+        base_message = AgentToolResultMessage(content=content,
+                                              tool_result_origin=chat_message.get("tool_result_origin"))
+        # base_message = AIMessage(content=content)
 
     # Any other message type we do not want to send to any agent as chat history.
 
@@ -221,7 +224,7 @@ def convert_to_message_tuple(base_message: BaseMessage) -> Tuple[str, Any]:
         return None
 
     use_type: str = base_message.type
-    if use_type == "agent_tool_result":
-        use_type = "ai"
+    # if use_type == "agent_tool_result":
+    #     use_type = "ai"
     message_tuple: Tuple[str, Any] = (use_type, base_message.content)
     return message_tuple
