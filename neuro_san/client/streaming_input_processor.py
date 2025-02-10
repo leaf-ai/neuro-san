@@ -141,13 +141,13 @@ class StreamingInputProcessor(AbstractInputProcessor):
 
         with open(filename, how_to_open_file, encoding="utf-8") as thinking:
             use_origin: str = ""
+            if not self.thinking_dir:
+                use_origin += f" from {origin_str}"
             tool_result_origin: List[Dict[str, Any]] = response.get("tool_result_origin")
             if tool_result_origin is not None:
                 last_origin_only: List[Dict[str, Any]] = [tool_result_origin[-1]]
                 origin_str = Origination.get_full_name_from_origin(last_origin_only)
-                use_origin = f" from {origin_str}"
-            if not self.thinking_dir:
-                use_origin += f" from {origin_str}"
+                use_origin = f" (result from {origin_str})"
             thinking.write(f"\n[{message_type_str}{use_origin}]:\n")
             thinking.write(text)
             thinking.write("\n")
