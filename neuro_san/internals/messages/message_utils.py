@@ -24,6 +24,7 @@ from langchain_core.messages.system import SystemMessage
 from langchain_core.messages.tool import ToolMessage
 
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
+from neuro_san.internals.messages.agent_tool_result_message import AgentToolResultMessage
 
 
 def pretty_the_messages(messages: List[Any]) -> str:
@@ -155,7 +156,8 @@ def convert_to_chat_message(message: BaseMessage, origin: List[Dict[str, Any]] =
     # the field on ChatMessage if it has a value.
     optionals: Dict[str, str] = {
         "content": "text",
-        "chat_context": "chat_context"
+        "chat_context": "chat_context",
+        "tool_result_origin": "tool_result_origin"
     }
     for src, dest in optionals.items():
         value: Any = None
@@ -174,6 +176,13 @@ def convert_to_chat_message(message: BaseMessage, origin: List[Dict[str, Any]] =
 
 def convert_to_base_message(chat_message: Dict[str, Any]) -> BaseMessage:
     """
+    The intended use for this method is for converting a neuro-san ChatMessage
+    dictionary into a langchain BaseMessage such that it can be understood by
+    a langchain agent within the context of a langchain-facing chat history.
+    This means that any special messages we might have inserted into a chat
+    history (Like AgentToolResultMessage) need to be converted into something
+    langchain agents will understand (like an AIMessage).
+
     :param chat_message: A ChatMessage dictionary to convert into BaseMessage
     :return: A BaseMessage that was converted from the input.
             Can return None if conversion could not take place
@@ -193,8 +202,12 @@ def convert_to_base_message(chat_message: Dict[str, Any]) -> BaseMessage:
         base_message = ToolMessage(content=content)
     elif chat_message_type == ChatMessageType.AI:
         base_message = AIMessage(content=content)
+    elif chat_message_type == ChatMessageType.AGENT_TOOL_RESULT:
+        # Note that langchain does not understand AgentToolResult messages,
+        # so when we convert, we use AIMessage.
+        base_message = AIMessage(content=content)
 
-    # Any other message type we do not want to send to agent as history.
+    # Any other message type we do not want to send to any agent as chat history.
 
     return base_message
 
@@ -208,5 +221,8 @@ def convert_to_message_tuple(base_message: BaseMessage) -> Tuple[str, Any]:
     if base_message is None:
         return None
 
-    message_tuple: Tuple[str, Any] = (base_message.type, base_message.content)
+    use_type: str = base_message.type
+    if use_type == "agent_tool_result":
+        use_type = "ai"
+    message_tuple: Tuple[str, Any] = (use_type, base_message.content)
     return message_tuple

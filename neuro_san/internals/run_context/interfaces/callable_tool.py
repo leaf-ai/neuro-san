@@ -10,6 +10,7 @@
 #
 # END COPYRIGHT
 from typing import Any
+from typing import Dict
 from typing import List
 
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
@@ -25,6 +26,17 @@ class CallableTool:
         """
         Main entry point to the class.
         :return: A List of messages produced during this process.
+        """
+        raise NotImplementedError
+
+    def get_origin(self) -> List[Dict[str, Any]]:
+        """
+        :return: A List of origin dictionaries indicating the origin of the tool.
+                The origin can be considered a path to the original call to the front-man.
+                Origin dictionaries themselves each have the following keys:
+                    "tool"                  The string name of the tool in the spec
+                    "instantiation_index"   An integer indicating which incarnation
+                                            of the tool is being dealt with.
         """
         raise NotImplementedError
 

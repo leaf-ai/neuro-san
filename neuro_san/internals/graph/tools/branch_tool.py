@@ -137,7 +137,7 @@ class BranchTool(CallingTool, CallableTool):
         assignments = self.get_assignments()
         instructions = self.get_instructions()
 
-        origin: List[Dict[str, Any]] = self.run_context.get_origin()
+        origin: List[Dict[str, Any]] = self.get_origin()
 
         decision_name = self.get_decision_name()
         component_name = self.get_name()
@@ -162,6 +162,17 @@ class BranchTool(CallingTool, CallableTool):
         response = generate_response(messages)
         await self.journal.write(f"{upper_component} RETURNED>>> {response}", origin)
         return response
+
+    def get_origin(self) -> List[Dict[str, Any]]:
+        """
+        :return: A List of origin dictionaries indicating the origin of the run.
+                The origin can be considered a path to the original call to the front-man.
+                Origin dictionaries themselves each have the following keys:
+                    "tool"                  The string name of the tool in the spec
+                    "instantiation_index"   An integer indicating which incarnation
+                                            of the tool is being dealt with.
+        """
+        return self.run_context.get_origin()
 
     async def use_tool(self, tool_name: str, tool_args: Dict[str, Any], sly_data: Dict[str, Any]) -> str:
         """

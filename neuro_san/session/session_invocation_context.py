@@ -90,3 +90,9 @@ class SessionInvocationContext(InvocationContext):
         :param logs: A list of strings corresponding to journal entries.
         """
         self.journal.set_logs(logs)
+
+    def reset_origination(self):
+        """
+        Resets the origination
+        """
+        self.origination = Origination()

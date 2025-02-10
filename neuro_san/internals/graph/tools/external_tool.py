@@ -21,6 +21,7 @@ from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgen
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
+from neuro_san.internals.run_context.factory.run_context_factory import RunContextFactory
 from neuro_san.internals.run_context.interfaces.callable_tool import CallableTool
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 
@@ -54,7 +55,7 @@ class ExternalTool(CallableTool):
                  invoke() method.
         """
         _ = journal
-        self.run_context: RunContext = parent_run_context
+        self.run_context: RunContext = RunContextFactory.create_run_context(parent_run_context, self)
         self.agent_url: str = agent_url
         self.arguments: Dict[str, Any] = arguments
         self.sly_data: Dict[str, Any] = sly_data
@@ -150,6 +151,17 @@ class ExternalTool(CallableTool):
             chat_request["sly_data"] = sly_data
 
         return chat_request
+
+    def get_origin(self) -> List[Dict[str, Any]]:
+        """
+        :return: A List of origin dictionaries indicating the origin of the run.
+                The origin can be considered a path to the original call to the front-man.
+                Origin dictionaries themselves each have the following keys:
+                    "tool"                  The string name of the tool in the spec
+                    "instantiation_index"   An integer indicating which incarnation
+                                            of the tool is being dealt with.
+        """
+        return self.run_context.get_origin()
 
     async def delete_resources(self, parent_run_context: RunContext):
         """
