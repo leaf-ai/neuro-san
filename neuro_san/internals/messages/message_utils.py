@@ -24,7 +24,6 @@ from langchain_core.messages.system import SystemMessage
 from langchain_core.messages.tool import ToolMessage
 
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
-from neuro_san.internals.messages.agent_tool_result_message import AgentToolResultMessage
 
 
 def pretty_the_messages(messages: List[Any]) -> str:
