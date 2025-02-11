@@ -46,10 +46,11 @@ class AgentSessionFactory:
         #           actually checked for positive use.
         if session_type == "direct":
             factory = DirectAgentSessionFactory()
-            session = factory.create_session(agent_name, use_direct=use_direct)
+            session = factory.create_session(agent_name, use_direct=use_direct,
+                                             metadata=metadata)
         elif session_type == "service":
-            session = ServiceAgentSession(host=hostname, port=port,
-                                          agent_name=agent_name, metadata=metadata)
+            session = ServiceAgentSession(host=hostname, port=port, agent_name=agent_name,
+                                          metadata=metadata)
         else:
             # Incorrectly flagged as destination of Trust Boundary Violation 2
             #   Reason: This is the place where the session_type enforced-string argument is

@@ -10,6 +10,7 @@
 #
 # END COPYRIGHT
 from typing import Dict
+
 from os import environ
 
 import logging
@@ -81,11 +82,13 @@ class ExternalAgentSessionFactory(AsyncAgentSessionFactory):
             manifest_tool_registries: Dict[str, AgentToolRegistry] = manifest_restorer.restore()
 
             tool_registry: AgentToolRegistry = self.get_tool_registry(agent_name, manifest_tool_registries)
-            session = AsyncDirectAgentSession(chat_session_map, tool_registry, invocation_context)
+            session = AsyncDirectAgentSession(chat_session_map, tool_registry, invocation_context,
+                                              metadata=invocation_context.get_metadata())
 
         if session is None:
             session = AsyncServiceAgentSession(host, port, agent_name=agent_name,
-                                               service_prefix=service_prefix)
+                                               service_prefix=service_prefix,
+                                               metadata=invocation_context.get_metadata())
 
         # Quiet any logging from leaf-common grpc stuff.
         quiet_please = logging.getLogger("leaf_common.session.grpc_client_retry")
