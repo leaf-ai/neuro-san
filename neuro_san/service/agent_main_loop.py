@@ -115,9 +115,6 @@ class AgentMainLoop(ServerLoopCallbacks):
 
         self.tool_registries = manifest_tool_registries
 
-        logger = logging.getLogger(self.__class__.__name__)
-        logger.info("tool_registries found: %s", str(list(self.tool_registries.keys())))
-
     def main_loop(self):
         """
         Command line entry point
