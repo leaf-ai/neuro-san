@@ -165,23 +165,3 @@ Some hints:
         messages_str: str = json.dumps(messages)
 
         return messages_str
-
-    def get_name(self) -> str:
-        """
-        :return: the name of the data-driven agent as it comes from the spec
-        """
-        agent_spec: Dict[str, Any] = self.get_agent_tool_spec()
-        factory: AgentToolFactory = self.get_factory()
-        agent_name: str = factory.get_name_from_spec(agent_spec)
-        return agent_name
-
-    def get_origin(self) -> List[Dict[str, Any]]:
-        """
-        :return: A List of origin dictionaries indicating the origin of the run.
-                The origin can be considered a path to the original call to the front-man.
-                Origin dictionaries themselves each have the following keys:
-                    "tool"                  The string name of the tool in the spec
-                    "instantiation_index"   An integer indicating which incarnation
-                                            of the tool is being dealt with.
-        """
-        return self.run_context.get_origin()
