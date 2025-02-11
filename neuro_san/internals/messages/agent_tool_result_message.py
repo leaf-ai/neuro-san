@@ -21,6 +21,9 @@ from langchain_core.messages.ai import AIMessage
 class AgentToolResultMessage(AIMessage):
     """
     BaseMessage implementation of a message that came as a result from a tool.
+    We use AIMessage class as a basis so that langchain can interpret the content
+    correctly.  The extra field that we add here is an origin list to indicate
+    where the the tool result came from.
     """
 
     type: Literal["agent_tool_result"] = "agent_tool_result"
