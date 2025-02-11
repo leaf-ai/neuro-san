@@ -16,6 +16,7 @@ from typing import Dict
 from typing import Optional
 from typing import Type
 
+import logging
 import traceback
 
 from pydantic_core import ValidationError
@@ -216,8 +217,9 @@ It's function_json is described thusly:
             # Report the exception, but return None as value from function.
             # This actually allows LLMs to recognize that something is wrong
             # and verbally report on that.
-            print(f"Tool._arun() got Exception: {exception}")
-            print(traceback.format_exc())
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning("Tool._arun() got Exception: %s", str(exception))
+            logger.warning(traceback.format_exc())
             run = None
 
         if run is None:

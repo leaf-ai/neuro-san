@@ -89,11 +89,11 @@ class NameCorrectionConfigFilter(ConfigFilter):
         # Spit out information about errors
         logger = logging.getLogger(self.__class__.__name__)
         for error in errors:
-            logger.warn(error)
+            logger.warning(error)
 
         # Spit out information about corrections
         for original, correction in corrections.items():
-            logger.info(f"Correcting {original} to {correction}")
+            logger.info("Correcting %s to %s", str(original), str(correction))
 
         return basis_config
 

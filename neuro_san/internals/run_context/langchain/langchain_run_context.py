@@ -15,8 +15,9 @@ from typing import List
 from typing import Tuple
 
 import json
-import uuid
+import logging
 import traceback
+import uuid
 
 from openai import APIError
 
@@ -338,16 +339,17 @@ class LangChainRunContext(RunContext):
         retries: int = 3
         exception: Exception = None
         backtrace: str = None
+        logger = logging.getLogger(self.__class__.__name__)
         while return_dict is None and retries > 0:
             try:
                 return_dict: Dict[str, Any] = await agent_executor.ainvoke(inputs, invoke_config)
             except APIError as api_error:
-                print("retrying from openai.APIError")
+                logger.warning("retrying from openai.APIError")
                 retries = retries - 1
                 exception = api_error
                 backtrace = traceback.format_exc()
             except KeyError as key_error:
-                print("retrying from KeyError")
+                logger.warning("retrying from KeyError")
                 retries = retries - 1
                 exception = key_error
                 backtrace = traceback.format_exc()
@@ -366,7 +368,7 @@ class LangChainRunContext(RunContext):
                         "output": response.removeprefix(find_string).removesuffix("`")
                     }
                 else:
-                    print("retrying from ValueError")
+                    logger.warning("retrying from ValueError")
                     retries = retries - 1
                     exception = value_error
                     backtrace = traceback.format_exc()
@@ -409,8 +411,6 @@ class LangChainRunContext(RunContext):
                     for tool_message in tool_messages:
                         # Chat history is updated in write_message()
                         await self.journal.write_message(tool_message)
-        else:
-            print("No tool_outputs")
 
         # Create a run to return
         run = LangChainRun(self.run_id_base, self.chat_history)
@@ -427,15 +427,17 @@ class LangChainRunContext(RunContext):
         # Assuming dictionary
         tool_chat_list_string = tool_output.get("output", None)
         if tool_chat_list_string is None:
-            print("Dunno what to do with None tool output")
+            # Dunno what to do with None tool output
             return None
         if isinstance(tool_chat_list_string, tuple):
             # Sometimes output comes back as a tuple.
             # The output we want is the first element of the tuple.
             tool_chat_list_string = tool_chat_list_string[0]
         if not isinstance(tool_chat_list_string, str):
-            print(f"Dunno what to do with {tool_chat_list_string.__class__.__name__} " +
-                  f"tool output {tool_chat_list_string}")
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning("Dunno what to do with %s tool output %s",
+                           str(tool_chat_list_string.__class__.__name__),
+                           str(tool_chat_list_string))
             return None
 
         # Remove bracketing quotes from within the string
@@ -456,7 +458,8 @@ class LangChainRunContext(RunContext):
         try:
             tool_chat_list = json.loads(tool_chat_list_string)
         except json.decoder.JSONDecodeError as exception:
-            print(f"Exception: {exception} parsing {tool_chat_list_string}")
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.error("Exception: %s parsing %s", str(exception), str(tool_chat_list_string))
             raise exception
 
         # The tool_output seems to contain the entire chat history of
