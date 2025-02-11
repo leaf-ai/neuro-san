@@ -218,8 +218,8 @@ It's function_json is described thusly:
             # This actually allows LLMs to recognize that something is wrong
             # and verbally report on that.
             logger = logging.getLogger(self.__class__.__name__)
-            logger.warning("Tool._arun() got Exception: %s", str(exception))
-            logger.warning(traceback.format_exc())
+            logger.error("Tool._arun() got Exception: %s", str(exception))
+            logger.error(traceback.format_exc())
             run = None
 
         if run is None:
