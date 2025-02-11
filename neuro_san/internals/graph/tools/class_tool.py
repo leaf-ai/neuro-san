@@ -71,7 +71,6 @@ class ClassTool(AbstractCallableTool):
         # Get the python module with the class name containing a CodedTool reference.
         # Will need some exception safety in here eventually.
         full_class_ref = self.agent_tool_spec.get("class")
-        print(f"Calling class {full_class_ref}")
 
         class_split = full_class_ref.split(".")
         class_name = class_split[-1]

@@ -206,7 +206,6 @@ context with which it will proces input, essentially telling it what to do.
         """
         # Get the function args as a dictionary
         tool_name: str = component_tool_call.get_function_name()
-        print(f"Calling {tool_name}")
 
         tool_arguments: Dict[str, Any] = component_tool_call.get_function_arguments()
 

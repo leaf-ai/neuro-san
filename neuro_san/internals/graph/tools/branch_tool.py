@@ -189,13 +189,11 @@ class BranchTool(CallingTool, CallableTool):
                                                                      tool_name,
                                                                      sly_data,
                                                                      tool_args)
-        print(f"Calling tool {tool_name}")
         message: str = await callable_tool.build()
 
         # We got a list of messages back as a string. Take the last.
         message_list: List[Dict[str, Any]] = json.loads(message)
         message_dict: Dict[str, Any] = message_list[-1]
         content: str = message_dict.get("content")
-        print(f"Got this last response from tool {tool_name}: '{content}'")
 
         return content
