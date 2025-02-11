@@ -82,6 +82,10 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         self.forwarder = GrpcMetadataForwarder(forward_list)
 
         self.chat_session_map: ChatSessionMap = chat_session_map
+
+        # When we get to 1 AsyncioExecutor per request, we should also do a
+        # leaf_server_common.logging.logging_setup.setup_extra_logging_fields()
+        # for each executor thread.
         self.asyncio_executor: AsyncioExecutor = asyncio_executor
         self.tool_registry: AgentToolRegistry = tool_registry
         self.agent_name: str = agent_name
