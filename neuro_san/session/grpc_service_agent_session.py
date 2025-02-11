@@ -22,7 +22,7 @@ from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.session.agent_service_stub import AgentServiceStub
 
 
-class ServiceAgentSession(AbstractServiceSession, AgentSession):
+class GrpcServiceAgentSession(AbstractServiceSession, AgentSession):
     """
     Implementation of AgentSession that talks to a
     gRPC service.  This is largely only used by command-line tests.

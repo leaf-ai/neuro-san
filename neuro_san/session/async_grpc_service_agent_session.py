@@ -22,7 +22,7 @@ from neuro_san.interfaces.async_agent_session import AsyncAgentSession
 from neuro_san.session.agent_service_stub import AgentServiceStub
 
 
-class AsyncServiceAgentSession(AsyncAbstractServiceSession, AsyncAgentSession):
+class AsyncGrpcServiceAgentSession(AsyncAbstractServiceSession, AsyncAgentSession):
     """
     Implementation of AsyncAgentSession that talks to a gRPC service asynchronously.
     """
