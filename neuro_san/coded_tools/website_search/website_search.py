@@ -1,7 +1,11 @@
 from typing import Any
 from typing import Dict
 from typing import Union
+
+import logging
+
 from duckduckgo_search import DDGS
+
 from neuro_san.interfaces.coded_tool import CodedTool
 
 
@@ -50,14 +54,15 @@ class WebsiteSearch(CodedTool):
             return "Error: No search terms provided."
         search_terms = the_url + " " + search_terms
 
-        print(">>>>>>>>>>>>>>>>>>>WebsiteSearch>>>>>>>>>>>>>>>>>>")
-        print(f"BSearch Terms: {search_terms}")
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info(">>>>>>>>>>>>>>>>>>>WebsiteSearch>>>>>>>>>>>>>>>>>>")
+        logger.info("BSearch Terms: %s", str(search_terms))
         the_links = search_web(search_terms, self.top_n)
         links_str = ""
-        for ii, the_link in enumerate(the_links, start=1):
-            links_str += f"{ii}. {the_link} ; "
-            print(f"{ii}. {the_link}")
-        print(">>>>>>>>>>>>>>>>>>>DONE !!!>>>>>>>>>>>>>>>>>>")
+        for index, the_link in enumerate(the_links, start=1):
+            links_str += f"{index}. {the_link} ; "
+            logger.info("%s. %s", str(index), str(the_link))
+        logger.info(">>>>>>>>>>>>>>>>>>>DONE !!!>>>>>>>>>>>>>>>>>>")
         return links_str
 
 
@@ -78,16 +83,3 @@ def search_web(query: str, num_results: int = 5) -> list:
     returned_links = [res["href"] for res in results if "href" in res]
 
     return returned_links
-
-
-# if __name__ == "__main__":
-#     # Example usage
-#     URL_TO_SCRAPE = "https://www.amazon.com"
-#     SEARCH_TERMS = "10.5 white men sneakers"
-#     TOP_N = 5
-#
-#     links = search_web(URL_TO_SCRAPE + " " + SEARCH_TERMS, TOP_N)
-#
-#     print(f"Top {TOP_N} search result links for '{SEARCH_TERMS}' from {URL_TO_SCRAPE}:")
-#     for i, link in enumerate(links, start=1):
-#         print(f"{i}. {link}")

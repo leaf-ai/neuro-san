@@ -3,7 +3,7 @@
     "disable_existing_loggers": false,
     "formatters": {
         "structured": {
-            "format": "{\"message\": \"%(message)s\", \"user_id\": \"%(user_id)s\", \"Timestamp\": \"%(iso_timestamp)s\", \"source\": \"%(source)s\", \"message_type\": \"%(message_type)s\", \"run_id\": \"%(run_id)s\", \"experiment_id\": \"%(experiment_id)s\", \"request_id\": \"%(request_id)s\", \"thread_name\": \"%(thread_name)s\"}"
+            "format": "{\"message\": \"%(message)s\", \"user_id\": \"%(user_id)s\", \"Timestamp\": \"%(iso_timestamp)s\", \"source\": \"%(source)s\", \"message_type\": \"%(message_type)s\", \"request_id\": \"%(request_id)s\"}"
         }
     },
     "handlers": {

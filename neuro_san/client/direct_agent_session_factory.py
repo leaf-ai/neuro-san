@@ -48,18 +48,23 @@ class DirectAgentSessionFactory:
 
         self.asyncio_executor.start()
 
-    def create_session(self, agent_name: str, use_direct: bool = False) -> AgentSession:
+    def create_session(self, agent_name: str, use_direct: bool = False,
+                       metadata: Dict[str, str] = None) -> AgentSession:
         """
         :param agent_name: The name of the agent to use for the session.
         :param use_direct: When True, will use a Direct session for
                     external agents that would reside on the same server.
+        :param metadata: A grpc metadata of key/value pairs to be inserted into
+                         the header. Default is None. Preferred format is a
+                         dictionary of string keys to string values.
         """
 
         factory = ExternalAgentSessionFactory(use_direct=use_direct)
         tool_registry: AgentToolRegistry = factory.get_tool_registry(agent_name, self.manifest_tool_registries)
 
-        invocation_context = SessionInvocationContext(factory, self.asyncio_executor)
+        invocation_context = SessionInvocationContext(factory, self.asyncio_executor, metadata)
         session: DirectAgentSession = DirectAgentSession(chat_session_map=self.chat_session_map,
                                                          tool_registry=tool_registry,
-                                                         invocation_context=invocation_context)
+                                                         invocation_context=invocation_context,
+                                                         metadata=metadata)
         return session

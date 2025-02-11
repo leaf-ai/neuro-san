@@ -14,6 +14,7 @@ from typing import Dict
 from typing import Iterator
 from typing import List
 
+import logging
 import traceback
 
 from datetime import datetime
@@ -145,7 +146,9 @@ class DataDrivenChatSession(ChatSession):
             raw_messages: List[Any] = [
                 AgentFrameworkMessage(content="Patience, please. I'm working on it.")
             ]
-            print(traceback.format_exc())
+
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.error(traceback.format_exc())
 
         # Update the polling response.
         prettied_messages = pretty_the_messages(raw_messages)

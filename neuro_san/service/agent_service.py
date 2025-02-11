@@ -14,7 +14,9 @@ from typing import Any
 from typing import Dict
 from typing import Iterator
 
+import copy
 import json
+import uuid
 
 import grpc
 
@@ -80,6 +82,10 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         self.forwarder = GrpcMetadataForwarder(forward_list)
 
         self.chat_session_map: ChatSessionMap = chat_session_map
+
+        # When we get to 1 AsyncioExecutor per request, we should also do a
+        # leaf_server_common.logging.logging_setup.setup_extra_logging_fields()
+        # for each executor thread.
         self.asyncio_executor: AsyncioExecutor = asyncio_executor
         self.tool_registry: AgentToolRegistry = tool_registry
         self.agent_name: str = agent_name
@@ -106,12 +112,17 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         self.request_counter.increment()
         request_log = None
         log_marker: str = "function request"
+        service_logging_dict: Dict[str, str] = {
+            "request_id": f"{self.request_logger.get_server_name_for_logs()}-{uuid.uuid4()}"
+        }
         if "Function" not in DO_NOT_LOG_REQUESTS:
             request_log = self.request_logger.start_request(f"{self.agent_name}.Function",
-                                                            log_marker, context)
+                                                            log_marker, context,
+                                                            service_logging_dict)
 
         # Get the metadata to forward on to another service
-        metadata = self.forwarder.forward(context)
+        metadata: Dict[str, str] = copy.copy(service_logging_dict)
+        metadata.update(self.forwarder.forward(context))
 
         # Get our args in order to pass to grpc-free session level
         request_dict: Dict[str, Any] = MessageToDict(request)
@@ -150,12 +161,17 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         self.request_counter.increment()
         request_log = None
         log_marker: str = "connectivity request"
+        service_logging_dict: Dict[str, str] = {
+            "request_id": f"{self.request_logger.get_server_name_for_logs()}-{uuid.uuid4()}"
+        }
         if "Connectivity" not in DO_NOT_LOG_REQUESTS:
             request_log = self.request_logger.start_request(f"{self.agent_name}.Connectivity",
-                                                            log_marker, context)
+                                                            log_marker, context,
+                                                            service_logging_dict)
 
         # Get the metadata to forward on to another service
-        metadata = self.forwarder.forward(context)
+        metadata: Dict[str, str] = copy.copy(service_logging_dict)
+        metadata.update(self.forwarder.forward(context))
 
         # Get our args in order to pass to grpc-free session level
         request_dict: Dict[str, Any] = MessageToDict(request)
@@ -334,20 +350,25 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         """
         self.request_counter.increment()
         request_log = None
-        log_marker = f"'{request.user_input}' on assistant {request.session_id}"
+        log_marker = f"'{request.user_message.text}'"
+        service_logging_dict: Dict[str, str] = {
+            "request_id": f"{self.request_logger.get_server_name_for_logs()}-{uuid.uuid4()}"
+        }
         if "StreamingChat" not in DO_NOT_LOG_REQUESTS:
             request_log = self.request_logger.start_request(f"{self.agent_name}.StreamingChat",
-                                                            log_marker, context)
+                                                            log_marker, context,
+                                                            service_logging_dict)
 
         # Get the metadata to forward on to another service
-        metadata = self.forwarder.forward(context)
+        metadata: Dict[str, str] = copy.copy(service_logging_dict)
+        metadata.update(self.forwarder.forward(context))
 
         # Get our args in order to pass to grpc-free session level
         request_dict: Dict[str, Any] = MessageToDict(request)
 
         # Delegate to Direct*Session
         factory = ExternalAgentSessionFactory(use_direct=False)
-        invocation_context = SessionInvocationContext(factory, self.asyncio_executor)
+        invocation_context = SessionInvocationContext(factory, self.asyncio_executor, metadata)
         session = DirectAgentSession(chat_session_map=self.chat_session_map,
                                      tool_registry=self.tool_registry,
                                      invocation_context=invocation_context,

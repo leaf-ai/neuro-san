@@ -10,6 +10,8 @@
 #
 # END COPYRIGHT
 
+from typing import Dict
+
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 
 from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
@@ -55,5 +57,11 @@ class InvocationContext:
         """
         :return: The AsyncCollatingQueue instance via which messages are streamed to the
                 AgentSession mechanics
+        """
+        raise NotImplementedError
+
+    def get_metadata(self) -> Dict[str, str]:
+        """
+        :return: The metadata to pass along with any request
         """
         raise NotImplementedError

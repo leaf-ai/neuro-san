@@ -10,6 +10,7 @@
 #
 # END COPYRIGHT
 from typing import Any
+from typing import Dict
 from typing import List
 
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
@@ -30,7 +31,8 @@ class SessionInvocationContext(InvocationContext):
     """
 
     def __init__(self, async_session_factory: AsyncAgentSessionFactory,
-                 asyncio_executor: AsyncioExecutor = None):
+                 asyncio_executor: AsyncioExecutor = None,
+                 metadata: Dict[str, str] = None):
         """
         Constructor
 
@@ -38,6 +40,9 @@ class SessionInvocationContext(InvocationContext):
                         when connecting with external agents.
         :param asyncio_executor: The AsyncioExecutor to use for running
                         stuff in the background asynchronously.
+        :param metadata: A grpc metadata of key/value pairs to be inserted into
+                         the header. Default is None. Preferred format is a
+                         dictionary of string keys to string values.
         """
 
         self.async_session_factory: AsyncAgentSessionFactory = async_session_factory
@@ -45,6 +50,7 @@ class SessionInvocationContext(InvocationContext):
         self.origination: Origination = Origination()
         self.queue: AsyncCollatingQueue = AsyncCollatingQueue()
         self.journal: Journal = CompatibilityJournal(self.queue)
+        self.metadata: Dict[str, str] = metadata
 
     def get_async_session_factory(self) -> AsyncAgentSessionFactory:
         """
@@ -78,6 +84,12 @@ class SessionInvocationContext(InvocationContext):
                 AgentSession mechanics
         """
         return self.queue
+
+    def get_metadata(self) -> Dict[str, str]:
+        """
+        :return: The metadata to pass along with any request
+        """
+        return self.metadata
 
     def set_asyncio_executor(self, asyncio_executor: AsyncioExecutor):
         """
