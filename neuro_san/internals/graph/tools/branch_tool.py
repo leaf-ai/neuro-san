@@ -14,6 +14,7 @@ from typing import Dict
 from typing import List
 
 import json
+import logging
 import uuid
 
 from leaf_common.parsers.field_extractor import FieldExtractor
@@ -189,6 +190,8 @@ class BranchTool(CallingTool, CallableTool):
                                                                      tool_name,
                                                                      sly_data,
                                                                      tool_args)
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("Calling tool %s", tool_name)
         message: str = await callable_tool.build()
 
         # We got a list of messages back as a string. Take the last.
