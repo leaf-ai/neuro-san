@@ -334,7 +334,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         """
         self.request_counter.increment()
         request_log = None
-        log_marker = f"'{request.user_input}' on assistant {request.session_id}"
+        log_marker = f"'{request.user_message.text}'"
         if "StreamingChat" not in DO_NOT_LOG_REQUESTS:
             request_log = self.request_logger.start_request(f"{self.agent_name}.StreamingChat",
                                                             log_marker, context)
