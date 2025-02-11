@@ -15,6 +15,7 @@ from typing import Dict
 from typing import Iterator
 
 import json
+import uuid
 
 import grpc
 
@@ -106,9 +107,13 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         self.request_counter.increment()
         request_log = None
         log_marker: str = "function request"
+        service_logging_dict: Dict[str, str] = {
+            "request_id": f"{self.request_logger.get_server_name_for_logs()}-{uuid.uuid4()}"
+        }
         if "Function" not in DO_NOT_LOG_REQUESTS:
             request_log = self.request_logger.start_request(f"{self.agent_name}.Function",
-                                                            log_marker, context)
+                                                            log_marker, context,
+                                                            service_logging_dict)
 
         # Get the metadata to forward on to another service
         metadata = self.forwarder.forward(context)
@@ -150,9 +155,13 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         self.request_counter.increment()
         request_log = None
         log_marker: str = "connectivity request"
+        service_logging_dict: Dict[str, str] = {
+            "request_id": f"{self.request_logger.get_server_name_for_logs()}-{uuid.uuid4()}"
+        }
         if "Connectivity" not in DO_NOT_LOG_REQUESTS:
             request_log = self.request_logger.start_request(f"{self.agent_name}.Connectivity",
-                                                            log_marker, context)
+                                                            log_marker, context,
+                                                            service_logging_dict)
 
         # Get the metadata to forward on to another service
         metadata = self.forwarder.forward(context)
@@ -335,9 +344,13 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         self.request_counter.increment()
         request_log = None
         log_marker = f"'{request.user_message.text}'"
+        service_logging_dict: Dict[str, str] = {
+            "request_id": f"{self.request_logger.get_server_name_for_logs()}-{uuid.uuid4()}"
+        }
         if "StreamingChat" not in DO_NOT_LOG_REQUESTS:
             request_log = self.request_logger.start_request(f"{self.agent_name}.StreamingChat",
-                                                            log_marker, context)
+                                                            log_marker, context,
+                                                            service_logging_dict)
 
         # Get the metadata to forward on to another service
         metadata = self.forwarder.forward(context)
