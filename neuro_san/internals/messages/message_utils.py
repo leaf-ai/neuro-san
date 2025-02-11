@@ -179,9 +179,9 @@ def convert_to_base_message(chat_message: Dict[str, Any]) -> BaseMessage:
     The intended use for this method is for converting a neuro-san ChatMessage
     dictionary into a langchain BaseMessage such that it can be understood by
     a langchain agent within the context of a langchain-facing chat history.
-    This means that any special messages we might have inserted into a chat
-    history (Like AgentToolResultMessage) need to be converted into something
-    langchain agents will understand (like an AIMessage).
+    This means that some special messages we might have inserted into a chat
+    history *might* need to be converted into something langchain agents will
+    understand.
 
     :param chat_message: A ChatMessage dictionary to convert into BaseMessage
     :return: A BaseMessage that was converted from the input.
@@ -203,11 +203,8 @@ def convert_to_base_message(chat_message: Dict[str, Any]) -> BaseMessage:
     elif chat_message_type == ChatMessageType.AI:
         base_message = AIMessage(content=content)
     elif chat_message_type == ChatMessageType.AGENT_TOOL_RESULT:
-        # Note that langchain does not understand AgentToolResult messages,
-        # so when we convert, we use AIMessage.
         base_message = AgentToolResultMessage(content=content,
                                               tool_result_origin=chat_message.get("tool_result_origin"))
-        # base_message = AIMessage(content=content)
 
     # Any other message type we do not want to send to any agent as chat history.
 
@@ -224,7 +221,5 @@ def convert_to_message_tuple(base_message: BaseMessage) -> Tuple[str, Any]:
         return None
 
     use_type: str = base_message.type
-    # if use_type == "agent_tool_result":
-    #     use_type = "ai"
     message_tuple: Tuple[str, Any] = (use_type, base_message.content)
     return message_tuple
