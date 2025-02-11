@@ -80,7 +80,7 @@ class DataDrivenChatSession(ChatSession):
                                                                        chat_context=chat_context)
 
         journal: Journal = invocation_context.get_journal()
-        self.front_man = self.registry.create_front_man(journal, self.sly_data, run_context)
+        self.front_man = self.registry.create_front_man(self.sly_data, run_context)
         await journal.write("setting up chat agent(s)...", self.front_man.get_origin())
 
         await self.front_man.create_resources()

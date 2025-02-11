@@ -17,16 +17,17 @@ from typing import List
 import json
 
 from neuro_san.interfaces.async_agent_session import AsyncAgentSession
+from neuro_san.internals.graph.tools.abstract_callable_tool import AbstractCallableTool
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
 from neuro_san.internals.run_context.factory.run_context_factory import RunContextFactory
-from neuro_san.internals.run_context.interfaces.callable_tool import CallableTool
+from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 
 
-class ExternalTool(CallableTool):
+class ExternalTool(AbstractCallableTool):
     """
     CallableTool implementation that handles using a service to call
     another agent hierarchy as a tool.
@@ -34,7 +35,7 @@ class ExternalTool(CallableTool):
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, parent_run_context: RunContext,
-                 journal: Journal,
+                 factory: AgentToolFactory,
                  agent_url: str,
                  arguments: Dict[str, Any],
                  sly_data: Dict[str, Any]):
@@ -44,7 +45,7 @@ class ExternalTool(CallableTool):
         :param parent_run_context: The parent RunContext (if any) to pass
                              down its resources to a new RunContext created by
                              this call.
-        :param journal: The Journal that captures messages for user output
+        :param factory: The factory for Agent Tools.
         :param agent_url: The string url to find the external agent.
                         Theoretically this has already been verified by use of an
                         ExternalAgentParsing method.
@@ -54,15 +55,22 @@ class ExternalTool(CallableTool):
                  This gets passed along as a distinct argument to the referenced python class's
                  invoke() method.
         """
-        _ = journal
-        self.run_context: RunContext = RunContextFactory.create_run_context(parent_run_context, self)
+        # There is no spec on our end for the agent_tool_spec
+        super().__init__(factory, None, sly_data)
         self.agent_url: str = agent_url
+        self.run_context: RunContext = RunContextFactory.create_run_context(parent_run_context, self)
+        self.journal: Journal = self.run_context.get_journal()
         self.arguments: Dict[str, Any] = arguments
-        self.sly_data: Dict[str, Any] = sly_data
 
         self.session: AsyncAgentSession = None
         self.session_id: str = None
         self.chat_context: Dict[str, Any] = None
+
+    def get_name(self) -> str:
+        """
+        :return: the name of the data-driven agent as it comes from the spec
+        """
+        return self.agent_url
 
     async def build(self) -> List[Any]:
         """
@@ -152,22 +160,12 @@ class ExternalTool(CallableTool):
 
         return chat_request
 
-    def get_origin(self) -> List[Dict[str, Any]]:
-        """
-        :return: A List of origin dictionaries indicating the origin of the run.
-                The origin can be considered a path to the original call to the front-man.
-                Origin dictionaries themselves each have the following keys:
-                    "tool"                  The string name of the tool in the spec
-                    "instantiation_index"   An integer indicating which incarnation
-                                            of the tool is being dealt with.
-        """
-        return self.run_context.get_origin()
-
     async def delete_resources(self, parent_run_context: RunContext):
         """
         Cleans up after any allocated resources on their server side.
         :param parent_run_context: The RunContext which contains the scope
                     of operation of this CallableNode
         """
+        super().delete_resources(parent_run_context)
         self.session = None
         self.session_id = None

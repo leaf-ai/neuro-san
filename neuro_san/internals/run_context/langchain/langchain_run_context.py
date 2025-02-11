@@ -566,3 +566,9 @@ class LangChainRunContext(RunContext):
 
             # Nothing left to search for
             break
+
+    def get_journal(self) -> Journal:
+        """
+        :return: The Journal associated with the instance
+        """
+        return self.journal

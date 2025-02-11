@@ -34,6 +34,7 @@ from neuro_san.internals.run_context.openai.openai_client import OpenAIClient
 from neuro_san.internals.run_context.openai.openai_run import OpenAIRun
 
 
+# pylint: disable=too-many-instance-attributes
 class OpenAIRunContext(RunContext):
     """
     RunContext implementation supporting the context/lifetime in
@@ -79,6 +80,7 @@ class OpenAIRunContext(RunContext):
         self.assistant_id: str = None
         self.invocation_context: InvocationContext = invocation_context
         self.chat_context: Dict[str, Any] = chat_context
+        self.journal: Journal = self.invocation_context.get_journal()
 
     # pylint: disable=too-many-locals
     async def create_resources(self, assistant_name: str,
@@ -287,3 +289,9 @@ class OpenAIRunContext(RunContext):
         :param invocation_context: The context policy container that pertains to the invocation
         """
         self.invocation_context = invocation_context
+
+    def get_journal(self) -> Journal:
+        """
+        :return: The Journal associated with the instance
+        """
+        return self.journal

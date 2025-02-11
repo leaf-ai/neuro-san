@@ -20,7 +20,6 @@ from leaf_common.parsers.field_extractor import FieldExtractor
 
 from neuro_san.internals.graph.tools.argument_assigner import ArgumentAssigner
 from neuro_san.internals.graph.tools.calling_tool import CallingTool
-from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.message_utils import generate_response
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.callable_tool import CallableTool
@@ -36,9 +35,8 @@ class BranchTool(CallingTool, CallableTool):
     not call anyone else.
     """
 
-    # pylint: disable=too-many-arguments,too-many-positional-arguments
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(self, parent_run_context: RunContext,
-                 journal: Journal,
                  factory: AgentToolFactory,
                  arguments: Dict[str, Any],
                  agent_tool_spec: Dict[str, Any],
@@ -49,7 +47,6 @@ class BranchTool(CallingTool, CallableTool):
         :param parent_run_context: The parent RunContext (if any) to pass
                              down its resources to a new RunContext created by
                              this call.
-        :param journal: The Journal that captures messages for user output
         :param factory: The AgentToolFactory used to create tools
         :param arguments: A dictionary of the tool function arguments passed in
         :param agent_tool_spec: The dictionary describing the JSON agent tool
@@ -57,7 +54,7 @@ class BranchTool(CallingTool, CallableTool):
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be an empty dictionary.
         """
-        super().__init__(parent_run_context, journal, factory, agent_tool_spec, sly_data)
+        super().__init__(parent_run_context, factory, agent_tool_spec, sly_data)
         self.arguments: Dict[str, Any] = arguments
 
     def get_decision_name(self) -> str:
