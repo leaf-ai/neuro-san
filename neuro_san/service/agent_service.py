@@ -14,6 +14,7 @@ from typing import Any
 from typing import Dict
 from typing import Iterator
 
+import copy
 import json
 import uuid
 
@@ -116,7 +117,8 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
                                                             service_logging_dict)
 
         # Get the metadata to forward on to another service
-        metadata = self.forwarder.forward(context)
+        metadata: Dict[str, str] = copy.copy(service_logging_dict)
+        metadata.update(self.forwarder.forward(context))
 
         # Get our args in order to pass to grpc-free session level
         request_dict: Dict[str, Any] = MessageToDict(request)
@@ -164,7 +166,8 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
                                                             service_logging_dict)
 
         # Get the metadata to forward on to another service
-        metadata = self.forwarder.forward(context)
+        metadata: Dict[str, str] = copy.copy(service_logging_dict)
+        metadata.update(self.forwarder.forward(context))
 
         # Get our args in order to pass to grpc-free session level
         request_dict: Dict[str, Any] = MessageToDict(request)
@@ -353,7 +356,8 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
                                                             service_logging_dict)
 
         # Get the metadata to forward on to another service
-        metadata = self.forwarder.forward(context)
+        metadata: Dict[str, str] = copy.copy(service_logging_dict)
+        metadata.update(self.forwarder.forward(context))
 
         # Get our args in order to pass to grpc-free session level
         request_dict: Dict[str, Any] = MessageToDict(request)
