@@ -114,7 +114,9 @@ class AgentMainLoop(ServerLoopCallbacks):
         manifest_tool_registries: Dict[str, AgentToolRegistry] = manifest_restorer.restore()
 
         self.tool_registries = manifest_tool_registries
-        print(f"tool_registries found: {list(self.tool_registries.keys())}")
+
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("tool_registries found: ", str(list(self.tool_registries.keys())))
 
     def main_loop(self):
         """
