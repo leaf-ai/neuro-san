@@ -18,21 +18,21 @@ import json
 from leaf_common.config.resolver import Resolver
 
 from neuro_san.interfaces.coded_tool import CodedTool
+from neuro_san.internals.graph.tools.abstract_callable_tool import AbstractCallableTool
 from neuro_san.internals.graph.tools.branch_tool import BranchTool
 from neuro_san.internals.journals.journal import Journal
+from neuro_san.internals.run_context.factory.run_context_factory import RunContextFactory
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
-from neuro_san.internals.run_context.interfaces.callable_tool import CallableTool
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 
 
-class ClassTool(CallableTool):
+class ClassTool(AbstractCallableTool):
     """
     CallableTool which can invoke a CodedTool by its class name.
     """
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, parent_run_context: RunContext,
-                 journal: Journal,
                  factory: AgentToolFactory,
                  arguments: Dict[str, Any],
                  agent_tool_spec: Dict[str, Any],
@@ -43,7 +43,6 @@ class ClassTool(CallableTool):
         :param parent_run_context: The parent RunContext (if any) to pass
                              down its resources to a new RunContext created by
                              this call.
-        :param journal: The Journal that captures messages for user output
         :param factory: The AgentToolFactory used to create tools
         :param arguments: A dictionary of the tool function arguments passed in by the LLM
         :param agent_tool_spec: The dictionary describing the JSON agent tool
@@ -53,14 +52,12 @@ class ClassTool(CallableTool):
                  This gets passed along as a distinct argument to the referenced python class's
                  invoke() method.
         """
-        self.parent_run_context: RunContext = parent_run_context
-        self.journal: Journal = journal
-        self.factory: AgentToolFactory = factory
+        super().__init__(factory, agent_tool_spec, sly_data)
+        self.run_context: RunContext = RunContextFactory.create_run_context(parent_run_context, self)
+        self.journal: Journal = self.run_context.get_journal()
         self.arguments: Dict[str, Any] = {}
         if arguments is not None:
             self.arguments = arguments
-        self.agent_tool_spec: Dict[str, Any] = agent_tool_spec
-        self.sly_data: Dict[str, Any] = sly_data
 
     # pylint: disable=too-many-locals
     async def build(self) -> List[Any]:
@@ -123,7 +120,7 @@ Check these things:
             if issubclass(python_class, BranchTool):
                 # Allow for a combination of BranchTool + CodedTool to allow
                 # for easier invocation of agents within code.
-                coded_tool = python_class(self.parent_run_context, self.journal, self.factory,
+                coded_tool = python_class(self.run_context, self.factory,
                                           self.arguments, self.agent_tool_spec, self.sly_data)
             else:
                 # Go with the no-args constructor as per the run-of-the-mill contract
@@ -168,12 +165,3 @@ Some hints:
         messages_str: str = json.dumps(messages)
 
         return messages_str
-
-    async def delete_resources(self, parent_run_context: RunContext):
-        """
-        Cleans up after any allocated resources on their server side.
-        :param parent_run_context: The RunContext which contains the scope
-                    of operation of this CallableNode
-        """
-        # Nothing to delete
-        return

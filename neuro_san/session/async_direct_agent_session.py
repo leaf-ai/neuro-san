@@ -192,6 +192,7 @@ class AsyncDirectAgentSession(AsyncAgentSession):
         else:
             # We have seen this session_id before and can register new user input.
             status = self.FOUND
+            self.invocation_context.reset_origination()
             if session_id is not None:
                 self.invocation_context.set_logs(chat_session.get_logs())
 

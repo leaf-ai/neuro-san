@@ -40,6 +40,7 @@ from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.journals.originating_journal import OriginatingJournal
 from neuro_san.internals.messages.origination import Origination
+from neuro_san.internals.messages.agent_tool_result_message import AgentToolResultMessage
 from neuro_san.internals.messages.message_utils import convert_to_base_message
 from neuro_san.internals.messages.message_utils import convert_to_message_tuple
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
@@ -467,7 +468,8 @@ class LangChainRunContext(RunContext):
         # kind of conversion at this point runs into problems with OpenAI models
         # that process them.  So, to make things continue to work, report the
         # content as an AI message - as if the bot came up with the answer itself.
-        tool_message = AIMessage(content=tool_result_dict.get("content"))
+        tool_message = AgentToolResultMessage(content=tool_result_dict.get("content"),
+                                              tool_result_origin=tool_output.get("origin"))
 
         return_messages: List[BaseMessage] = [tool_message]
         return return_messages
@@ -564,3 +566,9 @@ class LangChainRunContext(RunContext):
 
             # Nothing left to search for
             break
+
+    def get_journal(self) -> Journal:
+        """
+        :return: The Journal associated with the instance
+        """
+        return self.journal

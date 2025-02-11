@@ -121,3 +121,9 @@ class RunContext(AgentSpecProvider):
         :param invocation_context: The context policy container that pertains to the invocation
         """
         raise NotImplementedError
+
+    def get_journal(self) -> Journal:
+        """
+        :return: The Journal associated with the instance
+        """
+        raise NotImplementedError

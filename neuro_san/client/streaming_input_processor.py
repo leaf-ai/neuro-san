@@ -93,9 +93,11 @@ class StreamingInputProcessor(AbstractInputProcessor):
                 if message_type != ChatMessageType.LEGACY_LOGS:
                     # Now that we are sending messages from deep within the infrastructure,
                     # write those.  The LEGACY_LOGS messages should be redundant with these.
-                    origin_str = Origination.get_full_name_from_origin(origin)
+                    test_origin_str: str = Origination.get_full_name_from_origin(origin)
+                    if test_origin_str is not None:
+                        origin_str = test_origin_str
                     self.write_response(response, origin_str)
-                if len(origin) == 1 and message_type == ChatMessageType.AI:
+                if origin is not None and len(origin) == 1 and message_type == ChatMessageType.AI:
                     # The last message from the front man (origin len 1) that is an
                     # AI message is effectively "the answer".  This is what
                     # we want to communicate back to the user in an up-front fashion.
@@ -129,6 +131,8 @@ class StreamingInputProcessor(AbstractInputProcessor):
 
         filename: str = self.thinking_file
         if self.thinking_dir:
+            if origin_str is None:
+                return
             filename = os.path.join(self.thinking_dir, origin_str)
 
         how_to_open_file: str = "a"
@@ -137,8 +141,19 @@ class StreamingInputProcessor(AbstractInputProcessor):
 
         with open(filename, how_to_open_file, encoding="utf-8") as thinking:
             use_origin: str = ""
+
+            # Maybe add some context to where message is coming from if not using thinking_dir
             if not self.thinking_dir:
-                use_origin = f" from {origin_str}"
+                use_origin += f" from {origin_str}"
+
+            # Maybe add some context as to where the tool result came from if we have info for that.
+            tool_result_origin: List[Dict[str, Any]] = response.get("tool_result_origin")
+            if tool_result_origin is not None:
+                last_origin_only: List[Dict[str, Any]] = [tool_result_origin[-1]]
+                origin_str = Origination.get_full_name_from_origin(last_origin_only)
+                use_origin += f" (result from {origin_str})"
+
+            # Write the message out
             thinking.write(f"\n[{message_type_str}{use_origin}]:\n")
             thinking.write(text)
             thinking.write("\n")

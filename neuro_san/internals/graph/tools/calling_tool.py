@@ -17,6 +17,7 @@ import json
 
 from leaf_common.config.dictionary_overlay import DictionaryOverlay
 
+from neuro_san.internals.graph.tools.abstract_callable_tool import AbstractCallableTool
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.run_context.factory.run_context_factory import RunContextFactory
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
@@ -28,7 +29,7 @@ from neuro_san.internals.run_context.interfaces.tool_caller import ToolCaller
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 
 
-class CallingTool(ToolCaller):
+class CallingTool(AbstractCallableTool, ToolCaller):
     """
     An implementation of the ToolCaller interface which actually does
     the calling of the other tools.
@@ -41,7 +42,6 @@ class CallingTool(ToolCaller):
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, parent_run_context: RunContext,
-                 journal: Journal,
                  factory: AgentToolFactory,
                  agent_tool_spec: Dict[str, Any],
                  sly_data: Dict[str, Any]):
@@ -51,29 +51,22 @@ class CallingTool(ToolCaller):
         :param parent_run_context: The parent RunContext (if any) to pass
                              down its resources to a new RunContext created by
                              this call.
-        :param journal: The Journal that captures messages for user output
         :param factory: The factory for Agent Tools.
         :param agent_tool_spec: The dictionary describing the JSON agent tool
                             to be used by the instance
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be an empty dictionary.
         """
-        # This block contains top candidates for state storage that needs to be
-        # retained when session_ids go away.
-        self.run_context: RunContext = None
-
-        self.journal: Journal = journal
-        self.factory: AgentToolFactory = factory
-        self.agent_tool_spec: Dict[str, Any] = agent_tool_spec
-        self.sly_data: Dict[str, Any] = sly_data
+        super().__init__(factory, agent_tool_spec, sly_data)
 
         # Get the llm config as a combination of defaults from different places in the config
         agent_network_config: Dict[str, Any] = self.factory.get_config()
         spec_llm_config: Dict[str, Any] = self.agent_tool_spec.get("llm_config")
         run_context_config: Dict[str, Any] = self.prepare_run_context_config(agent_network_config,
                                                                              spec_llm_config)
-        self.run_context = RunContextFactory.create_run_context(parent_run_context, self,
-                                                                config=run_context_config)
+        self.run_context: RunContext = RunContextFactory.create_run_context(parent_run_context, self,
+                                                                            config=run_context_config)
+        self.journal: Journal = self.run_context.get_journal()
 
     @staticmethod
     def prepare_run_context_config(agent_network_config: Dict[str, Any],
@@ -101,21 +94,6 @@ class CallingTool(ToolCaller):
         }
         return run_context_config
 
-    def get_agent_tool_spec(self) -> Dict[str, Any]:
-        """
-        :return: the dictionary describing the data-driven agent
-        """
-        return self.agent_tool_spec
-
-    def get_name(self) -> str:
-        """
-        :return: the name of the data-driven agent as it comes from the spec
-        """
-        agent_spec: Dict[str, Any] = self.get_agent_tool_spec()
-        factory: AgentToolFactory = self.get_factory()
-        agent_name: str = factory.get_name_from_spec(agent_spec)
-        return agent_name
-
     def get_instructions(self) -> str:
         """
         :return: The string prompt for framing the problem in terms of purpose.
@@ -131,23 +109,6 @@ context with which it will proces input, essentially telling it what to do.
 """
             raise ValueError(message)
         return instructions
-
-    def get_factory(self) -> AgentToolFactory:
-        """
-        :return: The factory containing all the tool specs
-        """
-        return self.factory
-
-    def get_origin(self) -> List[Dict[str, Any]]:
-        """
-        :return: A List of origin dictionaries indicating the origin of the run.
-                The origin can be considered a path to the original call to the front-man.
-                Origin dictionaries themselves each have the following keys:
-                    "tool"                  The string name of the tool in the spec
-                    "instantiation_index"   An integer indicating which incarnation
-                                            of the tool is being dealt with.
-        """
-        return self.run_context.get_origin()
 
     async def create_resources(self, component_name: str = None,
                                instructions: str = None,
@@ -268,6 +229,7 @@ context with which it will proces input, essentially telling it what to do.
 
         # Prepare the tool output
         tool_output: Dict[str, Any] = {
+            "origin": callable_component.get_origin(),
             "tool_call_id": component_tool_call.get_id(),
             "output": output
         }
@@ -281,12 +243,10 @@ context with which it will proces input, essentially telling it what to do.
 
         return tool_output
 
-    async def delete_resources(self, parent_run_context: RunContext):
+    async def build(self) -> List[Any]:
         """
-        Cleans up after any allocated resources on their server side.
-        :param parent_run_context: The RunContext which contains the scope
-                    of operation of this CallableTool
+        Main entry point to the class.
+
+        :return: A List of messages produced during this process.
         """
-        if self.run_context is not None:
-            await self.run_context.delete_resources(parent_run_context)
-            self.run_context = None
+        raise NotImplementedError
