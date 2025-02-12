@@ -207,8 +207,8 @@ All choices require an agent name.
         # How will we connect to a server?
         group = arg_parser.add_argument_group(title="Service Connection",
                                               description="How will we connect to a server?")
-        group.add_argument("--local", type=bool, default=True,
-                           help="If True (the default), assume we are running against local container")
+        group.add_argument("--local", default=True, action="store_true",
+                           help="If True (the default), assume we are running against locally running service")
         group.add_argument("--host", type=str, default=None,
                            help="hostname setting if not running locally")
         group.add_argument("--port", type=int, default=AgentSession.DEFAULT_PORT,
@@ -241,7 +241,7 @@ direct connection instead of requiring a service to be stood up.
                            """)
         group.add_argument("--local_externals_service", dest="local_externals_direct", action="store_false",
                            help="""
-Have external tools that can be found in the local agent manifest use a service connection
+Have external tools that can be found in the local agent manifest use a service connection. (The default)
                            """)
         self.arg_groups[group.title] = group
 
