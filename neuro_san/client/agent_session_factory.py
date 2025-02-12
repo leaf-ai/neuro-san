@@ -48,7 +48,7 @@ class AgentSessionFactory:
             factory = DirectAgentSessionFactory()
             session = factory.create_session(agent_name, use_direct=use_direct,
                                              metadata=metadata)
-        elif session_type == "service":
+        elif session_type == "service" or session_type == "grpc":
             session = GrpcServiceAgentSession(host=hostname, port=port, agent_name=agent_name,
                                               metadata=metadata)
         else:
