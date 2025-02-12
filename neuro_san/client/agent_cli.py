@@ -264,7 +264,7 @@ Have external tools that can be found in the local agent manifest use a service 
                            help="Use the basis of the thinking_file as a directory to capture "
                                 "internal agent chatter in separate files. "
                                 "This is a separate text stream from the user/assistant chat. "
-                                "Only available when streaming (the default).")
+                                "Only available when streaming (which is the default).")
         self.arg_groups[group.title] = group
 
     def open_session(self):
