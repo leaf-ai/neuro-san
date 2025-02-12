@@ -225,10 +225,10 @@ All choices require an agent name.
                                 "but is still essential to agent function")
         group.add_argument("--first_prompt_file", type=str,
                            help="File that captures the first response to the input prompt")
-        group.add_argument("--one_shot", dest="max_input", action="store_const", const=1,
-                           help="Send one round of input, then exit")
         group.add_argument("--max_input", type=int, default=1000000,
                            help="Maximum rounds of input to go before exiting")
+        group.add_argument("--one_shot", dest="max_input", action="store_const", const=1,
+                           help="Send one round of input, then exit")
         self.arg_groups[group.title] = group
 
         # How do we handle calls to external agents?

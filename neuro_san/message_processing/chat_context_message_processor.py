@@ -46,12 +46,6 @@ class ChatContextMessageProcessor(MessageProcessor):
             # chat_context only ever comes from AGENT_FRAMEWORK Messages
             return
 
-        origin: List[Dict[str, Any]] = chat_message_dict.get("origin")
-        if origin is None or len(origin) != 1:
-            # Final answers only come from the FrontMan,
-            # whose origin length is the only one of length 1.
-            return
-
         # Normally the very last message holds the chat_context.
-        # Keep accumulating until it comes past.
+        # Keep accumulating until it comes past, as long as there is something.
         self.chat_context = chat_message_dict.get("chat_context", self.chat_context)
