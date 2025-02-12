@@ -48,6 +48,7 @@ class AgentCli:
         self.poll_timeout_seconds: float = 5.0
         self.input_timeout_seconds: float = 5000.0
         self.args = None
+        self.arg_groups: Dict[str, Any] = {}
 
         self.session: AgentSession = None
         self.session_id: str = None
@@ -183,69 +184,88 @@ Some suggestions:
         arg_parser.add_argument("--agent", type=str, default="esp_decision_assistant",
                                 help="Name of the agent to talk to")
 
-        # How are we connecting (if by service/sockets)?
-        arg_parser.add_argument("--local", type=bool, default=True,
-                                help="If True (the default), assume we are running against local container")
-        arg_parser.add_argument("--host", type=str, default=None,
-                                help="hostname setting if not running locally")
-        arg_parser.add_argument("--port", type=int, default=AgentSession.DEFAULT_PORT,
-                                help="TCP/IP port to run the Agent gRPC service on")
-
-        # How are we capturing output?
-        arg_parser.add_argument("--thinking_file", type=str, default="/tmp/agent_thinking.txt",
-                                help="File that captures agent thinking. "
-                                     "This is a separate text stream from the user/assistant chat")
-        arg_parser.add_argument("--thinking_dir", default=False, action="store_true",
-                                help="Use the basis of the thinking_file as a directory to capture "
-                                     "internal agent chatter in separate files. "
-                                     "This is a separate text stream from the user/assistant chat. "
-                                     "Only available when streaming (the default).")
-
-        # How can we get input to the chat client without typing it in?
-        arg_parser.add_argument("--first_prompt_file", type=str,
-                                help="File that captures the first response to the input prompt")
-        arg_parser.add_argument("--sly_data", type=str,
-                                help="JSON string containing data that is out-of-band to the chat stream, "
-                                     "but is still essential to agent function")
-
-        # How do we receive messages?
-        arg_parser.add_argument("--stream", default=True, action="store_true",
-                                help="Use streaming chat instead of polling")
-        arg_parser.add_argument("--poll", dest="stream", action="store_false",
-                                help="Use polling chat instead of streaming")
-
-        # How do we set up our session connection?
-        arg_parser.add_argument("--connection", default="direct", type=str,
-                                choices=["service", "direct"],
-                                help="""
+        # How will we connect to neuro-san?
+        group = arg_parser.add_argument_group(title="Session Type",
+                                              description="How will we connect to neuro-san?")
+        group.add_argument("--connection", default="direct", type=str,
+                           choices=["grpc", "service", "direct"],
+                           help="""
 The type of connection to initiate. Choices are to connect to:
-    "service"   - an agent service via gRPC. (The default).  Needs host and port.
+    "grpc"      - an agent service via gRPC. (The default).  Needs host and port.
+    "service"   - compatibility synonym for 'grpc' above.
     "direct"    - a session via library.
 All choices require an agent name.
 """)
-        arg_parser.add_argument("--service", dest="connection", action="store_const", const="service",
-                                help="Use a service connection")
-        arg_parser.add_argument("--direct", dest="connection", action="store_const", const="direct",
-                                help="Use a direct/library call for the chat")
-        arg_parser.add_argument("--user_id", default=os.environ.get("USER"), type=str,
-                                help="'user_id' metadata to send to a server. Defaults to ${USER}.")
+        group.add_argument("--grpc", dest="connection", action="store_const", const="grpc",
+                           help="Use a gRPC service connection")
+        group.add_argument("--service", dest="connection", action="store_const", const="grpc",
+                           help="Use a gRPC service connection")
+        group.add_argument("--direct", dest="connection", action="store_const", const="direct",
+                           help="Use a direct/library call for the chat")
+        self.arg_groups[group.title] = group
+
+        # How will we connect to a server?
+        group = arg_parser.add_argument_group(title="Service Connection",
+                                              description="How will we connect to a server?")
+        group.add_argument("--local", default=True, action="store_true",
+                           help="If True (the default), assume we are running against locally running service")
+        group.add_argument("--host", type=str, default=None,
+                           help="hostname setting if not running locally")
+        group.add_argument("--port", type=int, default=AgentSession.DEFAULT_PORT,
+                           help="TCP/IP port to run the Agent gRPC service on")
+        group.add_argument("--user_id", default=os.environ.get("USER"), type=str,
+                           help="'user_id' metadata to send to a server for logging. Defaults to ${USER}.")
+        self.arg_groups[group.title] = group
+
+        # How can we get input to the chat client without typing it in?
+        group = arg_parser.add_argument_group(title="Input Control",
+                                              description="How do we get input without typing it it?")
+        group.add_argument("--sly_data", type=str,
+                           help="JSON string containing data that is out-of-band to the chat stream, "
+                                "but is still essential to agent function")
+        group.add_argument("--first_prompt_file", type=str,
+                           help="File that captures the first response to the input prompt")
+        group.add_argument("--max_input", type=int, default=1000000,
+                           help="Maximum rounds of input to go before exiting")
+        group.add_argument("--one_shot", dest="max_input", action="store_const", const=1,
+                           help="Send one round of input, then exit")
+        self.arg_groups[group.title] = group
 
         # How do we handle calls to external agents?
-        arg_parser.add_argument("--local_externals_direct", default=False, action="store_true",
-                                help="""
+        group = arg_parser.add_argument_group(title="Local External Agents",
+                                              description="How do handle calls to local /external agents?")
+        group.add_argument("--local_externals_direct", default=False, action="store_true",
+                           help="""
 Have external tools that can be found in the local agent manifest use a
 direct connection instead of requiring a service to be stood up.
-                                """)
-        arg_parser.add_argument("--local_externals_service", dest="local_externals_direct", action="store_false",
-                                help="""
-Have external tools that can be found in the local agent manifest use a service connection
-                                """)
+                           """)
+        group.add_argument("--local_externals_service", dest="local_externals_direct", action="store_false",
+                           help="""
+Have external tools that can be found in the local agent manifest use a service connection. (The default)
+                           """)
+        self.arg_groups[group.title] = group
 
-        # How do we handle the number of rounds of input?
-        arg_parser.add_argument("--max_input", type=int, default=1000000,
-                                help="Maximum rounds of input to go before exiting")
-        arg_parser.add_argument("--one_shot", dest="max_input", action="store_const", const=1,
-                                help="Send one round of input, then exit")
+        # How do we receive messages?
+        group = arg_parser.add_argument_group(title="Message Parsing",
+                                              description="How do we receive messages?")
+        group.add_argument("--stream", default=True, action="store_true",
+                           help="Use streaming chat instead of polling")
+        group.add_argument("--poll", dest="stream", action="store_false",
+                           help="Use polling chat instead of streaming")
+        self.arg_groups[group.title] = group
+
+        # How are we capturing output?
+        group = arg_parser.add_argument_group(title="Output Capture",
+                                              description="How will we capture output?")
+        group.add_argument("--thinking_file", type=str, default="/tmp/agent_thinking.txt",
+                           help="File that captures agent thinking. "
+                                "This is a separate text stream from the user/assistant chat")
+        group.add_argument("--thinking_dir", default=False, action="store_true",
+                           help="Use the basis of the thinking_file as a directory to capture "
+                                "internal agent chatter in separate files. "
+                                "This is a separate text stream from the user/assistant chat. "
+                                "Only available when streaming (which is the default).")
+        self.arg_groups[group.title] = group
 
     def open_session(self):
         """
