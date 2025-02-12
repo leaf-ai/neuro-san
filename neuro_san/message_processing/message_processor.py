@@ -20,6 +20,11 @@ class MessageProcessor:
     An interface for processing a single message.
     """
 
+    def reset(self):
+        """
+        Resets any previously accumulated state
+        """
+
     def should_block_downstream_processing(self, chat_message_dict: Dict[str, Any],
                                            message_type: ChatMessageType) -> bool:
         """

@@ -65,6 +65,7 @@ class StreamingInputProcessor(AbstractInputProcessor):
         # chat_context at all. It merely needs to pass it along to continue
         # the conversation.
         chat_request: Dict[str, Any] = self.formulate_chat_request(user_input, sly_data, chat_context)
+        self.processor.reset()
 
         return_state: Dict[str, Any] = copy(state)
         chat_responses: Generator[Dict[str, Any], None, None] = self.session.streaming_chat(chat_request)

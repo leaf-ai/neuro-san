@@ -22,16 +22,20 @@ class CompositeMessageProcessor(MessageProcessor):
     A MessageProcessor implementation that employs multiple MessageProcessors.
     """
 
-    def __init__(self, message_processors: List[MessageProcessor] = None):
+    def __init__(self, message_processors: List[MessageProcessor] = None,
+                 depth_blocks_breadth: bool = False):
         """
         Constructor
 
         :param message_processors: An ordered List of MessageProcessors with which
                      this instance will process messages
+        :param depth_blocks_breadth: When True, any one component of this instance (depth)
+                    can block further message processing of downstream peers (breadth).
         """
         self.message_processors: List[MessageProcessor] = message_processors
         if self.message_processors is None:
             self.message_processors = []
+        self.depth_blocks_breadth: bool = depth_blocks_breadth
 
     def add_processor(self, message_processor: MessageProcessor):
         """
@@ -53,6 +57,13 @@ class CompositeMessageProcessor(MessageProcessor):
         message_type: ChatMessageType = ChatMessageType.from_response_type(response_type)
         return message_type
 
+    def reset(self):
+        """
+        Resets any previously accumulated state
+        """
+        for message_processor in self.message_processors:
+            message_processor.reset()
+
     def should_block_downstream_processing(self, chat_message_dict: Dict[str, Any],
                                            message_type: ChatMessageType) -> bool:
         """
@@ -61,6 +72,9 @@ class CompositeMessageProcessor(MessageProcessor):
         :return: True if the given message should be blocked from further downstream
                 processing.  False otherwise (the default).
         """
+        if not self.depth_blocks_breadth:
+            return False
+
         for message_processor in self.message_processors:
             if message_processor.should_block_downstream_processing(chat_message_dict, message_type):
                 return True

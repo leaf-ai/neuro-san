@@ -35,6 +35,12 @@ class ChatContextMessageProcessor(MessageProcessor):
         """
         return self.chat_context
 
+    def reset(self):
+        """
+        Resets any previously accumulated state
+        """
+        self.chat_context = {}
+
     def process_message(self, chat_message_dict: Dict[str, Any], message_type: ChatMessageType):
         """
         Process the message.

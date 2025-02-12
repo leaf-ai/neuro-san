@@ -42,6 +42,13 @@ class AnswerMessageProcessor(MessageProcessor):
         """
         return self.answer_origin
 
+    def reset(self):
+        """
+        Resets any previously accumulated state
+        """
+        self.answer = None
+        self.answer_origin = None
+
     def process_message(self, chat_message_dict: Dict[str, Any], message_type: ChatMessageType):
         """
         Process the message.
