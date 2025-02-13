@@ -14,7 +14,6 @@ from typing import TypeVar
 
 from pydantic import ConfigDict
 
-from langchain.agents.output_parsers.tools import ToolAgentAction
 from langchain.agents.output_parsers.tools import ToolsAgentOutputParser
 from langchain_core.outputs import Generation
 
@@ -61,8 +60,8 @@ class JournalingToolsAgentOutputParser(ToolsAgentOutputParser):
         """
         result = await super().aparse_result(result, partial=partial)
         if isinstance(result, List):
-            action: ToolAgentAction = result[0]
-            message = AgentMessage(content=action.log)
-            await self.journal.write_message(message)
+            for action in result:
+                message = AgentMessage(content=action.log)
+                await self.journal.write_message(message)
         # Note: We do not care about AgentFinish
         return result
