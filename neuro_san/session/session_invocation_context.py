@@ -22,6 +22,8 @@ from neuro_san.internals.journals.compatibility_journal import CompatibilityJour
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.origination import Origination
 
+import asyncio
+
 
 class SessionInvocationContext(InvocationContext):
     """
@@ -46,7 +48,8 @@ class SessionInvocationContext(InvocationContext):
         """
 
         self.async_session_factory: AsyncAgentSessionFactory = async_session_factory
-        self.asyncio_executor: AsyncioExecutor = asyncio_executor
+        self.asyncio_executor: AsyncioExecutor = AsyncioExecutor()
+        self.asyncio_executor.start()
         self.origination: Origination = Origination()
         self.queue: AsyncCollatingQueue = AsyncCollatingQueue()
         self.journal: Journal = CompatibilityJournal(self.queue)
