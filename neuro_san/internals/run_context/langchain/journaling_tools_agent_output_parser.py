@@ -20,12 +20,16 @@ from langchain_core.outputs import Generation
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.agent_message import AgentMessage
 
+# Bizarre convention from the superclass to adhere to overridden method.
 T = TypeVar("T")
 
 
 class JournalingToolsAgentOutputParser(ToolsAgentOutputParser):
     """
     ToolsAgentOutputParser implementation that intercepts agent-level chatter
+
+    We use this to intercept the "Inoking <agent> with <params>" kinds of messages
+    to stream them back to the client as AgentMessages.
     """
 
     # Declarations of member variables here satisfy Pydantic style,
@@ -33,6 +37,8 @@ class JournalingToolsAgentOutputParser(ToolsAgentOutputParser):
     # is able to use JSON schema definitions to validate fields.
     journal: Journal
 
+    # This guy needs to be a pydantic class and in order to have
+    # a non-pydantic Journal as a member, we need to do this.
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     def __init__(self, journal: Journal):
@@ -44,7 +50,9 @@ class JournalingToolsAgentOutputParser(ToolsAgentOutputParser):
         super().__init__(journal=journal)
 
     async def aparse_result(self, result: list[Generation], *, partial: bool = False) -> T:
-        """Async parse a list of candidate model Generations into a specific format.
+        """
+        Comments and method signature from superclass method.
+        Async parse a list of candidate model Generations into a specific format.
 
         The return value is parsed from only the first Generation in the result, which
             is assumed to be the highest-likelihood Generation.
@@ -58,10 +66,18 @@ class JournalingToolsAgentOutputParser(ToolsAgentOutputParser):
         Returns:
             Structured output.
         """
+        # Do the superclass thing
         result = await super().aparse_result(result, partial=partial)
+
+        # By empirical observation, when the result is a list, we are getting
+        # the "Invoking" message, which is useful when wanting to know agent thoughts.
+        # There is one AgentAction instance in the list per tool invocation,
+        # and that guy's log member has the message we want to stream as
+        # agent thought..
         if isinstance(result, List):
             for action in result:
                 message = AgentMessage(content=action.log)
                 await self.journal.write_message(message)
+
         # Note: We do not care about AgentFinish
         return result

@@ -30,6 +30,17 @@ from neuro_san.internals.messages.agent_message import AgentMessage
 class JournalingCallbackHandler(AsyncCallbackHandler):
     """
     AsyncCallbackHandler implementation that intercepts agent-level chatter
+
+    We use this guy to intercept agent-level messages like:
+        "Thought: Do I need a tool?" and preliminary results from the agent
+
+    We are currently only listening to on_llm_end(), but there are many other
+    callbacks to hook into, most of which are not really productive.
+    Some are overriden here to explore, others are not.  See the base
+    AsyncCallbackHandler to explore more.
+
+    Of note: This CallbackHandler mechanism is the kind of thing that
+            LoggingCallbackHandler hooks into to produce egregiously chatty logs.
     """
 
     # Declarations of member variables here satisfy Pydantic style,
@@ -37,6 +48,8 @@ class JournalingCallbackHandler(AsyncCallbackHandler):
     # is able to use JSON schema definitions to validate fields.
     journal: Journal
 
+    # This guy needs to be a pydantic class and in order to have
+    # a non-pydantic Journal as a member, we need to do this.
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     def __init__(self, journal: Journal):
@@ -49,13 +62,18 @@ class JournalingCallbackHandler(AsyncCallbackHandler):
 
     async def on_llm_end(self, response: LLMResult,
                          **kwargs: Any) -> None:
-        # print(f"In on_llm_end() with {response}")
+        # Empirically we have seen that LLMResults that come in on_llm_end() calls
+        # have a generations field which is a list of lists. Inside that inner list,
+        # the first object is a ChatGeneration, whose text field tends to have agent
+        # thinking in it.
         generations = response.generations[0]
         first_generation = generations[0]
         if isinstance(first_generation, ChatGeneration):
-            # DEF There can be token counts in the usage_metadata field as well
+            # DEF   There can be token counts in the usage_metadata field as well
+            #       we might be able to use later
             content: str = first_generation.text
             if content is not None and len(content) > 0:
+                # Package up the thinking content as an AgentMessage to stream
                 message = AgentMessage(content=content)
                 await self.journal.write_message(message)
 
