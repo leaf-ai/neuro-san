@@ -20,6 +20,7 @@ from typing import Any, Dict
 from tornado.web import Application
 from tornado.ioloop import IOLoop
 
+from neuro_san.http_sidecar.http_server_application import HttpServerApplication
 from neuro_san.http_sidecar.handlers.connectivity_handler import ConnectivityHandler
 from neuro_san.http_sidecar.handlers.function_handler import FunctionHandler
 from neuro_san.http_sidecar.handlers.streaming_chat_handler import StreamingChatHandler
@@ -64,17 +65,15 @@ class HttpSidecar:
             # For each request http path, we build corresponding request handler
             # and put it in "handlers" list,
             # which is used to construct tornado "application".
+            request_data: Dict[str, Any] = {"agent_name": agent_name, "port": self.port}
             route: str = f"/api/v1/{agent_name}/connectivity"
-            handler_class = ConnectivityHandler().build(self.port, agent_name, "connectivity")
-            handlers.append((route, handler_class,))
+            handlers.append((route, ConnectivityHandler, request_data))
             self.logger.debug("Registering: %s", route)
             route: str = f"/api/v1/{agent_name}/function"
-            handler_class = FunctionHandler().build(self.port, agent_name, "function")
-            handlers.append((route, handler_class,))
+            handlers.append((route, FunctionHandler, request_data))
             self.logger.debug("Registering: %s", route)
             route: str = f"/api/v1/{agent_name}/streaming_chat"
-            handler_class = StreamingChatHandler().build(self.port, agent_name, "streaming_chat")
-            handlers.append((route, handler_class,))
+            handlers.append((route, StreamingChatHandler, request_data))
             self.logger.debug("Registering: %s", route)
 
-        return Application(handlers)
+        return HttpServerApplication(handlers)

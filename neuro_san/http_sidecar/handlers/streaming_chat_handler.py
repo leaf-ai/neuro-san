@@ -22,66 +22,60 @@ from google.protobuf.json_format import Parse
 # pylint: disable=no-name-in-module
 from neuro_san.api.grpc.agent_pb2 import ChatRequest
 from neuro_san.client.agent_session_factory import AgentSessionFactory
+from neuro_san.interfaces.agent_session import AgentSession
 
 
-class StreamingChatHandler:
+class StreamingChatHandler(RequestHandler):
     """
-    Factory class for constructing handler class for neuro-san
-    streaming chat API call.
+    Handler class for neuro-san streaming chat API call.
     """
-    # pylint: disable=too-few-public-methods
 
-    def build(self, port: int, agent_name: str, method_name: str) -> Type:
+    def initialize(self, request_data):
+        # request_data is a dictionary with keys:
+        # "agent_name": agent name as a string;
+        # "port": integer value for gRPC service port.
+        self.agent_name: str = request_data.get("agent_name", "unknown")
+        self.port: int = request_data.get("port", AgentSession.DEFAULT_PORT)
+
+    def post(self):
         """
-        Factory method.
-        :param port: port for gRPC service we will use;
-        :param agent_name: name of agent this API method is implemented for;
-        :param method_name: name of API method;
-        :return: dynamically constructed Python type to be used by Tornado application
-            for API method handling.
+        Implementation of POST request handler for streaming chat API call.
         """
+        try:
+            # Parse JSON body
+            data = json.loads(self.request.body)
+            print(f"Received POST request with data: {data}")
 
-        def post(self):
-            """
-            Implementation of POST request handler for streaming chat API call.
-            """
-            try:
-                # Parse JSON body
-                data = json.loads(self.request.body)
-                print(f"Received POST request with data: {data}")
+            grpc_request = Parse(json.dumps(data), ChatRequest())
 
-                grpc_request = Parse(json.dumps(data), ChatRequest())
+            factory: AgentSessionFactory = self.application.get_session_factory()
+            grpc_session: AgentSession =\
+                factory.create_session("service", self.agent_name, self.port)
+            result_generator: Generator[Dict[str, Any], None, None] =\
+                grpc_session.streaming_chat(grpc_request)
 
-                grpc_session = AgentSessionFactory().create_session("service", agent_name, port=port)
-                result_generator: Generator[Dict[str, Any], None, None] =\
-                    grpc_session.streaming_chat(grpc_request)
+            # Set up headers for chunked response
+            self.set_header("Content-Type", "application/json")
+            self.set_header("Transfer-Encoding", "chunked")
+            # Flush headers immediately
+            self.flush()
 
-                # Set up headers for chunked response
-                self.set_header("Content-Type", "application/json")
-                self.set_header("Transfer-Encoding", "chunked")
-                # Flush headers immediately
+            for result_message in result_generator:
+                result_dict: Dict[str, Any] = MessageToDict(result_message)
+                result_str: str = json.dumps(result_dict) + "\n"
+                print(f"CHAT HANDLER: |{result_dict}|\n\n")
+                self.write(result_str)
                 self.flush()
 
-                for result_message in result_generator:
-                    result_dict: Dict[str, Any] = MessageToDict(result_message)
-                    result_str: str = json.dumps(result_dict) + "\n"
-                    print(f"CHAT HANDLER: |{result_dict}|\n\n")
-                    self.write(result_str)
-                    self.flush()
+        except json.JSONDecodeError:
+            # Handle invalid JSON input
+            self.set_status(400)
+            self.write({"error": "Invalid JSON format"})
+            self.flush()
+        except Exception as exc:  # pylint: disable=broad-exception-caught
+            # Handle unexpected errors
+            self.set_status(500)
+            self.write({"error": f"Internal server error: {exc}"})
+            self.flush()
 
-            except json.JSONDecodeError:
-                # Handle invalid JSON input
-                self.set_status(400)
-                self.write({"error": "Invalid JSON format"})
-                self.flush()
-            except Exception as exc:  # pylint: disable=broad-exception-caught
-                # Handle unexpected errors
-                self.set_status(500)
-                self.write({"error": f"Internal server error: {exc}"})
-                self.flush()
-
-            self.finish()
-
-        # Dynamically construct Python type implementing RequestHandler
-        # for this specific method.
-        return type(f"{method_name}_handler", (RequestHandler,), {"post": post})
+        self.finish()

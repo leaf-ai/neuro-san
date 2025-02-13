@@ -25,7 +25,6 @@ class ConnectivityHandler(RequestHandler):
     """
     Handler class for neuro-san "connectivity" API call.
     """
-    # pylint: disable=too-few-public-methods
 
     def initialize(self, request_data):
         # request_data is a dictionary with keys:
