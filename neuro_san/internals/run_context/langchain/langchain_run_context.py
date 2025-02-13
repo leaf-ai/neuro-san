@@ -162,6 +162,8 @@ class LangChainRunContext(RunContext):
         agent_spec: Dict[str, Any] = self.tool_caller.get_agent_tool_spec()
         verbose: Union[bool, str] = agent_spec.get("verbose", False)
         if isinstance(verbose, str) and verbose.lower() in ("extra", "logging"):
+            # This particular class adds a *lot* of very detailed messages
+            # to the logs.  Add this because some people are interested in it.
             callbacks.append(LoggingCallbackHandler(logging.getLogger(full_name)))
 
         # Create the model we will use.
