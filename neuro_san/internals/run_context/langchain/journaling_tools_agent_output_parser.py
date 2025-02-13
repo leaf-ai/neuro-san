@@ -16,7 +16,6 @@ from pydantic import ConfigDict
 
 from langchain.agents.output_parsers.tools import ToolAgentAction
 from langchain.agents.output_parsers.tools import ToolsAgentOutputParser
-from langchain_core.agents import AgentFinish
 from langchain_core.outputs import Generation
 
 from neuro_san.internals.journals.journal import Journal
@@ -45,9 +44,7 @@ class JournalingToolsAgentOutputParser(ToolsAgentOutputParser):
         """
         super().__init__(journal=journal)
 
-    async def aparse_result(
-        self, result: list[Generation], *, partial: bool = False
-    ) -> T:
+    async def aparse_result(self, result: list[Generation], *, partial: bool = False) -> T:
         """Async parse a list of candidate model Generations into a specific format.
 
         The return value is parsed from only the first Generation in the result, which
@@ -62,28 +59,10 @@ class JournalingToolsAgentOutputParser(ToolsAgentOutputParser):
         Returns:
             Structured output.
         """
-        print("In aparse_result()")
         result = await super().aparse_result(result, partial=partial)
         if isinstance(result, List):
             action: ToolAgentAction = result[0]
             message = AgentMessage(content=action.log)
             await self.journal.write_message(message)
-        elif isinstance(result, AgentFinish):
-            print("Skipping AgentFinish")
-        else:
-            print(f"Out aparse_result() with {result}")
-        return result
-
-    async def aparse(self, text: str) -> T:
-        """Async parse a single string model output into some structure.
-
-        Args:
-            text: String output of a language model.
-
-        Returns:
-            Structured output.
-        """
-        print("In aparse()")
-        result = await super().aparse(text)
-        print(f"Out aparse() with {result}")
+        # Note: We do not care about AgentFinish
         return result
