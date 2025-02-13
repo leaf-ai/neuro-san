@@ -13,6 +13,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Tuple
+from typing import Union
 
 import json
 import logging
@@ -150,16 +151,17 @@ class LangChainRunContext(RunContext):
         """
         # DEF - Remove the arg if possible
         _ = assistant_name
-        full_name: str = Origination.get_full_name_from_origin(self.origin)
-
-        agent_spec: Dict[str, Any] = self.tool_caller.get_agent_tool_spec()
-        verbose_logging: bool = agent_spec.get("verbose_logging", False)
 
         # Create the list of callbacks to pass to the LLM ChatModel
         callbacks: List[BaseCallbackHandler] = [
             JournalingCallbackHandler(self.journal)
         ]
-        if verbose_logging:
+        full_name: str = Origination.get_full_name_from_origin(self.origin)
+
+        # Consult the agent spec for level of verbosity as it pertains to callbacks.
+        agent_spec: Dict[str, Any] = self.tool_caller.get_agent_tool_spec()
+        verbose: Union[bool, str] = agent_spec.get("verbose", False)
+        if isinstance(verbose, str) and verbose.lowercase() in ("extra", "logging"):
             callbacks.append(LoggingCallbackHandler(logging.getLogger(full_name)))
 
         # Create the model we will use.
@@ -325,7 +327,11 @@ class LangChainRunContext(RunContext):
         # Create an agent executor and invoke it with the most recent human message
         # as input.
         agent_spec: Dict[str, Any] = self.tool_caller.get_agent_tool_spec()
-        verbose = agent_spec.get("verbose", False)
+
+        verbose: Union[bool, str] = agent_spec.get("verbose", False)
+        if isinstance(verbose, str):
+            verbose = bool(verbose.lowercase() in ("true", "extra", "logging"))
+
         max_execution_seconds: float = agent_spec.get("max_execution_seconds",
                                                       2.0 * MINUTES)
         max_iterations: int = agent_spec.get("max_iterations", 20)
