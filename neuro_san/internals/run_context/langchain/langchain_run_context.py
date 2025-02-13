@@ -161,7 +161,7 @@ class LangChainRunContext(RunContext):
         # Consult the agent spec for level of verbosity as it pertains to callbacks.
         agent_spec: Dict[str, Any] = self.tool_caller.get_agent_tool_spec()
         verbose: Union[bool, str] = agent_spec.get("verbose", False)
-        if isinstance(verbose, str) and verbose.lowercase() in ("extra", "logging"):
+        if isinstance(verbose, str) and verbose.lower() in ("extra", "logging"):
             callbacks.append(LoggingCallbackHandler(logging.getLogger(full_name)))
 
         # Create the model we will use.
@@ -330,7 +330,7 @@ class LangChainRunContext(RunContext):
 
         verbose: Union[bool, str] = agent_spec.get("verbose", False)
         if isinstance(verbose, str):
-            verbose = bool(verbose.lowercase() in ("true", "extra", "logging"))
+            verbose = bool(verbose.lower() in ("true", "extra", "logging"))
 
         max_execution_seconds: float = agent_spec.get("max_execution_seconds",
                                                       2.0 * MINUTES)
