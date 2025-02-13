@@ -22,7 +22,7 @@ from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgen
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 from neuro_san.session.async_direct_agent_session import AsyncDirectAgentSession
-from neuro_san.session.async_service_agent_session import AsyncServiceAgentSession
+from neuro_san.session.async_grpc_service_agent_session import AsyncGrpcServiceAgentSession
 
 
 class ExternalAgentSessionFactory(AsyncAgentSessionFactory):
@@ -86,9 +86,9 @@ class ExternalAgentSessionFactory(AsyncAgentSessionFactory):
                                               metadata=invocation_context.get_metadata())
 
         if session is None:
-            session = AsyncServiceAgentSession(host, port, agent_name=agent_name,
-                                               service_prefix=service_prefix,
-                                               metadata=invocation_context.get_metadata())
+            session = AsyncGrpcServiceAgentSession(host, port, agent_name=agent_name,
+                                                   service_prefix=service_prefix,
+                                                   metadata=invocation_context.get_metadata())
 
         # Quiet any logging from leaf-common grpc stuff.
         quiet_please = logging.getLogger("leaf_common.session.grpc_client_retry")

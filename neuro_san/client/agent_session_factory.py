@@ -13,7 +13,7 @@ from typing import Dict
 
 from neuro_san.client.direct_agent_session_factory import DirectAgentSessionFactory
 from neuro_san.interfaces.agent_session import AgentSession
-from neuro_san.session.service_agent_session import ServiceAgentSession
+from neuro_san.session.grpc_service_agent_session import GrpcServiceAgentSession
 from neuro_san.session.http_service_agent_session import HttpServiceAgentSession
 
 
@@ -49,9 +49,9 @@ class AgentSessionFactory:
             factory = DirectAgentSessionFactory()
             session = factory.create_session(agent_name, use_direct=use_direct,
                                              metadata=metadata)
-        elif session_type == "service":
-            session = ServiceAgentSession(host=hostname, port=port, agent_name=agent_name,
-                                          metadata=metadata)
+        elif session_type in ("service", "grpc"):
+            session = GrpcServiceAgentSession(host=hostname, port=port, agent_name=agent_name,
+                                              metadata=metadata)
         elif session_type == "http":
             session = HttpServiceAgentSession(host=hostname, port=port, agent_name=agent_name,
                                               metadata=metadata)

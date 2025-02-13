@@ -221,5 +221,9 @@ def convert_to_message_tuple(base_message: BaseMessage) -> Tuple[str, Any]:
         return None
 
     use_type: str = base_message.type
+    if use_type == "agent_tool_result":
+        # Langchain innards do not know about our own message types
+        use_type = "ai"
+
     message_tuple: Tuple[str, Any] = (use_type, base_message.content)
     return message_tuple
