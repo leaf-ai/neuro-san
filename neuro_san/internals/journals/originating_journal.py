@@ -82,7 +82,7 @@ class OriginatingJournal(Journal):
         if origin is not None:
             use_origin = origin
 
-        if self.chat_history is not None and is_relevant_to_chat_history((message):
+        if self.chat_history is not None and is_relevant_to_chat_history(message):
             self.chat_history.append(message)
         await self.wrapped_journal.write_message(message, use_origin)
 
