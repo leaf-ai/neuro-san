@@ -28,7 +28,7 @@ class JournalingToolsAgentOutputParser(ToolsAgentOutputParser):
     """
     ToolsAgentOutputParser implementation that intercepts agent-level chatter
 
-    We use this to intercept the "Inoking <agent> with <params>" kinds of messages
+    We use this to intercept the "Invoking <agent> with <params>" kinds of messages
     to stream them back to the client as AgentMessages.
     """
 
