@@ -74,7 +74,7 @@ class JournalingCallbackHandler(AsyncCallbackHandler):
             content: str = first_generation.text
             if content is not None and len(content) > 0:
                 # Package up the thinking content as an AgentMessage to stream
-                message = AgentMessage(content=content)
+                message = AgentMessage(content=content.strip())
                 await self.journal.write_message(message)
 
     async def on_chain_end(self, outputs: Dict[str, Any],

@@ -76,8 +76,9 @@ class JournalingToolsAgentOutputParser(ToolsAgentOutputParser):
         # agent thought..
         if isinstance(result, List):
             for action in result:
-                message = AgentMessage(content=action.log)
-                await self.journal.write_message(message)
+                if action.log is not None and len(action.log) > 0:
+                    message = AgentMessage(content=action.log.strip())
+                    await self.journal.write_message(message)
 
         # Note: We do not care about AgentFinish
         return result
