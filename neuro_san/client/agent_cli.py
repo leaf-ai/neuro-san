@@ -121,9 +121,7 @@ Some suggestions:
 
         input_processor: AbstractInputProcessor = None
         if self.args.stream:
-            input_processor = StreamingInputProcessor(self.default_prompt,
-                                                      self.default_input,
-                                                      self.input_timeout_seconds,
+            input_processor = StreamingInputProcessor(self.default_input,
                                                       self.args.thinking_file,
                                                       self.session,
                                                       self.thinking_dir)
@@ -230,6 +228,8 @@ All choices require an agent name.
                                 help="Use a service connection")
         arg_parser.add_argument("--direct", dest="connection", action="store_const", const="direct",
                                 help="Use a direct/library call for the chat")
+        arg_parser.add_argument("--user_id", default=os.environ.get("USER"), type=str,
+                                help="'user_id' metadata to send to a server. Defaults to ${USER}.")
 
         # How do we handle calls to external agents?
         arg_parser.add_argument("--local_externals_direct", default=False, action="store_true",
@@ -258,8 +258,12 @@ Have external tools that can be found in the local agent manifest use a service 
 
         # Open a session with the factory
         factory: AgentSessionFactory = self.get_agent_session_factory()
+        metadata: Dict[str, str] = {
+            "user_id": self.args.user_id
+        }
         self.session = factory.create_session(self.args.connection, self.args.agent,
-                                              hostname, self.args.port, self.args.local_externals_direct)
+                                              hostname, self.args.port, self.args.local_externals_direct,
+                                              metadata)
 
         # Clear out the previous thinking file/dir contents
         #

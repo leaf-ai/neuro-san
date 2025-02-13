@@ -25,7 +25,6 @@ from neuro_san.internals.graph.tools.branch_tool import BranchTool
 from neuro_san.internals.graph.tools.class_tool import ClassTool
 from neuro_san.internals.graph.tools.external_tool import ExternalTool
 from neuro_san.internals.graph.tools.front_man import FrontMan
-from neuro_san.internals.graph.tools.method_tool import MethodTool
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.callable_tool import CallableTool
@@ -187,6 +186,7 @@ Some things to try:
         :return: The CallableTool referred to by the name.
         """
         agent_tool: CallableTool = None
+        factory: AgentToolFactory = self
 
         agent_tool_spec: Dict[str, Any] = self.get_agent_tool_spec(name)
         if agent_tool_spec is None:
@@ -198,7 +198,7 @@ Some things to try:
             # the calling/parent's agent specs.
             redacted_sly_data: Dict[str, Any] = self.redact_sly_data(parent_run_context, sly_data)
 
-            agent_tool = ExternalTool(parent_run_context, journal, name, arguments, redacted_sly_data)
+            agent_tool = ExternalTool(parent_run_context, factory, name, arguments, redacted_sly_data)
             return agent_tool
 
         # Merge the arguments coming in from the LLM with those that were specified
@@ -210,21 +210,16 @@ Some things to try:
             # it wants to be called with.
             if agent_tool_spec.get("class") is not None:
                 # Agent specifically requested a python class to be run.
-                agent_tool = ClassTool(parent_run_context, journal, self, use_args, agent_tool_spec, sly_data)
-            elif agent_tool_spec.get("method") is not None:
-                # Agent specifically requested a python method to be run.
-                # NOTE: this usage is deprecaded in favor of ClassTools so as to
-                # discourage tool implementations with Static Cling.
-                agent_tool = MethodTool(parent_run_context, journal, self, use_args, agent_tool_spec, sly_data)
+                agent_tool = ClassTool(parent_run_context, factory, use_args, agent_tool_spec, sly_data)
             else:
-                agent_tool = BranchTool(parent_run_context, journal, self, use_args, agent_tool_spec, sly_data)
+                agent_tool = BranchTool(parent_run_context, factory, use_args, agent_tool_spec, sly_data)
         else:
             # Get the tool to call from the spec.
-            agent_tool = FrontMan(parent_run_context, journal, self, agent_tool_spec, sly_data)
+            agent_tool = FrontMan(parent_run_context, factory, agent_tool_spec, sly_data)
 
         return agent_tool
 
-    def create_front_man(self, journal: Journal = None,
+    def create_front_man(self,
                          sly_data: Dict[str, Any] = None,
                          parent_run_context: RunContext = None) -> FrontMan:
         """
@@ -233,7 +228,7 @@ Some things to try:
         front_man_name: str = self.find_front_man()
 
         agent_tool_spec: Dict[str, Any] = self.get_agent_tool_spec(front_man_name)
-        front_man = FrontMan(parent_run_context, journal, self, agent_tool_spec, sly_data)
+        front_man = FrontMan(parent_run_context, self, agent_tool_spec, sly_data)
         return front_man
 
     def find_front_man(self) -> str:

@@ -17,15 +17,17 @@ from typing import List
 import json
 
 from neuro_san.interfaces.async_agent_session import AsyncAgentSession
+from neuro_san.internals.graph.tools.abstract_callable_tool import AbstractCallableTool
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
-from neuro_san.internals.run_context.interfaces.callable_tool import CallableTool
+from neuro_san.internals.run_context.factory.run_context_factory import RunContextFactory
+from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 
 
-class ExternalTool(CallableTool):
+class ExternalTool(AbstractCallableTool):
     """
     CallableTool implementation that handles using a service to call
     another agent hierarchy as a tool.
@@ -33,7 +35,7 @@ class ExternalTool(CallableTool):
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, parent_run_context: RunContext,
-                 journal: Journal,
+                 factory: AgentToolFactory,
                  agent_url: str,
                  arguments: Dict[str, Any],
                  sly_data: Dict[str, Any]):
@@ -43,7 +45,7 @@ class ExternalTool(CallableTool):
         :param parent_run_context: The parent RunContext (if any) to pass
                              down its resources to a new RunContext created by
                              this call.
-        :param journal: The Journal that captures messages for user output
+        :param factory: The factory for Agent Tools.
         :param agent_url: The string url to find the external agent.
                         Theoretically this has already been verified by use of an
                         ExternalAgentParsing method.
@@ -53,14 +55,22 @@ class ExternalTool(CallableTool):
                  This gets passed along as a distinct argument to the referenced python class's
                  invoke() method.
         """
-        _ = journal
-        self.run_context: RunContext = parent_run_context
+        # There is no spec on our end for the agent_tool_spec
+        super().__init__(factory, None, sly_data)
         self.agent_url: str = agent_url
+        self.run_context: RunContext = RunContextFactory.create_run_context(parent_run_context, self)
+        self.journal: Journal = self.run_context.get_journal()
         self.arguments: Dict[str, Any] = arguments
-        self.sly_data: Dict[str, Any] = sly_data
 
         self.session: AsyncAgentSession = None
         self.session_id: str = None
+        self.chat_context: Dict[str, Any] = None
+
+    def get_name(self) -> str:
+        """
+        :return: the name of the data-driven agent as it comes from the spec
+        """
+        return self.agent_url
 
     async def build(self) -> List[Any]:
         """
@@ -92,9 +102,15 @@ class ExternalTool(CallableTool):
                 # Ignore messages with no response.
                 continue
 
-            session_id: str = chat_response.get("session_id")
-            if session_id is not None:
-                self.session_id = session_id
+            # Prefer chat context when responding
+            chat_context: Dict[str, Any] = chat_response.get("chat_context")
+            if chat_context is not None:
+                self.chat_context = chat_context
+                self.session_id = None
+            else:
+                session_id: str = chat_response.get("session_id")
+                if session_id is not None:
+                    self.session_id = session_id
 
             response_type = response.get("type")
             message_type: ChatMessageType = ChatMessageType.from_response_type(response_type)
@@ -125,12 +141,17 @@ class ExternalTool(CallableTool):
         """
         # Set up a request
         chat_request = {
-            "session_id": self.session_id,
             "user_message": {
-                "type": 1,          # HUMAN from chat.proto
+                "type": ChatMessageType.HUMAN,
                 "text": agent_input
             }
         }
+
+        if self.chat_context is None:
+            chat_request["session_id"] = self.session_id
+        elif bool(self.chat_context):
+            # Recall that non-empty dictionaries evaluate to True
+            chat_request["chat_context"] = self.chat_context
 
         # At some point in the future we might want to block all
         # or parts of the sly_data from going to external agents.
@@ -145,5 +166,6 @@ class ExternalTool(CallableTool):
         :param parent_run_context: The RunContext which contains the scope
                     of operation of this CallableNode
         """
+        super().delete_resources(parent_run_context)
         self.session = None
         self.session_id = None

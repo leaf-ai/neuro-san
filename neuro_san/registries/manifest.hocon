@@ -22,4 +22,34 @@
     "retail_ops_and_customer_service.hocon": true,
     "banking_ops.hocon": true,
     "cpg_agents.hocon": true
+
+    # These next 2 go together as an example for agents calling other agents.
+    # They are the only reason we have duckduckgo_search listed in the dependencies.
+    "website_search.hocon": true,
+    "website_search_usage_example.hocon": true,
+
+    # STOP AND READ: YOU PROBABLY DON'T WANT TO ADD YOUR .hocon FILE HERE.
+    #
+    # The agent network .hocon files above are examples specific to the neuro-san library.
+    #
+    # It would be an Easy thing to do to add your own agent network's .hocon file to the
+    # list above to get started, but 99% of the time it is not the Right, Simple thing to do
+    # to make a commit with your agent listed here.
+    # Why? Because many agent networks drag in dependencies for their CodedTools,
+    # and we are continually trying to keep neuro-san a lean library.
+    #
+    # We are quite sure your agent is superlative and special... to you.
+    # If your agent really is the 1% of cases which is so exemplary that we need to show it
+    # off to the world, you will need to be talking to the neuro-san team to make it
+    # the exemplary case you perhaps unintentionally end up meaning it to be by adding
+    # it here, in the neuro-san repo.
+    #
+    # The Right thing to do is to start your own repo with your own registries/ directory,
+    # with your own manifest.hocon file for your own agent network .hocon file projects,
+    # and your own coded_tools directory for those agents.  And when you do that,
+    # you will delete this set of comments, because you will have free reign in your own repo.
+    # After all: Stallions must run, and run free.
+    #
+    # Use the AGENT_MANIFEST_FILE and AGENT_TOOL_PATH env vars to direct a generic neuro-san
+    # server to your own repo's agents and CodedTools, respectively.
 }

@@ -14,6 +14,7 @@ from typing import Any
 from typing import Dict
 from typing import Generator
 from typing import List
+from copy import copy
 
 import os
 
@@ -29,9 +30,8 @@ class StreamingInputProcessor(AbstractInputProcessor):
     Processes AgentCli input by using the neuro-san streaming API.
     """
 
-    def __init__(self, default_prompt: str,
+    def __init__(self,
                  default_input: str,
-                 input_timeout_seconds: float,
                  thinking_file: str,
                  session: AgentSession,
                  thinking_dir: str):
@@ -39,9 +39,7 @@ class StreamingInputProcessor(AbstractInputProcessor):
         Constructor
         """
         super().__init__()
-        self.default_prompt: str = default_prompt
         self.default_input: str = default_input
-        self.input_timeout_seconds: float = input_timeout_seconds
         self.thinking_file: str = thinking_file
         self.thinking_dir: str = thinking_dir
         self.session: AgentSession = session
@@ -53,20 +51,24 @@ class StreamingInputProcessor(AbstractInputProcessor):
         :param state: The state dictionary to pass around
         :return: An updated state dictionary
         """
+        empty: Dict[str, Any] = {}
         user_input: str = state.get("user_input")
-        last_logs = state.get("last_logs")
         last_chat_response = state.get("last_chat_response")
         num_input = state.get("num_input")
+        chat_context = state.get("chat_context", empty)
+        origin_str: str = ""
 
         if user_input is None or user_input == self.default_input:
             return state
 
         print(f"Sending user_input {user_input}")
         sly_data: Dict[str, Any] = state.get("sly_data")
-        chat_request: Dict[str, Any] = self.formulate_chat_request(user_input, sly_data)
+        # Note that by design, a client does not have to interpret the
+        # chat_context at all. It merely needs to pass it along to continue
+        # the conversation.
+        chat_request: Dict[str, Any] = self.formulate_chat_request(user_input, sly_data, chat_context)
 
-        return_state: Dict[str, Any] = {}
-        empty = {}
+        return_state: Dict[str, Any] = copy(state)
         chat_responses: Generator[Dict[str, Any], None, None] = self.session.streaming_chat(chat_request)
         for chat_response in chat_responses:
 
@@ -80,32 +82,38 @@ class StreamingInputProcessor(AbstractInputProcessor):
             response_type: str = response.get("type")
             message_type: ChatMessageType = ChatMessageType.from_response_type(response_type)
 
-            text: str = response.get("text")
-            origin: List[str] = response.get("origin")
-            origin_str: str = Origination.get_full_name_from_origin(origin)
+            if message_type == ChatMessageType.AGENT_FRAMEWORK:
+                # Update the chat context if there is something to update it with
+                chat_context = response.get("chat_context", chat_context)
 
-            # Update chat response and maybe prompt.
+            # Process any text in the message
+            origin: List[str] = response.get("origin")
+            text: str = response.get("text")
             if text is not None:
                 if message_type != ChatMessageType.LEGACY_LOGS:
                     # Now that we are sending messages from deep within the infrastructure,
                     # write those.  The LEGACY_LOGS messages should be redundant with these.
+                    test_origin_str: str = Origination.get_full_name_from_origin(origin)
+                    if test_origin_str is not None:
+                        origin_str = test_origin_str
                     self.write_response(response, origin_str)
-                if len(origin) == 1 and message_type == ChatMessageType.AI:
-                    # The messages from the front man (origin len 1) that are
-                    # AI messages are effectively "the answer".  These are what
+                if origin is not None and len(origin) == 1 and message_type == ChatMessageType.AI:
+                    # The last message from the front man (origin len 1) that is an
+                    # AI message is effectively "the answer".  This is what
                     # we want to communicate back to the user in an up-front fashion.
-                    print(f"\nResponse from {origin_str}:")
-                    print(f"{text}")
                     last_chat_response = text
 
-            return_state = {
-                "last_logs": last_logs,
-                "last_chat_response": last_chat_response,
-                "prompt": self.default_prompt,
-                "timeout": self.input_timeout_seconds,
-                "num_input": num_input + 1
-            }
+        update = {
+            "chat_context": chat_context,
+            "num_input": num_input + 1,
+            "last_chat_response": last_chat_response,
+            "user_input": None,
+            "sly_data": None,
+        }
+        return_state.update(update)
 
+        print(f"\nResponse from {origin_str}:")
+        print(f"{last_chat_response}")
         return return_state
 
     def write_response(self, response: Dict[str, Any], origin_str: str):
@@ -123,6 +131,8 @@ class StreamingInputProcessor(AbstractInputProcessor):
 
         filename: str = self.thinking_file
         if self.thinking_dir:
+            if origin_str is None:
+                return
             filename = os.path.join(self.thinking_dir, origin_str)
 
         how_to_open_file: str = "a"
@@ -131,8 +141,19 @@ class StreamingInputProcessor(AbstractInputProcessor):
 
         with open(filename, how_to_open_file, encoding="utf-8") as thinking:
             use_origin: str = ""
+
+            # Maybe add some context to where message is coming from if not using thinking_dir
             if not self.thinking_dir:
-                use_origin = f" from {origin_str}"
+                use_origin += f" from {origin_str}"
+
+            # Maybe add some context as to where the tool result came from if we have info for that.
+            tool_result_origin: List[Dict[str, Any]] = response.get("tool_result_origin")
+            if tool_result_origin is not None:
+                last_origin_only: List[Dict[str, Any]] = [tool_result_origin[-1]]
+                origin_str = Origination.get_full_name_from_origin(last_origin_only)
+                use_origin += f" (result from {origin_str})"
+
+            # Write the message out
             thinking.write(f"\n[{message_type_str}{use_origin}]:\n")
             thinking.write(text)
             thinking.write("\n")

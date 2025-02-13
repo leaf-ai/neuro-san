@@ -96,6 +96,14 @@ class RunContext(AgentSpecProvider):
         """
         raise NotImplementedError
 
+    def get_chat_context(self) -> Dict[str, Any]:
+        """
+        :return: A ChatContext dictionary that contains all the state necessary
+                to carry on a previous conversation, possibly from a different server.
+                Can be None when a new conversation has been started.
+        """
+        raise NotImplementedError
+
     def get_origin(self) -> List[Dict[str, Any]]:
         """
         :return: A List of origin dictionaries indicating the origin of the run.
@@ -111,5 +119,11 @@ class RunContext(AgentSpecProvider):
         """
         Update internal state based on the InvocationContext instance passed in.
         :param invocation_context: The context policy container that pertains to the invocation
+        """
+        raise NotImplementedError
+
+    def get_journal(self) -> Journal:
+        """
+        :return: The Journal associated with the instance
         """
         raise NotImplementedError

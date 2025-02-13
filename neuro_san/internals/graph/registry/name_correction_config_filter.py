@@ -17,6 +17,8 @@ from typing import Any
 from typing import Dict
 from typing import List
 
+import logging
+
 from leaf_common.config.config_filter import ConfigFilter
 
 
@@ -85,12 +87,13 @@ class NameCorrectionConfigFilter(ConfigFilter):
             tool["tools"] = new_agent_tools
 
         # Spit out information about errors
+        logger = logging.getLogger(self.__class__.__name__)
         for error in errors:
-            print(error)
+            logger.warning(error)
 
         # Spit out information about corrections
         for original, correction in corrections.items():
-            print(f"Correcting {original} to {correction}")
+            logger.info("Correcting %s to %s", str(original), str(correction))
 
         return basis_config
 

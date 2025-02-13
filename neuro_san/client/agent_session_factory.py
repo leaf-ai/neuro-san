@@ -9,6 +9,7 @@
 # neuro-san SDK Software in commercial settings.
 #
 # END COPYRIGHT
+from typing import Dict
 
 from neuro_san.client.direct_agent_session_factory import DirectAgentSessionFactory
 from neuro_san.interfaces.agent_session import AgentSession
@@ -26,7 +27,8 @@ class AgentSessionFactory:
                        agent_name: str,
                        hostname: str = None,
                        port: int = None,
-                       use_direct: bool = False) -> AgentSession:
+                       use_direct: bool = False,
+                       metadata: Dict[str, str] = None) -> AgentSession:
         """
         :param session_type: The type of session to create
         :param agent_name: The name of the agent to use for the session.
@@ -34,6 +36,9 @@ class AgentSessionFactory:
         :param port: The port on the host to connect to (if applicable)
         :param use_direct: When True, will use a Direct session for
                     external agents that would reside on the same server.
+        :param metadata: A grpc metadata of key/value pairs to be inserted into
+                         the header. Default is None. Preferred format is a
+                         dictionary of string keys to string values.
         """
         session: AgentSession = None
 
@@ -42,11 +47,14 @@ class AgentSessionFactory:
         #           actually checked for positive use.
         if session_type == "direct":
             factory = DirectAgentSessionFactory()
-            session = factory.create_session(agent_name, use_direct=use_direct)
+            session = factory.create_session(agent_name, use_direct=use_direct,
+                                             metadata=metadata)
         elif session_type == "service":
-            session = ServiceAgentSession(host=hostname, port=port, agent_name=agent_name)
+            session = ServiceAgentSession(host=hostname, port=port, agent_name=agent_name,
+                                          metadata=metadata)
         elif session_type == "http":
-            session = HttpServiceAgentSession(host=hostname, port=port, agent_name=agent_name)
+            session = HttpServiceAgentSession(host=hostname, port=port, agent_name=agent_name,
+                                              metadata=metadata)
         else:
             # Incorrectly flagged as destination of Trust Boundary Violation 2
             #   Reason: This is the place where the session_type enforced-string argument is

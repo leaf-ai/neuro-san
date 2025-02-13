@@ -23,6 +23,7 @@ from langchain_core.messages.tool import ToolMessage
 
 from neuro_san.internals.messages.agent_framework_message import AgentFrameworkMessage
 from neuro_san.internals.messages.agent_message import AgentMessage
+from neuro_san.internals.messages.agent_tool_result_message import AgentToolResultMessage
 from neuro_san.internals.messages.legacy_logs_message import LegacyLogsMessage
 
 
@@ -40,6 +41,7 @@ class ChatMessageType(IntEnum):
     AGENT = 100
     AGENT_FRAMEWORK = 101
     LEGACY_LOGS = 102
+    AGENT_TOOL_RESULT = 103
 
     # Adding something? Don't forget to update the maps below.
 
@@ -113,6 +115,7 @@ _MESSAGE_TYPE_TO_CHAT_MESSAGE_TYPE: Dict[Type[BaseMessage], ChatMessageType] = {
     AgentMessage: ChatMessageType.AGENT,
     AgentFrameworkMessage: ChatMessageType.AGENT_FRAMEWORK,
     LegacyLogsMessage: ChatMessageType.LEGACY_LOGS,
+    AgentToolResultMessage: ChatMessageType.AGENT_TOOL_RESULT,
 }
 
 _MESSAGE_TYPE_TO_ROLE: Dict[Type[BaseMessage], str] = {
@@ -123,6 +126,7 @@ _MESSAGE_TYPE_TO_ROLE: Dict[Type[BaseMessage], str] = {
     AgentMessage: "agent",
     AgentFrameworkMessage: "agent-framework",
     LegacyLogsMessage: "legacy-logs",
+    AgentToolResultMessage: "agent-tool-result",
 }
 
 _CHAT_MESSAGE_TYPE_TO_STRING: Dict[ChatMessageType, str] = {
@@ -137,4 +141,5 @@ _CHAT_MESSAGE_TYPE_TO_STRING: Dict[ChatMessageType, str] = {
     ChatMessageType.AGENT: "AGENT",
     ChatMessageType.AGENT_FRAMEWORK: "AGENT_FRAMEWORK",
     ChatMessageType.LEGACY_LOGS: "LEGACY_LOGS",
+    ChatMessageType.AGENT_TOOL_RESULT: "AGENT_TOOL_RESULT",
 }

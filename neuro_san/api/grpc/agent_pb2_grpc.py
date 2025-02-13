@@ -21,9 +21,6 @@ class AgentServiceStub(object):
     services.  Routing is done by way of agent name on the grpc service hosting the agent,
     so as to keep info about which agents are hosted private (grpc gives the hand when a
     particular agent is unknown.
-
-    Note that as of 3/21/24, this is *not* yet a REST-ful service due to constraints
-    with OpenAI service and/or linux socket timeouts used behind the scenes.
     """
 
     def __init__(self, channel):
@@ -69,9 +66,6 @@ class AgentServiceServicer(object):
     services.  Routing is done by way of agent name on the grpc service hosting the agent,
     so as to keep info about which agents are hosted private (grpc gives the hand when a
     particular agent is unknown.
-
-    Note that as of 3/21/24, this is *not* yet a REST-ful service due to constraints
-    with OpenAI service and/or linux socket timeouts used behind the scenes.
     """
 
     def Function(self, request, context):
@@ -108,6 +102,15 @@ class AgentServiceServicer(object):
 
     def StreamingChat(self, request, context):
         """Unidirectional streaming method which would supercede Chat() and Logs() above.
+        Most important semantics of the streaming:
+        1) The "answer" to a query of any agent network is the *last* streamed
+        AI message whose origin list is of length 1 - this indicates it is from
+        the FrontMan of the agent network.
+        2) To RESTfully continue your conversation with the agent network:
+        The very last AGENT_FRAMEWORK message before the stream closes will
+        have its chat_context field filled in with a structure. You can
+        copy this whole-cloth to the chat_context of your next StreamingChat
+        request to continue the conversation.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -165,9 +168,6 @@ class AgentService(object):
     services.  Routing is done by way of agent name on the grpc service hosting the agent,
     so as to keep info about which agents are hosted private (grpc gives the hand when a
     particular agent is unknown.
-
-    Note that as of 3/21/24, this is *not* yet a REST-ful service due to constraints
-    with OpenAI service and/or linux socket timeouts used behind the scenes.
     """
 
     @staticmethod

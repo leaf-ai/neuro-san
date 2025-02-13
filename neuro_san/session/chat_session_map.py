@@ -225,5 +225,5 @@ class ChatSessionMap:
             results = await gather(*delete_resources, return_exceptions=True)
             for result in results:
                 if isinstance(result, Exception):
-                    print(f"{result}")
+                    self.logger.info("%s", str(result))
                     traceback.print_tb(result.__traceback__)

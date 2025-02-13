@@ -99,6 +99,8 @@ class AgentServer:
         self.service_prefix: str = service_prefix
         self.services: List[AgentService] = []
 
+        self.logger.info("tool_registries found: %s", str(list(self.tool_registries.keys())))
+
     def get_services(self) -> List[AgentService]:
         """
         :return: A list of the AgentServices being served up by this instance

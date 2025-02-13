@@ -13,11 +13,17 @@
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Tuple
 
 import json
 
+from langchain_core.messages.ai import AIMessage
 from langchain_core.messages.base import BaseMessage
+from langchain_core.messages.human import HumanMessage
+from langchain_core.messages.system import SystemMessage
+from langchain_core.messages.tool import ToolMessage
 
+from neuro_san.internals.messages.agent_tool_result_message import AgentToolResultMessage
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
 
 
@@ -138,7 +144,6 @@ def convert_to_chat_message(message: BaseMessage, origin: List[Dict[str, Any]] =
     message_type: ChatMessageType = ChatMessageType.from_message(message)
     chat_message: Dict[str, Any] = {
         "type": message_type,
-        "text": message.content,
         # No mime_data for now
     }
 
@@ -146,4 +151,75 @@ def convert_to_chat_message(message: BaseMessage, origin: List[Dict[str, Any]] =
     if origin is not None:
         chat_message["origin"] = origin
 
+    # Dictionary of BaseMessage field sources to ChatMessage destinations
+    # Anything in this dictionary is considered optional and we only populate
+    # the field on ChatMessage if it has a value.
+    optionals: Dict[str, str] = {
+        "content": "text",
+        "chat_context": "chat_context",
+        "tool_result_origin": "tool_result_origin"
+    }
+    for src, dest in optionals.items():
+        value: Any = None
+        try:
+            value = getattr(message, src)
+        except AttributeError:
+            # Not all BaseMessage subclasses have every field we are looking
+            # for, and that is ok.
+            value = None
+
+        if value is not None:
+            chat_message[dest] = value
+
     return chat_message
+
+
+def convert_to_base_message(chat_message: Dict[str, Any]) -> BaseMessage:
+    """
+    The intended use for this method is for converting a neuro-san ChatMessage
+    dictionary into a langchain BaseMessage such that it can be understood by
+    a langchain agent within the context of a langchain-facing chat history.
+    This means that some special messages we might have inserted into a chat
+    history *might* need to be converted into something langchain agents will
+    understand.
+
+    :param chat_message: A ChatMessage dictionary to convert into BaseMessage
+    :return: A BaseMessage that was converted from the input.
+            Can return None if conversion could not take place
+    """
+    base_message: BaseMessage = None
+    if chat_message is None:
+        return base_message
+
+    content: str = chat_message.get("text")
+    chat_message_type: ChatMessageType = ChatMessageType.from_response_type(chat_message.get("type"))
+
+    if chat_message_type == ChatMessageType.SYSTEM:
+        base_message = SystemMessage(content=content)
+    elif chat_message_type == ChatMessageType.HUMAN:
+        base_message = HumanMessage(content=content)
+    elif chat_message_type == ChatMessageType.TOOL:
+        base_message = ToolMessage(content=content)
+    elif chat_message_type == ChatMessageType.AI:
+        base_message = AIMessage(content=content)
+    elif chat_message_type == ChatMessageType.AGENT_TOOL_RESULT:
+        base_message = AgentToolResultMessage(content=content,
+                                              tool_result_origin=chat_message.get("tool_result_origin"))
+
+    # Any other message type we do not want to send to any agent as chat history.
+
+    return base_message
+
+
+def convert_to_message_tuple(base_message: BaseMessage) -> Tuple[str, Any]:
+    """
+    :param base_message: The base message to convert to a tuple used for a
+                    prompt template.
+    :return: A tuple corresponding to the input
+    """
+    if base_message is None:
+        return None
+
+    use_type: str = base_message.type
+    message_tuple: Tuple[str, Any] = (use_type, base_message.content)
+    return message_tuple

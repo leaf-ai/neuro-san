@@ -65,3 +65,11 @@ class FrontMan(CallingTool):
         self.journal = invocation_context.get_journal()
         if self.run_context is not None:
             self.run_context.update_invocation_context(invocation_context)
+
+    async def build(self) -> List[Any]:
+        """
+        Main entry point to the class.
+
+        :return: A List of messages produced during this process.
+        """
+        raise NotImplementedError

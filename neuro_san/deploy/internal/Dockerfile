@@ -120,6 +120,7 @@ COPY --from=builder /install /usr/local
 
 # Copy application code and necessary files
 COPY ./neuro_san ${APP_SOURCE}/neuro_san
+RUN chmod -R a+r ${APP_SOURCE}
 
 # Set up the entry point for when the container is run
 USER ${USERNAME}

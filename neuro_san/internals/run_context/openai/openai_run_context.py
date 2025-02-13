@@ -34,14 +34,17 @@ from neuro_san.internals.run_context.openai.openai_client import OpenAIClient
 from neuro_san.internals.run_context.openai.openai_run import OpenAIRun
 
 
+# pylint: disable=too-many-instance-attributes
 class OpenAIRunContext(RunContext):
     """
     RunContext implementation supporting the context/lifetime in
     which OpenAI calls are made.
     """
 
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(self, llm_config: Dict[str, Any], parent_run_context: RunContext,
-                 tool_caller: ToolCaller, invocation_context: InvocationContext):
+                 tool_caller: ToolCaller, invocation_context: InvocationContext,
+                 chat_context: Dict[str, Any]):
         """
         Constructor
 
@@ -53,6 +56,9 @@ class OpenAIRunContext(RunContext):
         :param tool_caller: The tool caller to use
         :param invocation_context: The InvocationContext policy container that pertains to the invocation
                     of the agent.
+        :param chat_context: A ChatContext dictionary that contains all the state necessary
+                to carry on a previous conversation, possibly from a different server.
+                Can be None when a new conversation has been started.
         """
 
         # This might get modified in create_resources() (for now)
@@ -73,6 +79,8 @@ class OpenAIRunContext(RunContext):
         self.thread_id: str = None
         self.assistant_id: str = None
         self.invocation_context: InvocationContext = invocation_context
+        self.chat_context: Dict[str, Any] = chat_context
+        self.journal: Journal = self.invocation_context.get_journal()
 
     # pylint: disable=too-many-locals
     async def create_resources(self, assistant_name: str,
@@ -256,6 +264,14 @@ class OpenAIRunContext(RunContext):
         """
         return self.invocation_context
 
+    def get_chat_context(self) -> Dict[str, Any]:
+        """
+        :return: A ChatContext dictionary that contains all the state necessary
+                to carry on a previous conversation, possibly from a different server.
+                Can be None when a new conversation has been started.
+        """
+        return self.chat_context
+
     def get_origin(self) -> List[Dict[str, Any]]:
         """
         :return: A List of origin dictionaries indicating the origin of the run.
@@ -273,3 +289,9 @@ class OpenAIRunContext(RunContext):
         :param invocation_context: The context policy container that pertains to the invocation
         """
         self.invocation_context = invocation_context
+
+    def get_journal(self) -> Journal:
+        """
+        :return: The Journal associated with the instance
+        """
+        return self.journal
