@@ -17,8 +17,7 @@ from typing import Union
 from langchain_core.messages.base import BaseMessage
 
 from neuro_san.internals.journals.journal import Journal
-from neuro_san.internals.messages.agent_framework_message import AgentFrameworkMessage
-from neuro_san.internals.messages.agent_message import AgentMessage
+from neuro_san.internals.messages.message_utils import is_relevant_to_chat_history
 
 
 class OriginatingJournal(Journal):
@@ -83,8 +82,7 @@ class OriginatingJournal(Journal):
         if origin is not None:
             use_origin = origin
 
-        if self.chat_history is not None and \
-                not isinstance(message, (AgentMessage, AgentFrameworkMessage)):
+        if self.chat_history is not None and is_relevant_to_chat_history((message):
             self.chat_history.append(message)
         await self.wrapped_journal.write_message(message, use_origin)
 

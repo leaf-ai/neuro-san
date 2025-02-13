@@ -23,6 +23,8 @@ from langchain_core.messages.human import HumanMessage
 from langchain_core.messages.system import SystemMessage
 from langchain_core.messages.tool import ToolMessage
 
+from neuro_san.internals.messages.agent_message import AgentMessage
+from neuro_san.internals.messages.agent_framework_message import AgentFrameworkMessage
 from neuro_san.internals.messages.agent_tool_result_message import AgentToolResultMessage
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
 
@@ -227,3 +229,15 @@ def convert_to_message_tuple(base_message: BaseMessage) -> Tuple[str, Any]:
 
     message_tuple: Tuple[str, Any] = (use_type, base_message.content)
     return message_tuple
+
+
+def is_relevant_to_chat_history(base_message: BaseMessage) -> bool:
+    """
+    :param base_message: The BaseMessage to consider
+    :return: True if the BaseMessage type is relevant to chat history (include).
+             False otherwise (do not include).
+    """
+    if isinstance(base_message, (AgentMessage, AgentFrameworkMessage, ToolMessage)):
+        # These guys cannot be in chat history as langchain will not recognize them.
+        return False
+    return True
