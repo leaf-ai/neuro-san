@@ -32,6 +32,7 @@ from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegi
 from neuro_san.service.agent_server import AgentServer
 from neuro_san.service.agent_server import DEFAULT_SERVER_NAME
 from neuro_san.service.agent_server import DEFAULT_SERVER_NAME_FOR_LOGS
+from neuro_san.service.agent_server import DEFAULT_MAX_CONCURRENT_REQUESTS
 from neuro_san.service.agent_server import DEFAULT_REQUEST_LIMIT
 from neuro_san.service.agent_service import AgentService
 from neuro_san.session.agent_service_stub import DEFAULT_SERVICE_PREFIX
@@ -74,6 +75,7 @@ class AgentMainLoop(ServerLoopCallbacks):
 
         self.server_name: str = DEFAULT_SERVER_NAME
         self.server_name_for_logs: str = DEFAULT_SERVER_NAME_FOR_LOGS
+        self.max_concurrent_requests: int = DEFAULT_MAX_CONCURRENT_REQUESTS
         self.request_limit: int = DEFAULT_REQUEST_LIMIT
         self.service_prefix: str = service_prefix
         self.server: AgentServer = None
@@ -97,6 +99,10 @@ class AgentMainLoop(ServerLoopCallbacks):
         arg_parser.add_argument("--service_prefix", type=str,
                                 default=str(os.environ.get("AGENT_SERVICE_PREFIX", self.service_prefix)),
                                 help="Name of the service as seen in logs")
+        arg_parser.add_argument("--max_concurrent_requests", type=int,
+                                default=int(os.environ.get("AGENT_MAX_CONCURRENT_REQUESTS",
+                                                           self.max_concurrent_requests)),
+                                help="Maximm number of requests that can be served at the same time")
         arg_parser.add_argument("--request_limit", type=int,
                                 default=int(os.environ.get("AGENT_REQUEST_LIMIT", self.request_limit)),
                                 help="Number of requests served before the server shuts down in an orderly fashion")
@@ -110,6 +116,7 @@ class AgentMainLoop(ServerLoopCallbacks):
         self.server_name = args.server_name
         self.server_name_for_logs = args.server_name_for_logs
         self.service_prefix = args.service_prefix
+        self.max_concurrent_requests = args.max_concurrent_requests
         self.request_limit = args.request_limit
 
         manifest_restorer = RegistryManifestRestorer()
@@ -133,6 +140,7 @@ class AgentMainLoop(ServerLoopCallbacks):
                                   asyncio_executor=self.asyncio_executor,
                                   server_name=self.server_name,
                                   server_name_for_logs=self.server_name_for_logs,
+                                  max_concurrent_requests=self.max_concurrent_requests,
                                   request_limit=self.request_limit,
                                   service_prefix=self.service_prefix)
 
