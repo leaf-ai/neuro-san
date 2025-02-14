@@ -16,6 +16,7 @@ from typing import Dict
 from typing import List
 
 import logging
+import multiprocessing
 
 import os
 
@@ -35,6 +36,7 @@ from neuro_san.service.agent_server import DEFAULT_REQUEST_LIMIT
 from neuro_san.service.agent_service import AgentService
 from neuro_san.session.agent_service_stub import DEFAULT_SERVICE_PREFIX
 from neuro_san.session.chat_session_map import ChatSessionMap
+from neuro_san.http_sidecar.http_sidecar import HttpSidecar
 
 # A *single* global variable which contains a mapping of
 # string keys -> ChatSession implementations
@@ -133,7 +135,17 @@ class AgentMainLoop(ServerLoopCallbacks):
                                   server_name_for_logs=self.server_name_for_logs,
                                   request_limit=self.request_limit,
                                   service_prefix=self.service_prefix)
-        self.server.serve()
+
+        # Start HTTP server side-car:
+        http_sidecar = HttpSidecar(self.port, self.tool_registries)
+        http_server_process = multiprocessing.Process(target=http_sidecar)
+        http_server_process.start()
+
+        try:
+            self.server.serve()
+        finally:
+            http_server_process.terminate()
+            http_server_process.join()
 
     def loop_callback(self) -> bool:
         """

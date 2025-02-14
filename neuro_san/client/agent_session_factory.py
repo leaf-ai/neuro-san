@@ -14,6 +14,7 @@ from typing import Dict
 from neuro_san.client.direct_agent_session_factory import DirectAgentSessionFactory
 from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.session.grpc_service_agent_session import GrpcServiceAgentSession
+from neuro_san.session.http_service_agent_session import HttpServiceAgentSession
 
 
 # pylint: disable=too-few-public-methods,too-many-arguments,too-many-positional-arguments
@@ -50,6 +51,9 @@ class AgentSessionFactory:
                                              metadata=metadata)
         elif session_type in ("service", "grpc"):
             session = GrpcServiceAgentSession(host=hostname, port=port, agent_name=agent_name,
+                                              metadata=metadata)
+        elif session_type == "http":
+            session = HttpServiceAgentSession(host=hostname, port=port, agent_name=agent_name,
                                               metadata=metadata)
         else:
             # Incorrectly flagged as destination of Trust Boundary Violation 2

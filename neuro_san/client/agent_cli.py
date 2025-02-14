@@ -188,11 +188,12 @@ Some suggestions:
         group = arg_parser.add_argument_group(title="Session Type",
                                               description="How will we connect to neuro-san?")
         group.add_argument("--connection", default="direct", type=str,
-                           choices=["grpc", "service", "direct"],
+                           choices=["grpc", "service", "direct", "http"],
                            help="""
 The type of connection to initiate. Choices are to connect to:
     "grpc"      - an agent service via gRPC. (The default).  Needs host and port.
     "service"   - compatibility synonym for 'grpc' above.
+    "http"      - an agent service via HTTP. Needs host and port.
     "direct"    - a session via library.
 All choices require an agent name.
 """)
