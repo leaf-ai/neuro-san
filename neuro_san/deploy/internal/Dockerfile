@@ -129,8 +129,10 @@ WORKDIR ${APP_SOURCE}
 ENV APP_ENTRYPOINT neuro_san/deploy/entrypoint.sh
 
 # Tool registry file environment variable
-ENV TOOL_REGISTRY_FILE=${TOOL_REGISTRY_FILE}
 ENV AGENT_SERVICE_LOG_JSON=${APP_SOURCE}/neuro_san/deploy/logging.json
+
+# Other server settings
+ENV AGENT_MAX_CONCURRENT_REQUESTS 10
 
 ENTRYPOINT "${APP_SOURCE}/${APP_ENTRYPOINT}"
 
