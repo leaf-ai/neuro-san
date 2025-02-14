@@ -14,6 +14,7 @@ See class comment for details
 """
 from typing import Any, Dict, Generator
 import json
+import traceback
 
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.json_format import Parse
@@ -36,7 +37,6 @@ class StreamingChatHandler(BaseRequestHandler):
         try:
             # Parse JSON body
             data = json.loads(self.request.body)
-            print(f"Received POST request with data: {data}")
 
             grpc_request = Parse(json.dumps(data), ChatRequest())
 
@@ -52,7 +52,6 @@ class StreamingChatHandler(BaseRequestHandler):
             for result_message in result_generator:
                 result_dict: Dict[str, Any] = MessageToDict(result_message)
                 result_str: str = json.dumps(result_dict) + "\n"
-                print(f"CHAT HANDLER: |{result_dict}|\n\n")
                 self.write(result_str)
                 self.flush()
 
@@ -60,10 +59,11 @@ class StreamingChatHandler(BaseRequestHandler):
             # Handle invalid JSON input
             self.set_status(400)
             self.write({"error": "Invalid JSON format"})
-        except Exception as exc:  # pylint: disable=broad-exception-caught
+        except Exception:  # pylint: disable=broad-exception-caught
             # Handle unexpected errors
             self.set_status(500)
-            self.write({"error": f"Internal server error: {exc}"})
+            self.write({"error": "Internal server error"})
+            self.logger.error("Internal server error: %s", traceback.format_exc())
         finally:
             self.flush()
         # We are done with response stream:

@@ -12,6 +12,7 @@
 """
 See class comment for details
 """
+import logging
 from tornado.web import RequestHandler
 
 from neuro_san.interfaces.agent_session import AgentSession
@@ -38,6 +39,7 @@ class BaseRequestHandler(RequestHandler):
         factory: AgentSessionFactory = self.application.get_session_factory()
         self.grpc_session: AgentSession = \
             factory.create_session("grpc", self.agent_name, hostname="localhost", port=self.port)
+        self.logger = logging.getLogger(self.__class__.__name__)
 
     def data_received(self, chunk):
         """

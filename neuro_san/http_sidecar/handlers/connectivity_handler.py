@@ -14,6 +14,7 @@ See class comment for details
 """
 from typing import Any, Dict
 import json
+import traceback
 
 from neuro_san.http_sidecar.handlers.base_request_handler import BaseRequestHandler
 
@@ -36,16 +37,14 @@ class ConnectivityHandler(BaseRequestHandler):
             self.set_header("Content-Type", "application/json")
             self.write(result_dict)
 
-            # Log the response
-            print(f"Sent response: {result_dict}")
-
         except json.JSONDecodeError:
             # Handle invalid JSON input
             self.set_status(400)
             self.write({"error": "Invalid JSON format"})
-        except Exception as exc:  # pylint: disable=broad-exception-caught
+        except Exception:  # pylint: disable=broad-exception-caught
             # Handle unexpected errors
             self.set_status(500)
-            self.write({"error": f"Internal server error: {exc}"})
+            self.write({"error": "Internal server error"})
+            self.logger.error("Internal server error: %s", traceback.format_exc())
         finally:
             self.flush()
