@@ -31,6 +31,7 @@ from neuro_san.session.chat_session_map import ChatSessionMap
 
 DEFAULT_SERVER_NAME: str = 'neuro-san.Agent'
 DEFAULT_SERVER_NAME_FOR_LOGS: str = 'Agent Server'
+DEFAULT_MAX_CONCURRENT_REQUESTS: int = 10
 
 # Better that we kill ourselves than kubernetes doing it for us
 # in the middle of a request if there are resource leaks.
@@ -52,6 +53,7 @@ class AgentServer:
                  asyncio_executor: AsyncioExecutor,
                  server_name: str = DEFAULT_SERVER_NAME,
                  server_name_for_logs: str = DEFAULT_SERVER_NAME_FOR_LOGS,
+                 max_concurrent_requests: int = DEFAULT_MAX_CONCURRENT_REQUESTS,
                  request_limit: int = DEFAULT_REQUEST_LIMIT,
                  service_prefix: str = None):
         """
@@ -67,6 +69,7 @@ class AgentServer:
                         stuff in the background.
         :param server_name: The name of the service
         :param server_name_for_logs: The name of the service for log files
+        :param max_concurrent_requests: The maximum number of requests to handle at a time.
         :param request_limit: The number of requests to service before shutting down.
                         This is useful to be sure production environments can handle
                         a service occasionally going down.
@@ -95,6 +98,7 @@ class AgentServer:
         self.asyncio_executor: AsyncioExecutor = asyncio_executor
         self.server_name: str = server_name
         self.server_name_for_logs: str = server_name_for_logs
+        self.max_concurrent_requests: int = max_concurrent_requests
         self.request_limit: int = request_limit
         self.service_prefix: str = service_prefix
         self.services: List[AgentService] = []
@@ -116,6 +120,8 @@ class AgentServer:
                                          self.server_name_for_logs,
                                          self.port, self.logger,
                                          request_limit=self.request_limit,
+                                         max_workers=self.max_concurrent_requests,
+                                         max_concurrent_rpcs=None,
                                          # Used for health checking. Probably needs agent-specific love.
                                          protocol_services_by_name_values=values,
                                          loop_sleep_seconds=5.0,
