@@ -12,30 +12,22 @@
 """
 See class comment for details
 """
-from typing import Any, Dict, Generator, Type
+from typing import Any, Dict, Generator
 import json
 
-from tornado.web import RequestHandler
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.json_format import Parse
 
 # pylint: disable=no-name-in-module
 from neuro_san.api.grpc.agent_pb2 import ChatRequest
-from neuro_san.client.agent_session_factory import AgentSessionFactory
-from neuro_san.interfaces.agent_session import AgentSession
+
+from neuro_san.http_sidecar.handlers.base_request_handler import BaseRequestHandler
 
 
-class StreamingChatHandler(RequestHandler):
+class StreamingChatHandler(BaseRequestHandler):
     """
     Handler class for neuro-san streaming chat API call.
     """
-
-    def initialize(self, request_data):
-        # request_data is a dictionary with keys:
-        # "agent_name": agent name as a string;
-        # "port": integer value for gRPC service port.
-        self.agent_name: str = request_data.get("agent_name", "unknown")
-        self.port: int = request_data.get("port", AgentSession.DEFAULT_PORT)
 
     def post(self):
         """
@@ -48,11 +40,8 @@ class StreamingChatHandler(RequestHandler):
 
             grpc_request = Parse(json.dumps(data), ChatRequest())
 
-            factory: AgentSessionFactory = self.application.get_session_factory()
-            grpc_session: AgentSession =\
-                factory.create_session("service", self.agent_name, self.port)
             result_generator: Generator[Dict[str, Any], None, None] =\
-                grpc_session.streaming_chat(grpc_request)
+                self.grpc_session.streaming_chat(grpc_request)
 
             # Set up headers for chunked response
             self.set_header("Content-Type", "application/json")
@@ -71,11 +60,11 @@ class StreamingChatHandler(RequestHandler):
             # Handle invalid JSON input
             self.set_status(400)
             self.write({"error": "Invalid JSON format"})
-            self.flush()
         except Exception as exc:  # pylint: disable=broad-exception-caught
             # Handle unexpected errors
             self.set_status(500)
             self.write({"error": f"Internal server error: {exc}"})
+        finally:
             self.flush()
-
+        # We are done with response stream:
         self.finish()

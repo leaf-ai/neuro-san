@@ -17,7 +17,6 @@ import copy
 import logging
 from typing import Any, Dict
 
-from tornado.web import Application
 from tornado.ioloop import IOLoop
 
 from neuro_san.http_sidecar.http_server_application import HttpServerApplication

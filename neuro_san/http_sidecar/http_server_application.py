@@ -31,4 +31,7 @@ class HttpServerApplication(Application):
         self.session_factory: AgentSessionFactory = AgentSessionFactory()
 
     def get_session_factory(self):
+        """
+        Get factory for agent sessions.
+        """
         return self.session_factory

@@ -15,23 +15,13 @@ See class comment for details
 from typing import Any, Dict
 import json
 
-from tornado.web import RequestHandler
-
-from neuro_san.interfaces.agent_session import AgentSession
-from neuro_san.client.agent_session_factory import AgentSessionFactory
+from neuro_san.http_sidecar.handlers.base_request_handler import BaseRequestHandler
 
 
-class ConnectivityHandler(RequestHandler):
+class ConnectivityHandler(BaseRequestHandler):
     """
     Handler class for neuro-san "connectivity" API call.
     """
-
-    def initialize(self, request_data):
-        # request_data is a dictionary with keys:
-        # "agent_name": agent name as a string;
-        # "port": integer value for gRPC service port.
-        self.agent_name: str = request_data.get("agent_name", "unknown")
-        self.port: int = request_data.get("port", AgentSession.DEFAULT_PORT)
 
     def get(self):
         """
@@ -40,10 +30,7 @@ class ConnectivityHandler(RequestHandler):
 
         try:
             data: Dict[str, Any] = {}
-            factory: AgentSessionFactory = self.application.get_session_factory()
-            grpc_session: AgentSession =\
-                factory.create_session("service", self.agent_name, self.port)
-            result_dict: Dict[str, Any] = grpc_session.connectivity(data)
+            result_dict: Dict[str, Any] = self.grpc_session.connectivity(data)
 
             # Return gRPC response to the HTTP client
             self.set_header("Content-Type", "application/json")
@@ -60,3 +47,5 @@ class ConnectivityHandler(RequestHandler):
             # Handle unexpected errors
             self.set_status(500)
             self.write({"error": f"Internal server error: {exc}"})
+        finally:
+            self.flush()
