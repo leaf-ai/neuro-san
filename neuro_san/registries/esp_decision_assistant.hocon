@@ -13,7 +13,6 @@
     "llm_config": {
         "model_name": "gpt-4o",
         # "model_name": "gpt-4-turbo",
-        "verbose": true
     },
     "commondefs": {
         "replacement_values": {

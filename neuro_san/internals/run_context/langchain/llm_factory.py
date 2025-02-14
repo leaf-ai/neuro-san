@@ -12,12 +12,14 @@
 
 from typing import Any
 from typing import Dict
+from typing import List
 
 import os
 
 from langchain_anthropic.chat_models import ChatAnthropic
 from langchain_ollama import ChatOllama
 from langchain_nvidia_ai_endpoints import ChatNVIDIA
+from langchain_core.callbacks.base import BaseCallbackHandler
 from langchain_core.language_models.base import BaseLanguageModel
 from langchain_openai.chat_models.base import ChatOpenAI
 from langchain_openai.chat_models.azure import AzureChatOpenAI
@@ -310,13 +312,14 @@ class LlmFactory:
     """
 
     @staticmethod
-    def create_llm(config: Dict[str, Any]) -> BaseLanguageModel:
+    def create_llm(config: Dict[str, Any], callbacks: List[BaseCallbackHandler] = None) -> BaseLanguageModel:
         """
         Creates a langchain LLM based on the 'model_name' value of
         the config passed in.
 
         :param config: A dictionary which describes which LLM to use.
                 See the class comment for details.
+        :param callbacks: A list of BaseCallbackHandlers to add to the chat model.
         :return: A BaseLanguageModel (can be Chat or LLM)
                 Can raise a ValueError if the config's model_name value is
                 unknown to this method.
@@ -346,7 +349,8 @@ class LlmFactory:
                             openai_api_key=LlmFactory.get_value_or_env(use_config, api_key,
                                                                        "OPENAI_API_KEY"),
                             max_tokens=use_max_tokens,
-                            model_name=use_model_name)
+                            model_name=use_model_name,
+                            callbacks=callbacks)
         elif base_class == AzureChatOpenAI:
             # Higher temperature is more random
             llm = AzureChatOpenAI(
@@ -367,7 +371,8 @@ class LlmFactory:
                             azure_ad_token=LlmFactory.get_value_or_env(use_config, "azure_ad_token",
                                                                        "AZURE_OPENAI_AD_TOKEN"),
                             max_tokens=use_max_tokens,
-                            model_name=use_model_name)
+                            model_name=use_model_name,
+                            callbacks=callbacks)
         elif base_class == ChatAnthropic:
             # Higher temperature is more random
             llm = ChatAnthropic(
@@ -377,13 +382,15 @@ class LlmFactory:
                             anthropic_api_url=LlmFactory.get_value_or_env(use_config, "anthropic_api_url",
                                                                           "ANTHROPIC_API_URL"),
                             max_tokens=use_max_tokens,
-                            model_name=use_model_name)
+                            model_name=use_model_name,
+                            callbacks=callbacks)
         elif base_class == ChatOllama:
             # Higher temperature is more random
             llm = ChatOllama(
                             temperature=use_config.get("temperature", DEFAULT_TEMPERATURE),
                             num_predict=use_max_tokens,
-                            model=use_model_name)
+                            model=use_model_name,
+                            callbacks=callbacks)
         elif base_class == ChatNVIDIA:
             # Higher temperature is more random
             llm = ChatNVIDIA(
@@ -391,7 +398,8 @@ class LlmFactory:
                             nvidia_api_key=LlmFactory.get_value_or_env(use_config, api_key,
                                                                        "NVIDIA_API_KEY"),
                             max_tokens=use_max_tokens,
-                            model=use_model_name)
+                            model=use_model_name,
+                            callbacks=callbacks)
         else:
             raise ValueError(f"Class {base_class.__name__} for model_name {model_name} unknown")
 

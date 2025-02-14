@@ -14,7 +14,6 @@ from typing import Dict
 from typing import List
 
 import json
-import logging
 
 from leaf_common.config.dictionary_overlay import DictionaryOverlay
 
@@ -207,9 +206,6 @@ context with which it will proces input, essentially telling it what to do.
         """
         # Get the function args as a dictionary
         tool_name: str = component_tool_call.get_function_name()
-        logger = logging.getLogger(self.__class__.__name__)
-        logger.info("Calling tool %s", tool_name)
-
         tool_arguments: Dict[str, Any] = component_tool_call.get_function_arguments()
 
         # Create a new instance of a JSON-speced tool using the supplied callable_tool_name.
