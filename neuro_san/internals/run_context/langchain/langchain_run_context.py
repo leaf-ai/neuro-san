@@ -13,6 +13,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Tuple
+from typing import Union
 
 import json
 import logging
@@ -28,6 +29,8 @@ from langchain.agents import AgentExecutor
 from langchain.agents.conversational.base import ConversationalAgent
 from langchain.agents.tool_calling_agent.base import create_tool_calling_agent
 from langchain.base_language import BaseLanguageModel
+from langchain.callbacks.tracers.logging import LoggingCallbackHandler
+from langchain_core.callbacks.base import BaseCallbackHandler
 from langchain_core.messages.ai import AIMessage
 from langchain_core.messages.base import BaseMessage
 from langchain_core.messages.human import HumanMessage
@@ -48,10 +51,13 @@ from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentT
 from neuro_san.internals.run_context.interfaces.run import Run
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 from neuro_san.internals.run_context.interfaces.tool_caller import ToolCaller
+from neuro_san.internals.run_context.langchain.journaling_callback_handler import JournalingCallbackHandler
 from neuro_san.internals.run_context.langchain.langchain_run import LangChainRun
 from neuro_san.internals.run_context.langchain.langchain_openai_function_tool \
     import LangChainOpenAIFunctionTool
 from neuro_san.internals.run_context.langchain.llm_factory import LlmFactory
+from neuro_san.internals.run_context.langchain.journaling_tools_agent_output_parser \
+    import JournalingToolsAgentOutputParser
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
 
@@ -146,12 +152,22 @@ class LangChainRunContext(RunContext):
         # DEF - Remove the arg if possible
         _ = assistant_name
 
-        # Create the model we will use.
-        llm: BaseLanguageModel = LlmFactory.create_llm(self.llm_config)
-
+        # Create the list of callbacks to pass to the LLM ChatModel
+        callbacks: List[BaseCallbackHandler] = [
+            JournalingCallbackHandler(self.journal)
+        ]
         full_name: str = Origination.get_full_name_from_origin(self.origin)
 
+        # Consult the agent spec for level of verbosity as it pertains to callbacks.
         agent_spec: Dict[str, Any] = self.tool_caller.get_agent_tool_spec()
+        verbose: Union[bool, str] = agent_spec.get("verbose", False)
+        if isinstance(verbose, str) and verbose.lower() in ("extra", "logging"):
+            # This particular class adds a *lot* of very detailed messages
+            # to the logs.  Add this because some people are interested in it.
+            callbacks.append(LoggingCallbackHandler(logging.getLogger(full_name)))
+
+        # Create the model we will use.
+        llm: BaseLanguageModel = LlmFactory.create_llm(self.llm_config, callbacks=callbacks)
 
         # Now that we have a name, we can create an ErrorDetector for the output.
         self.error_detector = ErrorDetector(full_name,
@@ -169,6 +185,9 @@ class LangChainRunContext(RunContext):
 
         if len(self.tools) > 0:
             self.agent = create_tool_calling_agent(llm, self.tools, prompt_template)
+            # Replace the output parser from the call above.
+            # Per empirical experience, this is "last".
+            self.agent.last = JournalingToolsAgentOutputParser(self.journal)
         else:
             self.agent = ConversationalAgent.from_llm_and_tools(llm, self.tools,
                                                                 prefix=instructions)
@@ -310,7 +329,11 @@ class LangChainRunContext(RunContext):
         # Create an agent executor and invoke it with the most recent human message
         # as input.
         agent_spec: Dict[str, Any] = self.tool_caller.get_agent_tool_spec()
-        verbose = agent_spec.get("verbose", False)
+
+        verbose: Union[bool, str] = agent_spec.get("verbose", False)
+        if isinstance(verbose, str):
+            verbose = bool(verbose.lower() in ("true", "extra", "logging"))
+
         max_execution_seconds: float = agent_spec.get("max_execution_seconds",
                                                       2.0 * MINUTES)
         max_iterations: int = agent_spec.get("max_iterations", 20)

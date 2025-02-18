@@ -12,7 +12,6 @@
 {
     "llm_config": {
         "model_name": "gpt-4o",
-        "verbose": true
     },
     "tools": [
         # These tool definitions do not have to be in any particular order
