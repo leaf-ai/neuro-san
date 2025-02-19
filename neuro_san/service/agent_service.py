@@ -23,7 +23,6 @@ import grpc
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.json_format import Parse
 
-from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 from leaf_server_common.server.atomic_counter import AtomicCounter
 from leaf_server_common.server.grpc_metadata_forwarder import GrpcMetadataForwarder
 from leaf_server_common.server.request_logger import RequestLogger
@@ -37,7 +36,7 @@ from neuro_san.session.external_agent_session_factory import ExternalAgentSessio
 from neuro_san.session.session_invocation_context import SessionInvocationContext
 
 # A list of methods to not log requests for
-# Some of these can be way to chatty
+# Some of these can be way too chatty
 DO_NOT_LOG_REQUESTS = [
     "Logs"
 ]
@@ -54,7 +53,6 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
                  request_logger: RequestLogger,
                  security_cfg: Dict[str, Any],
                  chat_session_map: ChatSessionMap,
-                 asyncio_executor: AsyncioExecutor,
                  agent_name: str,
                  tool_registry: AgentToolRegistry):
         """
@@ -70,8 +68,6 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
                         GRPC Channel.  If None, uses insecure channel.
         :param chat_session_map: The ChatSessionMap containing the global
                         map of session_id string to Agent
-        :param asyncio_executor: The global AsyncioExecutor for running
-                        stuff in the background.
         :param agent_name: The agent name for the service
         :param tool_registry: The AgentToolRegistry to use for the service.
         """
@@ -86,7 +82,6 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         # When we get to 1 AsyncioExecutor per request, we should also do a
         # leaf_server_common.logging.logging_setup.setup_extra_logging_fields()
         # for each executor thread.
-        self.asyncio_executor: AsyncioExecutor = asyncio_executor
         self.tool_registry: AgentToolRegistry = tool_registry
         self.agent_name: str = agent_name
         self.request_counter = AtomicCounter()
@@ -223,7 +218,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
 
         # Delegate to Direct*Session
         factory = ExternalAgentSessionFactory(use_direct=False)
-        invocation_context = SessionInvocationContext(factory, self.asyncio_executor)
+        invocation_context = SessionInvocationContext(factory)
         session = DirectAgentSession(chat_session_map=self.chat_session_map,
                                      tool_registry=self.tool_registry,
                                      invocation_context=invocation_context,
@@ -316,7 +311,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
 
         # Delegate to Direct*Session
         factory = ExternalAgentSessionFactory(use_direct=False)
-        invocation_context = SessionInvocationContext(factory, self.asyncio_executor)
+        invocation_context = SessionInvocationContext(factory)
         session = DirectAgentSession(chat_session_map=self.chat_session_map,
                                      tool_registry=self.tool_registry,
                                      invocation_context=invocation_context,
@@ -368,7 +363,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
 
         # Delegate to Direct*Session
         factory = ExternalAgentSessionFactory(use_direct=False)
-        invocation_context = SessionInvocationContext(factory, self.asyncio_executor, metadata)
+        invocation_context = SessionInvocationContext(factory, metadata)
         session = DirectAgentSession(chat_session_map=self.chat_session_map,
                                      tool_registry=self.tool_registry,
                                      invocation_context=invocation_context,

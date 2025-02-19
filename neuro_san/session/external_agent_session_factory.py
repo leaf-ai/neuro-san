@@ -32,7 +32,7 @@ class ExternalAgentSessionFactory(AsyncAgentSessionFactory):
 
     def __init__(self, use_direct: bool = False):
         """
-        Constructuor
+        Constructor
 
         :param use_direct: When True, will use a Direct session for
                     external agents that would reside on the same server.

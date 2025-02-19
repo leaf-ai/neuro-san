@@ -16,7 +16,6 @@ from typing import List
 import logging
 import os
 
-from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 from leaf_server_common.logging.logging_setup import setup_logging
 from leaf_server_common.server.server_lifetime import ServerLifetime
 from leaf_server_common.server.server_loop_callbacks import ServerLoopCallbacks
@@ -50,7 +49,6 @@ class AgentServer:
                  server_loop_callbacks: ServerLoopCallbacks,
                  chat_session_map: ChatSessionMap,
                  tool_registries: Dict[str, AgentToolRegistry],
-                 asyncio_executor: AsyncioExecutor,
                  server_name: str = DEFAULT_SERVER_NAME,
                  server_name_for_logs: str = DEFAULT_SERVER_NAME_FOR_LOGS,
                  max_concurrent_requests: int = DEFAULT_MAX_CONCURRENT_REQUESTS,
@@ -65,8 +63,6 @@ class AgentServer:
         :param chat_session_map: The ChatSessionMap containing the global
                         map of session_id string to Agent
         :param tool_registries: A dictionary of agent name to AgentToolRegistry to use for the session.
-        :param asyncio_executor: The global AsyncioExecutor for running
-                        stuff in the background.
         :param server_name: The name of the service
         :param server_name_for_logs: The name of the service for log files
         :param max_concurrent_requests: The maximum number of requests to handle at a time.
@@ -95,7 +91,6 @@ class AgentServer:
 
         self.chat_session_map: ChatSessionMap = chat_session_map
         self.tool_registries: Dict[str, AgentToolRegistry] = tool_registries
-        self.asyncio_executor: AsyncioExecutor = asyncio_executor
         self.server_name: str = server_name
         self.server_name_for_logs: str = server_name_for_logs
         self.max_concurrent_requests: int = max_concurrent_requests
@@ -136,7 +131,6 @@ class AgentServer:
 
             service = AgentService(server_lifetime, security_cfg,
                                    self.chat_session_map,
-                                   self.asyncio_executor,
                                    agent_name,
                                    tool_registry)
             self.services.append(service)

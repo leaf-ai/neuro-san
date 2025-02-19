@@ -62,7 +62,7 @@ class DirectAgentSessionFactory:
         factory = ExternalAgentSessionFactory(use_direct=use_direct)
         tool_registry: AgentToolRegistry = factory.get_tool_registry(agent_name, self.manifest_tool_registries)
 
-        invocation_context = SessionInvocationContext(factory, self.asyncio_executor, metadata)
+        invocation_context = SessionInvocationContext(factory, metadata)
         session: DirectAgentSession = DirectAgentSession(chat_session_map=self.chat_session_map,
                                                          tool_registry=tool_registry,
                                                          invocation_context=invocation_context,

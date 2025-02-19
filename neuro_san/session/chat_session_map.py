@@ -53,7 +53,10 @@ class ChatSessionMap:
 
         # Store access to the globals
         self.chat_sessions: Dict[str, ChatSession] = init_argument.get("chat_sessions")
-        self.asyncio_executor: AsyncioExecutor = init_argument.get("executor")
+
+        # Run our own async executor for cleanup tasks
+        self.asyncio_executor: AsyncioExecutor = AsyncioExecutor()
+        self.asyncio_executor.start()
 
     def get_chat_session(self, session_id: str = None) -> ChatSession:
         """
@@ -142,7 +145,7 @@ class ChatSessionMap:
 
             # We want to delete the resources of all the existing chat_sessions
             # that have not had any activity but need to keep their references
-            # around after we clear them out from the list so we can do the
+            # around after we clear them out from the list, so we can do the
             # delete_resources() outside the lock.
             for session_key, chat_session in self.chat_sessions.items():
 
@@ -154,9 +157,9 @@ class ChatSessionMap:
                     # Make a list of keys to delete from the map outside this loop.
                     keys_to_delete.append(session_key)
 
-                    # Keep references to the chat_sessions to delete so they
+                    # Keep references to the chat_sessions to delete, so they
                     # won't be garbage collected when they are not referenced
-                    # by the chat_session map any more.
+                    # by the chat_session map anymore.
                     chat_sessions_to_delete.append(chat_session)
 
             # Since we still have the lock, delete the keys from the chat_sessions map
@@ -193,7 +196,7 @@ class ChatSessionMap:
 
             # We want to delete the resources of all the existing ChatSessions
             # but need to keep their references around after we clear out
-            # the list so we can do the delete_resources() outside the lock.
+            # the list, so we can do the delete_resources() outside the lock.
             to_delete = list(self.chat_sessions.values())
 
             # Clear out the entries in the dictionary so we do not
