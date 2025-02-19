@@ -77,6 +77,11 @@ class JournalingCallbackHandler(AsyncCallbackHandler):
                 message = AgentMessage(content=content.strip())
                 await self.journal.write_message(message)
 
+        llm_output = response.llm_output
+        if llm_output is not None and isinstance(llm_output, Dict):
+            message = AgentMessage(structure=llm_output)
+            await self.journal.write_message(message)
+
     async def on_chain_end(self, outputs: Dict[str, Any],
                            **kwargs: Any) -> None:
         # print(f"In on_chain_end() with {outputs}")

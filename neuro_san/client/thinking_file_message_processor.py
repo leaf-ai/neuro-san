@@ -14,6 +14,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 
+import json
 import os
 
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
@@ -47,7 +48,8 @@ class ThinkingFileMessageProcessor(MessageProcessor):
 
         # Process any text in the message
         text: str = chat_message_dict.get("text")
-        if text is None:
+        structure: Dict[str, Any] = chat_message_dict.get("structure")
+        if text is None and structure is None:
             return
 
         origin: List[str] = chat_message_dict.get("origin")
@@ -71,6 +73,11 @@ class ThinkingFileMessageProcessor(MessageProcessor):
         message_type_str: str = ChatMessageType.to_string(message_type)
 
         text: str = response.get("text")
+        structure: Dict[str, Any] = response.get("structure")
+
+        if structure is not None:
+            # There is no real text, but there is a structure. JSON-ify it.
+            text = json.dumps(structure, indent=4, sort_keys=True)
 
         filename: str = self.thinking_file
         if self.thinking_dir:

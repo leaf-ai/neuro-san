@@ -25,12 +25,15 @@ class AgentMessage(BaseMessage):
 
     type: Literal["agent"] = "agent"
 
-    def __init__(self, content: Union[str, List[Union[str, Dict]]], **kwargs: Any) -> None:
+    def __init__(self, content: Union[str, List[Union[str, Dict]]] = "",
+                 structure: Dict[str, Any] = None, **kwargs: Any) -> None:
         """
         Pass in content as positional arg.
 
         Args:
             content: The string contents of the message.
+            structure: A dictionary to pack into the message
             kwargs: Additional fields to pass to the
         """
         super().__init__(content=content, **kwargs)
+        self.structure: Dict[str, Any] = structure
