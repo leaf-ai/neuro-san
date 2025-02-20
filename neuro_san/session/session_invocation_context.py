@@ -22,8 +22,6 @@ from neuro_san.internals.journals.compatibility_journal import CompatibilityJour
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.origination import Origination
 
-import asyncio
-
 
 class SessionInvocationContext(InvocationContext):
     """
