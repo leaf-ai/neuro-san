@@ -59,6 +59,7 @@ class AgentMainLoop(ServerLoopCallbacks):
                         one configurable item that is likely to be shared with other code.
         """
         self.port: int = 0
+        self.http_port: int = 0
 
         # Points to the global
         init_arguments = {
@@ -84,6 +85,9 @@ class AgentMainLoop(ServerLoopCallbacks):
         arg_parser.add_argument("--port", type=int,
                                 default=int(os.environ.get("AGENT_PORT", AgentSession.DEFAULT_PORT)),
                                 help="Port number for the service")
+        arg_parser.add_argument("--http_port", type=int,
+                                default=int(os.environ.get("AGENT_HTTP_PORT", AgentSession.DEFAULT_HTTP_PORT)),
+                                help="Port number for http service endpoint")
         arg_parser.add_argument("--server_name", type=str,
                                 default=str(os.environ.get("AGENT_SERVER_NAME", self.server_name)),
                                 help="Name of the service")
@@ -107,6 +111,7 @@ class AgentMainLoop(ServerLoopCallbacks):
         # See destination below ~ line 139, 154 for explanation.
         args = arg_parser.parse_args()
         self.port = args.port
+        self.http_port = args.http_port
         self.server_name = args.server_name
         self.server_name_for_logs = args.server_name_for_logs
         self.service_prefix = args.service_prefix
@@ -135,7 +140,7 @@ class AgentMainLoop(ServerLoopCallbacks):
                                   service_prefix=self.service_prefix)
 
         # Start HTTP server side-car:
-        http_sidecar = HttpSidecar(self.port, self.tool_registries)
+        http_sidecar = HttpSidecar(self.port, self.http_port, self.tool_registries)
         http_server_process = multiprocessing.Process(target=http_sidecar)
         http_server_process.start()
 
