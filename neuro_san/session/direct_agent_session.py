@@ -64,16 +64,7 @@ class DirectAgentSession(AgentSession):
         self._security_cfg: Dict[str, Any] = security_cfg
         self.chat_session_map: ChatSessionMap = chat_session_map
         self.invocation_context: SessionInvocationContext = invocation_context
-        self.we_created_executor: bool = False
         self.tool_registry: AgentToolRegistry = tool_registry
-
-        # For convenience
-        if self.invocation_context is not None and \
-                self.invocation_context.get_asyncio_executor() is None:
-            self.we_created_executor = True
-            asyncio_executor = AsyncioExecutor()
-            self.invocation_context.set_asyncio_executor(asyncio_executor)
-            asyncio_executor.start()
 
     def function(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -419,8 +410,5 @@ class DirectAgentSession(AgentSession):
         """
         if self.invocation_context is None:
             return
-
-        asyncio_executor: AsyncioExecutor = self.invocation_context.get_asyncio_executor()
-        if self.we_created_executor and asyncio_executor is not None:
-            asyncio_executor.shutdown()
-            self.invocation_context.set_asyncio_executor(None)
+        self.invocation_context.close()
+        self.invocation_context = None

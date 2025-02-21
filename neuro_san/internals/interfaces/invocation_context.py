@@ -27,6 +27,13 @@ class InvocationContext:
     service call or library call.
     """
 
+    def start(self):
+        """
+        Starts the active components of this invocation context.
+        Do this separately from constructor for more control.
+        """
+        raise NotImplementedError
+
     def get_async_session_factory(self) -> AsyncAgentSessionFactory:
         """
         :return: The AsyncAgentSessionFactory associated with the invocation
@@ -63,5 +70,11 @@ class InvocationContext:
     def get_metadata(self) -> Dict[str, str]:
         """
         :return: The metadata to pass along with any request
+        """
+        raise NotImplementedError
+
+    def close(self):
+        """
+        Release resources owned by this context
         """
         raise NotImplementedError

@@ -45,11 +45,18 @@ class SessionInvocationContext(InvocationContext):
         self.async_session_factory: AsyncAgentSessionFactory = async_session_factory
         # Get an async executor to run all tasks for this session instance:
         self.asyncio_executor: AsyncioExecutor = AsyncioExecutor()
-        self.asyncio_executor.start()
         self.origination: Origination = Origination()
         self.queue: AsyncCollatingQueue = AsyncCollatingQueue()
         self.journal: Journal = CompatibilityJournal(self.queue)
         self.metadata: Dict[str, str] = metadata
+
+    def start(self):
+        """
+        Starts the active components of this invocation context.
+        Do this separately from constructor for more control.
+        Currently, we only start internal AsyncioExecutor.
+        """
+        self.asyncio_executor.start()
 
     def get_async_session_factory(self) -> AsyncAgentSessionFactory:
         """

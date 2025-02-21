@@ -42,7 +42,7 @@ class ExternalAgentSessionFactory(AsyncAgentSessionFactory):
     def create_session(self, agent_url: str,
                        invocation_context: InvocationContext) -> AsyncAgentSession:
         """
-        :param agent_url: A url string pointing to an external agent that came from
+        :param agent_url: An url string pointing to an external agent that came from
                     a tools list in an agent spec.
         :param invocation_context: The context policy container that pertains to the invocation
                     of the agent.

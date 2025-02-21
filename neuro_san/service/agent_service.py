@@ -219,6 +219,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         # Delegate to Direct*Session
         factory = ExternalAgentSessionFactory(use_direct=False)
         invocation_context = SessionInvocationContext(factory)
+        invocation_context.start()
         session = DirectAgentSession(chat_session_map=self.chat_session_map,
                                      tool_registry=self.tool_registry,
                                      invocation_context=invocation_context,
@@ -312,6 +313,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         # Delegate to Direct*Session
         factory = ExternalAgentSessionFactory(use_direct=False)
         invocation_context = SessionInvocationContext(factory)
+        invocation_context.start()
         session = DirectAgentSession(chat_session_map=self.chat_session_map,
                                      tool_registry=self.tool_registry,
                                      invocation_context=invocation_context,
@@ -364,6 +366,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         # Delegate to Direct*Session
         factory = ExternalAgentSessionFactory(use_direct=False)
         invocation_context = SessionInvocationContext(factory, metadata)
+        invocation_context.start()
         session = DirectAgentSession(chat_session_map=self.chat_session_map,
                                      tool_registry=self.tool_registry,
                                      invocation_context=invocation_context,
