@@ -11,8 +11,6 @@
 # END COPYRIGHT
 from typing import Dict
 
-from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
-
 from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
@@ -28,7 +26,6 @@ class DirectAgentSessionFactory:
     Sets up everything needed to use a DirectAgentSession more as a library.
     This includes:
         * a ChatSessionMap
-        * an AsyncioExecutor
         * Some reading of AgentToolRegistries
     """
 
