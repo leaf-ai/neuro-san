@@ -21,12 +21,12 @@ RUN apt-get install shellcheck -y
 # Change EXTERNAL_BUILD_ROOT to . if debugging locally
 ENV EXTERNAL_BUILD_ROOT .
 
-ARG USERNAME leaf
+ARG USERNAME=leaf
 RUN  adduser --disabled-password --gecos '' ${USERNAME}
 
 # The APP_HOME home is our root directory within the image
 # where we place the repo's source directory.
-ARG APP_HOME /home/${USERNAME}
+ARG APP_HOME=/home/${USERNAME}
 
 ENV OUR_VENV ${APP_HOME}/venv/python-${PYTHON_VERSION}
 ENV PATH="$OUR_VENV/bin:$PATH"
@@ -41,7 +41,7 @@ RUN pip3 install --upgrade pip==${PIP3_VERSION} \
                     virtualenv
 
 ARG REPO
-ARG APP_SOURCE ${APP_HOME}/${REPO}
+ARG APP_SOURCE=${APP_HOME}/${REPO}
 RUN mkdir -p ${APP_SOURCE}
 
 # Now bring all of our requirement files in and pip install as needed.
