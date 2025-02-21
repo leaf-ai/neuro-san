@@ -50,7 +50,6 @@ class HttpSidecar:
         app = self.make_app()
         app.listen(self.http_port)
         self.logger.info("HTTP server is running on port %d", self.http_port)
-        print("HTTP server is running on port %d", self.http_port)
         self.logger.debug("Serving agents: %s", repr(self.agents.keys()))
         IOLoop.current().start()
 
