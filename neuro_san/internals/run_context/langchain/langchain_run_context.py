@@ -387,6 +387,16 @@ class LangChainRunContext(RunContext):
         # Different LLMs can count things in different ways, so normalize.
         token_dict: Dict[str, Any] = LangChainTokenCounter.normalize_token_count(callback)
         if token_dict is not None and bool(token_dict):
+
+            # Accumulate what we learned about tokens to request reporting.
+            # For now we just overwrite the token_counting key because we know
+            # the last one out will be the front man, and as of 2/21/25 his stats
+            # are cumulative.  At some point we might want a finer-grained breakdown
+            # that perhaps contributes to a service/er-wide periodic token stats breakdown
+            # of some kind.  For now, get something going.
+            request_reporting: Dict[str, Any] = self.invocation_context.get_request_reporting()
+            request_reporting["token_counting"] = token_dict
+
             # We actually have a token dictionary to report, so go there.
             agent_message = AgentMessage(structure=token_dict)
             await self.journal.write_message(agent_message)

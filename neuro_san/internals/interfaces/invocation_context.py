@@ -10,6 +10,7 @@
 #
 # END COPYRIGHT
 
+from typing import Any
 from typing import Dict
 
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
@@ -63,5 +64,11 @@ class InvocationContext:
     def get_metadata(self) -> Dict[str, str]:
         """
         :return: The metadata to pass along with any request
+        """
+        raise NotImplementedError
+
+    def get_request_reporting(self) -> Dict[str, Any]:
+        """
+        :return: The request reporting dictionary
         """
         raise NotImplementedError

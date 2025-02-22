@@ -51,6 +51,7 @@ class SessionInvocationContext(InvocationContext):
         self.queue: AsyncCollatingQueue = AsyncCollatingQueue()
         self.journal: Journal = CompatibilityJournal(self.queue)
         self.metadata: Dict[str, str] = metadata
+        self.request_reporting: Dict[str, Any] = {}
 
     def get_async_session_factory(self) -> AsyncAgentSessionFactory:
         """
@@ -108,3 +109,9 @@ class SessionInvocationContext(InvocationContext):
         Resets the origination
         """
         self.origination = Origination()
+
+    def get_request_reporting(self) -> Dict[str, Any]:
+        """
+        :return: The request reporting dictionary
+        """
+        return self.request_reporting
