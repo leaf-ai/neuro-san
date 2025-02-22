@@ -361,22 +361,36 @@ class LangChainRunContext(RunContext):
             }
         }
 
+        # Attempt to count tokens/costs while invoking the agent.
+        # The means by which this happens is on a per-LLM basis, so get the right hook
+        # given the LLM we've got.
         token_dict: Dict[str, Any] = {}
         token_counter_context_manager = LangChainTokenCounter.get_callback_for_llm(self.llm)
+
+        callback = None
         if token_counter_context_manager is not None:
             # Use the context manager to count tokens as per
-            # https://python.langchain.com/docs/how_to/llm_token_usage_tracking/#using-callbacks
+            #   https://python.langchain.com/docs/how_to/llm_token_usage_tracking/#using-callbacks
+            #
+            # Caveats:
+            # * In using this context manager approach, any tool that is called
+            #   also has its token counts contributing to its callers for better or worse.
+            # * As of 2/21/25, it seems that tool-calling agents (branch nodes) are not
+            #   registering their tokens correctly. Not sure if this is a bug in langchain
+            #   or there is something we are not doing in that scenario that we should be.
             with token_counter_context_manager() as callback:
                 await self.ainvoke(agent_executor, inputs, invoke_config)
-
-            token_dict = LangChainTokenCounter.normalize_token_count(callback)
-            if token_dict is not None and bool(token_dict):
-                # We actually have a token dictionary to report
-                agent_message = AgentMessage(structure=token_dict)
-                await self.journal.write_message(agent_message)
         else:
-            # No token counting
+            # No token counting was available for the LLM, but we still need to invoke.
             await self.ainvoke(agent_executor, inputs, invoke_config)
+
+        # Token counting results are collected in the callback, if there are any.
+        # Different LLMs can count things in different ways, so normalize.
+        token_dict = LangChainTokenCounter.normalize_token_count(callback)
+        if token_dict is not None and bool(token_dict):
+            # We actually have a token dictionary to report, so go there.
+            agent_message = AgentMessage(structure=token_dict)
+            await self.journal.write_message(agent_message)
 
         return run
 
