@@ -552,6 +552,8 @@ class LangChainRunContext(RunContext):
         self.chat_history = []
         self.agent = None
         self.recent_human_message = None
+        self.llm = None
+        self.journal = None
 
     def get_agent_tool_spec(self) -> Dict[str, Any]:
         """
