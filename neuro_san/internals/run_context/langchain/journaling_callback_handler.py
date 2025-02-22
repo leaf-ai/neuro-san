@@ -69,18 +69,11 @@ class JournalingCallbackHandler(AsyncCallbackHandler):
         generations = response.generations[0]
         first_generation = generations[0]
         if isinstance(first_generation, ChatGeneration):
-            # DEF   There can be token counts in the usage_metadata field as well
-            #       we might be able to use later
             content: str = first_generation.text
             if content is not None and len(content) > 0:
                 # Package up the thinking content as an AgentMessage to stream
                 message = AgentMessage(content=content.strip())
                 await self.journal.write_message(message)
-
-        llm_output = response.llm_output
-        if llm_output is not None and isinstance(llm_output, Dict):
-            message = AgentMessage(structure=llm_output)
-            await self.journal.write_message(message)
 
     async def on_chain_end(self, outputs: Dict[str, Any],
                            **kwargs: Any) -> None:
