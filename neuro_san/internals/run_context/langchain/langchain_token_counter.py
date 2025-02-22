@@ -24,7 +24,7 @@ from langchain_openai.chat_models.base import ChatOpenAI
 from langchain_openai.chat_models.azure import AzureChatOpenAI
 
 
-class LangChainTokenCounterContextManagerFactory:
+class LangChainTokenCounter:
     """
     Helps with per-llm means of counting tokens.
     """

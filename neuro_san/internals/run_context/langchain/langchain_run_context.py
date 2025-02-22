@@ -58,8 +58,7 @@ from neuro_san.internals.run_context.langchain.journaling_tools_agent_output_par
 from neuro_san.internals.run_context.langchain.langchain_run import LangChainRun
 from neuro_san.internals.run_context.langchain.langchain_openai_function_tool \
     import LangChainOpenAIFunctionTool
-from neuro_san.internals.run_context.langchain.langchain_token_counter_context_manager_factory \
-    import LangChainTokenCounterContextManagerFactory
+from neuro_san.internals.run_context.langchain.langchain_token_counter import LangChainTokenCounter
 from neuro_san.internals.run_context.langchain.llm_factory import LlmFactory
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
@@ -363,14 +362,14 @@ class LangChainRunContext(RunContext):
         }
 
         token_dict: Dict[str, Any] = {}
-        token_counter_context_manager = LangChainTokenCounterContextManagerFactory.get_callback_for_llm(self.llm)
+        token_counter_context_manager = LangChainTokenCounter.get_callback_for_llm(self.llm)
         if token_counter_context_manager is not None:
             # Use the context manager to count tokens as per
             # https://python.langchain.com/docs/how_to/llm_token_usage_tracking/#using-callbacks
             with token_counter_context_manager() as callback:
                 await self.ainvoke(agent_executor, inputs, invoke_config)
 
-            token_dict = LangChainTokenCounterContextManagerFactory.normalize_token_count(callback)
+            token_dict = LangChainTokenCounter.normalize_token_count(callback)
             if token_dict is not None and bool(token_dict):
                 # We actually have a token dictionary to report
                 agent_message = AgentMessage(structure=token_dict)
