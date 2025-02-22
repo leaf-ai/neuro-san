@@ -30,15 +30,15 @@ class HttpSidecar:
     Class provides simple http endpoint for neuro-san API,
     working as a client to neuro-san gRPC service.
     """
-    def __init__(self, port: int, agents: Dict[str, Any]):
+    def __init__(self, port: int, http_port: int, agents: Dict[str, Any]):
         """
         Constructor:
         :param port: port for gRPC neuro-san service;
+        :param http_port: port for http neuro-san service;
         :param agents: dictionary of registered agents;
         """
         self.port = port
-        # Set HTTP service port to be a next one to gRPC service port.
-        self.http_port: int = self.port+1
+        self.http_port = http_port
         self.agents = copy.deepcopy(agents)
         self.logger = logging.getLogger(self.__class__.__name__)
 

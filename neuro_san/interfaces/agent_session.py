@@ -24,6 +24,10 @@ class AgentSession:
     # This port number will also be mentioned in its Dockerfile
     DEFAULT_PORT: int = 30011
 
+    # Default port for the Agent HTTP Service
+    # This port number will also be mentioned in its Dockerfile
+    DEFAULT_HTTP_PORT: int = 80
+
     # Some constants
     FOUND: int = 1
     NOT_FOUND: int = 2
