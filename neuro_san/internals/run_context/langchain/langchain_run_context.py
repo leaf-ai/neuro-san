@@ -364,7 +364,6 @@ class LangChainRunContext(RunContext):
         # Attempt to count tokens/costs while invoking the agent.
         # The means by which this happens is on a per-LLM basis, so get the right hook
         # given the LLM we've got.
-        token_dict: Dict[str, Any] = {}
         token_counter_context_manager = LangChainTokenCounter.get_callback_for_llm(self.llm)
 
         callback = None
@@ -386,7 +385,7 @@ class LangChainRunContext(RunContext):
 
         # Token counting results are collected in the callback, if there are any.
         # Different LLMs can count things in different ways, so normalize.
-        token_dict = LangChainTokenCounter.normalize_token_count(callback)
+        token_dict: Dict[str, Any] = LangChainTokenCounter.normalize_token_count(callback)
         if token_dict is not None and bool(token_dict):
             # We actually have a token dictionary to report, so go there.
             agent_message = AgentMessage(structure=token_dict)
