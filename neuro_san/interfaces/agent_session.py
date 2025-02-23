@@ -26,7 +26,7 @@ class AgentSession:
 
     # Default port for the Agent HTTP Service
     # This port number will also be mentioned in its Dockerfile
-    DEFAULT_HTTP_PORT: int = 80
+    DEFAULT_HTTP_PORT: int = 8080
 
     # Some constants
     FOUND: int = 1
