@@ -44,6 +44,7 @@ from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.journals.originating_journal import OriginatingJournal
 from neuro_san.internals.messages.origination import Origination
+from neuro_san.internals.messages.agent_message import AgentMessage
 from neuro_san.internals.messages.agent_tool_result_message import AgentToolResultMessage
 from neuro_san.internals.messages.message_utils import convert_to_base_message
 from neuro_san.internals.messages.message_utils import convert_to_message_tuple
@@ -52,12 +53,13 @@ from neuro_san.internals.run_context.interfaces.run import Run
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 from neuro_san.internals.run_context.interfaces.tool_caller import ToolCaller
 from neuro_san.internals.run_context.langchain.journaling_callback_handler import JournalingCallbackHandler
+from neuro_san.internals.run_context.langchain.journaling_tools_agent_output_parser \
+    import JournalingToolsAgentOutputParser
 from neuro_san.internals.run_context.langchain.langchain_run import LangChainRun
 from neuro_san.internals.run_context.langchain.langchain_openai_function_tool \
     import LangChainOpenAIFunctionTool
+from neuro_san.internals.run_context.langchain.langchain_token_counter import LangChainTokenCounter
 from neuro_san.internals.run_context.langchain.llm_factory import LlmFactory
-from neuro_san.internals.run_context.langchain.journaling_tools_agent_output_parser \
-    import JournalingToolsAgentOutputParser
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
 
@@ -96,6 +98,7 @@ class LangChainRunContext(RunContext):
         # retained when session_ids go away.
         self.chat_history: List[BaseMessage] = []
         self.journal: OriginatingJournal = None
+        self.llm: BaseLanguageModel = None
         self.agent: Agent = None
 
         # This might get modified in create_resources() (for now)
@@ -167,7 +170,7 @@ class LangChainRunContext(RunContext):
             callbacks.append(LoggingCallbackHandler(logging.getLogger(full_name)))
 
         # Create the model we will use.
-        llm: BaseLanguageModel = LlmFactory.create_llm(self.llm_config, callbacks=callbacks)
+        self.llm = LlmFactory.create_llm(self.llm_config, callbacks=callbacks)
 
         # Now that we have a name, we can create an ErrorDetector for the output.
         self.error_detector = ErrorDetector(full_name,
@@ -184,12 +187,12 @@ class LangChainRunContext(RunContext):
         prompt_template: ChatPromptTemplate = await self._create_prompt_template(instructions, assignments)
 
         if len(self.tools) > 0:
-            self.agent = create_tool_calling_agent(llm, self.tools, prompt_template)
+            self.agent = create_tool_calling_agent(self.llm, self.tools, prompt_template)
             # Replace the output parser from the call above.
             # Per empirical experience, this is "last".
             self.agent.last = JournalingToolsAgentOutputParser(self.journal)
         else:
-            self.agent = ConversationalAgent.from_llm_and_tools(llm, self.tools,
+            self.agent = ConversationalAgent.from_llm_and_tools(self.llm, self.tools,
                                                                 prefix=instructions)
 
     async def _create_base_tool(self, name: str) -> BaseTool:
@@ -358,6 +361,56 @@ class LangChainRunContext(RunContext):
             }
         }
 
+        # Attempt to count tokens/costs while invoking the agent.
+        # The means by which this happens is on a per-LLM basis, so get the right hook
+        # given the LLM we've got.
+        token_counter_context_manager = LangChainTokenCounter.get_callback_for_llm(self.llm)
+
+        callback = None
+        if token_counter_context_manager is not None:
+            # Use the context manager to count tokens as per
+            #   https://python.langchain.com/docs/how_to/llm_token_usage_tracking/#using-callbacks
+            #
+            # Caveats:
+            # * In using this context manager approach, any tool that is called
+            #   also has its token counts contributing to its callers for better or worse.
+            # * As of 2/21/25, it seems that tool-calling agents (branch nodes) are not
+            #   registering their tokens correctly. Not sure if this is a bug in langchain
+            #   or there is something we are not doing in that scenario that we should be.
+            with token_counter_context_manager() as callback:
+                await self.ainvoke(agent_executor, inputs, invoke_config)
+        else:
+            # No token counting was available for the LLM, but we still need to invoke.
+            await self.ainvoke(agent_executor, inputs, invoke_config)
+
+        # Token counting results are collected in the callback, if there are any.
+        # Different LLMs can count things in different ways, so normalize.
+        token_dict: Dict[str, Any] = LangChainTokenCounter.normalize_token_count(callback)
+        if token_dict is not None and bool(token_dict):
+
+            # Accumulate what we learned about tokens to request reporting.
+            # For now we just overwrite the one key because we know
+            # the last one out will be the front man, and as of 2/21/25 his stats
+            # are cumulative.  At some point we might want a finer-grained breakdown
+            # that perhaps contributes to a service/er-wide periodic token stats breakdown
+            # of some kind.  For now, get something going.
+            request_reporting: Dict[str, Any] = self.invocation_context.get_request_reporting()
+            request_reporting["token_accounting"] = token_dict
+
+            # We actually have a token dictionary to report, so go there.
+            agent_message = AgentMessage(structure=token_dict)
+            await self.journal.write_message(agent_message)
+
+        return run
+
+    async def ainvoke(self, agent_executor: AgentExecutor, inputs: Dict[str, Any], invoke_config: Dict[str, Any]):
+        """
+        Set the agent in motion
+
+        :param agent_executor: The AgentExecutor to invoke
+        :param inputs: The inputs to the agent_executor
+        :param invoke_config: The invoke_config to send to the agent_executor
+        """
         return_dict: Dict[str, Any] = None
         retries: int = 3
         exception: Exception = None
@@ -411,8 +464,6 @@ class LangChainRunContext(RunContext):
 
         # Chat history is updated in write_message
         await self.journal.write_message(return_message)
-
-        return run
 
     async def get_response(self) -> List[Any]:
         """
@@ -510,6 +561,8 @@ class LangChainRunContext(RunContext):
         self.chat_history = []
         self.agent = None
         self.recent_human_message = None
+        self.llm = None
+        self.journal = None
 
     def get_agent_tool_spec(self) -> Dict[str, Any]:
         """

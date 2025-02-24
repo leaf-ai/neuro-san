@@ -69,8 +69,6 @@ class JournalingCallbackHandler(AsyncCallbackHandler):
         generations = response.generations[0]
         first_generation = generations[0]
         if isinstance(first_generation, ChatGeneration):
-            # DEF   There can be token counts in the usage_metadata field as well
-            #       we might be able to use later
             content: str = first_generation.text
             if content is not None and len(content) > 0:
                 # Package up the thinking content as an AgentMessage to stream

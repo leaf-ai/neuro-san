@@ -336,7 +336,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         self.request_counter.decrement()
         return response
 
-    # pylint: disable=no-member
+    # pylint: disable=no-member,too-many-locals
     def StreamingChat(self, request: service_messages.ChatRequest,
                       context: grpc.ServicerContext) \
             -> Iterator[service_messages.ChatResponse]:
@@ -393,6 +393,11 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         # Iterator has finally signaled that there are no more responses to be had.
         # Log that we are done.
         if request_log is not None:
+            request_reporting: Dict[str, Any] = invocation_context.get_request_reporting()
+            reporting: str = None
+            if request_reporting is not None:
+                reporting = json.dumps(request_reporting, indent=4, sort_keys=True)
+            request_log.metrics("Request reporting: %s", reporting)
             self.request_logger.finish_request(f"{self.agent_name}.StreamingChat", log_marker, request_log)
 
         self.request_counter.decrement()
