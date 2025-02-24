@@ -92,13 +92,29 @@ ENV PACKAGE_INSTALL /usr/local/lib/python3.10/site-packages
 ENV PACKAGE_DEPLOY ${PACKAGE_INSTALL}/neuro_san/deploy
 ENV APP_ENTRYPOINT ${PACKAGE_DEPLOY}/entrypoint.sh
 
-# Tool registry file environment variable
+#
+# Server configuration
+#
+
+# Where to find the tool registry manifest file which lists all the agent hocon
+# files to serve up from this server instance.
 ENV AGENT_MANIFEST_FILE=${APP_SOURCE}/registries/manifest.hocon
+
+# Where to find the classes for CodedTool class implementations
+# that are used by specific agent networks.
 ENV AGENT_TOOL_PATH=${APP_SOURCE}/coded_tools
+
+# Where to find the configuration file for Python logging.
+# See https://docs.python.org/3/library/logging.config.html#dictionary-schema-details
+# as to how this file can be configured for your own needs.  Examples there are provided in YAML,
+# but these can be easily translated to JSON (which we prefer).
 ENV AGENT_SERVICE_LOG_JSON=${PACKAGE_DEPLOY}/logging.json
 
-# Other server settings
+# Maximm number of requests that can be served at the same time 
 ENV AGENT_MAX_CONCURRENT_REQUESTS 10
+
+# A space-delimited list of http metadata request keys to forward to logs/other requests
+ENV AGENT_FORWARDED_REQUEST_METADATA="request_id user_id"
 
 # ENTRYPOINT ls ${APP_SOURCE}
 ENTRYPOINT "${APP_ENTRYPOINT}"
