@@ -50,8 +50,10 @@ function run() {
     SERVICE_NAME="NeuroSanAgents"
     # Assume the first port EXPOSEd in the Dockerfile is the input port
     DOCKERFILE=$(find . -name Dockerfile | sort | head -1)
-    SERVICE_PORT=$(grep EXPOSE < "${DOCKERFILE}" | head -1 | awk '{ print $2 }')
+    SERVICE_PORT=$(grep ^EXPOSE < "${DOCKERFILE}" | head -1 | awk '{ print $2 }')
+    SERVICE_HTTP_PORT=$(grep ^EXPOSE < "${DOCKERFILE}" | tail -1 | awk '{ print $2 }')
     echo "SERVICE_PORT: ${SERVICE_PORT}"
+    echo "SERVICE_HTTP_PORT: ${SERVICE_HTTP_PORT}"
 
     # Run the docker container in interactive mode
     #   Mount the 1st command line arg as the place where input files come from
@@ -64,6 +66,7 @@ function run() {
         -e ANTHROPIC_API_KEY \
         -e TOOL_REGISTRY_FILE=$1 \
         -p $SERVICE_PORT:$SERVICE_PORT \
+        -p $SERVICE_HTTP_PORT:$SERVICE_HTTP_PORT \
             neuro-san/neuro-san:$CONTAINER_VERSION"
 
     if [ "${OS}" == "Darwin" ];then
