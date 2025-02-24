@@ -203,6 +203,8 @@ All choices require an agent name.
                            help="Use a gRPC service connection")
         group.add_argument("--direct", dest="connection", action="store_const", const="direct",
                            help="Use a direct/library call for the chat")
+        group.add_argument("--http", dest="connection", action="store_const", const="http",
+                           help="Use a HTTP service connection")
         self.arg_groups[group.title] = group
 
         # How will we connect to a server?
