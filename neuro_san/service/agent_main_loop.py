@@ -92,19 +92,21 @@ class AgentMainLoop(ServerLoopCallbacks):
 
         arg_parser.add_argument("--port", type=int,
                                 default=int(os.environ.get("AGENT_PORT", AgentSession.DEFAULT_PORT)),
-                                help="Port number for the service")
+                                help="Port number for the grpc service")
         arg_parser.add_argument("--http_port", type=int,
                                 default=int(os.environ.get("AGENT_HTTP_PORT", AgentSession.DEFAULT_HTTP_PORT)),
                                 help="Port number for http service endpoint")
         arg_parser.add_argument("--server_name", type=str,
                                 default=str(os.environ.get("AGENT_SERVER_NAME", self.server_name)),
-                                help="Name of the service")
+                                help="Name of the service for health reporting purposes.")
         arg_parser.add_argument("--server_name_for_logs", type=str,
                                 default=str(os.environ.get("AGENT_SERVER_NAME_FOR_LOGS", self.server_name_for_logs)),
                                 help="Name of the service as seen in logs")
         arg_parser.add_argument("--service_prefix", type=str,
                                 default=str(os.environ.get("AGENT_SERVICE_PREFIX", self.service_prefix)),
-                                help="Name of the service as seen in logs")
+                                help="An extra string to add for more fine-grained request routing. "
+                                     "Routes are of the form: "
+                                     "/{serivce_prefix}.{agent_name}.AgentService/{neuro_sanAPI_call}")
         arg_parser.add_argument("--max_concurrent_requests", type=int,
                                 default=int(os.environ.get("AGENT_MAX_CONCURRENT_REQUESTS",
                                                            self.max_concurrent_requests)),

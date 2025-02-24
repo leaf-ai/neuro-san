@@ -128,6 +128,10 @@ WORKDIR ${APP_SOURCE}
 
 ENV APP_ENTRYPOINT neuro_san/deploy/entrypoint.sh
 
+#
+# Server configuration
+#
+
 # Where to find the tool registry manifest file which lists all the agent hocon
 # files to serve up from this server instance.
 ENV AGENT_MANIFEST_FILE=${APP_SOURCE}/registries/manifest.hocon
@@ -142,11 +146,36 @@ ENV AGENT_TOOL_PATH=${APP_SOURCE}/coded_tools
 # but these can be easily translated to JSON (which we prefer).
 ENV AGENT_SERVICE_LOG_JSON=${APP_SOURCE}/neuro_san/deploy/logging.json
 
-# Maximm number of requests that can be served at the same time 
-ENV AGENT_MAX_CONCURRENT_REQUESTS 10
+# Threshold for logging.
+# See https://docs.python.org/3/library/logging.html#logging.Handler.setLevel
+# and https://docs.python.org/3/library/logging.html#logging-levels for details.
+ENV AGENT_SERVICE_LOG_LEVEL="DEBUG"
+
+# The name of the service for health reporting purposes
+ENV AGENT_SERVER_NAME="neuro-san.Agent"
+
+# Name of the service as seen in logs
+ENV AGENT_SERVER_NAME_FOR_LOGS="Agent Server"
+
+# An extra string to add for more fine-grained request routing.
+# Routes are of the form /{serivce_prefix}.{agent_name}.AgentService/{neuro_sanAPI_call}
+ENV AGENT_SERVICE_PREFIX=""
 
 # A space-delimited list of http metadata request keys to forward to logs/other requests
 ENV AGENT_FORWARDED_REQUEST_METADATA="request_id user_id"
+
+# Port number for the grpc service endpoint
+ENV AGENT_PORT=30011
+
+# Port number for http service endpoint
+ENV AGENT_HTTP_PORT=8080
+
+# Maximm number of requests that can be served at the same time 
+ENV AGENT_MAX_CONCURRENT_REQUESTS 10
+
+# Number of requests served before the server shuts down in an orderly fashion.
+# This is useful for testing response handling in clusters with duplicated pods.
+ENV AGENT_REQUEST_LIMIT=1000000
 
 ENTRYPOINT "${APP_SOURCE}/${APP_ENTRYPOINT}"
 
