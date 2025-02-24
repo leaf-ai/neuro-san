@@ -56,7 +56,7 @@ WORKDIR /
 ENV USERNAME leaf-ai
 ENV APP_HOME /usr/local/${USERNAME}
 ENV APP_SOURCE ${APP_HOME}/myapp
-ENV PIP3_VERSION 23.3.1
+ENV PIP3_VERSION 25.0.1
 
 # Explicitly get the desired pip version
 RUN pip3 install --upgrade pip==${PIP3_VERSION} --no-cache-dir
