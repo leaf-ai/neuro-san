@@ -13,7 +13,7 @@
 
 # Stage 1: Builder Stage - Use our python and git base image for installations
 # Set python image as base image
-FROM python:3.10-slim as builder
+FROM python:3.12-slim as builder
 
 # Define the build argument for the Git version, no default provided by design
 ARG GIT_VERSION=2.46.0
@@ -86,7 +86,7 @@ RUN --mount=type=secret,id=with_creds_requirements \
     pip install --prefix=/install --no-cache-dir -r /run/secrets/with_creds_requirements
 
 # Stage 2: Final Stage - Use a slim Python image
-FROM python:3.10-slim AS final
+FROM python:3.12-slim AS final
 
 # Set the shell and options in each FROM section per hadolint recommendations
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
