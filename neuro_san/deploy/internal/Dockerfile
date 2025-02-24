@@ -109,11 +109,21 @@ RUN \
 RUN mkdir -p ${APP_HOME}/certs/aws \
     && ln -s ${APP_HOME}/certs/aws ${APP_HOME}/.aws
 
-# This is the port the service will accept requests on
+# This is the port the service will accept grpc requests on.
 # This should be consistent with the main port for the service as described
 # in the <service>.yaml file
-# This port number is also mentioned as ServiceAgentSession.DEFAULT_PORT
+# This port number is also mentioned as AGENT_PORT below
+# and ServiceAgentSession.DEFAULT_PORT
+# In order to be self-discovered by supporting build/run scripts this must
+# be the first port exposed in the Dockerfile.
 EXPOSE 30011
+
+# This is the port the service will accept http requests on.
+# This should be consistent with the main port for the service as described
+# in the <service>.yaml file
+# This port number is also mentioned as AGENT_HTTP_PORT below
+# and ServiceAgentSession.DEFAULT_HTTP_PORT
+EXPOSE 8080
 
 # Copy installed dependencies from the builder stage
 COPY --from=builder /install /usr/local
@@ -168,9 +178,11 @@ ENV AGENT_FORWARDED_REQUEST_METADATA="request_id user_id"
 ENV AGENT_PORT=30011
 
 # Port number for http service endpoint
+# If you are changing this, you should also change the first EXPOSE port above
 ENV AGENT_HTTP_PORT=8080
 
-# Maximm number of requests that can be served at the same time 
+# Maximm number of requests that can be served at the same time
+# If you are changing this, you should also change the second EXPOSE port above
 ENV AGENT_MAX_CONCURRENT_REQUESTS 10
 
 # Number of requests served before the server shuts down in an orderly fashion.
