@@ -144,11 +144,11 @@ ENV APP_ENTRYPOINT neuro_san/deploy/entrypoint.sh
 
 # Where to find the tool registry manifest file which lists all the agent hocon
 # files to serve up from this server instance.
-ENV AGENT_MANIFEST_FILE=${APP_SOURCE}/registries/manifest.hocon
+ENV AGENT_MANIFEST_FILE=${APP_SOURCE}/neuro_san/registries/manifest.hocon
 
 # Where to find the classes for CodedTool class implementations
 # that are used by specific agent networks.
-ENV AGENT_TOOL_PATH=${APP_SOURCE}/coded_tools
+ENV AGENT_TOOL_PATH=${APP_SOURCE}/neuro_san/coded_tools
 
 # Where to find the configuration file for Python logging.
 # See https://docs.python.org/3/library/logging.config.html#dictionary-schema-details
