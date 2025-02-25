@@ -13,7 +13,6 @@
 See class comment for details
 """
 from typing import Any, Dict
-import traceback
 
 from tornado.web import RequestHandler
 
