@@ -28,7 +28,9 @@ class HealthCheckHandler(RequestHandler):
         """
 
         try:
-            result_dict: Dict[str, Any] = {"status": "healthy"}
+            result_dict: Dict[str, Any] = \
+                {"service": "neuro-san agents",
+                 "status": "healthy"}
             self.set_header("Content-Type", "application/json")
             self.write(result_dict)
         except Exception:  # pylint: disable=broad-exception-caught

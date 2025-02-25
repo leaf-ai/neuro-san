@@ -107,6 +107,11 @@ class HttpServiceAgentSession(AgentSession):
            curl <server_url:server_port>
         5. Try testing with increased timeout;
         6. Did you misspell the agent and/or method name in your {path} request path?
+        7. If working with a local docker container:
+           7.1 Does your http port EXPOSEd in the Dockerfile match your value for AGENT_HTTP_PORT?
+           7.2 Did you add a -p : to your docker run command line to map container port(s)
+               to your local ones?
+        8. Is the agent turned on in your manifest.hocon?
         """
         return message
 
