@@ -10,6 +10,7 @@
 #
 # END COPYRIGHT
 
+from typing import Any
 from typing import Dict
 
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
@@ -78,3 +79,8 @@ class InvocationContext:
         Release resources owned by this context
         """
         raise NotImplementedError
+
+    def get_request_reporting(self) -> Dict[str, Any]:
+        """
+        :return: The request reporting dictionary
+        """

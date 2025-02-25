@@ -49,6 +49,7 @@ class SessionInvocationContext(InvocationContext):
         self.queue: AsyncCollatingQueue = AsyncCollatingQueue()
         self.journal: Journal = CompatibilityJournal(self.queue)
         self.metadata: Dict[str, str] = metadata
+        self.request_reporting: Dict[str, Any] = {}
 
     def start(self):
         """
@@ -122,3 +123,9 @@ class SessionInvocationContext(InvocationContext):
         if self.asyncio_executor is not None:
             self.asyncio_executor.shutdown()
             self.asyncio_executor = None
+
+    def get_request_reporting(self) -> Dict[str, Any]:
+        """
+        :return: The request reporting dictionary
+        """
+        return self.request_reporting
