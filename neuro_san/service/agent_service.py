@@ -13,6 +13,7 @@
 from typing import Any
 from typing import Dict
 from typing import Iterator
+from typing import List
 
 import copy
 import json
@@ -56,7 +57,8 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
                  chat_session_map: ChatSessionMap,
                  asyncio_executor: AsyncioExecutor,
                  agent_name: str,
-                 tool_registry: AgentToolRegistry):
+                 tool_registry: AgentToolRegistry,
+                 forwarded_request_metadata: List[str]):
         """
         Set the gRPC interface up for health checking so that the service
         will be opened to callers when the mesh sees it operational, if this
@@ -74,12 +76,13 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
                         stuff in the background.
         :param agent_name: The agent name for the service
         :param tool_registry: The AgentToolRegistry to use for the service.
+        :param forwarded_request_metadata: A list of http metadata request keys
+                        to forward to logs/other requests
         """
         self.request_logger = request_logger
         self.security_cfg = security_cfg
 
-        forward_list = ["request_id", "user_id", "url", "group_id"]
-        self.forwarder = GrpcMetadataForwarder(forward_list)
+        self.forwarder = GrpcMetadataForwarder(forwarded_request_metadata)
 
         self.chat_session_map: ChatSessionMap = chat_session_map
 
