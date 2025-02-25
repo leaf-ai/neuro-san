@@ -36,6 +36,12 @@ class HealthCheckHandler(RequestHandler):
             # Handle unexpected errors
             self.set_status(500)
             self.write({"error": "Internal server error"})
-            self.logger.error("Internal server error: %s", traceback.format_exc())
         finally:
             self.flush()
+
+    def data_received(self, chunk):
+        """
+        Method overrides abstract method of RequestHandler
+        with no-op implementation.
+        """
+        return

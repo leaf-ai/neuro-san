@@ -201,5 +201,5 @@ class HttpServiceAgentSession(AgentSession):
                     if line.strip():  # Skip empty lines
                         result_dict = json.loads(line)
                         yield result_dict
-        except Exception:  # pylint: disable=broad-exception-caught
+        except Exception as exc:  # pylint: disable=broad-exception-caught
             raise ValueError(self.help_message(path)) from exc
