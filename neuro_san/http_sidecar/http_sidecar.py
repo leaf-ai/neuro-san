@@ -20,6 +20,7 @@ from typing import Any, Dict
 from tornado.ioloop import IOLoop
 
 from neuro_san.http_sidecar.http_server_application import HttpServerApplication
+from neuro_san.http_sidecar.handlers.health_check_handler import HealthCheckHandler
 from neuro_san.http_sidecar.handlers.connectivity_handler import ConnectivityHandler
 from neuro_san.http_sidecar.handlers.function_handler import FunctionHandler
 from neuro_san.http_sidecar.handlers.streaming_chat_handler import StreamingChatHandler
@@ -58,6 +59,7 @@ class HttpSidecar:
         Construct tornado HTTP "application" to run.
         """
         handlers = []
+        handlers.append(("/", HealthCheckHandler))
         for agent_name in self.agents.keys():
             # For each of registered agents, we define 3 request paths -
             # one for each of neuro-san service API methods.
@@ -67,12 +69,12 @@ class HttpSidecar:
             request_data: Dict[str, Any] = {"agent_name": agent_name, "port": self.port}
             route: str = f"/api/v1/{agent_name}/connectivity"
             handlers.append((route, ConnectivityHandler, request_data))
-            self.logger.debug("Registering: %s", route)
+            self.logger.info("Registering URL path: %s", route)
             route: str = f"/api/v1/{agent_name}/function"
             handlers.append((route, FunctionHandler, request_data))
-            self.logger.debug("Registering: %s", route)
+            self.logger.info("Registering URL path: %s", route)
             route: str = f"/api/v1/{agent_name}/streaming_chat"
             handlers.append((route, StreamingChatHandler, request_data))
-            self.logger.debug("Registering: %s", route)
+            self.logger.info("Registering URL path: %s", route)
 
         return HttpServerApplication(handlers)

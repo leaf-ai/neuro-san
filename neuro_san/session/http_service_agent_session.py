@@ -88,6 +88,28 @@ class HttpServiceAgentSession(AgentSession):
             return f"http://{self.use_host}:{self.use_port}/api/v1/{self.agent_name}/{function}"
         return f"http://{self.use_host}:{self.use_port}/api/v1/{self.service_prefix}.{self.agent_name}/{function}"
 
+    def help_message(self, path: str) -> str:
+        """
+        Method returning general help message for http connectivity problems.
+        :param path: url path of a request
+        :return: help message
+        """
+        message = f"""
+        Some basic suggestions to help debug connectivity issues:
+        1. Ensure the server is running and reachable:
+           ping <server_address>
+           curl -v <server_url>
+        2. Check network issues:
+           traceroute <server_address>  # Linux/macOS
+           tracert <server_address>  # Windows
+        3. Ensure you are using correct protocol (http/https) and port number;
+        4. Run service health check:
+           curl <server_url:server_port>
+        5. Try testing with increased timeout;
+        6. Did you misspell the agent and/or method name in your {path} request path?
+        """
+        return message
+
     def function(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
         """
         :param request_dict: A dictionary version of the FunctionRequest
@@ -99,10 +121,13 @@ class HttpServiceAgentSession(AgentSession):
                 "status" - status for finding the function.
         """
         path: str = self._get_request_path("function")
-        response = requests.get(path, json=request_dict, headers=self.metadata,
-                                timeout=self.timeout_in_seconds)
-        result_dict = json.loads(response.text)
-        return result_dict
+        try:
+            response = requests.get(path, json=request_dict, headers=self.metadata,
+                                    timeout=self.timeout_in_seconds)
+            result_dict = json.loads(response.text)
+            return result_dict
+        except Exception as exc:  # pylint: disable=broad-exception-caught
+            raise ValueError(self.help_message(path)) from exc
 
     def connectivity(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -117,10 +142,13 @@ class HttpServiceAgentSession(AgentSession):
                 "status" - status for finding the function.
         """
         path: str = self._get_request_path("connectivity")
-        response = requests.get(path, json=request_dict, headers=self.metadata,
-                                timeout=self.timeout_in_seconds)
-        result_dict = json.loads(response.text)
-        return result_dict
+        try:
+            response = requests.get(path, json=request_dict, headers=self.metadata,
+                                    timeout=self.timeout_in_seconds)
+            result_dict = json.loads(response.text)
+            return result_dict
+        except Exception as exc:  # pylint: disable=broad-exception-caught
+            raise ValueError(self.help_message(path)) from exc
 
     def chat(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
         raise NotImplementedError
@@ -163,13 +191,15 @@ class HttpServiceAgentSession(AgentSession):
             are produced until the system decides there are no more messages to be sent.
         """
         path: str = self._get_request_path("streaming_chat")
-        with requests.post(path, json=request_dict, headers=self.metadata,
-                           stream=True,
-                           timeout=self.timeout_in_seconds) as response:
-            response.raise_for_status()
+        try:
+            with requests.post(path, json=request_dict, headers=self.metadata,
+                               stream=True,
+                               timeout=self.timeout_in_seconds) as response:
+                response.raise_for_status()
 
-            for line in response.iter_lines(decode_unicode=True):
-                if line.strip():  # Skip empty lines
-                    # print(f"============ RECEIVED: |{line}|")
-                    result_dict = json.loads(line)
-                    yield result_dict
+                for line in response.iter_lines(decode_unicode=True):
+                    if line.strip():  # Skip empty lines
+                        result_dict = json.loads(line)
+                        yield result_dict
+        except Exception:  # pylint: disable=broad-exception-caught
+            raise ValueError(self.help_message(path)) from exc
