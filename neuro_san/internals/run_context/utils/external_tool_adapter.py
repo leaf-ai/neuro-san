@@ -17,6 +17,7 @@ from grpc.aio import AioRpcError
 
 from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
+from neuro_san.internals.interfaces.invocation_context import InvocationContext
 
 
 # pylint: disable=too-few-public-methods
@@ -37,15 +38,16 @@ class ExternalToolAdapter:
         self.session_factory: AsyncAgentSessionFactory = session_factory
         self.function_json: Dict[str, Any] = None
 
-    async def get_function_json(self) -> Dict[str, Any]:
+    async def get_function_json(self, invocation_context: InvocationContext) -> Dict[str, Any]:
         """
+        :param invocation_context: The context policy container that pertains to the invocation
         :return: The function json for the agent, as specified by the external agent.
         """
         if self.function_json is None:
 
             # Lazily get the information about the service
             session: AgentSession = self.session_factory.create_session(self.agent_url,
-                                                                        invocation_context=None)
+                                                                        invocation_context=invocation_context)
 
             # Set up the request. Turns out we don't need much.
             request_dict: Dict[str, Any] = {}

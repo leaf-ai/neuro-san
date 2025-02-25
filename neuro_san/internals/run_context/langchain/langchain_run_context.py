@@ -221,7 +221,7 @@ class LangChainRunContext(RunContext):
             #   network calls.
             session_factory: AsyncAgentSessionFactory = self.invocation_context.get_async_session_factory()
             adapter = ExternalToolAdapter(session_factory, name)
-            function_json = await adapter.get_function_json()
+            function_json = await adapter.get_function_json(self.invocation_context)
         else:
             function_json = agent_spec.get("function")
 
