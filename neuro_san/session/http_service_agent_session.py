@@ -66,11 +66,11 @@ class HttpServiceAgentSession(AgentSession):
         :param service_prefix: The service prefix to use. Default is None,
                         implying the policy in AgentServiceStub takes over.
         """
-        _ = metadata
         _ = security_cfg
         _ = umbrella_timeout
         _ = streaming_timeout_in_seconds
-        _ = service_prefix
+
+        self.service_prefix: str = service_prefix
         self.use_host: str = "localhost"
         if host is not None:
             self.use_host = host
@@ -81,9 +81,12 @@ class HttpServiceAgentSession(AgentSession):
 
         self.agent_name: str = agent_name
         self.timeout_in_seconds = timeout_in_seconds
+        self.metadata: Dict[str, str] = metadata
 
     def _get_request_path(self, function: str):
-        return f"http://{self.use_host}:{self.use_port}/api/v1/{self.agent_name}/{function}"
+        if self.service_prefix is None or len(self.service_prefix) == 0:
+            return f"http://{self.use_host}:{self.use_port}/api/v1/{self.agent_name}/{function}"
+        return f"http://{self.use_host}:{self.use_port}/api/v1/{self.service_prefix}.{self.agent_name}/{function}"
 
     def function(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -96,7 +99,7 @@ class HttpServiceAgentSession(AgentSession):
                 "status" - status for finding the function.
         """
         path: str = self._get_request_path("function")
-        response = requests.get(path, json=request_dict,
+        response = requests.get(path, json=request_dict, headers=self.metadata,
                                 timeout=self.timeout_in_seconds)
         result_dict = json.loads(response.text)
         return result_dict
@@ -114,7 +117,7 @@ class HttpServiceAgentSession(AgentSession):
                 "status" - status for finding the function.
         """
         path: str = self._get_request_path("connectivity")
-        response = requests.get(path, json=request_dict,
+        response = requests.get(path, json=request_dict, headers=self.metadata,
                                 timeout=self.timeout_in_seconds)
         result_dict = json.loads(response.text)
         return result_dict
@@ -160,7 +163,7 @@ class HttpServiceAgentSession(AgentSession):
             are produced until the system decides there are no more messages to be sent.
         """
         path: str = self._get_request_path("streaming_chat")
-        with requests.post(path, json=request_dict,
+        with requests.post(path, json=request_dict, headers=self.metadata,
                            stream=True,
                            timeout=self.timeout_in_seconds) as response:
             response.raise_for_status()
