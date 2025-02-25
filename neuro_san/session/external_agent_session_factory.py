@@ -73,7 +73,9 @@ class ExternalAgentSessionFactory(AsyncAgentSessionFactory):
 
         # Note: It's possible we might want some filtering/translation of
         #       metadata keys not unlike what we are doing for sly_data.
-        metadata: Dict[str, str] = invocation_context.get_metadata()
+        metadata: Dict[str, str] = None
+        if invocation_context is not None:
+            metadata = invocation_context.get_metadata()
 
         session: AsyncAgentSession = None
         if self.use_direct and (host is None or len(host) == 0 or host == "localhost"):
