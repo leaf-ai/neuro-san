@@ -9,7 +9,21 @@
 # neuro-san SDK Software in commercial settings.
 #
 # END COPYRIGHT
-# This Dockerfile is expected to be run from the top-level of neuro-san.
+
+# If you find yourself wanting to modify this file
+# and check it into the neuro-san repo or modify it in place with the
+# neuro-san source code, chances are you shouldn't. Instead, strongly
+# consider creating your own repo with your own agents and using this
+# Dockerfile and accompanying scipts as a basis to riff on for your
+# own projects.
+#
+# Use ./neuro_san/deploy/build.sh to build this container only *after*
+# you have installed the neuro-san, leaf-server-common and leaf-common wheel files
+# in your own virtual environment.  After a successful build, you can use
+# ./neuro_san/deploy/run.sh to run the built container locally.
+#
+# To find server-oriented environment variables to help you configure things
+# how you want, search for "ENV AGENT_" in this file.
 
 # Stage 1: Builder Stage - Use our python and git base image for installations
 # Set python image as base image
@@ -67,8 +81,8 @@ RUN mkdir -p ${APP_HOME}/certs/aws \
 
 # This is the port the service will accept grpc requests on.
 # This should be consistent with the main port for the service as described
-# in the <service>.yaml file
-# This port number is also mentioned as AGENT_PORT below
+# in the <service>.yaml file for any kubernetes deployment.
+# This default port number is also mentioned as AGENT_PORT below
 # and ServiceAgentSession.DEFAULT_PORT
 # In order to be self-discovered by supporting build/run scripts this must
 # be the first port exposed in the Dockerfile.
@@ -76,8 +90,8 @@ EXPOSE 30011
 
 # This is the port the service will accept http requests on.
 # This should be consistent with the main port for the service as described
-# in the <service>.yaml file
-# This port number is also mentioned as AGENT_HTTP_PORT below
+# in the <service>.yaml file for any kubernetes deployment.
+# This default port number is also mentioned as AGENT_HTTP_PORT below
 # and ServiceAgentSession.DEFAULT_HTTP_PORT
 EXPOSE 8080
 
@@ -106,11 +120,11 @@ ENV APP_ENTRYPOINT ${PACKAGE_DEPLOY}/entrypoint.sh
 
 # Where to find the tool registry manifest file which lists all the agent hocon
 # files to serve up from this server instance.
-ENV AGENT_MANIFEST_FILE=${APP_SOURCE}/neuro_san/registries/manifest.hocon
+ENV AGENT_MANIFEST_FILE=${APP_SOURCE}/registries/manifest.hocon
 
 # Where to find the classes for CodedTool class implementations
 # that are used by specific agent networks.
-ENV AGENT_TOOL_PATH=${APP_SOURCE}/neuro_san/coded_tools
+ENV AGENT_TOOL_PATH=${APP_SOURCE}/coded_tools
 
 # Where to find the configuration file for Python logging.
 # See https://docs.python.org/3/library/logging.config.html#dictionary-schema-details
@@ -123,7 +137,7 @@ ENV AGENT_SERVICE_LOG_JSON=${PACKAGE_DEPLOY}/logging.json
 # and https://docs.python.org/3/library/logging.html#logging-levels for details.
 ENV AGENT_SERVICE_LOG_LEVEL="DEBUG"
 
-# The name of the service for health reporting purposes
+# The name of the service for grpc health reporting purposes
 ENV AGENT_SERVER_NAME="neuro-san.Agent"
 
 # Name of the service as seen in logs
@@ -134,17 +148,23 @@ ENV AGENT_SERVER_NAME_FOR_LOGS="Agent Server"
 ENV AGENT_SERVICE_PREFIX=""
 
 # A space-delimited list of http metadata request keys to forward to logs/other requests
+# You can see how these are used in the AGENT_SERVICE_LOG_JSON file (see above) and
+# customize this and the AGENT_SERVER_LOG_JSON file to your needs.
 ENV AGENT_FORWARDED_REQUEST_METADATA="request_id user_id"
 
 # Port number for the grpc service endpoint
-# If you are changing this, you should change the first EXPOSE port above.
+# If you are changing this, you should also change the first EXPOSE port above
+# and when running your container locally be sure to have a -p <port>:<port> entry
+# for it on your docker run command line.
 ENV AGENT_PORT=30011
 
 # Port number for http service endpoint
-# If you are changing this, you should change the second EXPOSE port above.
+# If you are changing this, you should also change the second EXPOSE port above
+# and when running your container locally be sure to have a -p <port>:<port> entry
+# for it on your docker run command line.
 ENV AGENT_HTTP_PORT=8080
 
-# Maximm number of requests that can be served at the same time 
+# Maximm number of requests that can be served at the same time
 ENV AGENT_MAX_CONCURRENT_REQUESTS=10
 
 # Number of requests served before the server shuts down in an orderly fashion.
