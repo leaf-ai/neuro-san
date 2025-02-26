@@ -237,6 +237,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
             self.request_logger.finish_request(f"{self.agent_name}.Chat", log_marker, request_log)
 
         self.request_counter.decrement()
+        invocation_context.close()
         return response
 
     # pylint: disable=no-member
@@ -331,6 +332,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
             self.request_logger.finish_request(f"{self.agent_name}.Reset", log_marker, request_log)
 
         self.request_counter.decrement()
+        invocation_context.close()
         return response
 
     # pylint: disable=no-member,too-many-locals
@@ -399,3 +401,4 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
             self.request_logger.finish_request(f"{self.agent_name}.StreamingChat", log_marker, request_log)
 
         self.request_counter.decrement()
+        invocation_context.close()

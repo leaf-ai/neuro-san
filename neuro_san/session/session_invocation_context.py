@@ -13,7 +13,10 @@ from typing import Any
 from typing import Dict
 from typing import List
 
+from asyncio import Future
+
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
+from leaf_server_common.logging.logging_setup import setup_extra_logging_fields
 
 from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
@@ -59,6 +62,12 @@ class SessionInvocationContext(InvocationContext):
         """
         self.asyncio_executor.start()
 
+        # Set up logging fields within the thread, so we have consistent logging from async calls.
+        # Ignore the future that is returned - we trust it will get done.
+        _: Future = self.asyncio_executor.submit(
+            "logging_setup", setup_extra_logging_fields,
+            metadata_dict=self.metadata)
+
     def get_async_session_factory(self) -> AsyncAgentSessionFactory:
         """
         :return: The AsyncAgentSessionFactory associated with the invocation
@@ -97,12 +106,6 @@ class SessionInvocationContext(InvocationContext):
         :return: The metadata to pass along with any request
         """
         return self.metadata
-
-    def set_asyncio_executor(self, asyncio_executor: AsyncioExecutor):
-        """
-        :param asyncio_executor: The AsyncioExecutor to associate with the invocation
-        """
-        self.asyncio_executor = asyncio_executor
 
     def set_logs(self, logs: List[Any]):
         """
