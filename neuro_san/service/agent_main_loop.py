@@ -33,6 +33,7 @@ from neuro_san.service.agent_server import DEFAULT_SERVER_NAME
 from neuro_san.service.agent_server import DEFAULT_SERVER_NAME_FOR_LOGS
 from neuro_san.service.agent_server import DEFAULT_MAX_CONCURRENT_REQUESTS
 from neuro_san.service.agent_server import DEFAULT_REQUEST_LIMIT
+from neuro_san.service.agent_server import DEFAULT_FORWARDED_REQUEST_METADATA
 from neuro_san.service.agent_service import AgentService
 from neuro_san.session.agent_service_stub import DEFAULT_SERVICE_PREFIX
 from neuro_san.session.chat_session_map import ChatSessionMap
@@ -72,6 +73,7 @@ class AgentMainLoop(ServerLoopCallbacks):
         self.server_name_for_logs: str = DEFAULT_SERVER_NAME_FOR_LOGS
         self.max_concurrent_requests: int = DEFAULT_MAX_CONCURRENT_REQUESTS
         self.request_limit: int = DEFAULT_REQUEST_LIMIT
+        self.forwarded_request_metadata: int = DEFAULT_FORWARDED_REQUEST_METADATA
         self.service_prefix: str = service_prefix
         self.server: AgentServer = None
 
@@ -84,19 +86,21 @@ class AgentMainLoop(ServerLoopCallbacks):
 
         arg_parser.add_argument("--port", type=int,
                                 default=int(os.environ.get("AGENT_PORT", AgentSession.DEFAULT_PORT)),
-                                help="Port number for the service")
+                                help="Port number for the grpc service")
         arg_parser.add_argument("--http_port", type=int,
                                 default=int(os.environ.get("AGENT_HTTP_PORT", AgentSession.DEFAULT_HTTP_PORT)),
                                 help="Port number for http service endpoint")
         arg_parser.add_argument("--server_name", type=str,
                                 default=str(os.environ.get("AGENT_SERVER_NAME", self.server_name)),
-                                help="Name of the service")
+                                help="Name of the service for health reporting purposes.")
         arg_parser.add_argument("--server_name_for_logs", type=str,
                                 default=str(os.environ.get("AGENT_SERVER_NAME_FOR_LOGS", self.server_name_for_logs)),
                                 help="Name of the service as seen in logs")
         arg_parser.add_argument("--service_prefix", type=str,
                                 default=str(os.environ.get("AGENT_SERVICE_PREFIX", self.service_prefix)),
-                                help="Name of the service as seen in logs")
+                                help="An extra string to add for more fine-grained request routing. "
+                                     "Routes are of the form: "
+                                     "/{serivce_prefix}.{agent_name}.AgentService/{neuro_sanAPI_call}")
         arg_parser.add_argument("--max_concurrent_requests", type=int,
                                 default=int(os.environ.get("AGENT_MAX_CONCURRENT_REQUESTS",
                                                            self.max_concurrent_requests)),
@@ -104,6 +108,11 @@ class AgentMainLoop(ServerLoopCallbacks):
         arg_parser.add_argument("--request_limit", type=int,
                                 default=int(os.environ.get("AGENT_REQUEST_LIMIT", self.request_limit)),
                                 help="Number of requests served before the server shuts down in an orderly fashion")
+        arg_parser.add_argument("--forwarded_request_metadata", type=str,
+                                default=os.environ.get("AGENT_FORWARDED_REQUEST_METADATA",
+                                                       self.forwarded_request_metadata),
+                                help="Space-delimited list of http request metadata keys to forward "
+                                     "to logs/other requests")
 
         # Actually parse the args into class variables
 
@@ -117,6 +126,7 @@ class AgentMainLoop(ServerLoopCallbacks):
         self.service_prefix = args.service_prefix
         self.max_concurrent_requests = args.max_concurrent_requests
         self.request_limit = args.request_limit
+        self.forwarded_request_metadata = args.forwarded_request_metadata
 
         manifest_restorer = RegistryManifestRestorer()
         manifest_tool_registries: Dict[str, AgentToolRegistry] = manifest_restorer.restore()
@@ -137,7 +147,8 @@ class AgentMainLoop(ServerLoopCallbacks):
                                   server_name_for_logs=self.server_name_for_logs,
                                   max_concurrent_requests=self.max_concurrent_requests,
                                   request_limit=self.request_limit,
-                                  service_prefix=self.service_prefix)
+                                  service_prefix=self.service_prefix,
+                                  forwarded_request_metadata=self.forwarded_request_metadata)
 
         # Start HTTP server side-car:
         http_sidecar = HttpSidecar(self.port, self.http_port, self.tool_registries)

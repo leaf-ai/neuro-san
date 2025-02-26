@@ -37,6 +37,9 @@ DEFAULT_MAX_CONCURRENT_REQUESTS: int = 10
 # This is per the lifetime of the server (before it kills itself).
 DEFAULT_REQUEST_LIMIT: int = 1000 * 1000
 
+# A space-delimited list of http metadata request keys to forward to logs/other requests
+DEFAULT_FORWARDED_REQUEST_METADATA: str = "request_id user_id"
+
 
 # pylint: disable=too-few-public-methods,too-many-instance-attributes
 class AgentServer:
@@ -53,7 +56,8 @@ class AgentServer:
                  server_name_for_logs: str = DEFAULT_SERVER_NAME_FOR_LOGS,
                  max_concurrent_requests: int = DEFAULT_MAX_CONCURRENT_REQUESTS,
                  request_limit: int = DEFAULT_REQUEST_LIMIT,
-                 service_prefix: str = None):
+                 service_prefix: str = None,
+                 forwarded_request_metadata: str = DEFAULT_FORWARDED_REQUEST_METADATA):
         """
         Constructor
 
@@ -70,6 +74,8 @@ class AgentServer:
                         This is useful to be sure production environments can handle
                         a service occasionally going down.
         :param service_prefix: A prefix for grpc routing.
+        :param forwarded_request_metadata: A space-delimited list of http metadata request keys
+                        to forward to logs/other requests
         """
         self.port = port
         self.server_loop_callbacks = server_loop_callbacks
@@ -96,6 +102,8 @@ class AgentServer:
         self.max_concurrent_requests: int = max_concurrent_requests
         self.request_limit: int = request_limit
         self.service_prefix: str = service_prefix
+        self.forwarded_request_metadata: List[str] = forwarded_request_metadata.split(" ")
+
         self.services: List[AgentService] = []
 
         self.logger.info("tool_registries found: %s", str(list(self.tool_registries.keys())))
@@ -132,7 +140,8 @@ class AgentServer:
             service = AgentService(server_lifetime, security_cfg,
                                    self.chat_session_map,
                                    agent_name,
-                                   tool_registry)
+                                   tool_registry,
+                                   self.forwarded_request_metadata)
             self.services.append(service)
 
             servicer_to_server = AgentServicerToServer(service, agent_name=agent_name,

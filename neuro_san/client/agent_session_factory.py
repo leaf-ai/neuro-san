@@ -53,7 +53,13 @@ class AgentSessionFactory:
             session = GrpcServiceAgentSession(host=hostname, port=port, agent_name=agent_name,
                                               metadata=metadata)
         elif session_type == "http":
-            session = HttpServiceAgentSession(host=hostname, port=port, agent_name=agent_name,
+
+            # If there is no port really specified, use the other default port
+            use_port = port
+            if port is None or port == AgentSession.DEFAULT_PORT:
+                use_port = AgentSession.DEFAULT_HTTP_PORT
+
+            session = HttpServiceAgentSession(host=hostname, port=use_port, agent_name=agent_name,
                                               metadata=metadata)
         else:
             # Incorrectly flagged as destination of Trust Boundary Violation 2

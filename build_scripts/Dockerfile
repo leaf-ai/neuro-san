@@ -1,13 +1,13 @@
 # Base image
-FROM python:3.10-slim
+FROM python:3.12-slim
 
 ##############################################################
 #			Basic Housekeeping
 ##############################################################
 LABEL maintainer=donn.goodhew@cognizant.com
 ENV LANG C.UTF-8
-ENV PYTHON_VERSION 3.10
-ENV PIP3_VERSION 24.0
+ENV PYTHON_VERSION 3.12
+ENV PIP3_VERSION 25.0.1
 ENV DEBIAN_FRONTEND noninteractive
 
 # Debian basics

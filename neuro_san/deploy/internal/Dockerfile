@@ -13,7 +13,7 @@
 
 # Stage 1: Builder Stage - Use our python and git base image for installations
 # Set python image as base image
-FROM python:3.10-slim as builder
+FROM python:3.12-slim as builder
 
 # Define the build argument for the Git version, no default provided by design
 ARG GIT_VERSION=2.46.0
@@ -56,7 +56,7 @@ WORKDIR /
 ENV USERNAME leaf-ai
 ENV APP_HOME /usr/local/${USERNAME}
 ENV APP_SOURCE ${APP_HOME}/myapp
-ENV PIP3_VERSION 23.3.1
+ENV PIP3_VERSION 25.0.1
 
 # Explicitly get the desired pip version
 RUN pip3 install --upgrade pip==${PIP3_VERSION} --no-cache-dir
@@ -86,7 +86,7 @@ RUN --mount=type=secret,id=with_creds_requirements \
     pip install --prefix=/install --no-cache-dir -r /run/secrets/with_creds_requirements
 
 # Stage 2: Final Stage - Use a slim Python image
-FROM python:3.10-slim AS final
+FROM python:3.12-slim AS final
 
 # Set the shell and options in each FROM section per hadolint recommendations
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -109,11 +109,21 @@ RUN \
 RUN mkdir -p ${APP_HOME}/certs/aws \
     && ln -s ${APP_HOME}/certs/aws ${APP_HOME}/.aws
 
-# This is the port the service will accept requests on
+# This is the port the service will accept grpc requests on.
 # This should be consistent with the main port for the service as described
 # in the <service>.yaml file
-# This port number is also mentioned as ServiceAgentSession.DEFAULT_PORT
+# This port number is also mentioned as AGENT_PORT below
+# and ServiceAgentSession.DEFAULT_PORT
+# In order to be self-discovered by supporting build/run scripts this must
+# be the first port exposed in the Dockerfile.
 EXPOSE 30011
+
+# This is the port the service will accept http requests on.
+# This should be consistent with the main port for the service as described
+# in the <service>.yaml file
+# This port number is also mentioned as AGENT_HTTP_PORT below
+# and ServiceAgentSession.DEFAULT_HTTP_PORT
+EXPOSE 8080
 
 # Copy installed dependencies from the builder stage
 COPY --from=builder /install /usr/local
@@ -128,11 +138,56 @@ WORKDIR ${APP_SOURCE}
 
 ENV APP_ENTRYPOINT neuro_san/deploy/entrypoint.sh
 
-# Tool registry file environment variable
+#
+# Server configuration
+#
+
+# Where to find the tool registry manifest file which lists all the agent hocon
+# files to serve up from this server instance.
+ENV AGENT_MANIFEST_FILE=${APP_SOURCE}/neuro_san/registries/manifest.hocon
+
+# Where to find the classes for CodedTool class implementations
+# that are used by specific agent networks.
+ENV AGENT_TOOL_PATH=${APP_SOURCE}/neuro_san/coded_tools
+
+# Where to find the configuration file for Python logging.
+# See https://docs.python.org/3/library/logging.config.html#dictionary-schema-details
+# as to how this file can be configured for your own needs.  Examples there are provided in YAML,
+# but these can be easily translated to JSON (which we prefer).
 ENV AGENT_SERVICE_LOG_JSON=${APP_SOURCE}/neuro_san/deploy/logging.json
 
-# Other server settings
+# Threshold for logging.
+# See https://docs.python.org/3/library/logging.html#logging.Handler.setLevel
+# and https://docs.python.org/3/library/logging.html#logging-levels for details.
+ENV AGENT_SERVICE_LOG_LEVEL="DEBUG"
+
+# The name of the service for health reporting purposes
+ENV AGENT_SERVER_NAME="neuro-san.Agent"
+
+# Name of the service as seen in logs
+ENV AGENT_SERVER_NAME_FOR_LOGS="Agent Server"
+
+# An extra string to add for more fine-grained request routing.
+# Routes are of the form /{serivce_prefix}.{agent_name}.AgentService/{neuro_sanAPI_call}
+ENV AGENT_SERVICE_PREFIX=""
+
+# A space-delimited list of http metadata request keys to forward to logs/other requests
+ENV AGENT_FORWARDED_REQUEST_METADATA="request_id user_id"
+
+# Port number for the grpc service endpoint
+ENV AGENT_PORT=30011
+
+# Port number for http service endpoint
+# If you are changing this, you should also change the first EXPOSE port above
+ENV AGENT_HTTP_PORT=8080
+
+# Maximm number of requests that can be served at the same time
+# If you are changing this, you should also change the second EXPOSE port above
 ENV AGENT_MAX_CONCURRENT_REQUESTS 10
+
+# Number of requests served before the server shuts down in an orderly fashion.
+# This is useful for testing response handling in clusters with duplicated pods.
+ENV AGENT_REQUEST_LIMIT=1000000
 
 ENTRYPOINT "${APP_SOURCE}/${APP_ENTRYPOINT}"
 
