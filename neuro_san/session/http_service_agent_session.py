@@ -109,7 +109,7 @@ class HttpServiceAgentSession(AgentSession):
         6. Did you misspell the agent and/or method name in your {path} request path?
         7. If working with a local docker container:
            7.1 Does your http port EXPOSEd in the Dockerfile match your value for AGENT_HTTP_PORT?
-           7.2 Did you add a -p : to your docker run command line to map container port(s)
+           7.2 Did you add a -p <server_port>:<server_port> to your docker run command line to map container port(s)
                to your local ones?
         8. Is the agent turned on in your manifest.hocon?
         """
