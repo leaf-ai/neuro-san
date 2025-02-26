@@ -86,7 +86,7 @@ class HttpServiceAgentSession(AgentSession):
     def _get_request_path(self, function: str):
         if self.service_prefix is None or len(self.service_prefix) == 0:
             return f"http://{self.use_host}:{self.use_port}/api/v1/{self.agent_name}/{function}"
-        return f"http://{self.use_host}:{self.use_port}/api/v1/{self.service_prefix}.{self.agent_name}/{function}"
+        return f"http://{self.use_host}:{self.use_port}/api/v1/{self.service_prefix}/{self.agent_name}/{function}"
 
     def help_message(self, path: str) -> str:
         """
