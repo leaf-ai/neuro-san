@@ -116,6 +116,10 @@ class HttpServiceAgentSession(AgentSession):
            7.2 Did you add a -p <server_port>:<server_port> to your docker run command line to map container port(s)
                to your local ones?
         8. Is the agent turned on in your manifest.hocon?
+        9. If you are attempting to use https, know that the default server configurations do not
+           provide any of the necessary certificates for this to work and any certs used will
+           need to be well known.  If you're unfamiliar with this process, it's a big deal.
+           Try regular http instead.
         """
         return message
 
