@@ -66,6 +66,11 @@ class LangChainTokenCounter:
                 "completion_tokens": callback.completion_tokens,
                 "successful_requests": callback.successful_requests,
                 "total_cost": callback.total_cost,
+                "caveats": [
+                    "Langchain only allows accounting for OpenAI and Anthropic models.",
+                    "Each LLM Branch Node also includes accounting for each of its callees.",
+                    "Each LLM Branch Node does not yet properly account for its own tokens.",
+                ]
             }
 
         return token_dict
