@@ -208,7 +208,8 @@ All choices require an agent name.
                            help="Use a HTTP service connection")
         group.add_argument("--https", dest="connection", action="store_const", const="https",
                            help="Use a secure HTTP service connection. "
-                                "Requires your agent server to be set up with certificates to be well known")
+                                "Requires your agent server to be set up with certificates that are well known. "
+                                "This is not something that our basic server setup supports out-of-the-box.")
         self.arg_groups[group.title] = group
 
         # How will we connect to a server?
