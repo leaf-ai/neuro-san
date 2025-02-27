@@ -16,6 +16,9 @@ from typing import List
 import json
 import logging
 
+from asyncio import AbstractEventLoop
+
+from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 from leaf_common.config.resolver import Resolver
 
 from neuro_san.interfaces.coded_tool import CodedTool
@@ -153,7 +156,7 @@ Some hints:
 
         if isinstance(coded_tool, CodedTool):
             # Invoke the CodedTool
-            retval: Any = await coded_tool.async_invoke(self.arguments, self.sly_data)
+            retval: Any = await self.attempt_invoke(coded_tool, self.arguments, self.sly_data)
         else:
             retval = f"Error: {full_class_ref} is not a CodedTool"
 
@@ -167,3 +170,26 @@ Some hints:
         messages_str: str = json.dumps(messages)
 
         return messages_str
+
+    async def attempt_invoke(self, coded_tool: CodedTool, arguments: Dict[str, Any], sly_data: Dict[str, Any]) \
+            -> Any:
+        """
+        Attempt to invoke the coded tool.
+
+        :param coded_tool: The CodedTool instance to invoke
+        :param arguments: The arguments dictionary to pass as input to the coded_tool
+        :param sly_data: The sly_data dictionary to pass as input to the coded_tool
+        :return: The result of the coded_tool, whatever that is.
+        """
+        retval: Any = None
+        try:
+            # Try the preferred async_invoke()
+            retval = await coded_tool.async_invoke(self.arguments, self.sly_data)
+        except NotImplementedError:
+            # That didn't work, so try running the synchronous method as an async task
+            # within the confines of the proper executor.
+            executor: AsyncioExecutor = self.run_context.get_invocation_context()
+            loop: AbstractEventLoop = executor.get_event_loop()
+            retval = await loop.run_in_executor(executor, coded_tool.invoke, arguments, sly_data)
+
+        return retval

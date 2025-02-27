@@ -9,7 +9,7 @@
 # neuro-san SDK Software in commercial settings.
 #
 # END COPYRIGHT
-import asyncio
+
 from typing import Any
 from typing import Dict
 
@@ -79,7 +79,4 @@ class CodedTool:
                 adding the data is not invoke()-ed more than once.
         :return: A return value that goes into the chat stream.
         """
-        # DEF - Use the AsyncioExecutor for a submit() for better task tracking and handling
-        loop = asyncio.get_running_loop()
-        result = await loop.run_in_executor(None, self.invoke, args, sly_data)
-        return result
+        raise NotImplementedError
