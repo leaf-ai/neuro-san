@@ -9,6 +9,7 @@
 # neuro-san SDK Software in commercial settings.
 #
 # END COPYRIGHT
+from typing import Any
 from typing import Dict
 
 from neuro_san.client.direct_agent_session_factory import DirectAgentSessionFactory
@@ -52,15 +53,19 @@ class AgentSessionFactory:
         elif session_type in ("service", "grpc"):
             session = GrpcServiceAgentSession(host=hostname, port=port, agent_name=agent_name,
                                               metadata=metadata)
-        elif session_type == "http":
+        elif session_type in ("http", "https"):
 
             # If there is no port really specified, use the other default port
             use_port = port
             if port is None or port == AgentSession.DEFAULT_PORT:
                 use_port = AgentSession.DEFAULT_HTTP_PORT
 
+            security_cfg: Dict[str, Any] = None
+            if session_type == "https":
+                # For now, to get the https scheme
+                security_cfg = {}
             session = HttpServiceAgentSession(host=hostname, port=use_port, agent_name=agent_name,
-                                              metadata=metadata)
+                                              security_cfg=security_cfg, metadata=metadata)
         else:
             # Incorrectly flagged as destination of Trust Boundary Violation 2
             #   Reason: This is the place where the session_type enforced-string argument is

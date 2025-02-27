@@ -188,12 +188,13 @@ Some suggestions:
         group = arg_parser.add_argument_group(title="Session Type",
                                               description="How will we connect to neuro-san?")
         group.add_argument("--connection", default="direct", type=str,
-                           choices=["grpc", "service", "direct", "http"],
+                           choices=["grpc", "service", "direct", "http", "https"],
                            help="""
 The type of connection to initiate. Choices are to connect to:
     "grpc"      - an agent service via gRPC. (The default).  Needs host and port.
     "service"   - compatibility synonym for 'grpc' above.
     "http"      - an agent service via HTTP. Needs host and port.
+    "https"     - an agent service via secure HTTP. Needs host and port.
     "direct"    - a session via library.
 All choices require an agent name.
 """)
@@ -205,6 +206,10 @@ All choices require an agent name.
                            help="Use a direct/library call for the chat")
         group.add_argument("--http", dest="connection", action="store_const", const="http",
                            help="Use a HTTP service connection")
+        group.add_argument("--https", dest="connection", action="store_const", const="https",
+                           help="Use a secure HTTP service connection. "
+                                "Requires your agent server to be set up with certificates that are well known. "
+                                "This is not something that our basic server setup supports out-of-the-box.")
         self.arg_groups[group.title] = group
 
         # How will we connect to a server?
@@ -263,7 +268,7 @@ Have external tools that can be found in the local agent manifest use a service 
         group.add_argument("--thinking_file", type=str, default="/tmp/agent_thinking.txt",
                            help="File that captures agent thinking. "
                                 "This is a separate text stream from the user/assistant chat")
-        group.add_argument("--thinking_dir", default=False, action="store_true",
+        group.add_argument("--thinking_dir", default=True, action="store_true",
                            help="Use the basis of the thinking_file as a directory to capture "
                                 "internal agent chatter in separate files. "
                                 "This is a separate text stream from the user/assistant chat. "
