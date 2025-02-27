@@ -13,7 +13,10 @@ from typing import Any
 from typing import Dict
 from typing import List
 
+from asyncio import Future
+
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
+from leaf_server_common.logging.logging_setup import setup_extra_logging_fields
 
 from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
@@ -31,27 +34,39 @@ class SessionInvocationContext(InvocationContext):
     """
 
     def __init__(self, async_session_factory: AsyncAgentSessionFactory,
-                 asyncio_executor: AsyncioExecutor = None,
                  metadata: Dict[str, str] = None):
         """
         Constructor
 
         :param async_session_factory: The AsyncAgentSessionFactory to use
                         when connecting with external agents.
-        :param asyncio_executor: The AsyncioExecutor to use for running
-                        stuff in the background asynchronously.
         :param metadata: A grpc metadata of key/value pairs to be inserted into
                          the header. Default is None. Preferred format is a
                          dictionary of string keys to string values.
         """
 
         self.async_session_factory: AsyncAgentSessionFactory = async_session_factory
-        self.asyncio_executor: AsyncioExecutor = asyncio_executor
+        # Get an async executor to run all tasks for this session instance:
+        self.asyncio_executor: AsyncioExecutor = AsyncioExecutor()
         self.origination: Origination = Origination()
         self.queue: AsyncCollatingQueue = AsyncCollatingQueue()
         self.journal: Journal = CompatibilityJournal(self.queue)
         self.metadata: Dict[str, str] = metadata
         self.request_reporting: Dict[str, Any] = {}
+
+    def start(self):
+        """
+        Starts the active components of this invocation context.
+        Do this separately from constructor for more control.
+        Currently, we only start internal AsyncioExecutor.
+        """
+        self.asyncio_executor.start()
+
+        # Set up logging fields within the thread, so we have consistent logging from async calls.
+        # Ignore the future that is returned - we trust it will get done.
+        _: Future = self.asyncio_executor.submit(
+            "logging_setup", setup_extra_logging_fields,
+            metadata_dict=self.metadata)
 
     def get_async_session_factory(self) -> AsyncAgentSessionFactory:
         """
@@ -92,12 +107,6 @@ class SessionInvocationContext(InvocationContext):
         """
         return self.metadata
 
-    def set_asyncio_executor(self, asyncio_executor: AsyncioExecutor):
-        """
-        :param asyncio_executor: The AsyncioExecutor to associate with the invocation
-        """
-        self.asyncio_executor = asyncio_executor
-
     def set_logs(self, logs: List[Any]):
         """
         :param logs: A list of strings corresponding to journal entries.
@@ -109,6 +118,14 @@ class SessionInvocationContext(InvocationContext):
         Resets the origination
         """
         self.origination = Origination()
+
+    def close(self):
+        """
+        Release resources owned by this context
+        """
+        if self.asyncio_executor is not None:
+            self.asyncio_executor.shutdown()
+            self.asyncio_executor = None
 
     def get_request_reporting(self) -> Dict[str, Any]:
         """

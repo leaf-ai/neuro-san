@@ -22,7 +22,6 @@ import os
 
 from argparse import ArgumentParser
 
-from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 from leaf_server_common.server.server_loop_callbacks import ServerLoopCallbacks
 
 from neuro_san.interfaces.agent_session import AgentSession
@@ -44,9 +43,6 @@ from neuro_san.http_sidecar.http_sidecar import HttpSidecar
 # string keys -> ChatSession implementations
 CHAT_SESSIONS: Dict[str, ChatSession] = {}
 
-# A single global for executing asyncio stuff in the background
-ASYNCIO_EXECUTOR: AsyncioExecutor = AsyncioExecutor()
-
 
 # pylint: disable=too-many-instance-attributes
 class AgentMainLoop(ServerLoopCallbacks):
@@ -65,12 +61,10 @@ class AgentMainLoop(ServerLoopCallbacks):
         """
         self.port: int = 0
         self.http_port: int = 0
-        self.asyncio_executor = ASYNCIO_EXECUTOR
 
         # Points to the global
         init_arguments = {
-            "chat_sessions": CHAT_SESSIONS,
-            "executor": ASYNCIO_EXECUTOR
+            "chat_sessions": CHAT_SESSIONS
         }
         self.chat_session_map = ChatSessionMap(init_arguments)
         self.tool_registries: Dict[str, AgentToolRegistry] = {}
@@ -145,14 +139,10 @@ class AgentMainLoop(ServerLoopCallbacks):
         """
         self.parse_args()
 
-        # Start up the background thread which will process asyncio stuff
-        self.asyncio_executor.start()
-
         self.server = AgentServer(self.port,
                                   server_loop_callbacks=self,
                                   chat_session_map=self.chat_session_map,
                                   tool_registries=self.tool_registries,
-                                  asyncio_executor=self.asyncio_executor,
                                   server_name=self.server_name,
                                   server_name_for_logs=self.server_name_for_logs,
                                   max_concurrent_requests=self.max_concurrent_requests,
@@ -195,9 +185,6 @@ class AgentMainLoop(ServerLoopCallbacks):
 
         logger.info("Shutdown: cleaning up ChatSessionMap")
         self.chat_session_map.cleanup()
-
-        logger.info("Shutdown: shutting down AsyncioExecutor")
-        self.asyncio_executor.shutdown()
 
 
 if __name__ == '__main__':

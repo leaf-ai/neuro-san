@@ -11,8 +11,6 @@
 # END COPYRIGHT
 from typing import Dict
 
-from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
-
 from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
@@ -28,7 +26,6 @@ class DirectAgentSessionFactory:
     Sets up everything needed to use a DirectAgentSession more as a library.
     This includes:
         * a ChatSessionMap
-        * an AsyncioExecutor
         * Some reading of AgentToolRegistries
     """
 
@@ -36,17 +33,13 @@ class DirectAgentSessionFactory:
         """
         Constructor
         """
-        self.asyncio_executor: AsyncioExecutor = AsyncioExecutor()
         init_arguments = {
-            "chat_sessions": {},
-            "executor": self.asyncio_executor
+            "chat_sessions": {}
         }
         self.chat_session_map: ChatSessionMap = ChatSessionMap(init_arguments)
 
         manifest_restorer = RegistryManifestRestorer()
         self.manifest_tool_registries: Dict[str, AgentToolRegistry] = manifest_restorer.restore()
-
-        self.asyncio_executor.start()
 
     def create_session(self, agent_name: str, use_direct: bool = False,
                        metadata: Dict[str, str] = None) -> AgentSession:
@@ -62,7 +55,8 @@ class DirectAgentSessionFactory:
         factory = ExternalAgentSessionFactory(use_direct=use_direct)
         tool_registry: AgentToolRegistry = factory.get_tool_registry(agent_name, self.manifest_tool_registries)
 
-        invocation_context = SessionInvocationContext(factory, self.asyncio_executor, metadata)
+        invocation_context = SessionInvocationContext(factory, metadata)
+        invocation_context.start()
         session: DirectAgentSession = DirectAgentSession(chat_session_map=self.chat_session_map,
                                                          tool_registry=tool_registry,
                                                          invocation_context=invocation_context,
