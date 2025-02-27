@@ -15,6 +15,8 @@ from typing import Dict
 from typing import List
 
 import json
+from logging import getLogger
+from logging import Logger
 
 from neuro_san.interfaces.async_agent_session import AsyncAgentSession
 from neuro_san.internals.graph.tools.abstract_callable_tool import AbstractCallableTool
@@ -22,6 +24,7 @@ from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgen
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
+from neuro_san.internals.messages.origination import Origination
 from neuro_san.internals.run_context.factory.run_context_factory import RunContextFactory
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
@@ -72,6 +75,7 @@ class ExternalTool(AbstractCallableTool):
         """
         return self.agent_url
 
+    # pylint: disable=too-many-locals
     async def build(self) -> List[Any]:
         """
         Main entry point to the class.
@@ -89,15 +93,19 @@ class ExternalTool(AbstractCallableTool):
         chat_request: Dict[str, Any] = self.gather_input(f"```json\n{json.dumps(self.arguments)}```",
                                                          self.sly_data)
 
-        # Note that we are not await-ing the response here because what is returned is a generator.
-        # Proper await-ing for generator results is done in the "async for"-loop below.
+        messages_str: str = ""
         try:
+            # Note that we are not await-ing the response here because what is returned is a generator.
+            # Proper await-ing for generator results is done in the "async for"-loop below.
             chat_responses: AsyncGenerator[Dict[str, Any], None] = self.session.streaming_chat(chat_request)
         except ValueError:
             # Could not reach the server for the external agent, so tell about it
-            message: str = f"Agent/tool {self.agent_url} was unreachable. Cannot rely on results from it as a tool."
-            self.logger.info(message)
-            return message
+            messages_str: str = f"Agent/tool {self.agent_url} was unreachable. " + \
+                                "Cannot rely on results from it as a tool."
+            full_name: str = Origination.get_full_name_from_origin(self.run_context.get_origin())
+            logger: Logger = getLogger(full_name)
+            logger.info(messages_str)
+            return messages_str
 
         # The asynchronous generator will wait until the next response is available
         # from the stream.  When the other side is done, the iterator will exit the loop.
@@ -134,7 +142,7 @@ class ExternalTool(AbstractCallableTool):
                 }
                 message_list.append(message)
 
-        messages_str: str = json.dumps(message_list)
+        messages_str = json.dumps(message_list)
         return messages_str
 
     def gather_input(self, agent_input: str, sly_data: Dict[str, Any]) -> Dict[str, Any]:
