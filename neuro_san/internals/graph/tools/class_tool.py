@@ -202,7 +202,7 @@ This can lead to performance problems when running within a server. Consider por
             self.logger.info(message)
             message = AgentMessage(content=message)
             journal: Journal = self.run_context.get_journal()
-            journal.write_message(message)
+            await journal.write_message(message)
 
             # Try to run in the executor.
             executor: AsyncioExecutor = self.run_context.get_invocation_context()
