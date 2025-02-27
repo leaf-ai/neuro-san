@@ -38,8 +38,7 @@ class GrpcServiceAgentSession(AbstractServiceSession, AgentSession):
                  security_cfg: Dict[str, Any] = None,
                  umbrella_timeout: Timeout = None,
                  streaming_timeout_in_seconds: int = None,
-                 agent_name: str = DEFAULT_AGENT_NAME,
-                 service_prefix: str = None):
+                 agent_name: str = DEFAULT_AGENT_NAME):
         """
         Creates a AgentSession that connects to the
         Agent Service and delegates its implementations to the service.
@@ -63,8 +62,6 @@ class GrpcServiceAgentSession(AbstractServiceSession, AgentSession):
                         the service. Default is None, indicating connection should
                         stay open until the (last) result is yielded.
         :param agent_name: The name of the agent to talk to
-        :param service_prefix: The service prefix to use. Default is None,
-                        implying the policy in AgentServiceStub takes over.
         """
         use_host: str = "localhost"
         if host is not None:
@@ -77,7 +74,7 @@ class GrpcServiceAgentSession(AbstractServiceSession, AgentSession):
         # Normally we pass around the service_stub like a class,
         # but AgentServiceStub has a __call__() method to intercept
         # constructor-like behavior.
-        service_stub = AgentServiceStub(agent_name, service_prefix)
+        service_stub = AgentServiceStub(agent_name)
         AbstractServiceSession.__init__(self, "Agent Server",
                                         service_stub,
                                         use_host, use_port,

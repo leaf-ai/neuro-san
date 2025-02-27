@@ -10,8 +10,6 @@
 #
 # END COPYRIGHT
 
-import os
-
 from grpc import Channel
 from grpc import UnaryUnaryMultiCallable
 from grpc import UnaryStreamMultiCallable
@@ -19,25 +17,17 @@ from grpc import UnaryStreamMultiCallable
 import neuro_san.api.grpc.agent_pb2 as agent__pb2
 
 
-# Effectively no service prefix for the default
-DEFAULT_SERVICE_PREFIX: str = ""
-
-
 # pylint: disable=too-many-instance-attributes
 class AgentServiceStub:
     """
     The service comprises all the exchanges to the backend in support of agent services.
-    Note that as of 3/21/24, this is *not* a RESTful service due to constraints
-    with OpenAI service used behind the scenes.
     """
 
-    def __init__(self, agent_name: str = "",
-                 service_prefix: str = None):
+    def __init__(self, agent_name: str = ""):
         """
         Constructor.
         """
         self._agent_name: str = agent_name
-        self._service_prefix: str = service_prefix
 
         # Stub methods. These all happen to be the same kind of method, but
         # note that thare are more defined on grpc.Channel if needed (see the source).
@@ -74,7 +64,7 @@ class AgentServiceStub:
         """
 
         # Prepare the service name given the agent name
-        service_name: str = self.prepare_service_name(self._agent_name, self._service_prefix)
+        service_name: str = self.prepare_service_name(self._agent_name)
 
         # Below comes from generated _grpc.py code for the Stub,
         # with the modification of the service name going into the args.
@@ -116,22 +106,15 @@ class AgentServiceStub:
         return self
 
     @staticmethod
-    def prepare_service_name(agent_name: str, service_prefix: str = None) -> str:
+    def prepare_service_name(agent_name: str) -> str:
         """
         Prepares the full grpc service name given the name of the agent
         :param agent_name: The string agent name
-        :param service_prefix: The service prefix.
-                    This is often the same as the package name in the grpc file.
         :return: A service name that specifies the agent name as part of the routing.
         """
 
-        if service_prefix is None:
-            service_prefix = os.environ.get("AGENT_SERVICE_PREFIX", DEFAULT_SERVICE_PREFIX)
-
         # Prepare the service name on a per-agent basis
         service_name: str = ""
-        if service_prefix is not None and len(service_prefix) > 0:
-            service_name = f"{service_prefix}"
 
         # The agent name adds the voodoo to handle the request routing for each
         # agent on the same server.

@@ -35,7 +35,6 @@ from neuro_san.service.agent_server import DEFAULT_MAX_CONCURRENT_REQUESTS
 from neuro_san.service.agent_server import DEFAULT_REQUEST_LIMIT
 from neuro_san.service.agent_server import DEFAULT_FORWARDED_REQUEST_METADATA
 from neuro_san.service.agent_service import AgentService
-from neuro_san.session.agent_service_stub import DEFAULT_SERVICE_PREFIX
 from neuro_san.session.chat_session_map import ChatSessionMap
 from neuro_san.http_sidecar.http_sidecar import HttpSidecar
 
@@ -50,14 +49,9 @@ class AgentMainLoop(ServerLoopCallbacks):
     This class handles the service main loop.
     """
 
-    def __init__(self, service_prefix: str = DEFAULT_SERVICE_PREFIX):
+    def __init__(self):
         """
         Constructor
-
-        :param service_prefix: An optional prefix that gets prepended to all gRPC request/response
-                        handling for this instance of the server. Note that this can be
-                        passed in by argument (as opposed to env var) because this is the
-                        one configurable item that is likely to be shared with other code.
         """
         self.port: int = 0
         self.http_port: int = 0
@@ -74,7 +68,6 @@ class AgentMainLoop(ServerLoopCallbacks):
         self.max_concurrent_requests: int = DEFAULT_MAX_CONCURRENT_REQUESTS
         self.request_limit: int = DEFAULT_REQUEST_LIMIT
         self.forwarded_request_metadata: int = DEFAULT_FORWARDED_REQUEST_METADATA
-        self.service_prefix: str = service_prefix
         self.server: AgentServer = None
 
     def parse_args(self):
@@ -96,11 +89,6 @@ class AgentMainLoop(ServerLoopCallbacks):
         arg_parser.add_argument("--server_name_for_logs", type=str,
                                 default=str(os.environ.get("AGENT_SERVER_NAME_FOR_LOGS", self.server_name_for_logs)),
                                 help="Name of the service as seen in logs")
-        arg_parser.add_argument("--service_prefix", type=str,
-                                default=str(os.environ.get("AGENT_SERVICE_PREFIX", self.service_prefix)),
-                                help="An extra string to add for more fine-grained request routing. "
-                                     "Routes are of the form: "
-                                     "/{serivce_prefix}.{agent_name}.AgentService/{neuro_sanAPI_call}")
         arg_parser.add_argument("--max_concurrent_requests", type=int,
                                 default=int(os.environ.get("AGENT_MAX_CONCURRENT_REQUESTS",
                                                            self.max_concurrent_requests)),
@@ -123,7 +111,6 @@ class AgentMainLoop(ServerLoopCallbacks):
         self.http_port = args.http_port
         self.server_name = args.server_name
         self.server_name_for_logs = args.server_name_for_logs
-        self.service_prefix = args.service_prefix
         self.max_concurrent_requests = args.max_concurrent_requests
         self.request_limit = args.request_limit
         self.forwarded_request_metadata = args.forwarded_request_metadata
@@ -147,7 +134,6 @@ class AgentMainLoop(ServerLoopCallbacks):
                                   server_name_for_logs=self.server_name_for_logs,
                                   max_concurrent_requests=self.max_concurrent_requests,
                                   request_limit=self.request_limit,
-                                  service_prefix=self.service_prefix,
                                   forwarded_request_metadata=self.forwarded_request_metadata)
 
         # Start HTTP server side-car:

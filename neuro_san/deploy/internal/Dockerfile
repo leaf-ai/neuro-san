@@ -167,10 +167,6 @@ ENV AGENT_SERVER_NAME="neuro-san.Agent"
 # Name of the service as seen in logs
 ENV AGENT_SERVER_NAME_FOR_LOGS="Agent Server"
 
-# An extra string to add for more fine-grained request routing.
-# Routes are of the form /{serivce_prefix}.{agent_name}.AgentService/{neuro_sanAPI_call}
-ENV AGENT_SERVICE_PREFIX=""
-
 # A space-delimited list of http metadata request keys to forward to logs/other requests
 ENV AGENT_FORWARDED_REQUEST_METADATA="request_id user_id"
 
