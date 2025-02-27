@@ -16,9 +16,11 @@ from typing import Tuple
 from typing import Union
 
 import json
-import logging
 import traceback
 import uuid
+
+from logging import Logger
+from logging import getLogger
 
 from openai import APIError
 
@@ -112,6 +114,8 @@ class LangChainRunContext(RunContext):
         self.invocation_context: InvocationContext = invocation_context
         self.chat_context: Dict[str, Any] = chat_context
         self.origin: List[Dict[str, Any]] = []
+        # Default logger
+        self.logger: Logger = getLogger(self.__class__.__name__)
 
         parent_origin: List[Dict[str, Any]] = []
         if parent_run_context is not None:
@@ -129,6 +133,11 @@ class LangChainRunContext(RunContext):
             self.origin = origination.add_spec_name_to_origin(parent_origin, agent_name)
 
         self.update_from_chat_context(self.chat_context)
+
+        # Set up so local logging gives origin info.
+        if self.origin is not None and len(self.origin) > 0:
+            full_name: str = Origination.get_full_name_from_origin(self.origin)
+            self.logger = getLogger(full_name)
 
         if self.invocation_context is not None:
             base_journal: Journal = self.invocation_context.get_journal()
@@ -167,7 +176,7 @@ class LangChainRunContext(RunContext):
         if isinstance(verbose, str) and verbose.lower() in ("extra", "logging"):
             # This particular class adds a *lot* of very detailed messages
             # to the logs.  Add this because some people are interested in it.
-            callbacks.append(LoggingCallbackHandler(logging.getLogger(full_name)))
+            callbacks.append(LoggingCallbackHandler(self.logger))
 
         # Create the model we will use.
         self.llm = LlmFactory.create_llm(self.llm_config, callbacks=callbacks)
@@ -221,7 +230,14 @@ class LangChainRunContext(RunContext):
             #   network calls.
             session_factory: AsyncAgentSessionFactory = self.invocation_context.get_async_session_factory()
             adapter = ExternalToolAdapter(session_factory, name)
-            function_json = await adapter.get_function_json(self.invocation_context)
+            try:
+                function_json = await adapter.get_function_json(self.invocation_context)
+            except ValueError:
+                # Could not reach the server for the external agent, so tell about it
+                message: str = f"Agent/tool {name} was unreachable. Not including it as a tool."
+                agent_message = AgentMessage(content=message)
+                await self.journal.write_message(agent_message)
+                self.logger.info(message)
         else:
             function_json = agent_spec.get("function")
 
@@ -415,17 +431,16 @@ class LangChainRunContext(RunContext):
         retries: int = 3
         exception: Exception = None
         backtrace: str = None
-        logger = logging.getLogger(self.__class__.__name__)
         while return_dict is None and retries > 0:
             try:
                 return_dict: Dict[str, Any] = await agent_executor.ainvoke(inputs, invoke_config)
             except APIError as api_error:
-                logger.warning("retrying from openai.APIError")
+                self.logger.warning("retrying from openai.APIError")
                 retries = retries - 1
                 exception = api_error
                 backtrace = traceback.format_exc()
             except KeyError as key_error:
-                logger.warning("retrying from KeyError")
+                self.logger.warning("retrying from KeyError")
                 retries = retries - 1
                 exception = key_error
                 backtrace = traceback.format_exc()
@@ -444,7 +459,7 @@ class LangChainRunContext(RunContext):
                         "output": response.removeprefix(find_string).removesuffix("`")
                     }
                 else:
-                    logger.warning("retrying from ValueError")
+                    self.logger.warning("retrying from ValueError")
                     retries = retries - 1
                     exception = value_error
                     backtrace = traceback.format_exc()
@@ -508,10 +523,9 @@ class LangChainRunContext(RunContext):
             # The output we want is the first element of the tuple.
             tool_chat_list_string = tool_chat_list_string[0]
         if not isinstance(tool_chat_list_string, str):
-            logger = logging.getLogger(self.__class__.__name__)
-            logger.warning("Dunno what to do with %s tool output %s",
-                           str(tool_chat_list_string.__class__.__name__),
-                           str(tool_chat_list_string))
+            self.logger.warning("Dunno what to do with %s tool output %s",
+                                str(tool_chat_list_string.__class__.__name__),
+                                str(tool_chat_list_string))
             return None
 
         # Remove bracketing quotes from within the string
@@ -532,8 +546,7 @@ class LangChainRunContext(RunContext):
         try:
             tool_chat_list = json.loads(tool_chat_list_string)
         except json.decoder.JSONDecodeError as exception:
-            logger = logging.getLogger(self.__class__.__name__)
-            logger.error("Exception: %s parsing %s", str(exception), str(tool_chat_list_string))
+            self.logger.error("Exception: %s parsing %s", str(exception), str(tool_chat_list_string))
             raise exception
 
         # The tool_output seems to contain the entire chat history of
