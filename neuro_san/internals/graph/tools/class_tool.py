@@ -205,7 +205,8 @@ This can lead to performance problems when running within a server. Consider por
             await journal.write_message(message)
 
             # Try to run in the executor.
-            executor: AsyncioExecutor = self.run_context.get_invocation_context()
+            invocation_context = self.run_context.get_invocation_context()
+            executor: AsyncioExecutor = invocation_context.get_asyncio_executor()
             loop: AbstractEventLoop = executor.get_event_loop()
             retval = await loop.run_in_executor(executor, coded_tool.invoke, arguments, sly_data)
 

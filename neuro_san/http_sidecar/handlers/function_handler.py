@@ -31,7 +31,7 @@ class FunctionHandler(BaseRequestHandler):
 
         try:
             data: Dict[str, Any] = {}
-            result_dict: Dict[str, Any] = self.grpc_session.connectivity(data)
+            result_dict: Dict[str, Any] = self.grpc_session.function(data)
 
             # Return gRPC response to the HTTP client
             self.set_header("Content-Type", "application/json")
