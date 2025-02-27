@@ -58,7 +58,6 @@ class AgentServer:
                  server_name_for_logs: str = DEFAULT_SERVER_NAME_FOR_LOGS,
                  max_concurrent_requests: int = DEFAULT_MAX_CONCURRENT_REQUESTS,
                  request_limit: int = DEFAULT_REQUEST_LIMIT,
-                 service_prefix: str = None,
                  forwarded_request_metadata: str = DEFAULT_FORWARDED_REQUEST_METADATA):
         """
         Constructor
@@ -77,7 +76,6 @@ class AgentServer:
         :param request_limit: The number of requests to service before shutting down.
                         This is useful to be sure production environments can handle
                         a service occasionally going down.
-        :param service_prefix: A prefix for grpc routing.
         :param forwarded_request_metadata: A space-delimited list of http metadata request keys
                         to forward to logs/other requests
         """
@@ -106,7 +104,6 @@ class AgentServer:
         self.server_name_for_logs: str = server_name_for_logs
         self.max_concurrent_requests: int = max_concurrent_requests
         self.request_limit: int = request_limit
-        self.service_prefix: str = service_prefix
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata.split(" ")
 
         self.services: List[AgentService] = []
@@ -150,8 +147,7 @@ class AgentServer:
                                    self.forwarded_request_metadata)
             self.services.append(service)
 
-            servicer_to_server = AgentServicerToServer(service, agent_name=agent_name,
-                                                       service_prefix=self.service_prefix)
+            servicer_to_server = AgentServicerToServer(service, agent_name=agent_name)
             servicer_to_server.add_rpc_handlers(server)
 
         server_lifetime.run()

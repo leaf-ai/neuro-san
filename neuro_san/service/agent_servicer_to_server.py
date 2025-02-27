@@ -32,14 +32,12 @@ class AgentServicerToServer:
     """
 
     def __init__(self, servicer: AgentServiceServicer,
-                 agent_name: str = "",
-                 service_prefix: str = None):
+                 agent_name: str = ""):
         """
         Constructor
         """
         self.servicer: AgentServiceServicer = servicer
         self.agent_name: str = agent_name
-        self.service_prefix: str = service_prefix
 
     def add_rpc_handlers(self, server: Server):
         """
@@ -87,7 +85,7 @@ class AgentServicerToServer:
         }
 
         # Prepare the service name on a per-agent basis
-        service_name: str = AgentServiceStub.prepare_service_name(self.agent_name, self.service_prefix)
+        service_name: str = AgentServiceStub.prepare_service_name(self.agent_name)
 
         generic_handler: GenericRpcHandler = method_handlers_generic_handler(service_name,
                                                                              rpc_method_handlers)

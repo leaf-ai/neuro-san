@@ -38,8 +38,7 @@ class HttpServiceAgentSession(AgentSession):
                  security_cfg: Dict[str, Any] = None,
                  umbrella_timeout: Timeout = None,
                  streaming_timeout_in_seconds: int = None,
-                 agent_name: str = DEFAULT_AGENT_NAME,
-                 service_prefix: str = None):
+                 agent_name: str = DEFAULT_AGENT_NAME):
         """
         Creates a AgentSession that connects to the
         Agent Service and delegates its implementations to the service.
@@ -63,14 +62,11 @@ class HttpServiceAgentSession(AgentSession):
                         the service. Default is None, indicating connection should
                         stay open until the (last) result is yielded.
         :param agent_name: The name of the agent to talk to
-        :param service_prefix: The service prefix to use. Default is None,
-                        implying the policy in AgentServiceStub takes over.
         """
         _ = umbrella_timeout
         _ = streaming_timeout_in_seconds
 
         self.security_cfg: Dict[str, Any] = security_cfg
-        self.service_prefix: str = service_prefix
         self.use_host: str = "localhost"
         if host is not None:
             self.use_host = host
@@ -88,9 +84,7 @@ class HttpServiceAgentSession(AgentSession):
         if self.security_cfg is not None:
             scheme = "https"
 
-        if self.service_prefix is None or len(self.service_prefix) == 0:
-            return f"{scheme}://{self.use_host}:{self.use_port}/api/v1/{self.agent_name}/{function}"
-        return f"{scheme}://{self.use_host}:{self.use_port}/api/v1/{self.service_prefix}/{self.agent_name}/{function}"
+        return f"{scheme}://{self.use_host}:{self.use_port}/api/v1/{self.agent_name}/{function}"
 
     def help_message(self, path: str) -> str:
         """

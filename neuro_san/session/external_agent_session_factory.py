@@ -69,7 +69,6 @@ class ExternalAgentSessionFactory(AsyncAgentSessionFactory):
         host = agent_location.get("host")
         port = agent_location.get("port")
         agent_name = agent_location.get("agent_name")
-        service_prefix = agent_location.get("service_prefix")
 
         # Note: It's possible we might want some filtering/translation of
         #       metadata keys not unlike what we are doing for sly_data.
@@ -93,7 +92,6 @@ class ExternalAgentSessionFactory(AsyncAgentSessionFactory):
 
         if session is None:
             session = AsyncGrpcServiceAgentSession(host, port, agent_name=agent_name,
-                                                   service_prefix=service_prefix,
                                                    metadata=metadata)
 
         # Quiet any logging from leaf-common grpc stuff.

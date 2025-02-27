@@ -79,8 +79,6 @@ class ExternalAgentParsing:
             "host": host,
             "port": port,
             "agent_name": agent_name,
-            # DEF: At some point, get this from the parsing and/or config/defaults.
-            "service_prefix": None
         }
         return return_dict
 
