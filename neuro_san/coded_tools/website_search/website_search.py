@@ -57,7 +57,7 @@ class WebsiteSearch(CodedTool):
         logger = logging.getLogger(self.__class__.__name__)
         logger.info(">>>>>>>>>>>>>>>>>>>WebsiteSearch>>>>>>>>>>>>>>>>>>")
         logger.info("BSearch Terms: %s", str(search_terms))
-        the_links = search_web(search_terms, self.top_n)
+        the_links = self.search_web(search_terms, self.top_n)
         links_str = ""
         for index, the_link in enumerate(the_links, start=1):
             links_str += f"{index}. {the_link} ; "
@@ -65,21 +65,24 @@ class WebsiteSearch(CodedTool):
         logger.info(">>>>>>>>>>>>>>>>>>>DONE !!!>>>>>>>>>>>>>>>>>>")
         return links_str
 
+    async def async_invoke(self, args: Dict[str, Any], sly_data: Dict[str, Any]) -> Union[Dict[str, Any], str]:
+        raise NotImplementedError
 
-def search_web(query: str, num_results: int = 5) -> list:
-    """
-    Search the web for a given query using DuckDuckGo Search
-    and return a list of result URLs.
+    @staticmethod
+    def search_web(query: str, num_results: int = 5) -> list:
+        """
+        Search the web for a given query using DuckDuckGo Search
+        and return a list of result URLs.
 
-    :param query: The search query (e.g., "10.5 white men sneakers").
-    :param num_results: Number of links to retrieve (default=5).
-    :return: List of hyperlink strings.
-    """
-    # Use duckduckgo_search to retrieve results
-    search = DDGS()
-    results = search.text(query, max_results=num_results)
+        :param query: The search query (e.g., "10.5 white men sneakers").
+        :param num_results: Number of links to retrieve (default=5).
+        :return: List of hyperlink strings.
+        """
+        # Use duckduckgo_search to retrieve results
+        search = DDGS()
+        results = search.text(query, max_results=num_results)
 
-    # Extract and return only the URLs from the returned list of dictionaries
-    returned_links = [res["href"] for res in results if "href" in res]
+        # Extract and return only the URLs from the returned list of dictionaries
+        returned_links = [res["href"] for res in results if "href" in res]
 
-    return returned_links
+        return returned_links
