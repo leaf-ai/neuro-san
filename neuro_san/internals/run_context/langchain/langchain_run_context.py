@@ -176,7 +176,7 @@ class LangChainRunContext(RunContext):
         if isinstance(verbose, str) and verbose.lower() in ("extra", "logging"):
             # This particular class adds a *lot* of very detailed messages
             # to the logs.  Add this because some people are interested in it.
-            callbacks.append(LoggingCallbackHandler(getLogger(full_name)))
+            callbacks.append(LoggingCallbackHandler(self.logger))
 
         # Create the model we will use.
         self.llm = LlmFactory.create_llm(self.llm_config, callbacks=callbacks)
