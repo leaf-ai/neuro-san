@@ -91,7 +91,13 @@ class ExternalTool(AbstractCallableTool):
 
         # Note that we are not await-ing the response here because what is returned is a generator.
         # Proper await-ing for generator results is done in the "async for"-loop below.
-        chat_responses: AsyncGenerator[Dict[str, Any], None] = self.session.streaming_chat(chat_request)
+        try:
+            chat_responses: AsyncGenerator[Dict[str, Any], None] = self.session.streaming_chat(chat_request)
+        except ValueError:
+            # Could not reach the server for the external agent, so tell about it
+            message: str = f"Agent/tool {self.agent_url} was unreachable. Cannot rely on results from it as a tool."
+            self.logger.info(message)
+            return message
 
         # The asynchronous generator will wait until the next response is available
         # from the stream.  When the other side is done, the iterator will exit the loop.
