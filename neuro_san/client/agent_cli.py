@@ -268,7 +268,7 @@ Have external tools that can be found in the local agent manifest use a service 
         group.add_argument("--thinking_file", type=str, default="/tmp/agent_thinking.txt",
                            help="File that captures agent thinking. "
                                 "This is a separate text stream from the user/assistant chat")
-        group.add_argument("--thinking_dir", default=False, action="store_true",
+        group.add_argument("--thinking_dir", default=True, action="store_true",
                            help="Use the basis of the thinking_file as a directory to capture "
                                 "internal agent chatter in separate files. "
                                 "This is a separate text stream from the user/assistant chat. "
