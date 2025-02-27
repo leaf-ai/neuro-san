@@ -14,7 +14,7 @@
 # and check it into the neuro-san repo or modify it in place with the
 # neuro-san source code, chances are you shouldn't. Instead, strongly
 # consider creating your own repo with your own agents and using this
-# Dockerfile and accompanying scipts as a basis to riff on for your
+# Dockerfile and accompanying scripts as a basis to riff on for your
 # own projects.
 #
 # Use ./neuro_san/deploy/build.sh to build this container only *after*

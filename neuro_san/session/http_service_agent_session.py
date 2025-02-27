@@ -66,10 +66,10 @@ class HttpServiceAgentSession(AgentSession):
         :param service_prefix: The service prefix to use. Default is None,
                         implying the policy in AgentServiceStub takes over.
         """
-        _ = security_cfg
         _ = umbrella_timeout
         _ = streaming_timeout_in_seconds
 
+        self.security_cfg: Dict[str, Any] = security_cfg
         self.service_prefix: str = service_prefix
         self.use_host: str = "localhost"
         if host is not None:
@@ -84,9 +84,13 @@ class HttpServiceAgentSession(AgentSession):
         self.metadata: Dict[str, str] = metadata
 
     def _get_request_path(self, function: str):
+        scheme: str = "http"
+        if self.security_cfg is not None:
+            scheme = "https"
+
         if self.service_prefix is None or len(self.service_prefix) == 0:
-            return f"http://{self.use_host}:{self.use_port}/api/v1/{self.agent_name}/{function}"
-        return f"http://{self.use_host}:{self.use_port}/api/v1/{self.service_prefix}.{self.agent_name}/{function}"
+            return f"{scheme}://{self.use_host}:{self.use_port}/api/v1/{self.agent_name}/{function}"
+        return f"{scheme}://{self.use_host}:{self.use_port}/api/v1/{self.service_prefix}/{self.agent_name}/{function}"
 
     def help_message(self, path: str) -> str:
         """
@@ -109,9 +113,13 @@ class HttpServiceAgentSession(AgentSession):
         6. Did you misspell the agent and/or method name in your {path} request path?
         7. If working with a local docker container:
            7.1 Does your http port EXPOSEd in the Dockerfile match your value for AGENT_HTTP_PORT?
-           7.2 Did you add a -p : to your docker run command line to map container port(s)
+           7.2 Did you add a -p <server_port>:<server_port> to your docker run command line to map container port(s)
                to your local ones?
         8. Is the agent turned on in your manifest.hocon?
+        9. If you are attempting to use https, know that the default server configurations do not
+           provide any of the necessary certificates for this to work and any certs used will
+           need to be well known.  If you're unfamiliar with this process, it's a big deal.
+           Try regular http instead.
         """
         return message
 
