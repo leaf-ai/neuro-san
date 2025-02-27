@@ -14,9 +14,10 @@ from typing import Dict
 from typing import List
 
 import json
-import logging
 
 from asyncio import AbstractEventLoop
+from logging import getLogger
+from logging import Logger
 
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 from leaf_common.config.resolver import Resolver
@@ -25,6 +26,8 @@ from neuro_san.interfaces.coded_tool import CodedTool
 from neuro_san.internals.graph.tools.abstract_callable_tool import AbstractCallableTool
 from neuro_san.internals.graph.tools.branch_tool import BranchTool
 from neuro_san.internals.journals.journal import Journal
+from neuro_san.internals.messages.agent_message import AgentMessage
+from neuro_san.internals.messages.origination import Origination
 from neuro_san.internals.run_context.factory.run_context_factory import RunContextFactory
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
@@ -63,6 +66,9 @@ class ClassTool(AbstractCallableTool):
         if arguments is not None:
             self.arguments = arguments
 
+        full_name: str = Origination.get_full_name_from_origin(self.run_context.get_origin())
+        self.logger: Logger = getLogger(full_name)
+
     # pylint: disable=too-many-locals
     async def build(self) -> List[Any]:
         """
@@ -75,8 +81,7 @@ class ClassTool(AbstractCallableTool):
         # Get the python module with the class name containing a CodedTool reference.
         # Will need some exception safety in here eventually.
         full_class_ref = self.agent_tool_spec.get("class")
-        logger = logging.getLogger(self.__class__.__name__)
-        logger.info("Calling class %s", full_class_ref)
+        self.logger.info("Calling class %s", full_class_ref)
 
         class_split = full_class_ref.split(".")
         class_name = class_split[-1]
@@ -188,6 +193,19 @@ Some hints:
         except NotImplementedError:
             # That didn't work, so try running the synchronous method as an async task
             # within the confines of the proper executor.
+
+            # Warn that there is a better alternative.
+            message = f"""
+            self.logger.info(
+Running CodedTool class {coded_tool.__class__.__name__}.invoke() synchronously in an asynchronous environment.
+This can lead to performance problems when running within a server. Consider porting to the async_invoke() method.
+"""
+            self.logger.info(message)
+            message = AgentMessage(content=message)
+            journal: Journal = self.run_context.get_journal()
+            journal.write_message(message)
+
+            # Try to run in the executor.
             executor: AsyncioExecutor = self.run_context.get_invocation_context()
             loop: AbstractEventLoop = executor.get_event_loop()
             retval = await loop.run_in_executor(executor, coded_tool.invoke, arguments, sly_data)
