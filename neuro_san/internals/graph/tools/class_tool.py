@@ -196,7 +196,6 @@ Some hints:
 
             # Warn that there is a better alternative.
             message = f"""
-            self.logger.info(
 Running CodedTool class {coded_tool.__class__.__name__}.invoke() synchronously in an asynchronous environment.
 This can lead to performance problems when running within a server. Consider porting to the async_invoke() method.
 """
