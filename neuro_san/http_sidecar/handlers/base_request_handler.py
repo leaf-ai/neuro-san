@@ -13,6 +13,9 @@
 See class comment for details
 """
 import logging
+from typing import Any
+from typing import Dict
+from typing import List
 from tornado.web import RequestHandler
 
 from neuro_san.interfaces.agent_session import AgentSession
@@ -26,20 +29,46 @@ class BaseRequestHandler(RequestHandler):
     into local handler context.
     """
     # pylint: disable=attribute-defined-outside-init
-    def initialize(self, agent_name, port):
+    def initialize(self, agent_name, port, forwarded_request_metadata):
         """
         This method is called by Tornado framework to allow
         injecting service-specific data into local handler context.
         :param agent_name: name of receiving neuro-san agent
         :param port: gRPC service port.
+        :param forwarded_request_metadata: request metadata to forward.
         """
         #
         self.agent_name: str = agent_name
         self.port: int = port
-        factory: AgentSessionFactory = self.application.get_session_factory()
-        self.grpc_session: AgentSession = \
-            factory.create_session("grpc", self.agent_name, hostname="localhost", port=self.port)
+        self.forwarded_request_metadata: List[str] = forwarded_request_metadata
         self.logger = logging.getLogger(self.__class__.__name__)
+
+    def get_metadata(self) -> Dict[str, Any]:
+        """
+        Extract user metadata defined by self.forwarded_request_metadata list
+        from incoming request.
+        :return: dictionary of user request metadata; possibly empty
+        """
+        headers: Dict[str, Any] = self.request.headers
+        result: Dict[str, Any] = {}
+        for item_name in self.forwarded_request_metadata:
+            if item_name in headers.keys():
+                result[item_name] = headers[item_name]
+        return result
+
+    def get_grpc_session(self, metadata: Dict[str, Any]) -> AgentSession:
+        """
+        Build gRPC session to talk to "main" service
+        :return: AgentSession to use
+        """
+        factory: AgentSessionFactory = self.application.get_session_factory()
+        grpc_session: AgentSession = \
+            factory.create_session("grpc",
+                                   self.agent_name,
+                                   hostname="localhost",
+                                   port=self.port,
+                                   metadata=metadata)
+        return grpc_session
 
     def data_received(self, chunk):
         """

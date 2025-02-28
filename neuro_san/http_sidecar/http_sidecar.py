@@ -15,9 +15,11 @@ See class comment for details
 
 import copy
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from tornado.ioloop import IOLoop
+
+from neuro_san.service.agent_server import DEFAULT_FORWARDED_REQUEST_METADATA
 
 from neuro_san.http_sidecar.http_server_application import HttpServerApplication
 from neuro_san.http_sidecar.handlers.health_check_handler import HealthCheckHandler
@@ -31,17 +33,22 @@ class HttpSidecar:
     Class provides simple http endpoint for neuro-san API,
     working as a client to neuro-san gRPC service.
     """
-    def __init__(self, port: int, http_port: int, agents: Dict[str, Any]):
+    def __init__(self, port: int, http_port: int,
+                 agents: Dict[str, Any],
+                 forwarded_request_metadata: str = DEFAULT_FORWARDED_REQUEST_METADATA):
         """
         Constructor:
         :param port: port for gRPC neuro-san service;
         :param http_port: port for http neuro-san service;
         :param agents: dictionary of registered agents;
+        :param forwarded_request_metadata: A space-delimited list of http metadata request keys
+               to forward to logs/other requests
         """
         self.port = port
         self.http_port = http_port
         self.agents = copy.deepcopy(agents)
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.forwarded_request_metadata: List[str] = forwarded_request_metadata.split(" ")
 
     def __call__(self):
         """
@@ -66,7 +73,10 @@ class HttpSidecar:
             # For each request http path, we build corresponding request handler
             # and put it in "handlers" list,
             # which is used to construct tornado "application".
-            request_data: Dict[str, Any] = {"agent_name": agent_name, "port": self.port}
+            request_data: Dict[str, Any] =\
+                {"agent_name": agent_name,
+                 "port": self.port,
+                 "forwarded_request_metadata": self.forwarded_request_metadata}
             route: str = f"/api/v1/{agent_name}/connectivity"
             handlers.append((route, ConnectivityHandler, request_data))
             self.logger.info("Registering URL path: %s", route)

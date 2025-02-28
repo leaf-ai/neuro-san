@@ -137,7 +137,11 @@ class AgentMainLoop(ServerLoopCallbacks):
                                   forwarded_request_metadata=self.forwarded_request_metadata)
 
         # Start HTTP server side-car:
-        http_sidecar = HttpSidecar(self.port, self.http_port, self.tool_registries)
+        http_sidecar = HttpSidecar(
+            self.port,
+            self.http_port,
+            self.tool_registries,
+            forwarded_request_metadata=self.forwarded_request_metadata)
         http_server_process = multiprocessing.Process(target=http_sidecar)
         http_server_process.start()
 

@@ -17,6 +17,7 @@ import json
 import traceback
 
 from neuro_san.http_sidecar.handlers.base_request_handler import BaseRequestHandler
+from neuro_san.interfaces.agent_session import AgentSession
 
 
 class ConnectivityHandler(BaseRequestHandler):
@@ -31,7 +32,9 @@ class ConnectivityHandler(BaseRequestHandler):
 
         try:
             data: Dict[str, Any] = {}
-            result_dict: Dict[str, Any] = self.grpc_session.connectivity(data)
+            metadata: Dict[str, Any] = self.get_metadata()
+            grpc_session: AgentSession = self.get_grpc_session(metadata)
+            result_dict: Dict[str, Any] = grpc_session.connectivity(data)
 
             # Return gRPC response to the HTTP client
             self.set_header("Content-Type", "application/json")
