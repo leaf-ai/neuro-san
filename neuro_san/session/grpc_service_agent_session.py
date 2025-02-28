@@ -63,10 +63,6 @@ class GrpcServiceAgentSession(AbstractServiceSession, AgentSession):
                         stay open until the (last) result is yielded.
         :param agent_name: The name of the agent to talk to
         """
-        print(f">>>>>>>>========= {metadata}")
-
-
-
         use_host: str = "localhost"
         if host is not None:
             use_host = host
