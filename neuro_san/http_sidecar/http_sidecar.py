@@ -15,7 +15,7 @@ See class comment for details
 
 import copy
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from tornado.ioloop import IOLoop
 

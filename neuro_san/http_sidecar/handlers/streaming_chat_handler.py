@@ -23,6 +23,7 @@ from google.protobuf.json_format import Parse
 from neuro_san.api.grpc.agent_pb2 import ChatRequest
 
 from neuro_san.http_sidecar.handlers.base_request_handler import BaseRequestHandler
+from neuro_san.interfaces.agent_session import AgentSession
 
 
 class StreamingChatHandler(BaseRequestHandler):

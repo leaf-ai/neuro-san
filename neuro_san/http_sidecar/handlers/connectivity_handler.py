@@ -17,6 +17,7 @@ import json
 import traceback
 
 from neuro_san.http_sidecar.handlers.base_request_handler import BaseRequestHandler
+from neuro_san.interfaces.agent_session import AgentSession
 
 
 class ConnectivityHandler(BaseRequestHandler):
