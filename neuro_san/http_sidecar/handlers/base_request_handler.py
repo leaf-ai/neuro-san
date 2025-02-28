@@ -70,7 +70,6 @@ class BaseRequestHandler(RequestHandler):
                                    metadata=metadata)
         return grpc_session
 
-
     def data_received(self, chunk):
         """
         Method overrides abstract method of RequestHandler
