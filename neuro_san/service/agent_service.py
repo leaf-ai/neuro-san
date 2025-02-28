@@ -236,11 +236,11 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         response = service_messages.ChatResponse()
         Parse(response_string, response)
 
+        invocation_context.close()
         if request_log is not None:
             self.request_logger.finish_request(f"{self.agent_name}.Chat", log_marker, request_log)
 
         self.request_counter.decrement()
-        invocation_context.close()
         return response
 
     # pylint: disable=no-member
@@ -331,11 +331,11 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         response = service_messages.ResetResponse()
         Parse(response_string, response)
 
+        invocation_context.close()
         if request_log is not None:
             self.request_logger.finish_request(f"{self.agent_name}.Reset", log_marker, request_log)
 
         self.request_counter.decrement()
-        invocation_context.close()
         return response
 
     # pylint: disable=no-member,too-many-locals
@@ -393,10 +393,12 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
             # iterator on its side to do said waiting over there.
             yield response
 
+        request_reporting: Dict[str, Any] = invocation_context.get_request_reporting()
+        invocation_context.close()
+
         # Iterator has finally signaled that there are no more responses to be had.
         # Log that we are done.
         if request_log is not None:
-            request_reporting: Dict[str, Any] = invocation_context.get_request_reporting()
             reporting: str = None
             if request_reporting is not None:
                 reporting = json.dumps(request_reporting, indent=4, sort_keys=True)
@@ -404,4 +406,3 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
             self.request_logger.finish_request(f"{self.agent_name}.StreamingChat", log_marker, request_log)
 
         self.request_counter.decrement()
-        invocation_context.close()
