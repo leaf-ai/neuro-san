@@ -68,8 +68,7 @@ class WebsiteSearch(CodedTool):
     async def async_invoke(self, args: Dict[str, Any], sly_data: Dict[str, Any]) -> Union[Dict[str, Any], str]:
         raise NotImplementedError
 
-    @staticmethod
-    def search_web(query: str, num_results: int = 5) -> list:
+    def search_web(self, query: str, num_results: int = 5) -> list:
         """
         Search the web for a given query using DuckDuckGo Search
         and return a list of result URLs.
