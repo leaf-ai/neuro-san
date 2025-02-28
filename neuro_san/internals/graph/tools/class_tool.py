@@ -187,6 +187,10 @@ Some hints:
         :return: The result of the coded_tool, whatever that is.
         """
         retval: Any = None
+
+        message = AgentMessage(content=f"Received arguments {arguments}")
+        await self.journal.write_message(message)
+
         try:
             # Try the preferred async_invoke()
             retval = await coded_tool.async_invoke(self.arguments, self.sly_data)
@@ -201,13 +205,15 @@ This can lead to performance problems when running within a server. Consider por
 """
             self.logger.info(message)
             message = AgentMessage(content=message)
-            journal: Journal = self.run_context.get_journal()
-            await journal.write_message(message)
+            await self.journal.write_message(message)
 
             # Try to run in the executor.
             invocation_context = self.run_context.get_invocation_context()
             executor: AsyncioExecutor = invocation_context.get_asyncio_executor()
             loop: AbstractEventLoop = executor.get_event_loop()
             retval = await loop.run_in_executor(None, coded_tool.invoke, arguments, sly_data)
+
+        message = AgentMessage(content=f"Got result: {retval}")
+        await self.journal.write_message(message)
 
         return retval
