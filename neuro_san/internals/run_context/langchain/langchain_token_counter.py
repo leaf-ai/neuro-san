@@ -60,7 +60,7 @@ class LangChainTokenCounter:
 
         :param run_context: The RunContext whose policy we want to use.
         """
-        self.llm: BaseLanguageModel = run_context.llm       # Note: reaching in
+        self.llm: BaseLanguageModel = run_context.get_llm()
         self.invocation_context: InvocationContext = run_context.get_invocation_context()
         self.journal: OriginatingJournal = run_context.get_journal()
         self.debug: bool = False

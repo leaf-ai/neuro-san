@@ -628,3 +628,9 @@ class LangChainRunContext(RunContext):
         :return: The Journal associated with the instance
         """
         return self.journal
+
+    def get_llm(self) -> BaseLanguageModel:
+        """
+        :return: The LLM associated with the instance
+        """
+        return self.llm
