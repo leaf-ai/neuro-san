@@ -13,6 +13,8 @@ from typing import Any
 from typing import Awaitable
 from typing import Dict
 
+from asyncio import Task
+from contextvars import Context
 from contextvars import ContextVar
 from contextvars import copy_context
 
@@ -27,12 +29,15 @@ from langchain_core.language_models.base import BaseLanguageModel
 from langchain_openai.chat_models.base import ChatOpenAI
 from langchain_openai.chat_models.azure import AzureChatOpenAI
 
+from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
+
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.agent_message import AgentMessage
+from neuro_san.internals.messages.origination import Origination
 
 
-ORIGIN_INFO: ContextVar = ContextVar('origin_info', default=None)
+ORIGIN_INFO: ContextVar[str] = ContextVar('origin_info', default=None)
 
 
 class LangChainTokenCounter:
@@ -92,8 +97,12 @@ class LangChainTokenCounter:
             # * As of 2/21/25, it seems that tool-calling agents (branch nodes) are not
             #   registering their tokens correctly. Not sure if this is a bug in langchain
             #   or there is something we are not doing in that scenario that we should be.
+            origin_str: str = Origination.get_full_name_from_origin(self.journal.origin)
+            ORIGIN_INFO.set(origin_str)
             with token_counter_context_manager() as callback:
-                retval = await awaitable
+                new_context: Context = copy_context()
+                task: Task = new_context.run(self.create_task, awaitable)
+                retval = await task
         else:
             # No token counting was available for the LLM, but we still need to invoke.
             retval = await awaitable
@@ -101,6 +110,21 @@ class LangChainTokenCounter:
         await self.report(callback)
 
         return retval
+
+    def create_task(self, awaitable: Awaitable) -> Task:
+        """
+        Riffed from:
+        https://stackoverflow.com/questions/78659844/async-version-of-context-run-for-context-vars-in-python-asyncio
+        """
+        executor: AsyncioExecutor = self.invocation_context.get_asyncio_executor()
+        origin_str: str = ORIGIN_INFO.get()
+        task: Task = executor.create_task(awaitable, origin_str)
+
+        # from langchain_community.callbacks.manager import openai_callback_var
+        # oai_call = openai_callback_var.get()
+        # print(f"origin is {origin_str} callback var is {id(oai_call)}")
+
+        return task
 
     async def report(self, callback: BaseCallbackHandler):
         """
