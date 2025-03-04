@@ -628,7 +628,3 @@ class LangChainRunContext(RunContext):
         :return: The Journal associated with the instance
         """
         return self.journal
-
-    def get_token_counter_context_manager(self):
-        token_counter_context_manager = LangChainTokenCounter.get_callback_for_llm(self.llm)
-        return token_counter_context_manager
