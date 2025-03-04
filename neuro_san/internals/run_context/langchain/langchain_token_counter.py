@@ -38,6 +38,10 @@ from neuro_san.internals.messages.agent_message import AgentMessage
 from neuro_san.internals.messages.origination import Origination
 
 
+# Keep a ContextVar for the origin info.  We do this because the
+# langchain callbacks this stuff is based on also uses ContextVars
+# and we want to be sure these are in sync.
+# See: https://docs.python.org/3/library/contextvars.html
 ORIGIN_INFO: ContextVar[str] = ContextVar('origin_info', default=None)
 
 
