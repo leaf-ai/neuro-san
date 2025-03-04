@@ -24,6 +24,7 @@ from langchain_community.callbacks.bedrock_anthropic_callback \
 from langchain_community.callbacks.openai_info import OpenAICallbackHandler
 from langchain_community.callbacks.manager import get_openai_callback
 from langchain_community.callbacks.manager import get_bedrock_anthropic_callback
+from langchain_community.callbacks.manager import openai_callback_var
 from langchain_core.callbacks.base import BaseCallbackHandler
 from langchain_core.language_models.base import BaseLanguageModel
 from langchain_openai.chat_models.base import ChatOpenAI
@@ -59,6 +60,7 @@ class LangChainTokenCounter:
         self.llm: BaseLanguageModel = llm
         self.invocation_context: InvocationContext = invocation_context
         self.journal: Journal = journal
+        self.debug: bool = False
 
     @staticmethod
     def get_callback_for_llm(llm: BaseLanguageModel) -> Any:
@@ -78,6 +80,20 @@ class LangChainTokenCounter:
         return None
 
     async def count_tokens(self, awaitable: Awaitable) -> Any:
+        """
+        Counts the tokens (if possible) from what happens inside the awaitable
+        within a separate context.  If tokens are counted, they are added to
+        the InvocationContext's request_reporting and sent over the message queue
+        via the journal
+
+        Recall awaitables are a full async method call with args.  That is, where you would expect to
+                baz = await myinstance.foo(bar)
+        you instead do
+                baz = await token_counter.count_tokens(myinstance.foo(bar)).
+
+        :param awaitable: The awaitable whose tokens we wish to count.
+        :return: Whatever the awaitable would return
+        """
 
         retval: Any = None
 
@@ -120,9 +136,10 @@ class LangChainTokenCounter:
         origin_str: str = ORIGIN_INFO.get()
         task: Task = executor.create_task(awaitable, origin_str)
 
-        # from langchain_community.callbacks.manager import openai_callback_var
-        # oai_call = openai_callback_var.get()
-        # print(f"origin is {origin_str} callback var is {id(oai_call)}")
+        if self.debug:
+            # Print to be sure we have a different callback object.
+            oai_call = openai_callback_var.get()
+            print(f"origin is {origin_str} callback var is {id(oai_call)}")
 
         return task
 
