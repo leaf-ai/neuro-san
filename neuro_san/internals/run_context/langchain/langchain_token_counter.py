@@ -109,6 +109,13 @@ class LangChainTokenCounter:
         token_counter_context_manager = self.get_callback_for_llm(self.llm)
 
         if token_counter_context_manager is not None:
+
+            # Record origin information in our own context var so we can associate
+            # with the langchain callback context vars more easily.
+            origin: List[Dict[str, Any]] = self.journal.get_origin()
+            origin_str: str = Origination.get_full_name_from_origin(origin)
+            ORIGIN_INFO.set(origin_str)
+
             # Use the context manager to count tokens as per
             #   https://python.langchain.com/docs/how_to/llm_token_usage_tracking/#using-callbacks
             #
@@ -118,9 +125,6 @@ class LangChainTokenCounter:
             # * As of 2/21/25, it seems that tool-calling agents (branch nodes) are not
             #   registering their tokens correctly. Not sure if this is a bug in langchain
             #   or there is something we are not doing in that scenario that we should be.
-            origin: List[Dict[str, Any]] = self.journal.get_origin()
-            origin_str: str = Origination.get_full_name_from_origin(origin)
-            ORIGIN_INFO.set(origin_str)
             with token_counter_context_manager() as callback:
                 # Create a new context for different ContextVar values
                 # and use the create_task() to run within that context.
