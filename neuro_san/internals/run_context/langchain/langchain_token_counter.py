@@ -12,6 +12,7 @@
 from typing import Any
 from typing import Awaitable
 from typing import Dict
+from typing import List
 
 from asyncio import Task
 from contextvars import Context
@@ -33,7 +34,7 @@ from langchain_openai.chat_models.azure import AzureChatOpenAI
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
-from neuro_san.internals.journals.journal import Journal
+from neuro_san.internals.journals.originating_journal import OriginatingJournal
 from neuro_san.internals.messages.agent_message import AgentMessage
 from neuro_san.internals.messages.origination import Origination
 
@@ -52,18 +53,18 @@ class LangChainTokenCounter:
 
     def __init__(self, llm: BaseLanguageModel,
                  invocation_context: InvocationContext,
-                 journal: Journal = None):
+                 journal: OriginatingJournal = None):
         """
         Constructor
 
         :param llm: The BaseLanguageModel instance against which token counting is to take place
         :param invocation_context: The context policy container that pertains to the invocation
                     of the agent.
-        :param journal: The journal to report token accounting to.
+        :param journal: The OriginatingJournal to report token accounting to.
         """
         self.llm: BaseLanguageModel = llm
         self.invocation_context: InvocationContext = invocation_context
-        self.journal: Journal = journal
+        self.journal: OriginatingJournal = journal
         self.debug: bool = False
 
     @staticmethod
@@ -117,9 +118,12 @@ class LangChainTokenCounter:
             # * As of 2/21/25, it seems that tool-calling agents (branch nodes) are not
             #   registering their tokens correctly. Not sure if this is a bug in langchain
             #   or there is something we are not doing in that scenario that we should be.
-            origin_str: str = Origination.get_full_name_from_origin(self.journal.origin)
+            origin: List[Dict[str, Any]] = self.journal.get_origin()
+            origin_str: str = Origination.get_full_name_from_origin(origin)
             ORIGIN_INFO.set(origin_str)
             with token_counter_context_manager() as callback:
+                # Create a new context for different ContextVar values
+                # and use the create_task() to run within that context.
                 new_context: Context = copy_context()
                 task: Task = new_context.run(self.create_task, awaitable)
                 retval = await task
