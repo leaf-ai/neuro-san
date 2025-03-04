@@ -54,15 +54,13 @@ class LangChainTokenCounter:
     Main entrypoint is count_tokens().
     """
 
-    def __init__(self, llm: BaseLanguageModel,
-                 run_context: RunContext):
+    def __init__(self, run_context: RunContext):
         """
         Constructor
 
-        :param llm: The BaseLanguageModel instance against which token counting is to take place
         :param run_context: The RunContext whose policy we want to use.
         """
-        self.llm: BaseLanguageModel = llm
+        self.llm: BaseLanguageModel = run_context.llm       # Note: reaching in
         self.invocation_context: InvocationContext = run_context.get_invocation_context()
         self.journal: OriginatingJournal = run_context.get_journal()
         self.debug: bool = False

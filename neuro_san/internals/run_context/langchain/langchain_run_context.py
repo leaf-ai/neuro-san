@@ -378,7 +378,7 @@ class LangChainRunContext(RunContext):
         }
 
         # Attempt to count tokens/costs while invoking the agent.
-        token_counter = LangChainTokenCounter(self.llm, self)
+        token_counter = LangChainTokenCounter(self)
         await token_counter.count_tokens(self.ainvoke(agent_executor, inputs, invoke_config))
 
         return run
