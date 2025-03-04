@@ -13,6 +13,9 @@ from typing import Any
 from typing import Awaitable
 from typing import Dict
 
+from contextvars import ContextVar
+from contextvars import copy_context
+
 from langchain_anthropic.chat_models import ChatAnthropic
 from langchain_community.callbacks.bedrock_anthropic_callback \
     import BedrockAnthropicTokenUsageCallbackHandler
@@ -29,24 +32,27 @@ from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.agent_message import AgentMessage
 
 
+ORIGIN_INFO: ContextVar = ContextVar('origin_info', default=None)
+
+
 class LangChainTokenCounter:
     """
     Helps with per-llm means of counting tokens.
     """
 
-    def __init__(self, invocation_context: InvocationContext,
-                 llm: BaseLanguageModel,
+    def __init__(self, llm: BaseLanguageModel,
+                 invocation_context: InvocationContext,
                  journal: Journal = None):
         """
         Constructor
 
+        :param llm: The BaseLanguageModel instance against which token counting is to take place
         :param invocation_context: The context policy container that pertains to the invocation
                     of the agent.
-        :param llm: The BaseLanguageModel instance against which token counting is to take place
         :param journal: The journal to report token accounting to.
         """
-        self.invocation_context: InvocationContext = invocation_context
         self.llm: BaseLanguageModel = llm
+        self.invocation_context: InvocationContext = invocation_context
         self.journal: Journal = journal
 
     @staticmethod
