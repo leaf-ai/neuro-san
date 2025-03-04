@@ -23,6 +23,7 @@ from langchain_anthropic.chat_models import ChatAnthropic
 from langchain_community.callbacks.bedrock_anthropic_callback \
     import BedrockAnthropicTokenUsageCallbackHandler
 from langchain_community.callbacks.openai_info import OpenAICallbackHandler
+from langchain_community.callbacks.manager import bedrock_anthropic_callback_var
 from langchain_community.callbacks.manager import get_openai_callback
 from langchain_community.callbacks.manager import get_bedrock_anthropic_callback
 from langchain_community.callbacks.manager import openai_callback_var
@@ -49,6 +50,7 @@ ORIGIN_INFO: ContextVar[str] = ContextVar('origin_info', default=None)
 class LangChainTokenCounter:
     """
     Helps with per-llm means of counting tokens.
+    Main entrypoint is count_tokens().
     """
 
     def __init__(self, llm: BaseLanguageModel,
@@ -66,23 +68,6 @@ class LangChainTokenCounter:
         self.invocation_context: InvocationContext = invocation_context
         self.journal: OriginatingJournal = journal
         self.debug: bool = False
-
-    @staticmethod
-    def get_callback_for_llm(llm: BaseLanguageModel) -> Any:
-        """
-        :param llm: A BaseLanguageModel returned from LlmFactory.
-        :return: A handle to a no-args function, that when called will
-                open up a context manager for token counting.
-                Can be None if no such entity exists for the llm type
-        """
-
-        if isinstance(llm, (AzureChatOpenAI, ChatOpenAI)):
-            return get_openai_callback
-
-        if isinstance(llm, ChatAnthropic):
-            return get_bedrock_anthropic_callback
-
-        return None
 
     async def count_tokens(self, awaitable: Awaitable) -> Any:
         """
@@ -116,6 +101,11 @@ class LangChainTokenCounter:
             origin_str: str = Origination.get_full_name_from_origin(origin)
             ORIGIN_INFO.set(origin_str)
 
+            old_callback: BaseCallbackHandler = None
+            callback_var: ContextVar = self.get_context_var_for_llm(self.llm)
+            if callback_var is not None:
+                old_callback = callback_var.get()
+
             # Use the context manager to count tokens as per
             #   https://python.langchain.com/docs/how_to/llm_token_usage_tracking/#using-callbacks
             #
@@ -131,6 +121,8 @@ class LangChainTokenCounter:
                 new_context: Context = copy_context()
                 task: Task = new_context.run(self.create_task, awaitable)
                 retval = await task
+
+            callback_var.set(old_callback)
         else:
             # No token counting was available for the LLM, but we still need to invoke.
             retval = await awaitable
@@ -179,6 +171,40 @@ class LangChainTokenCounter:
             # We actually have a token dictionary to report, so go there.
             agent_message = AgentMessage(structure=token_dict)
             await self.journal.write_message(agent_message)
+
+    @staticmethod
+    def get_callback_for_llm(llm: BaseLanguageModel) -> Any:
+        """
+        :param llm: A BaseLanguageModel returned from LlmFactory.
+        :return: A handle to a no-args function, that when called will
+                open up a context manager for token counting.
+                Can be None if no such entity exists for the llm type
+        """
+
+        if isinstance(llm, (AzureChatOpenAI, ChatOpenAI)):
+            return get_openai_callback
+
+        if isinstance(llm, ChatAnthropic):
+            return get_bedrock_anthropic_callback
+
+        return None
+
+    @staticmethod
+    def get_context_var_for_llm(llm: BaseLanguageModel) -> ContextVar:
+        """
+        :param llm: A BaseLanguageModel returned from LlmFactory.
+        :return: A ContextVar that corresponds to where token counting callback
+                information is going.
+                Can be None if no such entity exists for the llm type
+        """
+
+        if isinstance(llm, (AzureChatOpenAI, ChatOpenAI)):
+            return openai_callback_var
+
+        if isinstance(llm, ChatAnthropic):
+            return bedrock_anthropic_callback_var
+
+        return None
 
     @staticmethod
     def normalize_token_count(callback: BaseCallbackHandler) -> Dict[str, Any]:
