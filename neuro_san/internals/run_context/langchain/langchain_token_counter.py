@@ -10,6 +10,7 @@
 #
 # END COPYRIGHT
 from typing import Any
+from typing import Awaitable
 from typing import Dict
 
 from langchain_anthropic.chat_models import ChatAnthropic
@@ -23,11 +24,30 @@ from langchain_core.language_models.base import BaseLanguageModel
 from langchain_openai.chat_models.base import ChatOpenAI
 from langchain_openai.chat_models.azure import AzureChatOpenAI
 
+from neuro_san.internals.interfaces.invocation_context import InvocationContext
+from neuro_san.internals.journals.journal import Journal
+from neuro_san.internals.messages.agent_message import AgentMessage
+
 
 class LangChainTokenCounter:
     """
     Helps with per-llm means of counting tokens.
     """
+
+    def __init__(self, invocation_context: InvocationContext,
+                 llm: BaseLanguageModel,
+                 journal: Journal):
+        """
+        Constructor
+
+        :param invocation_context: The context policy container that pertains to the invocation
+                    of the agent.
+        :param llm: The BaseLanguageModel instance against which token counting is to take place
+        :param journal: The journal to report token accounting to.
+        """
+        self.invocation_context: InvocationContext = invocation_context
+        self.llm: BaseLanguageModel = llm
+        self.journal: Journal = journal
 
     @staticmethod
     def get_callback_for_llm(llm: BaseLanguageModel) -> Any:
@@ -45,6 +65,60 @@ class LangChainTokenCounter:
             return get_bedrock_anthropic_callback
 
         return None
+
+    async def count_tokens(self, awaitable: Awaitable) -> Any:
+
+        retval: Any = None
+
+        # Attempt to count tokens/costs while invoking the agent.
+        # The means by which this happens is on a per-LLM basis, so get the right hook
+        # given the LLM we've got.
+        callback: BaseCallbackHandler = None
+        token_counter_context_manager = self.get_callback_for_llm(self.llm)
+
+        if token_counter_context_manager is not None:
+            # Use the context manager to count tokens as per
+            #   https://python.langchain.com/docs/how_to/llm_token_usage_tracking/#using-callbacks
+            #
+            # Caveats:
+            # * In using this context manager approach, any tool that is called
+            #   also has its token counts contributing to its callers for better or worse.
+            # * As of 2/21/25, it seems that tool-calling agents (branch nodes) are not
+            #   registering their tokens correctly. Not sure if this is a bug in langchain
+            #   or there is something we are not doing in that scenario that we should be.
+            with token_counter_context_manager() as callback:
+                retval = await awaitable
+        else:
+            # No token counting was available for the LLM, but we still need to invoke.
+            retval = await awaitable
+
+        await self.report(callback)
+
+        return retval
+
+    async def report(self, callback: BaseCallbackHandler):
+        """
+        Report on the token accounting results of the callback
+        :param callback: A BaseCallbackHandler instance that contains token counting information
+        """
+        # Token counting results are collected in the callback, if there are any.
+        # Different LLMs can count things in different ways, so normalize.
+        token_dict: Dict[str, Any] = self.normalize_token_count(callback)
+        if token_dict is None or not bool(token_dict):
+            return
+
+        # Accumulate what we learned about tokens to request reporting.
+        # For now we just overwrite the one key because we know
+        # the last one out will be the front man, and as of 2/21/25 his stats
+        # are cumulative.  At some point we might want a finer-grained breakdown
+        # that perhaps contributes to a service/er-wide periodic token stats breakdown
+        # of some kind.  For now, get something going.
+        request_reporting: Dict[str, Any] = self.invocation_context.get_request_reporting()
+        request_reporting["token_accounting"] = token_dict
+
+        # We actually have a token dictionary to report, so go there.
+        agent_message = AgentMessage(structure=token_dict)
+        await self.journal.write_message(agent_message)
 
     @staticmethod
     def normalize_token_count(callback: BaseCallbackHandler) -> Dict[str, Any]:
