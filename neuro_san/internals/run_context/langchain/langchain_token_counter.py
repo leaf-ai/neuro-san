@@ -36,7 +36,7 @@ class LangChainTokenCounter:
 
     def __init__(self, invocation_context: InvocationContext,
                  llm: BaseLanguageModel,
-                 journal: Journal):
+                 journal: Journal = None):
         """
         Constructor
 
@@ -116,9 +116,10 @@ class LangChainTokenCounter:
         request_reporting: Dict[str, Any] = self.invocation_context.get_request_reporting()
         request_reporting["token_accounting"] = token_dict
 
-        # We actually have a token dictionary to report, so go there.
-        agent_message = AgentMessage(structure=token_dict)
-        await self.journal.write_message(agent_message)
+        if self.journal is not None:
+            # We actually have a token dictionary to report, so go there.
+            agent_message = AgentMessage(structure=token_dict)
+            await self.journal.write_message(agent_message)
 
     @staticmethod
     def normalize_token_count(callback: BaseCallbackHandler) -> Dict[str, Any]:
