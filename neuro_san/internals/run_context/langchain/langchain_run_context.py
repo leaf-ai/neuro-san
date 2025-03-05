@@ -197,6 +197,15 @@ class LangChainRunContext(RunContext):
 
         if len(self.tools) > 0:
             self.agent = create_tool_calling_agent(self.llm, self.tools, prompt_template)
+
+            # The above call creates a chain in this order:
+            #   first:  RunnablePassthrough
+            #   middle: prompt
+            #           llm_with_tools
+            #   last:   ToolsAgentOutputParser
+            #
+            # ... we need to mess with that a bit
+
             # Replace the output parser from the call above.
             # Per empirical experience, this is "last".
             self.agent.last = JournalingToolsAgentOutputParser(self.journal)
