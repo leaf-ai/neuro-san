@@ -52,6 +52,9 @@ class LangChainTokenCounter:
     """
     Helps with per-llm means of counting tokens.
     Main entrypoint is count_tokens().
+
+    Notes as to how each BaseLanguageModel/BaseChatModel should be configured
+    are in get_callback_for_llm()
     """
 
     def __init__(self, run_context: RunContext):
@@ -178,9 +181,16 @@ class LangChainTokenCounter:
         """
 
         if isinstance(llm, (AzureChatOpenAI, ChatOpenAI)):
+            # Notes:
+            #   * ChatOpenAI needs to have stream_usage=True configured
+            #     in order to get good token info back reliably.
+            #   * AzureOpenAI - unclear what needs to be done if anything 3/4/2025
             return get_openai_callback
 
         if isinstance(llm, ChatAnthropic):
+            #   * ChatAnthropic needs to have stream_usage=True configured
+            #     in order to get good token info back reliably.
+            #     Per class docs this is on by default.
             return get_bedrock_anthropic_callback
 
         return None
@@ -223,9 +233,8 @@ class LangChainTokenCounter:
                 "successful_requests": callback.successful_requests,
                 "total_cost": callback.total_cost,
                 "caveats": [
-                    "Langchain only allows accounting for OpenAI and Anthropic models.",
+                    "Only doing token accounting for OpenAI and Anthropic models for now.",
                     "Each LLM Branch Node also includes accounting for each of its callees.",
-                    "Each LLM Branch Node does not yet properly account for its own tokens.",
                 ]
             }
 

@@ -350,7 +350,9 @@ class LlmFactory:
                                                                        "OPENAI_API_KEY"),
                             max_tokens=use_max_tokens,
                             model_name=use_model_name,
-                            callbacks=callbacks)
+                            callbacks=callbacks,
+                            # Set stream_usage to True in order to get token counting chunks.
+                            stream_usage=True)
         elif base_class == AzureChatOpenAI:
             # Higher temperature is more random
             llm = AzureChatOpenAI(
