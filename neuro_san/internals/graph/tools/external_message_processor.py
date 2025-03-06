@@ -39,7 +39,7 @@ class ExternalMessageProcessor(MessageProcessor):
 
     async def async_process_message(self, chat_message_dict: Dict[str, Any], message_type: ChatMessageType):
         """
-        Process the message.
+        Process the message asynchronously.
         :param chat_message_dict: The ChatMessage dictionary to process.
         :param message_type: The ChatMessageType of the chat_message_dictionary to process.
         """
@@ -54,3 +54,12 @@ class ExternalMessageProcessor(MessageProcessor):
         # Send the message to the client with deepened origin information
         message: BaseMessage = convert_to_base_message(chat_message_dict)
         await self.journal.write_message(message, origin=origin)
+
+    def process_message(self, chat_message_dict: Dict[str, Any], message_type: ChatMessageType):
+        """
+        Process the message.
+        :param chat_message_dict: The ChatMessage dictionary to process.
+        :param message_type: The ChatMessageType of the chat_message_dictionary to process.
+        """
+        # We don't implement this because we need to do so asynchronously
+        raise NotImplementedError
