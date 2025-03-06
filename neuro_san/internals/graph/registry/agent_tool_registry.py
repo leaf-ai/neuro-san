@@ -25,7 +25,6 @@ from neuro_san.internals.graph.tools.branch_tool import BranchTool
 from neuro_san.internals.graph.tools.class_tool import ClassTool
 from neuro_san.internals.graph.tools.external_tool import ExternalTool
 from neuro_san.internals.graph.tools.front_man import FrontMan
-from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.callable_tool import CallableTool
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
@@ -177,14 +176,20 @@ Some things to try:
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
     def create_agent_tool(self, parent_run_context: RunContext,
-                          journal: Journal,
                           name: str,
                           sly_data: Dict[str, Any],
                           arguments: Dict[str, Any] = None,
                           parent_agent_spec: Dict[str, Any] = None) -> CallableTool:
         """
+        Create an active node for an agent from its spec.
+
+        :param parent_run_context: The RunContext of the agent calling this method
         :param name: The name of the agent to get out of the registry
-        :return: The CallableTool referred to by the name.
+        :param sly_data: A mapping whose keys might be referenceable by agents, but whose
+                 values should not appear in agent chat text. Can be an empty dictionary.
+        :param arguments: A dictionary of arguments for the newly constructed agent
+        :param parent_agent_spec: The spec of the agent calling this method.
+        :return: The CallableTool agent referred to by the name.
         """
         agent_tool: CallableTool = None
         factory: AgentToolFactory = self

@@ -186,7 +186,6 @@ class BranchTool(CallingTool, CallableTool):
         # Use the tool
         our_agent_spec = self.get_agent_tool_spec()
         callable_tool: CallableTool = self.factory.create_agent_tool(self.run_context,
-                                                                     self.journal,
                                                                      tool_name,
                                                                      sly_data,
                                                                      tool_args,
