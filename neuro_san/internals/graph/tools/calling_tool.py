@@ -220,8 +220,8 @@ context with which it will proces input, essentially telling it what to do.
         #       that we can build().
         our_agent_spec = self.get_agent_tool_spec()
         callable_component: CallableTool = \
-            self.factory.create_agent_tool(self.run_context, use_tool_name, self.sly_data,
-                                           tool_arguments, our_agent_spec)
+            self.factory.create_agent_tool(self.run_context, our_agent_spec, use_tool_name,
+                                           self.sly_data, tool_arguments)
         callable_component_response: List[Any] = await callable_component.build()
 
         output: str = json.dumps(callable_component_response)
