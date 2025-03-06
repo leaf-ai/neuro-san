@@ -26,12 +26,3 @@ class HttpServerApplication(Application):
     def __init__(self, *args, **kwargs):
         # Initialize the base Application
         super().__init__(*args, **kwargs)
-
-        # Initialize and store dependencies:
-        self.session_factory: AgentSessionFactory = AgentSessionFactory()
-
-    def get_session_factory(self):
-        """
-        Get factory for agent sessions.
-        """
-        return self.session_factory

@@ -20,10 +20,10 @@ from google.protobuf.json_format import MessageToDict
 from google.protobuf.json_format import Parse
 
 # pylint: disable=no-name-in-module
-from neuro_san.api.grpc.agent_pb2 import ChatRequest
+from neuro_san.api.grpc.agent_pb2 import ChatRequest, ChatResponse
 
 from neuro_san.http_sidecar.handlers.base_request_handler import BaseRequestHandler
-from neuro_san.interfaces.agent_session import AgentSession
+from neuro_san.interfaces.async_agent_session import AsyncAgentSession
 
 
 class StreamingChatHandler(BaseRequestHandler):
@@ -31,7 +31,7 @@ class StreamingChatHandler(BaseRequestHandler):
     Handler class for neuro-san streaming chat API call.
     """
 
-    def post(self):
+    async def post(self):
         """
         Implementation of POST request handler for streaming chat API call.
         """
@@ -41,22 +41,27 @@ class StreamingChatHandler(BaseRequestHandler):
 
             grpc_request = Parse(json.dumps(data), ChatRequest())
             metadata: Dict[str, Any] = self.get_metadata()
-            grpc_session: AgentSession = self.get_grpc_session(metadata)
+            grpc_session: AsyncAgentSession = self.get_grpc_session(metadata)
 
-            result_generator: Generator[Dict[str, Any], None, None] =\
+            # Mind the type hint:
+            # here we are getting Generator of Generators of ChatResponses!
+            result_generator: Generator[Generator[ChatResponse, None, None], None, None] =\
                 grpc_session.streaming_chat(grpc_request)
 
             # Set up headers for chunked response
             self.set_header("Content-Type", "application/json")
             self.set_header("Transfer-Encoding", "chunked")
             # Flush headers immediately
-            self.flush()
+            await self.flush()
 
-            for result_message in result_generator:
-                result_dict: Dict[str, Any] = MessageToDict(result_message)
-                result_str: str = json.dumps(result_dict) + "\n"
-                self.write(result_str)
-                self.flush()
+            # async for result_message in result_generator:
+            # result_generator = self.async_generator()
+            async for sub_generator in result_generator:
+                async for result_message in sub_generator:
+                    result_dict: Dict[str, Any] = MessageToDict(result_message)
+                    result_str: str = json.dumps(result_dict) + "\n"
+                    self.write(result_str)
+                    await self.flush()
 
         except json.JSONDecodeError:
             # Handle invalid JSON input
@@ -68,6 +73,6 @@ class StreamingChatHandler(BaseRequestHandler):
             self.write({"error": "Internal server error"})
             self.logger.error("Internal server error: %s", traceback.format_exc())
         finally:
-            self.flush()
+            await self.flush()
         # We are done with response stream:
-        self.finish()
+        await self.finish()
