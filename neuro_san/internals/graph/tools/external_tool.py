@@ -20,6 +20,7 @@ from logging import Logger
 
 from neuro_san.interfaces.async_agent_session import AsyncAgentSession
 from neuro_san.internals.graph.tools.abstract_callable_tool import AbstractCallableTool
+from neuro_san.internals.graph.tools.external_message_processor import ExternalMessageProcessor
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
@@ -69,7 +70,9 @@ class ExternalTool(AbstractCallableTool):
 
         self.session: AsyncAgentSession = None
         self.chat_context: Dict[str, Any] = None
+
         self.processor = BasicMessageProcessor()
+        self.processor.add_processor(ExternalMessageProcessor(self.journal))
 
     def get_name(self) -> str:
         """
@@ -118,7 +121,7 @@ class ExternalTool(AbstractCallableTool):
         async for chat_response in chat_responses:
 
             response: Dict[str, Any] = chat_response.get("response", empty)
-            self.processor.process_message(response)
+            await self.processor.async_process_message(response)
 
         answer: str = self.processor.get_answer()
         self.chat_context = self.processor.get_chat_context()

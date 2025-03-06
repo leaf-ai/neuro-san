@@ -94,3 +94,19 @@ class CompositeMessageProcessor(MessageProcessor):
             message_processor.process_message(chat_message_dict, message_type)
             if message_processor.should_block_downstream_processing(chat_message_dict, message_type):
                 break
+
+    async def async_process_message(self, chat_message_dict: Dict[str, Any], message_type: ChatMessageType = None):
+        """
+        Process the message asynchronously.
+
+        :param chat_message_dict: The ChatMessage dictionary to process.
+        :param message_type: The ChatMessageType of the chat_message_dictionary to process.
+                            Can be None to kick the process off.
+        """
+        if message_type is None:
+            message_type = self.get_message_type(chat_message_dict)
+
+        for message_processor in self.message_processors:
+            await message_processor.async_process_message(chat_message_dict, message_type)
+            if message_processor.should_block_downstream_processing(chat_message_dict, message_type):
+                break
