@@ -23,11 +23,13 @@ from neuro_san.internals.graph.tools.abstract_callable_tool import AbstractCalla
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
+from neuro_san.internals.messages.agent_message import AgentMessage
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
 from neuro_san.internals.messages.origination import Origination
 from neuro_san.internals.run_context.factory.run_context_factory import RunContextFactory
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
+from neuro_san.message_processing.basic_message_processor import BasicMessageProcessor
 
 
 class ExternalTool(AbstractCallableTool):
@@ -66,8 +68,8 @@ class ExternalTool(AbstractCallableTool):
         self.arguments: Dict[str, Any] = arguments
 
         self.session: AsyncAgentSession = None
-        self.session_id: str = None
         self.chat_context: Dict[str, Any] = None
+        self.processor = BasicMessageProcessor()
 
     def get_name(self) -> str:
         """
@@ -82,6 +84,9 @@ class ExternalTool(AbstractCallableTool):
         :return: A List of messages produced during this process.
         """
         message_list: List[Dict[str, Any]] = []
+
+        message = AgentMessage(content=f"Received arguments {self.arguments}")
+        await self.journal.write_message(message)
 
         # Create an AsyncAgentSession if necessary
         if self.session is None:
@@ -109,38 +114,28 @@ class ExternalTool(AbstractCallableTool):
 
         # The asynchronous generator will wait until the next response is available
         # from the stream.  When the other side is done, the iterator will exit the loop.
+        empty = {}
         async for chat_response in chat_responses:
 
-            response: Dict[str, Any] = chat_response.get("response")
-            if response is None:
-                # Ignore messages with no response.
-                continue
+            response: Dict[str, Any] = chat_response.get("response", empty)
+            self.processor.process_message(response)
 
-            # Prefer chat context when responding
-            chat_context: Dict[str, Any] = chat_response.get("chat_context")
-            if chat_context is not None:
-                self.chat_context = chat_context
-                self.session_id = None
-            else:
-                session_id: str = chat_response.get("session_id")
-                if session_id is not None:
-                    self.session_id = session_id
+        answer: str = self.processor.get_answer()
+        self.chat_context = self.processor.get_chat_context()
 
-            response_type = response.get("type")
-            message_type: ChatMessageType = ChatMessageType.from_response_type(response_type)
-            text: str = response.get("text")
+        message = AgentMessage(content=f"Got result: {answer}")
+        await self.journal.write_message(message)
 
-            # In terms of sending tool results back up the graph,
-            # we really only care about immediately are the AI responses.
-            # Eventually we will care about a fuller chat history.
-            if message_type == ChatMessageType.AI and text is not None:
+        # In terms of sending tool results back up the graph,
+        # we really only care about immediately are the AI responses.
+        # Eventually we will care about a fuller chat history.
 
-                # Prepare the output
-                message: Dict[str, Any] = {
-                    "role": "assistant",
-                    "content": text
-                }
-                message_list.append(message)
+        # Prepare the output
+        message: Dict[str, Any] = {
+            "role": "assistant",
+            "content": answer
+        }
+        message_list.append(message)
 
         messages_str = json.dumps(message_list)
         return messages_str
@@ -161,9 +156,7 @@ class ExternalTool(AbstractCallableTool):
             }
         }
 
-        if self.chat_context is None:
-            chat_request["session_id"] = self.session_id
-        elif bool(self.chat_context):
+        if bool(self.chat_context):
             # Recall that non-empty dictionaries evaluate to True
             chat_request["chat_context"] = self.chat_context
 
@@ -180,6 +173,5 @@ class ExternalTool(AbstractCallableTool):
         :param parent_run_context: The RunContext which contains the scope
                     of operation of this CallableNode
         """
-        super().delete_resources(parent_run_context)
+        await super().delete_resources(parent_run_context)
         self.session = None
-        self.session_id = None
