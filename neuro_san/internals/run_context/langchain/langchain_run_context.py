@@ -197,6 +197,15 @@ class LangChainRunContext(RunContext):
 
         if len(self.tools) > 0:
             self.agent = create_tool_calling_agent(self.llm, self.tools, prompt_template)
+
+            # The above call creates a chain in this order:
+            #   first:  RunnablePassthrough
+            #   middle: prompt
+            #           llm_with_tools
+            #   last:   ToolsAgentOutputParser
+            #
+            # ... we need to mess with that a bit
+
             # Replace the output parser from the call above.
             # Per empirical experience, this is "last".
             self.agent.last = JournalingToolsAgentOutputParser(self.journal)
@@ -378,44 +387,8 @@ class LangChainRunContext(RunContext):
         }
 
         # Attempt to count tokens/costs while invoking the agent.
-        # The means by which this happens is on a per-LLM basis, so get the right hook
-        # given the LLM we've got.
-        token_counter_context_manager = LangChainTokenCounter.get_callback_for_llm(self.llm)
-
-        callback = None
-        if token_counter_context_manager is not None:
-            # Use the context manager to count tokens as per
-            #   https://python.langchain.com/docs/how_to/llm_token_usage_tracking/#using-callbacks
-            #
-            # Caveats:
-            # * In using this context manager approach, any tool that is called
-            #   also has its token counts contributing to its callers for better or worse.
-            # * As of 2/21/25, it seems that tool-calling agents (branch nodes) are not
-            #   registering their tokens correctly. Not sure if this is a bug in langchain
-            #   or there is something we are not doing in that scenario that we should be.
-            with token_counter_context_manager() as callback:
-                await self.ainvoke(agent_executor, inputs, invoke_config)
-        else:
-            # No token counting was available for the LLM, but we still need to invoke.
-            await self.ainvoke(agent_executor, inputs, invoke_config)
-
-        # Token counting results are collected in the callback, if there are any.
-        # Different LLMs can count things in different ways, so normalize.
-        token_dict: Dict[str, Any] = LangChainTokenCounter.normalize_token_count(callback)
-        if token_dict is not None and bool(token_dict):
-
-            # Accumulate what we learned about tokens to request reporting.
-            # For now we just overwrite the one key because we know
-            # the last one out will be the front man, and as of 2/21/25 his stats
-            # are cumulative.  At some point we might want a finer-grained breakdown
-            # that perhaps contributes to a service/er-wide periodic token stats breakdown
-            # of some kind.  For now, get something going.
-            request_reporting: Dict[str, Any] = self.invocation_context.get_request_reporting()
-            request_reporting["token_accounting"] = token_dict
-
-            # We actually have a token dictionary to report, so go there.
-            agent_message = AgentMessage(structure=token_dict)
-            await self.journal.write_message(agent_message)
+        token_counter = LangChainTokenCounter(self)
+        await token_counter.count_tokens(self.ainvoke(agent_executor, inputs, invoke_config))
 
         return run
 
@@ -664,3 +637,9 @@ class LangChainRunContext(RunContext):
         :return: The Journal associated with the instance
         """
         return self.journal
+
+    def get_llm(self) -> BaseLanguageModel:
+        """
+        :return: The LLM associated with the instance
+        """
+        return self.llm
