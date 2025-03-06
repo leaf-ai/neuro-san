@@ -18,7 +18,7 @@ import os
 from pathlib import Path
 
 from leaf_common.config.dictionary_overlay import DictionaryOverlay
-from leaf_common.parsers.field_extractor import FieldExtractor
+from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
 from neuro_san.internals.graph.registry.sly_data_redactor import SlyDataRedactor
 from neuro_san.internals.graph.tools.branch_tool import BranchTool
@@ -158,8 +158,8 @@ Some things to try:
         :param agent_spec: A single agent to register
         :return: The agent name as per the spec
         """
-        extractor = FieldExtractor()
-        name = extractor.get_field(agent_spec, "function.name")
+        extractor = DictionaryExtractor(agent_spec)
+        name = extractor.get("function.name")
         if name is None:
             name = agent_spec.get("name")
 
@@ -180,7 +180,8 @@ Some things to try:
                           journal: Journal,
                           name: str,
                           sly_data: Dict[str, Any],
-                          arguments: Dict[str, Any] = None) -> CallableTool:
+                          arguments: Dict[str, Any] = None,
+                          parent_agent_spec: Dict[str, Any] = None) -> CallableTool:
         """
         :param name: The name of the agent to get out of the registry
         :return: The CallableTool referred to by the name.
@@ -198,7 +199,13 @@ Some things to try:
             # the calling/parent's agent specs.
             redacted_sly_data: Dict[str, Any] = self.redact_sly_data(parent_run_context, sly_data)
 
-            agent_tool = ExternalTool(parent_run_context, factory, name, arguments, redacted_sly_data)
+            # Get the spec for allowing upstream data
+            extractor = DictionaryExtractor(parent_agent_spec)
+            empty = {}
+            allow_upstream: Dict[str, Any] = extractor.get("allow.upstream", empty)
+
+            agent_tool = ExternalTool(parent_run_context, factory, name, arguments, redacted_sly_data,
+                                      allow_upstream)
             return agent_tool
 
         # Merge the arguments coming in from the LLM with those that were specified

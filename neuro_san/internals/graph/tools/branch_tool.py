@@ -184,11 +184,13 @@ class BranchTool(CallingTool, CallableTool):
         """
 
         # Use the tool
+        our_agent_spec = self.get_agent_tool_spec()
         callable_tool: CallableTool = self.factory.create_agent_tool(self.run_context,
                                                                      self.journal,
                                                                      tool_name,
                                                                      sly_data,
-                                                                     tool_args)
+                                                                     tool_args,
+                                                                     our_agent_spec)
         message: str = await callable_tool.build()
 
         # We got a list of messages back as a string. Take the last.

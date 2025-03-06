@@ -29,7 +29,8 @@ class AgentToolFactory:
                           journal: Journal,
                           name: str,
                           sly_data: Dict[str, Any],
-                          arguments: Dict[str, Any]) -> CallableTool:
+                          arguments: Dict[str, Any],
+                          parent_agent_spec: Dict[str, Any]) -> CallableTool:
         """
         :param name: The name of the agent to get out of the registry
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose

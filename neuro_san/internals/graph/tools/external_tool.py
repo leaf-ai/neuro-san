@@ -13,10 +13,13 @@ from typing import Any
 from typing import AsyncGenerator
 from typing import Dict
 from typing import List
+from typing import Union
 
 import json
 from logging import getLogger
 from logging import Logger
+
+from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
 from neuro_san.interfaces.async_agent_session import AsyncAgentSession
 from neuro_san.internals.graph.tools.abstract_callable_tool import AbstractCallableTool
@@ -44,7 +47,8 @@ class ExternalTool(AbstractCallableTool):
                  factory: AgentToolFactory,
                  agent_url: str,
                  arguments: Dict[str, Any],
-                 sly_data: Dict[str, Any]):
+                 sly_data: Dict[str, Any],
+                 allow_upstream: Dict[str, Any]):
         """
         Constructor
 
@@ -60,6 +64,8 @@ class ExternalTool(AbstractCallableTool):
                  values should not appear in agent chat text. Can be an empty dictionary.
                  This gets passed along as a distinct argument to the referenced python class's
                  invoke() method.
+        :param allow_upstream: A dictionary describing how to handle information
+                coming in (upstream) from the external agent
         """
         # There is no spec on our end for the agent_tool_spec
         super().__init__(factory, None, sly_data)
@@ -70,9 +76,24 @@ class ExternalTool(AbstractCallableTool):
 
         self.session: AsyncAgentSession = None
         self.chat_context: Dict[str, Any] = None
-
         self.processor = BasicMessageProcessor()
-        self.processor.add_processor(ExternalMessageProcessor(self.journal))
+
+        extractor = DictionaryExtractor(allow_upstream)
+        raw_reporting: Union[bool, str, List[str], Dict[str, Any]] = extractor.get("reporting", False)
+
+        # Should we be reporting external messages?
+        report: bool = False
+        if isinstance(raw_reporting, bool):
+            report = bool(raw_reporting)
+        elif isinstance(raw_reporting, str):
+            report = self.agent_url == raw_reporting
+        elif isinstance(raw_reporting, List):
+            report = self.agent_url in raw_reporting
+        elif isinstance(raw_reporting, Dict):
+            report = bool(raw_reporting.get(self.agent_url))
+
+        if report:
+            self.processor.add_processor(ExternalMessageProcessor(self.journal))
 
     def get_name(self) -> str:
         """

@@ -44,15 +44,12 @@ class ExternalMessageProcessor(MessageProcessor):
         :param message_type: The ChatMessageType of the chat_message_dictionary to process.
         """
         message_origin: List[Dict[str, Any]] = chat_message_dict.get("origin")
-        print(f"Origin from external tool is {message_origin}")
         if message_origin is None:
             return
 
         # Append the origin information from the external agent to our own
         origin: List[Dict[str, Any]] = copy(self.journal.get_origin())
         origin.extend(message_origin)
-
-        print(f"Extended origin is {origin}")
 
         # Send the message to the client with deepened origin information
         message: BaseMessage = convert_to_base_message(chat_message_dict, langchain_only=False)

@@ -48,6 +48,12 @@
 Use your tool to respond to the inquiry.
 """,
             "tools": ["/website_search"]
+
+            "allow": {
+                "upstream": {
+                    "reporting": [ "/website_search" ]
+                }
+            }
         }
     ]
 }
