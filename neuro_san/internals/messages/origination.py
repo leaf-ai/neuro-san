@@ -14,6 +14,8 @@ from typing import List
 
 from copy import copy
 
+from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
+
 
 class Origination:
     """
@@ -105,8 +107,10 @@ class Origination:
                 # zfill() adds leading 0's up to the number of characters provided
                 index_str = f"-{str(instantiation_index).zfill(Origination.NUM_INSTANTIATION_INDEX_DIGITS)}"
 
+            safe_tool: str = ExternalAgentParsing.get_safe_agent_name(tool)
+
             # Figure out the single origin string
-            origin_str: str = f"{tool}{index_str}"
+            origin_str: str = f"{safe_tool}{index_str}"
             origin_list.append(origin_str)
 
         full_path: str = ".".join(origin_list)

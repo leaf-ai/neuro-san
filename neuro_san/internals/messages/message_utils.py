@@ -177,7 +177,7 @@ def convert_to_chat_message(message: BaseMessage, origin: List[Dict[str, Any]] =
     return chat_message
 
 
-def convert_to_base_message(chat_message: Dict[str, Any]) -> BaseMessage:
+def convert_to_base_message(chat_message: Dict[str, Any], langchain_only: bool = True) -> BaseMessage:
     """
     The intended use for this method is for converting a neuro-san ChatMessage
     dictionary into a langchain BaseMessage such that it can be understood by
@@ -187,6 +187,8 @@ def convert_to_base_message(chat_message: Dict[str, Any]) -> BaseMessage:
     understand.
 
     :param chat_message: A ChatMessage dictionary to convert into BaseMessage
+    :param langchain_only: When True (default) only convert langchain messages,
+                        and not our own special variants.
     :return: A BaseMessage that was converted from the input.
             Can return None if conversion could not take place
     """
@@ -208,6 +210,20 @@ def convert_to_base_message(chat_message: Dict[str, Any]) -> BaseMessage:
     elif chat_message_type == ChatMessageType.AGENT_TOOL_RESULT:
         base_message = AgentToolResultMessage(content=content,
                                               tool_result_origin=chat_message.get("tool_result_origin"))
+
+    if langchain_only:
+        # Go no further
+        return base_message
+
+    if base_message is None:
+        # convert_to_base_message() is primarily for populating langchain chat history.
+        # so handle these other types differently.
+        if chat_message_type == ChatMessageType.AGENT:
+            base_message = AgentMessage(content=chat_message.get("text", ""),
+                                        structure=chat_message.get("structure"))
+        elif chat_message_type == ChatMessageType.AGENT_FRAMEWORK:
+            # Don't bother passing on chat_context
+            base_message = AgentFrameworkMessage(content=chat_message.get("text", ""))
 
     # Any other message type we do not want to send to any agent as chat history.
 

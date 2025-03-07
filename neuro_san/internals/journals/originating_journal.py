@@ -40,6 +40,12 @@ class OriginatingJournal(Journal):
         self.origin: List[Dict[str, Any]] = origin
         self.chat_history: List[BaseMessage] = chat_history
 
+    def get_origin(self) -> List[Dict[str, Any]]:
+        """
+        :return: The origin associated with this Journal
+        """
+        return self.origin
+
     async def write(self, entry: Union[str, bytes], origin: List[Dict[str, Any]] = None):
         """
         Writes a single string entry into the wrapped_journal.

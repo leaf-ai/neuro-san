@@ -43,3 +43,13 @@ class MessageProcessor:
         :param message_type: The ChatMessageType of the chat_message_dictionary to process.
         """
         raise NotImplementedError
+
+    async def async_process_message(self, chat_message_dict: Dict[str, Any], message_type: ChatMessageType):
+        """
+        Process the message asynchronously.
+        By default, this simply calls the synchronous version.
+
+        :param chat_message_dict: The ChatMessage dictionary to process.
+        :param message_type: The ChatMessageType of the chat_message_dictionary to process.
+        """
+        self.process_message(chat_message_dict, message_type)
