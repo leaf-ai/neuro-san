@@ -311,8 +311,7 @@ class LlmFactory:
         "nvidia_api_key"
     """
 
-    @staticmethod
-    def create_llm(config: Dict[str, Any], callbacks: List[BaseCallbackHandler] = None) -> BaseLanguageModel:
+    def create_llm(self, config: Dict[str, Any], callbacks: List[BaseCallbackHandler] = None) -> BaseLanguageModel:
         """
         Creates a langchain LLM based on the 'model_name' value of
         the config passed in.
@@ -338,7 +337,7 @@ class LlmFactory:
         api_key = llm_entry.get("api_key")
         use_model_name = llm_entry.get("use_model_name", model_name)
 
-        use_max_tokens = LlmFactory.get_max_prompt_tokens(use_config)
+        use_max_tokens = self.get_max_prompt_tokens(use_config)
 
         # Construct the LLM
         llm: BaseLanguageModel = None
@@ -346,8 +345,8 @@ class LlmFactory:
             # Higher temperature is more random
             llm = ChatOpenAI(
                             temperature=use_config.get("temperature", DEFAULT_TEMPERATURE),
-                            openai_api_key=LlmFactory.get_value_or_env(use_config, api_key,
-                                                                       "OPENAI_API_KEY"),
+                            openai_api_key=self.get_value_or_env(use_config, api_key,
+                                                                 "OPENAI_API_KEY"),
                             max_tokens=use_max_tokens,
                             model_name=use_model_name,
                             callbacks=callbacks,
@@ -357,21 +356,21 @@ class LlmFactory:
             # Higher temperature is more random
             llm = AzureChatOpenAI(
                             temperature=use_config.get("temperature", DEFAULT_TEMPERATURE),
-                            openai_api_key=LlmFactory.get_value_or_env(use_config, api_key,
-                                                                       "OPENAI_API_KEY"),
-                            openai_api_base=LlmFactory.get_value_or_env(use_config, "openai_api_base",
-                                                                        "OPENAI_API_BASE"),
-                            openai_api_version=LlmFactory.get_value_or_env(use_config, "openai_api_version",
-                                                                           "OPENAI_API_VERSION"),
-                            openai_proxy=LlmFactory.get_value_or_env(use_config, "openai_proxy",
-                                                                     "OPENAI_PROXY"),
-                            openai_api_type=LlmFactory.get_value_or_env(use_config, "openai_api_type",
-                                                                        "OPENAI_API_TYPE"),
-                            azure_endpoint=LlmFactory.get_value_or_env(use_config, "azure_endpoint",
-                                                                       "AZURE_OPENAI_ENDPOINT"),
+                            openai_api_key=self.get_value_or_env(use_config, api_key,
+                                                                 "OPENAI_API_KEY"),
+                            openai_api_base=self.get_value_or_env(use_config, "openai_api_base",
+                                                                  "OPENAI_API_BASE"),
+                            openai_api_version=self.get_value_or_env(use_config, "openai_api_version",
+                                                                     "OPENAI_API_VERSION"),
+                            openai_proxy=self.get_value_or_env(use_config, "openai_proxy",
+                                                               "OPENAI_PROXY"),
+                            openai_api_type=self.get_value_or_env(use_config, "openai_api_type",
+                                                                  "OPENAI_API_TYPE"),
+                            azure_endpoint=self.get_value_or_env(use_config, "azure_endpoint",
+                                                                 "AZURE_OPENAI_ENDPOINT"),
                             # AD here means "ActiveDirectory"
-                            azure_ad_token=LlmFactory.get_value_or_env(use_config, "azure_ad_token",
-                                                                       "AZURE_OPENAI_AD_TOKEN"),
+                            azure_ad_token=self.get_value_or_env(use_config, "azure_ad_token",
+                                                                 "AZURE_OPENAI_AD_TOKEN"),
                             max_tokens=use_max_tokens,
                             model_name=use_model_name,
                             callbacks=callbacks)
@@ -379,10 +378,10 @@ class LlmFactory:
             # Higher temperature is more random
             llm = ChatAnthropic(
                             temperature=use_config.get("temperature", DEFAULT_TEMPERATURE),
-                            anthropic_api_key=LlmFactory.get_value_or_env(use_config, api_key,
-                                                                          "ANTHROPIC_API_KEY"),
-                            anthropic_api_url=LlmFactory.get_value_or_env(use_config, "anthropic_api_url",
-                                                                          "ANTHROPIC_API_URL"),
+                            anthropic_api_key=self.get_value_or_env(use_config, api_key,
+                                                                    "ANTHROPIC_API_KEY"),
+                            anthropic_api_url=self.get_value_or_env(use_config, "anthropic_api_url",
+                                                                    "ANTHROPIC_API_URL"),
                             max_tokens=use_max_tokens,
                             model_name=use_model_name,
                             callbacks=callbacks)
@@ -397,8 +396,8 @@ class LlmFactory:
             # Higher temperature is more random
             llm = ChatNVIDIA(
                             temperature=use_config.get("temperature", DEFAULT_TEMPERATURE),
-                            nvidia_api_key=LlmFactory.get_value_or_env(use_config, api_key,
-                                                                       "NVIDIA_API_KEY"),
+                            nvidia_api_key=self.get_value_or_env(use_config, api_key,
+                                                                 "NVIDIA_API_KEY"),
                             max_tokens=use_max_tokens,
                             model=use_model_name,
                             callbacks=callbacks)
@@ -407,8 +406,7 @@ class LlmFactory:
 
         return llm
 
-    @staticmethod
-    def create_tokenizer(config: Dict[str, Any]) -> Encoding:
+    def create_tokenizer(self, config: Dict[str, Any]) -> Encoding:
         """
         Creates a tiktoken tokenizer based on the 'model_name' value of
         the config passed in.
@@ -446,8 +444,7 @@ class LlmFactory:
 
         return tokenizer
 
-    @staticmethod
-    def get_max_prompt_tokens(config: Dict[str, Any]) -> int:
+    def get_max_prompt_tokens(self, config: Dict[str, Any]) -> int:
         """
         :param config: A dictionary which describes which LLM to use.
                 See the class comment for details.
@@ -476,8 +473,7 @@ class LlmFactory:
 
         return max_prompt_tokens
 
-    @staticmethod
-    def get_value_or_env(config: Dict[str, Any], key: str, env_key: str) -> Any:
+    def get_value_or_env(self, config: Dict[str, Any], key: str, env_key: str) -> Any:
         """
         :param config: The config dictionary to search
         :param key: The key for the config to look for

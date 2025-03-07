@@ -179,7 +179,8 @@ class LangChainRunContext(RunContext):
             callbacks.append(LoggingCallbackHandler(self.logger))
 
         # Create the model we will use.
-        self.llm = LlmFactory.create_llm(self.llm_config, callbacks=callbacks)
+        llm_factory = LlmFactory()
+        self.llm = llm_factory.create_llm(self.llm_config, callbacks=callbacks)
 
         # Now that we have a name, we can create an ErrorDetector for the output.
         self.error_detector = ErrorDetector(full_name,
