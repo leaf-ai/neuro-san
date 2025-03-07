@@ -207,10 +207,10 @@ Some things to try:
             # Get the spec for allowing upstream data
             extractor = DictionaryExtractor(parent_agent_spec)
             empty = {}
-            allow_upstream: Dict[str, Any] = extractor.get("allow.upstream", empty)
+            allow_from_downstream: Dict[str, Any] = extractor.get("allow.from_downstream", empty)
 
             agent_tool = ExternalTool(parent_run_context, factory, name, arguments, redacted_sly_data,
-                                      allow_upstream)
+                                      allow_from_downstream)
             return agent_tool
 
         # Merge the arguments coming in from the LLM with those that were specified

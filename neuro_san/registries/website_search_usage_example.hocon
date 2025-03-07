@@ -50,11 +50,11 @@ Use your tool to respond to the inquiry.
             "tools": ["/website_search"]
 
             "allow": {
-                "upstream": {
-                    # Report messages from the external tool upstream.
+                "from_downstream": {
+                    # Report messages from the external tool that is downstream.
                     # For "security by default" this is normally off, but for
                     # illustrative purposes and debugging, it's useful to have on.
-                    # Most agents would not want to have any upstream reporting on
+                    # Most agents would not want to have this reporting on
                     # in a production environment.
                     "reporting": [ "/website_search" ]
                 }

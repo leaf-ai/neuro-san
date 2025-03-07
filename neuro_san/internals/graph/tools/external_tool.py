@@ -48,7 +48,7 @@ class ExternalTool(AbstractCallableTool):
                  agent_url: str,
                  arguments: Dict[str, Any],
                  sly_data: Dict[str, Any],
-                 allow_upstream: Dict[str, Any]):
+                 allow_from_downstream: Dict[str, Any]):
         """
         Constructor
 
@@ -64,8 +64,8 @@ class ExternalTool(AbstractCallableTool):
                  values should not appear in agent chat text. Can be an empty dictionary.
                  This gets passed along as a distinct argument to the referenced python class's
                  invoke() method.
-        :param allow_upstream: A dictionary describing how to handle information
-                coming in (upstream) from the external agent
+        :param allow_from_downstream: A dictionary describing how to handle information
+                coming in from the downstreamexternal agent
         """
         # There is no spec on our end for the agent_tool_spec
         super().__init__(factory, None, sly_data)
@@ -78,7 +78,7 @@ class ExternalTool(AbstractCallableTool):
         self.chat_context: Dict[str, Any] = None
         self.processor = BasicMessageProcessor()
 
-        extractor = DictionaryExtractor(allow_upstream)
+        extractor = DictionaryExtractor(allow_from_downstream)
         raw_reporting: Union[bool, str, List[str], Dict[str, Any]] = extractor.get("reporting", False)
 
         # Should we be reporting external messages?
