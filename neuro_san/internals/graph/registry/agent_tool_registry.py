@@ -18,14 +18,13 @@ import os
 from pathlib import Path
 
 from leaf_common.config.dictionary_overlay import DictionaryOverlay
-from leaf_common.parsers.field_extractor import FieldExtractor
+from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
 from neuro_san.internals.graph.registry.sly_data_redactor import SlyDataRedactor
 from neuro_san.internals.graph.tools.branch_tool import BranchTool
 from neuro_san.internals.graph.tools.class_tool import ClassTool
 from neuro_san.internals.graph.tools.external_tool import ExternalTool
 from neuro_san.internals.graph.tools.front_man import FrontMan
-from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.callable_tool import CallableTool
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
@@ -158,8 +157,8 @@ Some things to try:
         :param agent_spec: A single agent to register
         :return: The agent name as per the spec
         """
-        extractor = FieldExtractor()
-        name = extractor.get_field(agent_spec, "function.name")
+        extractor = DictionaryExtractor(agent_spec)
+        name = extractor.get("function.name")
         if name is None:
             name = agent_spec.get("name")
 
@@ -177,13 +176,20 @@ Some things to try:
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
     def create_agent_tool(self, parent_run_context: RunContext,
-                          journal: Journal,
+                          parent_agent_spec: Dict[str, Any],
                           name: str,
                           sly_data: Dict[str, Any],
                           arguments: Dict[str, Any] = None) -> CallableTool:
         """
+        Create an active node for an agent from its spec.
+
+        :param parent_run_context: The RunContext of the agent calling this method
+        :param parent_agent_spec: The spec of the agent calling this method.
         :param name: The name of the agent to get out of the registry
-        :return: The CallableTool referred to by the name.
+        :param sly_data: A mapping whose keys might be referenceable by agents, but whose
+                 values should not appear in agent chat text. Can be an empty dictionary.
+        :param arguments: A dictionary of arguments for the newly constructed agent
+        :return: The CallableTool agent referred to by the name.
         """
         agent_tool: CallableTool = None
         factory: AgentToolFactory = self
@@ -198,7 +204,13 @@ Some things to try:
             # the calling/parent's agent specs.
             redacted_sly_data: Dict[str, Any] = self.redact_sly_data(parent_run_context, sly_data)
 
-            agent_tool = ExternalTool(parent_run_context, factory, name, arguments, redacted_sly_data)
+            # Get the spec for allowing upstream data
+            extractor = DictionaryExtractor(parent_agent_spec)
+            empty = {}
+            allow_from_downstream: Dict[str, Any] = extractor.get("allow.from_downstream", empty)
+
+            agent_tool = ExternalTool(parent_run_context, factory, name, arguments, redacted_sly_data,
+                                      allow_from_downstream)
             return agent_tool
 
         # Merge the arguments coming in from the LLM with those that were specified
