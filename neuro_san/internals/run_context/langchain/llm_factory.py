@@ -13,6 +13,7 @@
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Type
 
 import os
 
@@ -42,77 +43,77 @@ LLM_ENTRIES = {
     # Model context and output tokens: https://platform.openai.com/docs/models
     # Model compatibility: https://platform.openai.com/docs/models#model-endpoint-compatibility
     "gpt-3.5-turbo": {
-        "class": ChatOpenAI,
+        "class": "openai",
         "api_key": "openai_api_key",
         "max_tokens": 4096  # From https://platform.openai.com/docs/models/gpt-3-5
     },
     "gpt-3.5-turbo-16k": {
-        "class": ChatOpenAI,
+        "class": "openai",
         "api_key": "openai_api_key",
         "max_tokens": 16384  # From https://platform.openai.com/docs/models/gpt-3-5
     },
     "gpt-4o": {
-        "class": ChatOpenAI,
+        "class": "openai",
         "api_key": "openai_api_key",
         "max_tokens": 4096  # https://platform.openai.com/docs/models says 16,384
                             # but that is for input, and empirical evidence shows this is
                             # the number required for output.
     },
     "gpt-4o-mini": {
-        "class": ChatOpenAI,
+        "class": "openai",
         "api_key": "openai_api_key",
         "max_tokens": 4096  # https://platform.openai.com/docs/models says 16,384
                             # but that is for input, and empirical evidence shows this is
                             # the number required for output.
     },
     "gpt-4-turbo": {
-        "class": ChatOpenAI,
+        "class": "openai",
         "api_key": "openai_api_key",
         "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4-turbo says 12800
                             # but that is for input, and empirical evidence shows this is
                             # the number required for output.
     },
     "gpt-4-turbo-preview": {
-        "class": ChatOpenAI,
+        "class": "openai",
         "api_key": "openai_api_key",
         "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4-turbo-preview says 12800
                             # but that is for input, and empirical evidence shows this is
                             # the number required for output.
     },
     "gpt-4-1106-preview": {
-        "class": ChatOpenAI,
+        "class": "openai",
         "api_key": "openai_api_key",
         "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4-1106-preview says 12800
                             # but that is for input, and empirical evidence shows this is
                             # the number required for output.
     },
     "gpt-4-vision-preview": {
-        "class": ChatOpenAI,
+        "class": "openai",
         "api_key": "openai_api_key",
         "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4-vision-preview says 12800
                             # but that is for input. Not yet tested
     },
     "gpt-4": {
-        "class": ChatOpenAI,
+        "class": "openai",
         "api_key": "openai_api_key",
         "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4 says 12800
                             # but that is for input, and empirical evidence shows this is
                             # the number required for output.
     },
     "gpt-4-32k": {
-        "class": ChatOpenAI,
+        "class": "openai",
         "api_key": "openai_api_key",
         "max_tokens": 32768  # From https://platform.openai.com/docs/models/gpt-4-32k
     },
     "azure-gpt-3.5-turbo": {
         "use_model_name": "gpt-3.5-turbo",
-        "class": AzureChatOpenAI,
+        "class": "azure-openai",
         "api_key": "openai_api_key",
         "max_tokens": 4096  # From https://platform.openai.com/docs/models/gpt-3-5
     },
     "azure-gpt-4": {
         "use_model_name": "gpt-4",
-        "class": AzureChatOpenAI,
+        "class": "azure-openai",
         "api_key": "openai_api_key",
         "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4 says 12800
                             # but that is for input, and empirical evidence shows this is
@@ -120,92 +121,92 @@ LLM_ENTRIES = {
     },
     "claude-3-haiku": {
         "use_model_name": "claude-3-haiku-20240307",
-        "class": ChatAnthropic,
+        "class": "anthropic",
         "api_key": "anthropic_api_key",
         "max_tokens": 4096  # From https://docs.anthropic.com/en/docs/models-overview
     },
     "claude-3-sonnet": {
         "use_model_name": "claude-3-sonnet-20240229",
-        "class": ChatAnthropic,
+        "class": "anthropic",
         "api_key": "anthropic_api_key",
         "max_tokens": 4096  # From https://docs.anthropic.com/en/docs/models-overview
     },
     "claude-3-opus": {
         "use_model_name": "claude-3-opus-20240229",
-        "class": ChatAnthropic,
+        "class": "anthropic",
         "api_key": "anthropic_api_key",
         "max_tokens": 4096  # From https://docs.anthropic.com/en/docs/models-overview
     },
     "claude-2.1": {
-        "class": ChatAnthropic,
+        "class": "anthropic",
         "api_key": "anthropic_api_key",
         "max_tokens": 4096  # From https://docs.anthropic.com/en/docs/models-overview
     },
     "claude-2.0": {
-        "class": ChatAnthropic,
+        "class": "anthropic",
         "api_key": "anthropic_api_key",
         "max_tokens": 4096  # From https://docs.anthropic.com/en/docs/models-overview
     },
     "claude-instant-1.2": {
-        "class": ChatAnthropic,
+        "class": "anthropic",
         "api_key": "anthropic_api_key",
         "max_tokens": 4096  # From https://docs.anthropic.com/en/docs/models-overview
     },
     "llama2": {
-        "class": ChatOllama,
+        "class": "ollama",
         "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
     },
     "llama3": {
-        "class": ChatOllama,
+        "class": "ollama",
         "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
     },
     "llama3.1": {
-        "class": ChatOllama,
+        "class": "ollama",
         "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
     },
     "llama3:70b": {
-        "class": ChatOllama,
+        "class": "ollama",
         "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
     },
     "llava": {
-        "class": ChatOllama,
+        "class": "ollama",
         "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
     },
     "mistral": {
-        "class": ChatOllama,
+        "class": "ollama",
         "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
     },
     "mistral-nemo": {
-        "class": ChatOllama,
+        "class": "ollama",
         "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
     },
     "mixtral": {
-        "class": ChatOllama,
+        "class": "ollama",
         "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
     },
     "qwen2.5:14b": {
-        "class": ChatOllama,
+        "class": "ollama",
         "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
     },
     "deepseek-r1:14b": {  # Does not support tools
-        "class": ChatOllama,
+        "class": "ollama",
         "max_tokens": 4096
     },
     "nvidia-llama-3.1-405b-instruct": {
         "use_model_name": "meta/llama-3.1-405b-instruct",
-        "class": ChatNVIDIA,
+        "class": "nvidia",
         "api_key": "nvidia_api_key",
         "max_tokens": 4096  # From https://python.langchain.com/docs/integrations/chat/nvidia_ai_endpoints/
     },
     "nvidia-llama-3.3-70b-instruct": {
         "use_model_name": "meta/llama-3.3-70b-instruct",
-        "class": ChatNVIDIA,
+        "class": "nvidia",
         "api_key": "nvidia_api_key",
         "max_tokens": 4096  # From https://python.langchain.com/docs/integrations/chat/nvidia_ai_endpoints/
     },
     "nvidia-deepseek-r1": {
         "use_model_name": "deepseek-ai/deepseek-r1",
-        "class": ChatNVIDIA,
+        "class": "nvidia",
         "api_key": "nvidia_api_key",
         "max_tokens": 4096  # From https://python.langchain.com/docs/integrations/chat/nvidia_ai_endpoints/
     },
@@ -333,9 +334,11 @@ class LlmFactory:
             raise ValueError(f"No llm entry for model_name {model_name}")
 
         # Get some bits from the llm_entry
-        base_class = llm_entry.get("class")
+        chat_class_name: str = llm_entry.get("class")
         api_key = llm_entry.get("api_key")
         use_model_name = llm_entry.get("use_model_name", model_name)
+
+        base_class: Type[BaseLanguageModel] = self.get_chat_class(chat_class_name)
 
         use_max_tokens = self.get_max_prompt_tokens(use_config)
 
@@ -401,10 +404,35 @@ class LlmFactory:
                             max_tokens=use_max_tokens,
                             model=use_model_name,
                             callbacks=callbacks)
+        elif base_class is None:
+            raise ValueError(f"Class name {chat_class_name} for model_name {model_name} is unrecognized")
         else:
             raise ValueError(f"Class {base_class.__name__} for model_name {model_name} unknown")
 
         return llm
+
+    def get_chat_class(self, chat_class_name: str) -> Type[BaseLanguageModel]:
+        """
+        :param chat_class_name: The name of the chat class.
+        :return: The actual class corresponding to that name
+        """
+
+        if chat_class_name is None or not isinstance(chat_class_name, str):
+            return None
+
+        low_class: str = chat_class_name.lower()
+
+        chat_class_lookup: Dict[str, Type[BaseLanguageModel]] = {
+            "azure-openai": AzureChatOpenAI,
+            "openai": ChatOpenAI,
+            "anthropic": ChatAnthropic,
+            "nvidia": ChatNVIDIA,
+            "ollama": ChatOllama,
+        }
+
+        chat_class: Type[BaseLanguageModel] = chat_class_lookup.get(low_class)
+
+        return chat_class
 
     def create_tokenizer(self, config: Dict[str, Any]) -> Encoding:
         """
