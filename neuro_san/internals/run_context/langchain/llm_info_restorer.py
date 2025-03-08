@@ -57,7 +57,7 @@ class LlmInfoRestorer(Restorer):
                 raise ValueError(f"file_reference {use_file} must be a .json or .hocon file")
         except (ParseException, ParseSyntaxException, json.decoder.JSONDecodeError) as exception:
             message = f"""
-There was an error parsing the llm info file "{use_file}".
+There was an error parsing the llm_info file "{use_file}".
 See the accompanying ParseException (above) for clues as to what might be
 syntactically incorrect in that file.
 """

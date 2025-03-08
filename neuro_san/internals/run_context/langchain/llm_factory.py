@@ -79,6 +79,7 @@ class LlmFactory:
         Constructor
         """
         self.llm_infos: Dict[str, Any] = {}
+        self.overlayer = DictionaryOverlay()
 
     def load(self):
         """
@@ -86,6 +87,12 @@ class LlmFactory:
         """
         restorer = LlmInfoRestorer()
         self.llm_infos = restorer.restore()
+
+        # Mix in user-specified llm info, if available.
+        llm_info_file: str = os.getenv("AGENT_LLM_INFO_FILE")
+        if llm_info_file is not None and len(llm_info_file) > 0:
+            extra_llm_infos: Dict[str, Any] = restorer.restore(file_reference=llm_info_file)
+            self.llm_infos = self.overlayer.overlay(self.llm_infos, extra_llm_infos)
 
     def create_llm(self, config: Dict[str, Any], callbacks: List[BaseCallbackHandler] = None) -> BaseLanguageModel:
         """
@@ -99,9 +106,8 @@ class LlmFactory:
                 Can raise a ValueError if the config's model_name value is
                 unknown to this method.
         """
-        overlayer = DictionaryOverlay()
         default_config: Dict[str, Any] = self.llm_infos.get("default_config")
-        use_config = overlayer.overlay(default_config, config)
+        use_config = self.overlayer.overlay(default_config, config)
 
         model_name = use_config.get("model_name")
 
@@ -223,9 +229,8 @@ class LlmFactory:
         """
         tokenizer: Encoding = None
 
-        overlayer = DictionaryOverlay()
         default_config = self.llm_infos.get("default_config")
-        use_config = overlayer.overlay(default_config, config)
+        use_config = self.overlayer.overlay(default_config, config)
 
         token_encoding = use_config.get("token_encoding")
         if token_encoding is None:
@@ -257,9 +262,8 @@ class LlmFactory:
                 config dictionary.
         """
 
-        overlayer = DictionaryOverlay()
         default_config = self.llm_infos.get("default_config")
-        use_config = overlayer.overlay(default_config, config)
+        use_config = self.overlayer.overlay(default_config, config)
 
         model_name = use_config.get("model_name")
 
