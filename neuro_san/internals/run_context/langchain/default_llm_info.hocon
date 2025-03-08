@@ -1,0 +1,251 @@
+
+# Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
+# All Rights Reserved.
+# Issued under the Academic Public License.
+#
+# You can be released from the terms, and requirements of the Academic Public
+# License by purchasing a commercial license.
+# Purchase of a commercial license is mandatory for any use of the
+# neuro-san SDK Software in commercial settings.
+#
+# END COPYRIGHT
+
+{
+    # Model context and output tokens: https://platform.openai.com/docs/models
+    # Model compatibility: https://platform.openai.com/docs/models#model-endpoint-compatibility
+    "gpt-3.5-turbo": {
+        "class": "openai",
+        "api_key": "openai_api_key",
+        "max_tokens": 4096  # From https://platform.openai.com/docs/models/gpt-3-5
+    },
+    "gpt-3.5-turbo-16k": {
+        "class": "openai",
+        "api_key": "openai_api_key",
+        "max_tokens": 16384  # From https://platform.openai.com/docs/models/gpt-3-5
+    },
+    "gpt-4o": {
+        "class": "openai",
+        "api_key": "openai_api_key",
+        "max_tokens": 4096  # https://platform.openai.com/docs/models says 16,384
+                            # but that is for input, and empirical evidence shows this is
+                            # the number required for output.
+    },
+    "gpt-4o-mini": {
+        "class": "openai",
+        "api_key": "openai_api_key",
+        "max_tokens": 4096  # https://platform.openai.com/docs/models says 16,384
+                            # but that is for input, and empirical evidence shows this is
+                            # the number required for output.
+    },
+    "gpt-4-turbo": {
+        "class": "openai",
+        "api_key": "openai_api_key",
+        "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4-turbo says 12800
+                            # but that is for input, and empirical evidence shows this is
+                            # the number required for output.
+    },
+    "gpt-4-turbo-preview": {
+        "class": "openai",
+        "api_key": "openai_api_key",
+        "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4-turbo-preview says 12800
+                            # but that is for input, and empirical evidence shows this is
+                            # the number required for output.
+    },
+    "gpt-4-1106-preview": {
+        "class": "openai",
+        "api_key": "openai_api_key",
+        "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4-1106-preview says 12800
+                            # but that is for input, and empirical evidence shows this is
+                            # the number required for output.
+    },
+    "gpt-4-vision-preview": {
+        "class": "openai",
+        "api_key": "openai_api_key",
+        "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4-vision-preview says 12800
+                            # but that is for input. Not yet tested
+    },
+    "gpt-4": {
+        "class": "openai",
+        "api_key": "openai_api_key",
+        "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4 says 12800
+                            # but that is for input, and empirical evidence shows this is
+                            # the number required for output.
+    },
+    "gpt-4-32k": {
+        "class": "openai",
+        "api_key": "openai_api_key",
+        "max_tokens": 32768  # From https://platform.openai.com/docs/models/gpt-4-32k
+    },
+    "azure-gpt-3.5-turbo": {
+        "use_model_name": "gpt-3.5-turbo",
+        "class": "azure-openai",
+        "api_key": "openai_api_key",
+        "max_tokens": 4096  # From https://platform.openai.com/docs/models/gpt-3-5
+    },
+    "azure-gpt-4": {
+        "use_model_name": "gpt-4",
+        "class": "azure-openai",
+        "api_key": "openai_api_key",
+        "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4 says 12800
+                            # but that is for input, and empirical evidence shows this is
+                            # the number required for output.
+    },
+    "claude-3-haiku": {
+        "use_model_name": "claude-3-haiku-20240307",
+        "class": "anthropic",
+        "api_key": "anthropic_api_key",
+        "max_tokens": 4096  # From https://docs.anthropic.com/en/docs/models-overview
+    },
+    "claude-3-sonnet": {
+        "use_model_name": "claude-3-sonnet-20240229",
+        "class": "anthropic",
+        "api_key": "anthropic_api_key",
+        "max_tokens": 4096  # From https://docs.anthropic.com/en/docs/models-overview
+    },
+    "claude-3-opus": {
+        "use_model_name": "claude-3-opus-20240229",
+        "class": "anthropic",
+        "api_key": "anthropic_api_key",
+        "max_tokens": 4096  # From https://docs.anthropic.com/en/docs/models-overview
+    },
+    "claude-2.1": {
+        "class": "anthropic",
+        "api_key": "anthropic_api_key",
+        "max_tokens": 4096  # From https://docs.anthropic.com/en/docs/models-overview
+    },
+    "claude-2.0": {
+        "class": "anthropic",
+        "api_key": "anthropic_api_key",
+        "max_tokens": 4096  # From https://docs.anthropic.com/en/docs/models-overview
+    },
+    "claude-instant-1.2": {
+        "class": "anthropic",
+        "api_key": "anthropic_api_key",
+        "max_tokens": 4096  # From https://docs.anthropic.com/en/docs/models-overview
+    },
+    "llama2": {
+        "class": "ollama",
+        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
+    },
+    "llama3": {
+        "class": "ollama",
+        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
+    },
+    "llama3.1": {
+        "class": "ollama",
+        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
+    },
+    "llama3:70b": {
+        "class": "ollama",
+        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
+    },
+    "llava": {
+        "class": "ollama",
+        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
+    },
+    "mistral": {
+        "class": "ollama",
+        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
+    },
+    "mistral-nemo": {
+        "class": "ollama",
+        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
+    },
+    "mixtral": {
+        "class": "ollama",
+        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
+    },
+    "qwen2.5:14b": {
+        "class": "ollama",
+        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
+    },
+    "deepseek-r1:14b": {  # Does not support tools
+        "class": "ollama",
+        "max_tokens": 4096
+    },
+    "nvidia-llama-3.1-405b-instruct": {
+        "use_model_name": "meta/llama-3.1-405b-instruct",
+        "class": "nvidia",
+        "api_key": "nvidia_api_key",
+        "max_tokens": 4096  # From https://python.langchain.com/docs/integrations/chat/nvidia_ai_endpoints/
+    },
+    "nvidia-llama-3.3-70b-instruct": {
+        "use_model_name": "meta/llama-3.3-70b-instruct",
+        "class": "nvidia",
+        "api_key": "nvidia_api_key",
+        "max_tokens": 4096  # From https://python.langchain.com/docs/integrations/chat/nvidia_ai_endpoints/
+    },
+    "nvidia-deepseek-r1": {
+        "use_model_name": "deepseek-ai/deepseek-r1",
+        "class": "nvidia",
+        "api_key": "nvidia_api_key",
+        "max_tokens": 4096  # From https://python.langchain.com/docs/integrations/chat/nvidia_ai_endpoints/
+    },
+
+    # This is the default config used if no llm_config is present at all in 
+    # an agent network hocon file.  It is also used as a basis on top of which
+    # incomplete llm_configs are overlayed.
+    "default_config":{
+
+        "model_name": "gpt-4o",             # The string name of the default model to use.
+
+        "temperature": 0.7,                 # The default LLM temperature (randomness) to use.
+                                            # Values are floats between 0.0 (least random) to
+                                            # 1.0 (most random).
+
+        "token_encoding": null,             # The tiktoken encoding name to use with the
+                                            # create_tokenizer() method.  If not specified,
+                                            # tiktoken has a default for each model_name.
+
+        "prompt_token_fraction": 0.5,       # The fraction of total tokens (not necessarily words
+                                            # or letters) to use for a prompt. Each model_name
+                                            # has a documented number of max_tokens it can handle
+                                            # which is a total count of message + response tokens
+                                            # which goes into the calculation involved in
+                                            # get_max_prompt_tokens().
+                                            # By default the value is 0.5.
+
+        "max_tokens": null,                 # The maximum number of tokens to use in
+                                            # computing prompt tokens. By default this comes from
+                                            # the model description in this class.
+
+        "verbose": False,                   # When True, responses from ChatEngine are logged to stdout
+
+        "openai_api_key": null,             # The string api key to use when accessing an LLM.
+                                            # Default is null, which indicates that the code should
+                                            # get the value from the OS environment variable
+                                            # OPENAI_API_KEY.  This is true for OpenAI LLM models,
+                                            # which is the default and most often used. However, the name
+                                            # of the API key itself can be different depending on the model
+                                            # and its own norms.
+                                            #
+                                            # We highly recommend the None default value here and let
+                                            # the environment variables pass the key in, thus reducing
+                                            # temptation and/or accident in checking a secret into GitHub.
+
+
+        # The following keys are used with Azure OpenAI models.
+
+        "openai_api_base": null,            # The string url to use when accessing an Azure OpenAI model.
+                                            # By default this value is null, which indicates the value
+                                            # should come from the OS environment variable OPENAI_API_BASE.
+
+        "openai_api_version": null,         # The string version to use when accessing an Azure OpenAI model.
+                                            # By default this value is null, which indicates the value
+                                            # should come from the OS environment variable OPENAI_API_VERSION.
+
+        "openai_proxy": null,               # The string version to use when accessing an Azure OpenAI model.
+                                            # By default this value is null, which indicates the value
+                                            # should come from the OS environment variable OPENAI_PROXY.
+
+        "openai_api_type": null,            # The string type to use when accessing an Azure OpenAI model.
+                                            # By default this value is null, which indicates the value
+                                            # should come from the OS environment variable OPENAI_API_TYPE.
+
+        # The following keys are used with NVIDIA models.
+        "nvidia_api_key": null,             # We highly recommend the None default value here and let the
+                                            # "NVIDIA_API_KEY" environment variable pass the key in, thus reducing
+                                            # temptation and/or accident in checking a secret into GitHub.
+    },
+
+}

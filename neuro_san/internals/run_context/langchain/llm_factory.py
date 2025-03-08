@@ -31,245 +31,7 @@ from tiktoken import get_encoding
 
 from leaf_common.config.dictionary_overlay import DictionaryOverlay
 
-DEFAULT_MODEL = "gpt-3.5-turbo"
-DEFAULT_TEMPERATURE = 0.7
-
-# Max tokens in the docs is a combination of prompt tokens + response tokens
-# Use this fraction as a default split between what we expect between
-# prompt and response.
-DEFAULT_PROMPT_TOKEN_FRACTION = 0.5
-
-LLM_ENTRIES = {
-    # Model context and output tokens: https://platform.openai.com/docs/models
-    # Model compatibility: https://platform.openai.com/docs/models#model-endpoint-compatibility
-    "gpt-3.5-turbo": {
-        "class": "openai",
-        "api_key": "openai_api_key",
-        "max_tokens": 4096  # From https://platform.openai.com/docs/models/gpt-3-5
-    },
-    "gpt-3.5-turbo-16k": {
-        "class": "openai",
-        "api_key": "openai_api_key",
-        "max_tokens": 16384  # From https://platform.openai.com/docs/models/gpt-3-5
-    },
-    "gpt-4o": {
-        "class": "openai",
-        "api_key": "openai_api_key",
-        "max_tokens": 4096  # https://platform.openai.com/docs/models says 16,384
-                            # but that is for input, and empirical evidence shows this is
-                            # the number required for output.
-    },
-    "gpt-4o-mini": {
-        "class": "openai",
-        "api_key": "openai_api_key",
-        "max_tokens": 4096  # https://platform.openai.com/docs/models says 16,384
-                            # but that is for input, and empirical evidence shows this is
-                            # the number required for output.
-    },
-    "gpt-4-turbo": {
-        "class": "openai",
-        "api_key": "openai_api_key",
-        "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4-turbo says 12800
-                            # but that is for input, and empirical evidence shows this is
-                            # the number required for output.
-    },
-    "gpt-4-turbo-preview": {
-        "class": "openai",
-        "api_key": "openai_api_key",
-        "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4-turbo-preview says 12800
-                            # but that is for input, and empirical evidence shows this is
-                            # the number required for output.
-    },
-    "gpt-4-1106-preview": {
-        "class": "openai",
-        "api_key": "openai_api_key",
-        "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4-1106-preview says 12800
-                            # but that is for input, and empirical evidence shows this is
-                            # the number required for output.
-    },
-    "gpt-4-vision-preview": {
-        "class": "openai",
-        "api_key": "openai_api_key",
-        "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4-vision-preview says 12800
-                            # but that is for input. Not yet tested
-    },
-    "gpt-4": {
-        "class": "openai",
-        "api_key": "openai_api_key",
-        "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4 says 12800
-                            # but that is for input, and empirical evidence shows this is
-                            # the number required for output.
-    },
-    "gpt-4-32k": {
-        "class": "openai",
-        "api_key": "openai_api_key",
-        "max_tokens": 32768  # From https://platform.openai.com/docs/models/gpt-4-32k
-    },
-    "azure-gpt-3.5-turbo": {
-        "use_model_name": "gpt-3.5-turbo",
-        "class": "azure-openai",
-        "api_key": "openai_api_key",
-        "max_tokens": 4096  # From https://platform.openai.com/docs/models/gpt-3-5
-    },
-    "azure-gpt-4": {
-        "use_model_name": "gpt-4",
-        "class": "azure-openai",
-        "api_key": "openai_api_key",
-        "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4 says 12800
-                            # but that is for input, and empirical evidence shows this is
-                            # the number required for output.
-    },
-    "claude-3-haiku": {
-        "use_model_name": "claude-3-haiku-20240307",
-        "class": "anthropic",
-        "api_key": "anthropic_api_key",
-        "max_tokens": 4096  # From https://docs.anthropic.com/en/docs/models-overview
-    },
-    "claude-3-sonnet": {
-        "use_model_name": "claude-3-sonnet-20240229",
-        "class": "anthropic",
-        "api_key": "anthropic_api_key",
-        "max_tokens": 4096  # From https://docs.anthropic.com/en/docs/models-overview
-    },
-    "claude-3-opus": {
-        "use_model_name": "claude-3-opus-20240229",
-        "class": "anthropic",
-        "api_key": "anthropic_api_key",
-        "max_tokens": 4096  # From https://docs.anthropic.com/en/docs/models-overview
-    },
-    "claude-2.1": {
-        "class": "anthropic",
-        "api_key": "anthropic_api_key",
-        "max_tokens": 4096  # From https://docs.anthropic.com/en/docs/models-overview
-    },
-    "claude-2.0": {
-        "class": "anthropic",
-        "api_key": "anthropic_api_key",
-        "max_tokens": 4096  # From https://docs.anthropic.com/en/docs/models-overview
-    },
-    "claude-instant-1.2": {
-        "class": "anthropic",
-        "api_key": "anthropic_api_key",
-        "max_tokens": 4096  # From https://docs.anthropic.com/en/docs/models-overview
-    },
-    "llama2": {
-        "class": "ollama",
-        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
-    },
-    "llama3": {
-        "class": "ollama",
-        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
-    },
-    "llama3.1": {
-        "class": "ollama",
-        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
-    },
-    "llama3:70b": {
-        "class": "ollama",
-        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
-    },
-    "llava": {
-        "class": "ollama",
-        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
-    },
-    "mistral": {
-        "class": "ollama",
-        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
-    },
-    "mistral-nemo": {
-        "class": "ollama",
-        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
-    },
-    "mixtral": {
-        "class": "ollama",
-        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
-    },
-    "qwen2.5:14b": {
-        "class": "ollama",
-        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
-    },
-    "deepseek-r1:14b": {  # Does not support tools
-        "class": "ollama",
-        "max_tokens": 4096
-    },
-    "nvidia-llama-3.1-405b-instruct": {
-        "use_model_name": "meta/llama-3.1-405b-instruct",
-        "class": "nvidia",
-        "api_key": "nvidia_api_key",
-        "max_tokens": 4096  # From https://python.langchain.com/docs/integrations/chat/nvidia_ai_endpoints/
-    },
-    "nvidia-llama-3.3-70b-instruct": {
-        "use_model_name": "meta/llama-3.3-70b-instruct",
-        "class": "nvidia",
-        "api_key": "nvidia_api_key",
-        "max_tokens": 4096  # From https://python.langchain.com/docs/integrations/chat/nvidia_ai_endpoints/
-    },
-    "nvidia-deepseek-r1": {
-        "use_model_name": "deepseek-ai/deepseek-r1",
-        "class": "nvidia",
-        "api_key": "nvidia_api_key",
-        "max_tokens": 4096  # From https://python.langchain.com/docs/integrations/chat/nvidia_ai_endpoints/
-    },
-}
-
-
-DEFAULT_CONFIG = {
-
-    "model_name": DEFAULT_MODEL,            # The string name of the default model to use.
-                                            # Default if not specified is "gpt-3.5-turbo"
-
-    "temperature": DEFAULT_TEMPERATURE,     # The default LLM temperature (randomness) to use.
-                                            # Values are floats between 0.0 (least random) to
-                                            # 1.0 (most random).
-
-    "token_encoding": None,                 # The tiktoken encoding name to use with the
-                                            # create_tokenizer() method.  If not specified,
-                                            # tiktoken has a default for each model_name.
-
-    "prompt_token_fraction": DEFAULT_PROMPT_TOKEN_FRACTION,
-                                            # The fraction of total tokens (not necessarily words
-                                            # or letters) to use for a prompt. Each model_name
-                                            # has a documented number of max_tokens it can handle
-                                            # which is a total count of message + response tokens
-                                            # which goes into the calculation involved in
-                                            # get_max_prompt_tokens().
-                                            # By default the value is 0.5.
-
-    "max_tokens": None,                     # The maximum number of tokens to use in
-                                            # computing prompt tokens. By default this comes from
-                                            # the model description in this class.
-
-    "verbose": False,                       # When True, responses from ChatEngine are logged to stdout
-
-    "openai_api_key": None,                 # The string api key to use when accessing an LLM.
-                                            # Default is None, which indicates that the code should
-                                            # get the value from the OS environment variable
-                                            # OPENAI_API_KEY.  This is true for OpenAI LLM models,
-                                            # which is the default and most often used. However, the name
-                                            # of the API key itself can be  different depending on the model
-                                            # and its own norms.
-
-
-    # The following keys are used with Azure OpenAI models.
-
-    "openai_api_base": None,                # The string url to use when accessing an Azure OpenAI model.
-                                            # By default this value is None, which indicates the value
-                                            # should come from the OS environment variable OPENAI_API_BASE.
-
-    "openai_api_version": None,             # The string version to use when accessing an Azure OpenAI model.
-                                            # By default this value is None, which indicates the value
-                                            # should come from the OS environment variable OPENAI_API_VERSION.
-
-    "openai_proxy": None,                   # The string version to use when accessing an Azure OpenAI model.
-                                            # By default this value is None, which indicates the value
-                                            # should come from the OS environment variable OPENAI_PROXY.
-
-    "openai_api_type": None,                # The string type to use when accessing an Azure OpenAI model.
-                                            # By default this value is None, which indicates the value
-                                            # should come from the OS environment variable OPENAI_API_TYPE.
-    # The following keys are used with Azure OpenAI models.
-    "nvidia_api_key": None,
-}
+from neuro_san.internals.run_context.langchain.llm_info_restorer import LlmInfoRestorer
 
 
 class LlmFactory:
@@ -312,6 +74,19 @@ class LlmFactory:
         "nvidia_api_key"
     """
 
+    def __init__(self):
+        """
+        Constructor
+        """
+        self.llm_infos: Dict[str, Any] = {}
+
+    def load(self):
+        """
+        Loads the LLM information from hocon files.
+        """
+        restorer = LlmInfoRestorer()
+        self.llm_infos = restorer.restore()
+
     def create_llm(self, config: Dict[str, Any], callbacks: List[BaseCallbackHandler] = None) -> BaseLanguageModel:
         """
         Creates a langchain LLM based on the 'model_name' value of
@@ -325,19 +100,20 @@ class LlmFactory:
                 unknown to this method.
         """
         overlayer = DictionaryOverlay()
-        use_config = overlayer.overlay(DEFAULT_CONFIG, config)
+        default_config: Dict[str, Any] = self.llm_infos.get("default_config")
+        use_config = overlayer.overlay(default_config, config)
 
-        model_name = use_config.get("model_name", DEFAULT_MODEL)
+        model_name = use_config.get("model_name")
 
-        llm_entry = LLM_ENTRIES.get(model_name)
+        llm_entry = self.llm_infos.get(model_name)
         if llm_entry is None:
             raise ValueError(f"No llm entry for model_name {model_name}")
 
         # Get some bits from the llm_entry
-        chat_class_name: str = llm_entry.get("class")
         api_key = llm_entry.get("api_key")
         use_model_name = llm_entry.get("use_model_name", model_name)
 
+        chat_class_name: str = llm_entry.get("class")
         base_class: Type[BaseLanguageModel] = self.get_chat_class(chat_class_name)
 
         use_max_tokens = self.get_max_prompt_tokens(use_config)
@@ -347,7 +123,7 @@ class LlmFactory:
         if base_class == ChatOpenAI:
             # Higher temperature is more random
             llm = ChatOpenAI(
-                            temperature=use_config.get("temperature", DEFAULT_TEMPERATURE),
+                            temperature=use_config.get("temperature"),
                             openai_api_key=self.get_value_or_env(use_config, api_key,
                                                                  "OPENAI_API_KEY"),
                             max_tokens=use_max_tokens,
@@ -358,7 +134,7 @@ class LlmFactory:
         elif base_class == AzureChatOpenAI:
             # Higher temperature is more random
             llm = AzureChatOpenAI(
-                            temperature=use_config.get("temperature", DEFAULT_TEMPERATURE),
+                            temperature=use_config.get("temperature"),
                             openai_api_key=self.get_value_or_env(use_config, api_key,
                                                                  "OPENAI_API_KEY"),
                             openai_api_base=self.get_value_or_env(use_config, "openai_api_base",
@@ -380,7 +156,7 @@ class LlmFactory:
         elif base_class == ChatAnthropic:
             # Higher temperature is more random
             llm = ChatAnthropic(
-                            temperature=use_config.get("temperature", DEFAULT_TEMPERATURE),
+                            temperature=use_config.get("temperature"),
                             anthropic_api_key=self.get_value_or_env(use_config, api_key,
                                                                     "ANTHROPIC_API_KEY"),
                             anthropic_api_url=self.get_value_or_env(use_config, "anthropic_api_url",
@@ -391,14 +167,14 @@ class LlmFactory:
         elif base_class == ChatOllama:
             # Higher temperature is more random
             llm = ChatOllama(
-                            temperature=use_config.get("temperature", DEFAULT_TEMPERATURE),
+                            temperature=use_config.get("temperature"),
                             num_predict=use_max_tokens,
                             model=use_model_name,
                             callbacks=callbacks)
         elif base_class == ChatNVIDIA:
             # Higher temperature is more random
             llm = ChatNVIDIA(
-                            temperature=use_config.get("temperature", DEFAULT_TEMPERATURE),
+                            temperature=use_config.get("temperature"),
                             nvidia_api_key=self.get_value_or_env(use_config, api_key,
                                                                  "NVIDIA_API_KEY"),
                             max_tokens=use_max_tokens,
@@ -448,13 +224,14 @@ class LlmFactory:
         tokenizer: Encoding = None
 
         overlayer = DictionaryOverlay()
-        use_config = overlayer.overlay(DEFAULT_CONFIG, config)
+        default_config = self.llm_infos.get("default_config")
+        use_config = overlayer.overlay(default_config, config)
 
         token_encoding = use_config.get("token_encoding")
         if token_encoding is None:
-            model_name = use_config.get("model_name", DEFAULT_MODEL)
+            model_name = use_config.get("model_name")
 
-            llm_entry = LLM_ENTRIES.get(model_name)
+            llm_entry = self.llm_infos.get(model_name)
             if llm_entry is None:
                 raise ValueError(f"No tokenizer entry for model_name {model_name}")
 
@@ -481,17 +258,17 @@ class LlmFactory:
         """
 
         overlayer = DictionaryOverlay()
-        use_config = overlayer.overlay(DEFAULT_CONFIG, config)
+        default_config = self.llm_infos.get("default_config")
+        use_config = overlayer.overlay(default_config, config)
 
-        model_name = use_config.get("model_name", DEFAULT_MODEL)
+        model_name = use_config.get("model_name")
 
-        llm_entry = LLM_ENTRIES.get(model_name)
+        llm_entry = self.llm_infos.get(model_name)
         if llm_entry is None:
             raise ValueError(f"No llm entry for model_name {model_name}")
 
         entry_max_tokens = llm_entry.get("max_tokens")
-        prompt_token_fraction = use_config.get("prompt_token_fraction",
-                                               DEFAULT_PROMPT_TOKEN_FRACTION)
+        prompt_token_fraction = use_config.get("prompt_token_fraction")
         use_max_tokens = int(entry_max_tokens * prompt_token_fraction)
 
         # Allow the actual value for max_tokens to come from the config, if there
