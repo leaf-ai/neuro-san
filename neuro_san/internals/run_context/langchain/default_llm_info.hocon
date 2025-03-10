@@ -675,10 +675,6 @@
                                             # Values are floats between 0.0 (least random) to
                                             # 1.0 (most random).
 
-        "token_encoding": null,             # The tiktoken encoding name to use with the
-                                            # create_tokenizer() method.  If not specified,
-                                            # tiktoken has a default for each model_name.
-
         "prompt_token_fraction": 1.0,       # The fraction of total tokens (not necessarily words
                                             # or letters) to use for a prompt. Each model_name
                                             # has a documented number of max_tokens it can handle
