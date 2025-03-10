@@ -22,7 +22,7 @@ class HealthCheckHandler(RequestHandler):
     Handler class for API endpoint health check.
     """
 
-    def get(self):
+    async def get(self):
         """
         Implementation of GET request handler for API health check.
         """
@@ -38,7 +38,7 @@ class HealthCheckHandler(RequestHandler):
             self.set_status(500)
             self.write({"error": "Internal server error"})
         finally:
-            self.flush()
+            await self.flush()
 
     def data_received(self, chunk):
         """

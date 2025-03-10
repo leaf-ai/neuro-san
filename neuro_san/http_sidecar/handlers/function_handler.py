@@ -17,7 +17,7 @@ import json
 import traceback
 
 from neuro_san.http_sidecar.handlers.base_request_handler import BaseRequestHandler
-from neuro_san.interfaces.agent_session import AgentSession
+from neuro_san.interfaces.async_agent_session import AsyncAgentSession
 
 
 class FunctionHandler(BaseRequestHandler):
@@ -25,7 +25,7 @@ class FunctionHandler(BaseRequestHandler):
     Handler class for neuro-san "function" API call.
     """
 
-    def get(self):
+    async def get(self):
         """
         Implementation of GET request handler for "function" API call.
         """
@@ -33,8 +33,8 @@ class FunctionHandler(BaseRequestHandler):
         try:
             data: Dict[str, Any] = {}
             metadata: Dict[str, Any] = self.get_metadata()
-            grpc_session: AgentSession = self.get_grpc_session(metadata)
-            result_dict: Dict[str, Any] = grpc_session.function(data)
+            grpc_session: AsyncAgentSession = self.get_grpc_session(metadata)
+            result_dict: Dict[str, Any] = await grpc_session.function(data)
 
             # Return gRPC response to the HTTP client
             self.set_header("Content-Type", "application/json")

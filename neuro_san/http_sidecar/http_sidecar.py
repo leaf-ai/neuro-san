@@ -18,10 +18,10 @@ import logging
 from typing import Any, Dict, List
 
 from tornado.ioloop import IOLoop
+from tornado.web import Application
 
 from neuro_san.service.agent_server import DEFAULT_FORWARDED_REQUEST_METADATA
 
-from neuro_san.http_sidecar.http_server_application import HttpServerApplication
 from neuro_san.http_sidecar.handlers.health_check_handler import HealthCheckHandler
 from neuro_san.http_sidecar.handlers.connectivity_handler import ConnectivityHandler
 from neuro_san.http_sidecar.handlers.function_handler import FunctionHandler
@@ -87,4 +87,4 @@ class HttpSidecar:
             handlers.append((route, StreamingChatHandler, request_data))
             self.logger.info("Registering URL path: %s", route)
 
-        return HttpServerApplication(handlers)
+        return Application(handlers)
