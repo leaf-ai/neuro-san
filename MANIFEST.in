@@ -13,3 +13,4 @@ include neuro_san/deploy/Dockerfile
 include neuro_san/deploy/entrypoint.sh
 include neuro_san/deploy/logging.json
 include neuro_san/deploy/run.sh
+include neuro_san/internals/run_context/langchain/default_llm_info.hocon
