@@ -14,7 +14,6 @@ See class comment for details
 """
 from typing import Any, Dict, Generator
 import json
-import traceback
 
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.json_format import Parse
@@ -63,15 +62,8 @@ class StreamingChatHandler(BaseRequestHandler):
                     self.write(result_str)
                     await self.flush()
 
-        except json.JSONDecodeError:
-            # Handle invalid JSON input
-            self.set_status(400)
-            self.write({"error": "Invalid JSON format"})
-        except Exception:  # pylint: disable=broad-exception-caught
-            # Handle unexpected errors
-            self.set_status(500)
-            self.write({"error": "Internal server error"})
-            self.logger.error("Internal server error: %s", traceback.format_exc())
+        except Exception as exc:  # pylint: disable=broad-exception-caught
+            self.process_exception(exc)
         finally:
             await self.flush()
         # We are done with response stream:
