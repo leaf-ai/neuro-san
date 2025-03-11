@@ -150,6 +150,7 @@ ENV AGENT_SERVER_NAME_FOR_LOGS="Agent Server"
 # A space-delimited list of http metadata request keys to forward to logs/other requests
 # You can see how these are used in the AGENT_SERVICE_LOG_JSON file (see above) and
 # customize this and the AGENT_SERVER_LOG_JSON file to your needs.
+# Note that any metadata key needs to be all lowercase.
 ENV AGENT_FORWARDED_REQUEST_METADATA="request_id user_id"
 
 # Port number for the grpc service endpoint

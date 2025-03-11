@@ -85,9 +85,22 @@ class AgentServer:
             file_of_class = FileOfClass(__file__, path_to_basis="../deploy")
             os.environ["AGENT_SERVICE_LOG_JSON"] = file_of_class.get_file_in_basis("logging.json")
 
+        # Need to initialize the forwarded metadata default values before our first
+        # call to a logger (which is below!).
+        self.forwarded_request_metadata: List[str] = forwarded_request_metadata.split(" ")
+        extra_logging_defaults: Dict[str, str] = {
+            "source": server_name_for_logs,
+            "user_id": "None",
+            "request_id": "None",
+        }
+        if len(self.forwarded_request_metadata) > 0:
+            for key in self.forwarded_request_metadata:
+                extra_logging_defaults[key] = "None"
+
         setup_logging(server_name_for_logs, current_dir,
                       'AGENT_SERVICE_LOG_JSON',
-                      'AGENT_SERVICE_LOG_LEVEL')
+                      'AGENT_SERVICE_LOG_LEVEL',
+                      extra_logging_defaults)
         # This module within openai library can be quite chatty w/rt http requests
         logging.getLogger("httpx").setLevel(logging.WARNING)
 
@@ -99,7 +112,6 @@ class AgentServer:
         self.server_name_for_logs: str = server_name_for_logs
         self.max_concurrent_requests: int = max_concurrent_requests
         self.request_limit: int = request_limit
-        self.forwarded_request_metadata: List[str] = forwarded_request_metadata.split(" ")
 
         self.services: List[AgentService] = []
 
