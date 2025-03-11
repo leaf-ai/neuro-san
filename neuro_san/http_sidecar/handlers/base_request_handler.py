@@ -12,10 +12,12 @@
 """
 See class comment for details
 """
+import grpc
 import logging
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Tuple
 from tornado.web import RequestHandler
 
 from neuro_san.interfaces.async_agent_session import AsyncAgentSession
@@ -28,6 +30,17 @@ class BaseRequestHandler(RequestHandler):
     Provides logic to inject neuro-san service specific data
     into local handler context.
     """
+    grpc_to_http = {
+        grpc.StatusCode.INVALID_ARGUMENT: 400,
+        grpc.StatusCode.UNAUTHENTICATED: 401,
+        grpc.StatusCode.PERMISSION_DENIED: 403,
+        grpc.StatusCode.NOT_FOUND: 404,
+        grpc.StatusCode.ALREADY_EXISTS: 409,
+        grpc.StatusCode.INTERNAL: 500,
+        grpc.StatusCode.UNAVAILABLE: 503,
+        grpc.StatusCode.DEADLINE_EXCEEDED: 504
+    }
+
     # pylint: disable=attribute-defined-outside-init
     def initialize(self, agent_name, port, forwarded_request_metadata):
         """
@@ -68,6 +81,19 @@ class BaseRequestHandler(RequestHandler):
                 metadata=metadata,
                 agent_name=self.agent_name)
         return grpc_session
+
+    def extract_grpc_error_info(self, exc: grpc.aio.RpcError) -> Tuple[int, str, str]:
+        """
+        Extract user-friendly information from gRPC exception
+        :param exc: gRPC service exception
+        :return: tuple of 3 values:
+            corresponding HTTP error code;
+            name of gRPC code;
+            string with additional error details.
+        """
+        code = exc.code()
+        http_code = BaseRequestHandler.grpc_to_http.get(code, 500)
+        return http_code, code.name, exc.details()
 
     def data_received(self, chunk):
         """

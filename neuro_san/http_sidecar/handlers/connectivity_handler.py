@@ -44,10 +44,17 @@ class ConnectivityHandler(BaseRequestHandler):
             # Handle invalid JSON input
             self.set_status(400)
             self.write({"error": "Invalid JSON format"})
+        except grpc.aio.AioRpcError as exc:
+            http_status, err_name, err_details =\
+                self.extract_grpc_error_info(exc)
+            self.set_status(http_status)
+            err_msg: str = f"status: {http_status} grpc: {err_name} details: {err_details}"
+            self.write({"error": err_msg})
+            self.logger.error("Http server error: %s", err_msg)
         except Exception:  # pylint: disable=broad-exception-caught
             # Handle unexpected errors
             self.set_status(500)
             self.write({"error": "Internal server error"})
             self.logger.error("Internal server error: %s", traceback.format_exc())
         finally:
-            self.flush()
+            await self.flush()
