@@ -12,13 +12,14 @@
 """
 See class comment for details
 """
-import grpc
 import json
 import logging
 from typing import Any
 from typing import Dict
 from typing import List
 from typing import Tuple
+
+import grpc
 from tornado.web import RequestHandler
 
 from neuro_san.interfaces.async_agent_session import AsyncAgentSession
@@ -121,7 +122,7 @@ class BaseRequestHandler(RequestHandler):
         # General exception case:
         self.set_status(500)
         self.write({"error": "Internal server error"})
-        self.logger.error("Internal server error: %s", traceback.format_exc())
+        self.logger.error("Internal server error: %s", str(exc))
 
     def data_received(self, chunk):
         """
