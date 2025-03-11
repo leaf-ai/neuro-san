@@ -21,11 +21,13 @@ from leaf_server_common.server.server_lifetime import ServerLifetime
 from leaf_server_common.server.server_loop_callbacks import ServerLoopCallbacks
 
 from neuro_san.api.grpc import agent_pb2
+from neuro_san.api.grpc import concierge_pb2_grpc
 
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.utils.file_of_class import FileOfClass
 from neuro_san.service.agent_servicer_to_server import AgentServicerToServer
 from neuro_san.service.agent_service import AgentService
+from neuro_san.service.concierge_service import ConciergeService
 from neuro_san.session.chat_session_map import ChatSessionMap
 
 DEFAULT_SERVER_NAME: str = 'neuro-san.Agent'
@@ -143,5 +145,13 @@ class AgentServer:
 
             servicer_to_server = AgentServicerToServer(service, agent_name=agent_name)
             servicer_to_server.add_rpc_handlers(server)
+
+        concierge_service: ConciergeService = \
+            ConciergeService(server_lifetime,
+                             security_cfg,
+                             self.forwarded_request_metadata)
+        concierge_pb2_grpc.add_ConciergeServiceServicer_to_server(
+            concierge_service,
+            server)
 
         server_lifetime.run()
