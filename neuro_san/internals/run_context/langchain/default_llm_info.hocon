@@ -16,7 +16,6 @@
     # Model context and output tokens: https://platform.openai.com/docs/models
     # Model compatibility: https://platform.openai.com/docs/models#model-endpoint-compatibility
     "o3-mini": {
-        "class": "openai",
         "use_model_name": "o3-mini-2025-01-31",
     },
     "o3-mini-2025-01-31-17": {
@@ -33,7 +32,6 @@
     },
 
     "o1": {
-        "class": "openai",
         "use_model_name": "o1-2024-12-17",
     },
     "o1-2024-12-17": {
@@ -49,7 +47,6 @@
         "knowledge_cutoff": "09/30/2023",
     },
     "o1-preview": {
-        "class": "openai",
         "use_model_name": "o1-preview-2024-09-12",
     },
     "o1-preview-2024-09-12": {
@@ -66,7 +63,6 @@
     },
 
     "gpt-4o": {
-        "class": "openai",
         "use_model_name": "gpt-4o-2024-08-06",
     },
     "gpt-4o-2024-05-13": {
@@ -107,7 +103,6 @@
     },
 
     "gpt-4o-mini": {
-        "class": "openai",
         "use_model_name": "gpt-4o-2024-07-18",
     },
     "gpt-4o-mini-2024-07-18": {
@@ -124,7 +119,6 @@
     },
 
     "gpt-4-turbo": {
-        "class": "openai",
         "use_model_name": "gpt-4-turbo-2024-04-09",
     },
     "gpt-4-turbo-2024-04-09": {
@@ -142,7 +136,6 @@
 
     "gpt-4-turbo-preview": {
         # FYI: LLMs that do not support tools cannot be used as front-men or branch nodes
-        "class": "openai",
         "use_model_name": "gpt-4-0125-preview",
     },
     "gpt-4-0125-preview": {
@@ -161,7 +154,6 @@
 
     "gpt-4": {
         # FYI: LLMs that do not support tools cannot be used as front-men or branch nodes
-        "class": "openai",
         "use_model_name": "gpt-4-0613",
     },
     "gpt-4-0613": {
@@ -193,12 +185,10 @@
 
     "gpt-3.5-turbo": {
         # FYI: LLMs that do not support tools cannot be used as front-men or branch nodes
-        "class": "openai",
         "use_model_name": "gpt-3.5-turbo-0125",
     },
     "gpt-3.5-turbo-16k": {
         # FYI: LLMs that do not support tools cannot be used as front-men or branch nodes
-        "class": "openai",
         "use_model_name": "gpt-3.5-turbo-0125",
     },
     "gpt-3.5-turbo-0125": {
@@ -281,7 +271,6 @@
     # Anthropic models
 
     "claude-3-haiku": {
-        "class": "anthropic",
         "use_model_name": "claude-3-haiku-20240307",
     },
     "claude-3-haiku-20240307": {
@@ -299,7 +288,6 @@
     },
 
     "claude-3-opus": {
-        "use_model_name": "claude-3-opus-20240229",
         "class": "anthropic",
     },
     "claude-3-opus-20240229": {
@@ -317,7 +305,6 @@
     },
 
     "claude-3-5-haiku": {
-        "class": "anthropic",
         "use_model_name": "claude-3-5-haiku-20241022",
     },
     "claude-3-5-haiku-20241022": {
@@ -335,7 +322,6 @@
     },
 
     "claude-3-5-sonnet": {
-        "class": "anthropic",
         "use_model_name": "claude-3-5-sonnet-20241022",
     },
     "claude-3-5-sonnet-20241022": {
@@ -353,7 +339,6 @@
     },
 
     "claude-3-7-sonnet": {
-        "class": "anthropic",
         "use_model_name": "claude-3-7-sonnet-20250219",
     },
     "claude-3-7-sonnet-20250219": {
