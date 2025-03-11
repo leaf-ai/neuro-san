@@ -17,6 +17,7 @@ from typing import Any, Dict
 from neuro_san.http_sidecar.handlers.base_request_handler import BaseRequestHandler
 from neuro_san.interfaces.async_agent_session import AsyncAgentSession
 
+
 class FunctionHandler(BaseRequestHandler):
     """
     Handler class for neuro-san "function" API call.
