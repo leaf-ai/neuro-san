@@ -100,7 +100,7 @@ class AgentServer:
         setup_logging(server_name_for_logs, current_dir,
                       'AGENT_SERVICE_LOG_JSON',
                       'AGENT_SERVICE_LOG_LEVEL',
-                       extra_logging_defaults)
+                      extra_logging_defaults)
         # This module within openai library can be quite chatty w/rt http requests
         logging.getLogger("httpx").setLevel(logging.WARNING)
 
