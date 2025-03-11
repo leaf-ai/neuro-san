@@ -146,6 +146,10 @@ ENV APP_ENTRYPOINT neuro_san/deploy/entrypoint.sh
 # files to serve up from this server instance.
 ENV AGENT_MANIFEST_FILE=${APP_SOURCE}/neuro_san/registries/manifest.hocon
 
+# An llm_info hocon file with user-provided llm descriptions that are to be used
+# in addition to the neuro-san defaults.
+ENV AGENT_LLM_INFO_FILE=""
+
 # Where to find the classes for CodedTool class implementations
 # that are used by specific agent networks.
 ENV AGENT_TOOL_PATH=${APP_SOURCE}/neuro_san/coded_tools
