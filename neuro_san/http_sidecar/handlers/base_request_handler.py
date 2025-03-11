@@ -13,6 +13,7 @@
 See class comment for details
 """
 import grpc
+import json
 import logging
 from typing import Any
 from typing import Dict
@@ -82,7 +83,7 @@ class BaseRequestHandler(RequestHandler):
                 agent_name=self.agent_name)
         return grpc_session
 
-    def extract_grpc_error_info(self, exc: grpc.aio.RpcError) -> Tuple[int, str, str]:
+    def extract_grpc_error_info(self, exc: grpc.aio.AioRpcError) -> Tuple[int, str, str]:
         """
         Extract user-friendly information from gRPC exception
         :param exc: gRPC service exception
@@ -94,6 +95,33 @@ class BaseRequestHandler(RequestHandler):
         code = exc.code()
         http_code = BaseRequestHandler.grpc_to_http.get(code, 500)
         return http_code, code.name, exc.details()
+
+    def process_exception(self, exc: Exception):
+        """
+        Process exception raised during request handling
+        """
+        if exc is None:
+            return
+        if isinstance(exc, json.JSONDecodeError):
+            # Handle invalid JSON input
+            self.set_status(400)
+            self.write({"error": "Invalid JSON format"})
+            self.logger.error("error: Invalid JSON format")
+            return
+
+        if isinstance(exc, grpc.aio.AioRpcError):
+            http_status, err_name, err_details =\
+                self.extract_grpc_error_info(exc)
+            self.set_status(http_status)
+            err_msg: str = f"status: {http_status} grpc: {err_name} details: {err_details}"
+            self.write({"error": err_msg})
+            self.logger.error("Http server error: %s", err_msg)
+            return
+
+        # General exception case:
+        self.set_status(500)
+        self.write({"error": "Internal server error"})
+        self.logger.error("Internal server error: %s", traceback.format_exc())
 
     def data_received(self, chunk):
         """

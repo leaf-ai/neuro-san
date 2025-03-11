@@ -13,8 +13,6 @@
 See class comment for details
 """
 from typing import Any, Dict
-import json
-import traceback
 
 from neuro_san.http_sidecar.handlers.base_request_handler import BaseRequestHandler
 from neuro_san.interfaces.async_agent_session import AsyncAgentSession
@@ -40,21 +38,7 @@ class ConnectivityHandler(BaseRequestHandler):
             self.set_header("Content-Type", "application/json")
             self.write(result_dict)
 
-        except json.JSONDecodeError:
-            # Handle invalid JSON input
-            self.set_status(400)
-            self.write({"error": "Invalid JSON format"})
-        except grpc.aio.AioRpcError as exc:
-            http_status, err_name, err_details =\
-                self.extract_grpc_error_info(exc)
-            self.set_status(http_status)
-            err_msg: str = f"status: {http_status} grpc: {err_name} details: {err_details}"
-            self.write({"error": err_msg})
-            self.logger.error("Http server error: %s", err_msg)
-        except Exception:  # pylint: disable=broad-exception-caught
-            # Handle unexpected errors
-            self.set_status(500)
-            self.write({"error": "Internal server error"})
-            self.logger.error("Internal server error: %s", traceback.format_exc())
+        except Exception as exc:  # pylint: disable=broad-exception-caught
+            self.process_exception(exc)
         finally:
             await self.flush()
