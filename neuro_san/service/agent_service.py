@@ -375,6 +375,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         invocation_context.start()
 
         # Set up logging inside async thread
+        # Prefer any request_id from the client over what we generated on the server.
         executor: AsyncioExecutor = invocation_context.get_asyncio_executor()
         _ = executor.submit(None, self.server_logging.setup_logging, metadata,
                             metadata.get("request_id", service_logging_dict.get("request_id")))
