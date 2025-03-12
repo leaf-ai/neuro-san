@@ -16,6 +16,7 @@ from typing import Dict
 from neuro_san.interfaces.agent_session import AgentSession
 
 
+# pylint: disable=too-few-public-methods
 class ConciergeSession:
     """
     Interface for a Concierge session.

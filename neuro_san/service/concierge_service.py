@@ -12,7 +12,6 @@
 
 from typing import Any
 from typing import Dict
-from typing import Iterator
 from typing import List
 
 import copy
@@ -34,6 +33,7 @@ from neuro_san.api.grpc import concierge_pb2_grpc
 from neuro_san.session.direct_concierge_session import DirectConciergeSession
 
 
+# pylint: disable=too-few-public-methods
 class ConciergeService(concierge_pb2_grpc.ConciergeServiceServicer):
     """
     A gRPC implementation of the Neuro-San Concierge Service.

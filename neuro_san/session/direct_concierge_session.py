@@ -13,11 +13,10 @@
 from typing import Any
 from typing import Dict
 
-from copy import copy
-
 from neuro_san.interfaces.concierge_session import ConciergeSession
 
 
+# pylint: disable=too-few-public-methods
 class DirectConciergeSession(ConciergeSession):
     """
     Service-agnostic guts for a ConciergeSession.
@@ -52,5 +51,5 @@ class DirectConciergeSession(ConciergeSession):
                 "agents" - the sequence of dictionaries describing available agents
         """
         return {"agents": [
-            {"agent_name":"Agent-1", "description": "Doing Agent_1 thing"},
-            {"agent_name":"Agent-2", "description": "Doing Agent_2 thing"}]}
+            {"agent_name": "Agent-1", "description": "Doing Agent_1 thing"},
+            {"agent_name": "Agent-2", "description": "Doing Agent_2 thing"}]}
