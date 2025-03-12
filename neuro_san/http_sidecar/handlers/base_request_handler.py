@@ -23,7 +23,9 @@ import grpc
 from tornado.web import RequestHandler
 
 from neuro_san.interfaces.async_agent_session import AsyncAgentSession
+from neuro_san.interfaces.concierge_session import ConciergeSession
 from neuro_san.session.async_grpc_service_agent_session import AsyncGrpcServiceAgentSession
+from neuro_san.session.grpc_concierge_session import GrpcConciergeSession
 
 
 class BaseRequestHandler(RequestHandler):
@@ -71,7 +73,7 @@ class BaseRequestHandler(RequestHandler):
                 result[item_name] = headers[item_name]
         return result
 
-    def get_grpc_session(self, metadata: Dict[str, Any]) -> AsyncAgentSession:
+    def get_agent_grpc_session(self, metadata: Dict[str, Any]) -> AsyncAgentSession:
         """
         Build gRPC session to talk to "main" service
         :return: AgentSession to use
@@ -82,6 +84,18 @@ class BaseRequestHandler(RequestHandler):
                 port=self.port,
                 metadata=metadata,
                 agent_name=self.agent_name)
+        return grpc_session
+
+    def get_concierge_grpc_session(self, metadata: Dict[str, Any]) -> ConciergeSession:
+        """
+        Build gRPC session to talk to "concierge" service
+        :return: ConciergeSession to use
+        """
+        grpc_session: ConciergeSession = \
+            GrpcConciergeSession(
+                host="localhost",
+                port=self.port,
+                metadata=metadata)
         return grpc_session
 
     def extract_grpc_error_info(self, exc: grpc.aio.AioRpcError) -> Tuple[int, str, str]:

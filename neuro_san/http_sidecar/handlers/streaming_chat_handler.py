@@ -40,7 +40,7 @@ class StreamingChatHandler(BaseRequestHandler):
 
             grpc_request = Parse(json.dumps(data), ChatRequest())
             metadata: Dict[str, Any] = self.get_metadata()
-            grpc_session: AsyncAgentSession = self.get_grpc_session(metadata)
+            grpc_session: AsyncAgentSession = self.get_agent_grpc_session(metadata)
 
             # Mind the type hint:
             # here we are getting Generator of Generators of ChatResponses!
