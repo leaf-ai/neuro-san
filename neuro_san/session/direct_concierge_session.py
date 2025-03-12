@@ -51,4 +51,6 @@ class DirectConciergeSession(ConciergeSession):
                     protobuf structure. Has the following keys:
                 "agents" - the sequence of dictionaries describing available agents
         """
-        return {"agents": [{"agent_name":"aaa", "description": "Agent 1"}, {"agent_name":"bbb", "description": "Agent 2"}]}
+        return {"agents": [
+            {"agent_name":"Agent-1", "description": "Doing Agent_1 thing"},
+            {"agent_name":"Agent-2", "description": "Doing Agent_2 thing"}]}
