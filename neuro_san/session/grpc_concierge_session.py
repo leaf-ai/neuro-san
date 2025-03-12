@@ -61,7 +61,7 @@ class GrpcConciergeSession(AbstractServiceSession, ConciergeSession):
         if port is not None:
             use_port = port
 
-        service_stub = ConciergeServiceStub()
+        service_stub = ConciergeServiceStub
         AbstractServiceSession.__init__(self, "Concierge",
                                         service_stub,
                                         use_host, use_port,
