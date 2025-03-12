@@ -122,6 +122,10 @@ ENV APP_ENTRYPOINT ${PACKAGE_DEPLOY}/entrypoint.sh
 # files to serve up from this server instance.
 ENV AGENT_MANIFEST_FILE=${APP_SOURCE}/registries/manifest.hocon
 
+# An llm_info hocon file with user-provided llm descriptions that are to be used
+# in addition to the neuro-san defaults.
+ENV AGENT_LLM_INFO_FILE=""
+
 # Where to find the classes for CodedTool class implementations
 # that are used by specific agent networks.
 ENV AGENT_TOOL_PATH=${APP_SOURCE}/coded_tools
@@ -146,6 +150,7 @@ ENV AGENT_SERVER_NAME_FOR_LOGS="Agent Server"
 # A space-delimited list of http metadata request keys to forward to logs/other requests
 # You can see how these are used in the AGENT_SERVICE_LOG_JSON file (see above) and
 # customize this and the AGENT_SERVER_LOG_JSON file to your needs.
+# Note that any metadata key needs to be all lowercase.
 ENV AGENT_FORWARDED_REQUEST_METADATA="request_id user_id"
 
 # Port number for the grpc service endpoint

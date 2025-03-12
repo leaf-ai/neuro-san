@@ -24,251 +24,9 @@ from langchain_core.language_models.base import BaseLanguageModel
 from langchain_openai.chat_models.base import ChatOpenAI
 from langchain_openai.chat_models.azure import AzureChatOpenAI
 
-from tiktoken import Encoding
-from tiktoken import encoding_for_model
-from tiktoken import get_encoding
-
 from leaf_common.config.dictionary_overlay import DictionaryOverlay
 
-DEFAULT_MODEL = "gpt-3.5-turbo"
-DEFAULT_TEMPERATURE = 0.7
-
-# Max tokens in the docs is a combination of prompt tokens + response tokens
-# Use this fraction as a default split between what we expect between
-# prompt and response.
-DEFAULT_PROMPT_TOKEN_FRACTION = 0.5
-
-LLM_ENTRIES = {
-    # Model context and output tokens: https://platform.openai.com/docs/models
-    # Model compatibility: https://platform.openai.com/docs/models#model-endpoint-compatibility
-    "gpt-3.5-turbo": {
-        "class": ChatOpenAI,
-        "api_key": "openai_api_key",
-        "max_tokens": 4096  # From https://platform.openai.com/docs/models/gpt-3-5
-    },
-    "gpt-3.5-turbo-16k": {
-        "class": ChatOpenAI,
-        "api_key": "openai_api_key",
-        "max_tokens": 16384  # From https://platform.openai.com/docs/models/gpt-3-5
-    },
-    "gpt-4o": {
-        "class": ChatOpenAI,
-        "api_key": "openai_api_key",
-        "max_tokens": 4096  # https://platform.openai.com/docs/models says 16,384
-                            # but that is for input, and empirical evidence shows this is
-                            # the number required for output.
-    },
-    "gpt-4o-mini": {
-        "class": ChatOpenAI,
-        "api_key": "openai_api_key",
-        "max_tokens": 4096  # https://platform.openai.com/docs/models says 16,384
-                            # but that is for input, and empirical evidence shows this is
-                            # the number required for output.
-    },
-    "gpt-4-turbo": {
-        "class": ChatOpenAI,
-        "api_key": "openai_api_key",
-        "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4-turbo says 12800
-                            # but that is for input, and empirical evidence shows this is
-                            # the number required for output.
-    },
-    "gpt-4-turbo-preview": {
-        "class": ChatOpenAI,
-        "api_key": "openai_api_key",
-        "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4-turbo-preview says 12800
-                            # but that is for input, and empirical evidence shows this is
-                            # the number required for output.
-    },
-    "gpt-4-1106-preview": {
-        "class": ChatOpenAI,
-        "api_key": "openai_api_key",
-        "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4-1106-preview says 12800
-                            # but that is for input, and empirical evidence shows this is
-                            # the number required for output.
-    },
-    "gpt-4-vision-preview": {
-        "class": ChatOpenAI,
-        "api_key": "openai_api_key",
-        "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4-vision-preview says 12800
-                            # but that is for input. Not yet tested
-    },
-    "gpt-4": {
-        "class": ChatOpenAI,
-        "api_key": "openai_api_key",
-        "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4 says 12800
-                            # but that is for input, and empirical evidence shows this is
-                            # the number required for output.
-    },
-    "gpt-4-32k": {
-        "class": ChatOpenAI,
-        "api_key": "openai_api_key",
-        "max_tokens": 32768  # From https://platform.openai.com/docs/models/gpt-4-32k
-    },
-    "azure-gpt-3.5-turbo": {
-        "use_model_name": "gpt-3.5-turbo",
-        "class": AzureChatOpenAI,
-        "api_key": "openai_api_key",
-        "max_tokens": 4096  # From https://platform.openai.com/docs/models/gpt-3-5
-    },
-    "azure-gpt-4": {
-        "use_model_name": "gpt-4",
-        "class": AzureChatOpenAI,
-        "api_key": "openai_api_key",
-        "max_tokens": 4096  # https://platform.openai.com/docs/models/gpt-4 says 12800
-                            # but that is for input, and empirical evidence shows this is
-                            # the number required for output.
-    },
-    "claude-3-haiku": {
-        "use_model_name": "claude-3-haiku-20240307",
-        "class": ChatAnthropic,
-        "api_key": "anthropic_api_key",
-        "max_tokens": 4096  # From https://docs.anthropic.com/en/docs/models-overview
-    },
-    "claude-3-sonnet": {
-        "use_model_name": "claude-3-sonnet-20240229",
-        "class": ChatAnthropic,
-        "api_key": "anthropic_api_key",
-        "max_tokens": 4096  # From https://docs.anthropic.com/en/docs/models-overview
-    },
-    "claude-3-opus": {
-        "use_model_name": "claude-3-opus-20240229",
-        "class": ChatAnthropic,
-        "api_key": "anthropic_api_key",
-        "max_tokens": 4096  # From https://docs.anthropic.com/en/docs/models-overview
-    },
-    "claude-2.1": {
-        "class": ChatAnthropic,
-        "api_key": "anthropic_api_key",
-        "max_tokens": 4096  # From https://docs.anthropic.com/en/docs/models-overview
-    },
-    "claude-2.0": {
-        "class": ChatAnthropic,
-        "api_key": "anthropic_api_key",
-        "max_tokens": 4096  # From https://docs.anthropic.com/en/docs/models-overview
-    },
-    "claude-instant-1.2": {
-        "class": ChatAnthropic,
-        "api_key": "anthropic_api_key",
-        "max_tokens": 4096  # From https://docs.anthropic.com/en/docs/models-overview
-    },
-    "llama2": {
-        "class": ChatOllama,
-        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
-    },
-    "llama3": {
-        "class": ChatOllama,
-        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
-    },
-    "llama3.1": {
-        "class": ChatOllama,
-        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
-    },
-    "llama3:70b": {
-        "class": ChatOllama,
-        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
-    },
-    "llava": {
-        "class": ChatOllama,
-        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
-    },
-    "mistral": {
-        "class": ChatOllama,
-        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
-    },
-    "mistral-nemo": {
-        "class": ChatOllama,
-        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
-    },
-    "mixtral": {
-        "class": ChatOllama,
-        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
-    },
-    "qwen2.5:14b": {
-        "class": ChatOllama,
-        "max_tokens": 4096  # Scant from https://github.com/ollama/ollama
-    },
-    "deepseek-r1:14b": {  # Does not support tools
-        "class": ChatOllama,
-        "max_tokens": 4096
-    },
-    "nvidia-llama-3.1-405b-instruct": {
-        "use_model_name": "meta/llama-3.1-405b-instruct",
-        "class": ChatNVIDIA,
-        "api_key": "nvidia_api_key",
-        "max_tokens": 4096  # From https://python.langchain.com/docs/integrations/chat/nvidia_ai_endpoints/
-    },
-    "nvidia-llama-3.3-70b-instruct": {
-        "use_model_name": "meta/llama-3.3-70b-instruct",
-        "class": ChatNVIDIA,
-        "api_key": "nvidia_api_key",
-        "max_tokens": 4096  # From https://python.langchain.com/docs/integrations/chat/nvidia_ai_endpoints/
-    },
-    "nvidia-deepseek-r1": {
-        "use_model_name": "deepseek-ai/deepseek-r1",
-        "class": ChatNVIDIA,
-        "api_key": "nvidia_api_key",
-        "max_tokens": 4096  # From https://python.langchain.com/docs/integrations/chat/nvidia_ai_endpoints/
-    },
-}
-
-
-DEFAULT_CONFIG = {
-
-    "model_name": DEFAULT_MODEL,            # The string name of the default model to use.
-                                            # Default if not specified is "gpt-3.5-turbo"
-
-    "temperature": DEFAULT_TEMPERATURE,     # The default LLM temperature (randomness) to use.
-                                            # Values are floats between 0.0 (least random) to
-                                            # 1.0 (most random).
-
-    "token_encoding": None,                 # The tiktoken encoding name to use with the
-                                            # create_tokenizer() method.  If not specified,
-                                            # tiktoken has a default for each model_name.
-
-    "prompt_token_fraction": DEFAULT_PROMPT_TOKEN_FRACTION,
-                                            # The fraction of total tokens (not necessarily words
-                                            # or letters) to use for a prompt. Each model_name
-                                            # has a documented number of max_tokens it can handle
-                                            # which is a total count of message + response tokens
-                                            # which goes into the calculation involved in
-                                            # get_max_prompt_tokens().
-                                            # By default the value is 0.5.
-
-    "max_tokens": None,                     # The maximum number of tokens to use in
-                                            # computing prompt tokens. By default this comes from
-                                            # the model description in this class.
-
-    "verbose": False,                       # When True, responses from ChatEngine are logged to stdout
-
-    "openai_api_key": None,                 # The string api key to use when accessing an LLM.
-                                            # Default is None, which indicates that the code should
-                                            # get the value from the OS environment variable
-                                            # OPENAI_API_KEY.  This is true for OpenAI LLM models,
-                                            # which is the default and most often used. However, the name
-                                            # of the API key itself can be  different depending on the model
-                                            # and its own norms.
-
-
-    # The following keys are used with Azure OpenAI models.
-
-    "openai_api_base": None,                # The string url to use when accessing an Azure OpenAI model.
-                                            # By default this value is None, which indicates the value
-                                            # should come from the OS environment variable OPENAI_API_BASE.
-
-    "openai_api_version": None,             # The string version to use when accessing an Azure OpenAI model.
-                                            # By default this value is None, which indicates the value
-                                            # should come from the OS environment variable OPENAI_API_VERSION.
-
-    "openai_proxy": None,                   # The string version to use when accessing an Azure OpenAI model.
-                                            # By default this value is None, which indicates the value
-                                            # should come from the OS environment variable OPENAI_PROXY.
-
-    "openai_api_type": None,                # The string type to use when accessing an Azure OpenAI model.
-                                            # By default this value is None, which indicates the value
-                                            # should come from the OS environment variable OPENAI_API_TYPE.
-    # The following keys are used with Azure OpenAI models.
-    "nvidia_api_key": None,
-}
+from neuro_san.internals.run_context.langchain.llm_info_restorer import LlmInfoRestorer
 
 
 class LlmFactory:
@@ -285,10 +43,6 @@ class LlmFactory:
                                     higher temperatures yield more random results.
                                     Default if not specified is 0.7
 
-        "token_encoding"            The tiktoken encoding name to use with the
-                                    create_tokenizer() method.  If not specified,
-                                    tiktoken has a default for each model_name.
-
         "prompt_token_fraction"     The fraction of total tokens (not necessarily words
                                     or letters) to use for a prompt. Each model_name
                                     has a documented number of max_tokens it can handle
@@ -300,19 +54,29 @@ class LlmFactory:
         "max_tokens"                The maximum number of tokens to use in
                                     get_max_prompt_tokens(). By default this comes from
                                     the model description in this class.
-
-        "openai_api_key"            Key for OpenAI API access.
-                                    Required for OpenAI and Azure model_names.
-
-        "openai_api_base"           This assortment of config keys are for use
-        "openai_api_version"        with Azure-hosted OpenAI models
-        "openai_proxy"
-        "openai_api_type"
-        "nvidia_api_key"
     """
 
-    @staticmethod
-    def create_llm(config: Dict[str, Any], callbacks: List[BaseCallbackHandler] = None) -> BaseLanguageModel:
+    def __init__(self):
+        """
+        Constructor
+        """
+        self.llm_infos: Dict[str, Any] = {}
+        self.overlayer = DictionaryOverlay()
+
+    def load(self):
+        """
+        Loads the LLM information from hocon files.
+        """
+        restorer = LlmInfoRestorer()
+        self.llm_infos = restorer.restore()
+
+        # Mix in user-specified llm info, if available.
+        llm_info_file: str = os.getenv("AGENT_LLM_INFO_FILE")
+        if llm_info_file is not None and len(llm_info_file) > 0:
+            extra_llm_infos: Dict[str, Any] = restorer.restore(file_reference=llm_info_file)
+            self.llm_infos = self.overlayer.overlay(self.llm_infos, extra_llm_infos)
+
+    def create_llm(self, config: Dict[str, Any], callbacks: List[BaseCallbackHandler] = None) -> BaseLanguageModel:
         """
         Creates a langchain LLM based on the 'model_name' value of
         the config passed in.
@@ -324,160 +88,260 @@ class LlmFactory:
                 Can raise a ValueError if the config's model_name value is
                 unknown to this method.
         """
-        overlayer = DictionaryOverlay()
-        use_config = overlayer.overlay(DEFAULT_CONFIG, config)
+        full_config: Dict[str, Any] = self.create_full_llm_config(config)
+        llm: BaseLanguageModel = self.create_base_chat_model(full_config, callbacks)
+        return llm
 
-        model_name = use_config.get("model_name", DEFAULT_MODEL)
+    def create_full_llm_config(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        :param config: The llm_config from the user
+        :return: The fully specified config with defaults filled in.
+        """
+        default_config: Dict[str, Any] = self.llm_infos.get("default_config")
+        use_config = self.overlayer.overlay(default_config, config)
 
-        llm_entry = LLM_ENTRIES.get(model_name)
+        model_name = use_config.get("model_name")
+
+        llm_entry = self.llm_infos.get(model_name)
         if llm_entry is None:
             raise ValueError(f"No llm entry for model_name {model_name}")
 
         # Get some bits from the llm_entry
-        base_class = llm_entry.get("class")
-        api_key = llm_entry.get("api_key")
         use_model_name = llm_entry.get("use_model_name", model_name)
+        if len(llm_entry.keys()) <= 2 and use_model_name is not None:
+            # We effectively have an alias. Switch out the llm entry.
+            llm_entry = self.llm_infos.get(use_model_name)
 
-        use_max_tokens = LlmFactory.get_max_prompt_tokens(use_config)
+        # Take a look at the chat classes.
+        chat_class_name: str = llm_entry.get("class")
+        if chat_class_name is None:
+            raise ValueError(f"llm info entry for {use_model_name} requires a 'class' key/value pair.")
 
+        # Get defaults for the chat class
+        chat_args: Dict[str, Any] = self.get_chat_class_args(chat_class_name, use_model_name)
+
+        # Get a new sense of the default config now that we have the default args for the chat class.
+        default_config = self.overlayer.overlay(chat_args, default_config)
+
+        # Now that we have the true defaults, overlay the config that came in to get the
+        # config we are going to use.
+        full_config: Dict[str, Any] = self.overlayer.overlay(default_config, config)
+        full_config["class"] = chat_class_name
+
+        # Attempt to get a max_tokens through calculation
+        full_config["max_tokens"] = self.get_max_prompt_tokens(full_config)
+
+        return full_config
+
+    def get_chat_class_args(self, chat_class_name: str, use_model_name: str) -> Dict[str, Any]:
+        """
+        :param chat_class_name: string name of the chat class to look up.
+        :param use_model_name: the original model name that prompted the chat class lookups
+        :return: A dictionary of default arguments for the chat class.
+                Can throw an exception if the chat class does not exist.
+        """
+
+        # Find the chat class.
+        chat_classes: Dict[str, Any] = self.llm_infos.get("classes")
+        chat_class: Dict[str, Any] = chat_classes.get(chat_class_name)
+        if chat_class is None:
+            raise ValueError(f"llm info entry for {use_model_name} uses a 'class' of {chat_class_name} "
+                             "which is not defined in the 'classes' table.")
+
+        # Get the args from the chat class
+        args: Dict[str, Any] = chat_class.get("args")
+
+        extends: str = chat_class.get("extends")
+        if extends is not None:
+            # If this class extends another, get its args too.
+            extends_args: Dict[str, Any] = self.get_chat_class_args(extends, use_model_name)
+            args = self.overlayer.overlay(args, extends_args)
+
+        return args
+
+    def create_base_chat_model(self, config: Dict[str, Any],
+                               callbacks: List[BaseCallbackHandler] = None) -> BaseLanguageModel:
+        """
+        Create a BaseLanguageModel from the fully-specified llm config.
+        :param config: The fully specified llm config which is a product of
+                    _create_full_llm_config() above.
+        :param callbacks: A list of BaseCallbackHandlers to add to the chat model.
+        :return: A BaseLanguageModel (can be Chat or LLM)
+                Can raise a ValueError if the config's class or model_name value is
+                unknown to this method.
+        """
         # Construct the LLM
         llm: BaseLanguageModel = None
-        if base_class == ChatOpenAI:
-            # Higher temperature is more random
+        chat_class: str = config.get("class")
+        if chat_class is not None:
+            chat_class = chat_class.lower()
+
+        model_name: str = config.get("model_name")
+
+        if chat_class == "openai":
             llm = ChatOpenAI(
-                            temperature=use_config.get("temperature", DEFAULT_TEMPERATURE),
-                            openai_api_key=LlmFactory.get_value_or_env(use_config, api_key,
-                                                                       "OPENAI_API_KEY"),
-                            max_tokens=use_max_tokens,
-                            model_name=use_model_name,
-                            callbacks=callbacks,
+                            model_name=model_name,
+                            temperature=config.get("temperature"),
+                            openai_api_key=self.get_value_or_env(config, "openai_api_key",
+                                                                 "OPENAI_API_KEY"),
+                            openai_api_base=self.get_value_or_env(config, "openai_api_base",
+                                                                  "OPENAI_API_BASE"),
+                            openai_organization=self.get_value_or_env(config, "openai_organization",
+                                                                      "OPENAI_ORG_ID"),
+                            openai_proxy=self.get_value_or_env(config, "openai_organization",
+                                                               "OPENAI_PROXY"),
+                            request_timeout=config.get("request_timeout"),
+                            max_retries=config.get("max_retries"),
+                            presence_penalty=config.get("presence_penalty"),
+                            frequency_penalty=config.get("frequency_penalty"),
+                            seed=config.get("seed"),
+                            logprobs=config.get("logprobs"),
+                            top_logprobs=config.get("top_logprobs"),
+                            logit_bias=config.get("logit_bias"),
+                            streaming=True,     # streaming is always on. Without it token counting will not work.
+                            n=1,                # n is always 1.  neuro-san will only ever consider one chat completion.
+                            top_p=config.get("top_p"),
+                            max_tokens=config.get("max_tokens"),    # This is always for output
+                            tiktoken_model_name=config.get("tiktoken_model_name"),
+                            stop=config.get("stop"),
+
                             # Set stream_usage to True in order to get token counting chunks.
-                            stream_usage=True)
-        elif base_class == AzureChatOpenAI:
-            # Higher temperature is more random
+                            stream_usage=True,
+                            callbacks=callbacks)
+        elif chat_class == "azure-openai":
             llm = AzureChatOpenAI(
-                            temperature=use_config.get("temperature", DEFAULT_TEMPERATURE),
-                            openai_api_key=LlmFactory.get_value_or_env(use_config, api_key,
-                                                                       "OPENAI_API_KEY"),
-                            openai_api_base=LlmFactory.get_value_or_env(use_config, "openai_api_base",
-                                                                        "OPENAI_API_BASE"),
-                            openai_api_version=LlmFactory.get_value_or_env(use_config, "openai_api_version",
-                                                                           "OPENAI_API_VERSION"),
-                            openai_proxy=LlmFactory.get_value_or_env(use_config, "openai_proxy",
-                                                                     "OPENAI_PROXY"),
-                            openai_api_type=LlmFactory.get_value_or_env(use_config, "openai_api_type",
-                                                                        "OPENAI_API_TYPE"),
-                            azure_endpoint=LlmFactory.get_value_or_env(use_config, "azure_endpoint",
-                                                                       "AZURE_OPENAI_ENDPOINT"),
+                            model_name=model_name,
+                            temperature=config.get("temperature"),
+                            openai_api_key=self.get_value_or_env(config, "openai_api_key",
+                                                                 "OPENAI_API_KEY"),
+                            openai_api_base=self.get_value_or_env(config, "openai_api_base",
+                                                                  "OPENAI_API_BASE"),
+                            openai_organization=self.get_value_or_env(config, "openai_organization",
+                                                                      "OPENAI_ORG_ID"),
+                            openai_proxy=self.get_value_or_env(config, "openai_organization",
+                                                               "OPENAI_PROXY"),
+                            request_timeout=config.get("request_timeout"),
+                            max_retries=config.get("max_retries"),
+                            presence_penalty=config.get("presence_penalty"),
+                            frequency_penalty=config.get("frequency_penalty"),
+                            seed=config.get("seed"),
+                            logprobs=config.get("logprobs"),
+                            top_logprobs=config.get("top_logprobs"),
+                            logit_bias=config.get("logit_bias"),
+                            streaming=True,     # streaming is always on. Without it token counting will not work.
+                            n=1,                # n is always 1.  neuro-san will only ever consider one chat completion.
+                            top_p=config.get("top_p"),
+                            max_tokens=config.get("max_tokens"),    # This is always for output
+                            tiktoken_model_name=config.get("tiktoken_model_name"),
+                            stop=config.get("stop"),
+
+                            # Azure-specific
+                            azure_endpoint=self.get_value_or_env(config, "azure_endpoint",
+                                                                 "AZURE_OPENAI_ENDPOINT"),
+                            deployment_name=config.get("deployment_name"),
+                            openai_api_version=self.get_value_or_env(config, "openai_api_version",
+                                                                     "OPENAI_API_VERSION"),
+
                             # AD here means "ActiveDirectory"
-                            azure_ad_token=LlmFactory.get_value_or_env(use_config, "azure_ad_token",
-                                                                       "AZURE_OPENAI_AD_TOKEN"),
-                            max_tokens=use_max_tokens,
-                            model_name=use_model_name,
+                            azure_ad_token=self.get_value_or_env(config, "azure_ad_token",
+                                                                 "AZURE_OPENAI_AD_TOKEN"),
+                            model_version=config.get("model_version"),
+                            openai_api_type=self.get_value_or_env(config, "openai_api_type",
+                                                                  "OPENAI_API_TYPE"),
                             callbacks=callbacks)
-        elif base_class == ChatAnthropic:
-            # Higher temperature is more random
+        elif chat_class == "anthropic":
             llm = ChatAnthropic(
-                            temperature=use_config.get("temperature", DEFAULT_TEMPERATURE),
-                            anthropic_api_key=LlmFactory.get_value_or_env(use_config, api_key,
-                                                                          "ANTHROPIC_API_KEY"),
-                            anthropic_api_url=LlmFactory.get_value_or_env(use_config, "anthropic_api_url",
-                                                                          "ANTHROPIC_API_URL"),
-                            max_tokens=use_max_tokens,
-                            model_name=use_model_name,
+                            model_name=model_name,
+                            max_tokens=config.get("max_tokens"),    # This is always for output
+                            temperature=config.get("temperature"),
+                            top_k=config.get("top_k"),
+                            top_p=config.get("top_p"),
+                            default_request_timeout=config.get("default_request_timeout"),
+                            max_retries=config.get("max_retries"),
+                            stop_sequences=config.get("stop_sequences"),
+                            anthropic_api_url=self.get_value_or_env(config, "anthropic_api_url",
+                                                                    "ANTHROPIC_API_URL"),
+                            anthropic_api_key=self.get_value_or_env(config, "anthropic_api_key",
+                                                                    "ANTHROPIC_API_KEY"),
+                            streaming=True,     # streaming is always on. Without it token counting will not work.
+                            # Set stream_usage to True in order to get token counting chunks.
+                            stream_usage=True,
                             callbacks=callbacks)
-        elif base_class == ChatOllama:
+        elif chat_class == "ollama":
             # Higher temperature is more random
             llm = ChatOllama(
-                            temperature=use_config.get("temperature", DEFAULT_TEMPERATURE),
-                            num_predict=use_max_tokens,
-                            model=use_model_name,
+                            model=model_name,
+                            mirostat=config.get("mirostat"),
+                            mirostat_eta=config.get("mirostat_eta"),
+                            mirostat_tau=config.get("mirostat_tau"),
+                            num_ctx=config.get("num_ctx"),
+                            num_gpu=config.get("num_gpu"),
+                            num_thread=config.get("num_thread"),
+                            num_predict=config.get("num_predict", config.get("max_tokens")),
+                            repeat_last_n=config.get("repeat_last_n"),
+                            repeat_penalty=config.get("repeat_penalty"),
+                            temperature=config.get("temperature"),
+                            seed=config.get("seed"),
+                            stop=config.get("stop"),
+                            tfs_z=config.get("tfs_z"),
+                            top_k=config.get("top_k"),
+                            top_p=config.get("top_p"),
+                            keep_alive=config.get("keep_alive"),
+                            base_url=config.get("base_url"),
+
                             callbacks=callbacks)
-        elif base_class == ChatNVIDIA:
+        elif chat_class == "nvidia":
             # Higher temperature is more random
             llm = ChatNVIDIA(
-                            temperature=use_config.get("temperature", DEFAULT_TEMPERATURE),
-                            nvidia_api_key=LlmFactory.get_value_or_env(use_config, api_key,
-                                                                       "NVIDIA_API_KEY"),
-                            max_tokens=use_max_tokens,
-                            model=use_model_name,
+                            base_url=config.get("base_url"),
+                            model=model_name,
+                            temperature=config.get("temperature"),
+                            max_tokens=config.get("max_tokens"),
+                            top_p=config.get("top_p"),
+                            seed=config.get("seed"),
+                            stop=config.get("stop"),
+                            nvidia_api_key=self.get_value_or_env(config, "nvidia_api_key",
+                                                                 "NVIDIA_API_KEY"),
+                            nvidia_base_url=self.get_value_or_env(config, "nvidia_base_url",
+                                                                  "NVIDIA_BASE_URL"),
                             callbacks=callbacks)
+        elif chat_class is None:
+            raise ValueError(f"Class name {chat_class} for model_name {model_name} is unspecified.")
         else:
-            raise ValueError(f"Class {base_class.__name__} for model_name {model_name} unknown")
+            raise ValueError(f"Class {chat_class} for model_name {model_name} is unrecognized.")
 
         return llm
 
-    @staticmethod
-    def create_tokenizer(config: Dict[str, Any]) -> Encoding:
-        """
-        Creates a tiktoken tokenizer based on the 'model_name' value of
-        the config passed in.
-
-        :param config: A dictionary which describes which LLM to use.
-                See the class comment for details.
-        :return: A Encoding
-                Can raise a ValueError if the config's model_name value is
-                unknown to this method.
-        """
-        tokenizer: Encoding = None
-
-        overlayer = DictionaryOverlay()
-        use_config = overlayer.overlay(DEFAULT_CONFIG, config)
-
-        token_encoding = use_config.get("token_encoding")
-        if token_encoding is None:
-            model_name = use_config.get("model_name", DEFAULT_MODEL)
-
-            llm_entry = LLM_ENTRIES.get(model_name)
-            if llm_entry is None:
-                raise ValueError(f"No tokenizer entry for model_name {model_name}")
-
-            # Get some bits from the llm_entry
-            token_encoding = llm_entry.get("token_encoding")
-
-            if token_encoding is None:
-                # Use the model name to construct the encoding
-                use_model_name = llm_entry.get("use_model_name", model_name)
-                tokenizer = encoding_for_model(use_model_name)
-
-        if tokenizer is None:
-            # Construct the tokenizer from the token_encoding
-            tokenizer = get_encoding(token_encoding)
-
-        return tokenizer
-
-    @staticmethod
-    def get_max_prompt_tokens(config: Dict[str, Any]) -> int:
+    def get_max_prompt_tokens(self, config: Dict[str, Any]) -> int:
         """
         :param config: A dictionary which describes which LLM to use.
-                See the class comment for details.
         :return: The maximum number of tokens given the 'model_name' in the
                 config dictionary.
         """
 
-        overlayer = DictionaryOverlay()
-        use_config = overlayer.overlay(DEFAULT_CONFIG, config)
+        model_name = config.get("model_name")
 
-        model_name = use_config.get("model_name", DEFAULT_MODEL)
-
-        llm_entry = LLM_ENTRIES.get(model_name)
+        llm_entry = self.llm_infos.get(model_name)
         if llm_entry is None:
             raise ValueError(f"No llm entry for model_name {model_name}")
 
-        entry_max_tokens = llm_entry.get("max_tokens")
-        prompt_token_fraction = use_config.get("prompt_token_fraction",
-                                               DEFAULT_PROMPT_TOKEN_FRACTION)
+        use_model_name = llm_entry.get("use_model_name", model_name)
+        if len(llm_entry.keys()) <= 2 and use_model_name is not None:
+            # We effectively have an alias. Switch out the llm entry.
+            llm_entry = self.llm_infos.get(use_model_name)
+
+        entry_max_tokens = llm_entry.get("max_output_tokens")
+        prompt_token_fraction = config.get("prompt_token_fraction")
         use_max_tokens = int(entry_max_tokens * prompt_token_fraction)
 
         # Allow the actual value for max_tokens to come from the config, if there
-        max_prompt_tokens = use_config.get("max_tokens", use_max_tokens)
+        max_prompt_tokens = config.get("max_tokens", use_max_tokens)
         if max_prompt_tokens is None:
             max_prompt_tokens = use_max_tokens
 
         return max_prompt_tokens
 
-    @staticmethod
-    def get_value_or_env(config: Dict[str, Any], key: str, env_key: str) -> Any:
+    def get_value_or_env(self, config: Dict[str, Any], key: str, env_key: str) -> Any:
         """
         :param config: The config dictionary to search
         :param key: The key for the config to look for
