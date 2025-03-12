@@ -14,16 +14,14 @@ from typing import Dict
 from typing import List
 
 import logging
-import os
 
-from leaf_server_common.logging.logging_setup import setup_logging
 from leaf_server_common.server.server_lifetime import ServerLifetime
 from leaf_server_common.server.server_loop_callbacks import ServerLoopCallbacks
 
 from neuro_san.api.grpc import agent_pb2
 
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
-from neuro_san.internals.utils.file_of_class import FileOfClass
+from neuro_san.service.agent_server_logging import AgentServerLogging
 from neuro_san.service.agent_servicer_to_server import AgentServicerToServer
 from neuro_san.service.agent_service import AgentService
 from neuro_san.session.chat_session_map import ChatSessionMap
@@ -77,32 +75,9 @@ class AgentServer:
         """
         self.port = port
         self.server_loop_callbacks = server_loop_callbacks
-        current_dir = os.path.dirname(os.path.abspath(__file__))
 
-        # Make for easy running from the neuro-san repo
-        if os.environ.get("AGENT_SERVICE_LOG_JSON") is None:
-            # Use the log file that is local to the repo
-            file_of_class = FileOfClass(__file__, path_to_basis="../deploy")
-            os.environ["AGENT_SERVICE_LOG_JSON"] = file_of_class.get_file_in_basis("logging.json")
-
-        # Need to initialize the forwarded metadata default values before our first
-        # call to a logger (which is below!).
-        self.forwarded_request_metadata: List[str] = forwarded_request_metadata.split(" ")
-        extra_logging_defaults: Dict[str, str] = {
-            "source": server_name_for_logs,
-            "user_id": "None",
-            "request_id": "None",
-        }
-        if len(self.forwarded_request_metadata) > 0:
-            for key in self.forwarded_request_metadata:
-                extra_logging_defaults[key] = "None"
-
-        setup_logging(server_name_for_logs, current_dir,
-                      'AGENT_SERVICE_LOG_JSON',
-                      'AGENT_SERVICE_LOG_LEVEL',
-                      extra_logging_defaults)
-        # This module within openai library can be quite chatty w/rt http requests
-        logging.getLogger("httpx").setLevel(logging.WARNING)
+        self.server_logging = AgentServerLogging(server_name_for_logs, forwarded_request_metadata)
+        self.server_logging.setup_logging()
 
         self.logger = logging.getLogger(__name__)
 
@@ -150,7 +125,7 @@ class AgentServer:
                                    self.chat_session_map,
                                    agent_name,
                                    tool_registry,
-                                   self.forwarded_request_metadata)
+                                   self.server_logging)
             self.services.append(service)
 
             servicer_to_server = AgentServicerToServer(service, agent_name=agent_name)

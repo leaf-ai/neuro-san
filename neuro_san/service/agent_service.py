@@ -13,7 +13,6 @@
 from typing import Any
 from typing import Dict
 from typing import Iterator
-from typing import List
 
 import copy
 import json
@@ -24,6 +23,8 @@ import grpc
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.json_format import Parse
 
+from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
+
 from leaf_server_common.server.atomic_counter import AtomicCounter
 from leaf_server_common.server.grpc_metadata_forwarder import GrpcMetadataForwarder
 from leaf_server_common.server.request_logger import RequestLogger
@@ -31,6 +32,7 @@ from leaf_server_common.server.request_logger import RequestLogger
 from neuro_san.api.grpc import agent_pb2 as service_messages
 from neuro_san.api.grpc import agent_pb2_grpc
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
+from neuro_san.service.agent_server_logging import AgentServerLogging
 from neuro_san.session.chat_session_map import ChatSessionMap
 from neuro_san.session.direct_agent_session import DirectAgentSession
 from neuro_san.session.external_agent_session_factory import ExternalAgentSessionFactory
@@ -56,7 +58,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
                  chat_session_map: ChatSessionMap,
                  agent_name: str,
                  tool_registry: AgentToolRegistry,
-                 forwarded_request_metadata: List[str]):
+                 server_logging: AgentServerLogging):
         """
         Set the gRPC interface up for health checking so that the service
         will be opened to callers when the mesh sees it operational, if this
@@ -72,13 +74,15 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
                         map of session_id string to Agent
         :param agent_name: The agent name for the service
         :param tool_registry: The AgentToolRegistry to use for the service.
-        :param forwarded_request_metadata: A list of http metadata request keys
-                        to forward to logs/other requests
+        :param server_logging: An AgentServerLogging instance initialized so that
+                        spawned asyncrhonous threads can also properly initialize
+                        their logging.
         """
         self.request_logger = request_logger
         self.security_cfg = security_cfg
 
-        self.forwarder = GrpcMetadataForwarder(forwarded_request_metadata)
+        self.server_logging: AgentServerLogging = server_logging
+        self.forwarder: GrpcMetadataForwarder = self.server_logging.get_forwarder()
 
         self.chat_session_map: ChatSessionMap = chat_session_map
 
@@ -111,7 +115,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         request_log = None
         log_marker: str = "function request"
         service_logging_dict: Dict[str, str] = {
-            "request_id": f"{self.request_logger.get_server_name_for_logs()}-{uuid.uuid4()}"
+            "request_id": f"server-{uuid.uuid4()}"
         }
         if "Function" not in DO_NOT_LOG_REQUESTS:
             request_log = self.request_logger.start_request(f"{self.agent_name}.Function",
@@ -160,7 +164,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         request_log = None
         log_marker: str = "connectivity request"
         service_logging_dict: Dict[str, str] = {
-            "request_id": f"{self.request_logger.get_server_name_for_logs()}-{uuid.uuid4()}"
+            "request_id": f"server-{uuid.uuid4()}"
         }
         if "Connectivity" not in DO_NOT_LOG_REQUESTS:
             request_log = self.request_logger.start_request(f"{self.agent_name}.Connectivity",
@@ -354,7 +358,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         request_log = None
         log_marker = f"'{request.user_message.text}'"
         service_logging_dict: Dict[str, str] = {
-            "request_id": f"{self.request_logger.get_server_name_for_logs()}-{uuid.uuid4()}"
+            "request_id": f"server-{uuid.uuid4()}"
         }
         if "StreamingChat" not in DO_NOT_LOG_REQUESTS:
             request_log = self.request_logger.start_request(f"{self.agent_name}.StreamingChat",
@@ -365,18 +369,24 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         metadata: Dict[str, str] = copy.copy(service_logging_dict)
         metadata.update(self.forwarder.forward(context))
 
-        # Get our args in order to pass to grpc-free session level
-        request_dict: Dict[str, Any] = MessageToDict(request)
-
-        # Delegate to Direct*Session
+        # Prepare
         factory = ExternalAgentSessionFactory(use_direct=False)
         invocation_context = SessionInvocationContext(factory, metadata)
         invocation_context.start()
+
+        # Set up logging inside async thread
+        executor: AsyncioExecutor = invocation_context.get_asyncio_executor()
+        _ = executor.submit(None, self.server_logging.setup_logging, metadata,
+                            metadata.get("request_id", service_logging_dict.get("request_id")))
+
+        # Delegate to Direct*Session
         session = DirectAgentSession(chat_session_map=self.chat_session_map,
                                      tool_registry=self.tool_registry,
                                      invocation_context=invocation_context,
                                      metadata=metadata,
                                      security_cfg=self.security_cfg)
+        # Get our args in order to pass to grpc-free session level
+        request_dict: Dict[str, Any] = MessageToDict(request)
         response_dict_iterator: Iterator[Dict[str, Any]] = session.streaming_chat(request_dict)
 
         for response_dict in response_dict_iterator:
