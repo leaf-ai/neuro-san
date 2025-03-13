@@ -93,6 +93,6 @@ class GrpcConciergeSession(AbstractServiceSession, ConciergeSession):
         given a grpc Stub already set up with a channel (socket) to call with.
         """
         response = stub.List(*args, timeout=timeout_in_seconds,
-                                 metadata=metadata,
-                                 credentials=credentials)
+                             metadata=metadata,
+                             credentials=credentials)
         return response

@@ -12,7 +12,6 @@
 
 from typing import Any
 from typing import Dict
-from typing import List
 
 import copy
 import json
@@ -65,7 +64,7 @@ class ConciergeService(concierge_pb2_grpc.ConciergeServiceServicer):
 
     # pylint: disable=no-member
     def List(self, request: concierge_messages.ConciergeRequest,
-                 context: grpc.ServicerContext) \
+             context: grpc.ServicerContext) \
             -> concierge_messages.ConciergeResponse:
         """
         Allows a client to get the description of available agents
