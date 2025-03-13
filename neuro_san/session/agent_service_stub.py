@@ -36,11 +36,6 @@ class AgentServiceStub:
         self.Connectivity: UnaryUnaryMultiCallable = None
         self.StreamingChat: UnaryStreamMultiCallable = None
 
-        # Below here are deprecated
-        self.Chat: UnaryUnaryMultiCallable = None
-        self.Logs: UnaryUnaryMultiCallable = None
-        self.Reset: UnaryUnaryMultiCallable = None
-
     def set_agent_name(self, agent_name: str):
         """
         Exclusively called by ForwardedAgentSession.
@@ -84,23 +79,6 @@ class AgentServiceStub:
                 f"/{service_name}/StreamingChat",
                 request_serializer=agent__pb2.ChatRequest.SerializeToString,
                 response_deserializer=agent__pb2.ChatResponse.FromString,
-                )
-
-        # Below here are deprecated
-        self.Chat = channel.unary_unary(
-                f"/{service_name}/Chat",
-                request_serializer=agent__pb2.ChatRequest.SerializeToString,
-                response_deserializer=agent__pb2.ChatResponse.FromString,
-                )
-        self.Logs = channel.unary_unary(
-                f"/{service_name}/Logs",
-                request_serializer=agent__pb2.LogsRequest.SerializeToString,
-                response_deserializer=agent__pb2.LogsResponse.FromString,
-                )
-        self.Reset = channel.unary_unary(
-                f"/{service_name}/Reset",
-                request_serializer=agent__pb2.ResetRequest.SerializeToString,
-                response_deserializer=agent__pb2.ResetResponse.FromString,
                 )
 
         return self
