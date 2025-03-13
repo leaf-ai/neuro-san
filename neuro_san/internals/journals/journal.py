@@ -35,12 +35,6 @@ class Journal:
         """
         raise NotImplementedError
 
-    def get_logs(self) -> List[Any]:
-        """
-        :return: A list of strings corresponding to journal entries.
-        """
-        raise NotImplementedError
-
     async def write_message(self, message: BaseMessage, origin: List[Dict[str, Any]]):
         """
         Writes a BaseMessage entry into the journal

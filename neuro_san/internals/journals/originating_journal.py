@@ -63,13 +63,6 @@ class OriginatingJournal(Journal):
             use_origin = origin
         await self.wrapped_journal.write(entry, use_origin)
 
-    def get_logs(self) -> List[Any]:
-        """
-        :return: A list of strings corresponding to wrapped_journal entries.
-        """
-        # Pass-through
-        return self.wrapped_journal.get_logs()
-
     async def write_message(self, message: BaseMessage, origin: List[Dict[str, Any]] = None):
         """
         Writes a BaseMessage entry into the wrapped_journal

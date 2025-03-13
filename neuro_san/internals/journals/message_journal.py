@@ -55,12 +55,6 @@ class MessageJournal(Journal):
         legacy = LegacyLogsMessage(content=entry)
         await self.write_message(legacy, origin)
 
-    def get_logs(self) -> List[str]:
-        """
-        :return: A list of strings corresponding to log entries written with write()
-        """
-        return None
-
     async def write_message(self, message: BaseMessage, origin: List[Dict[str, Any]]):
         """
         Writes a BaseMessage entry into the journal

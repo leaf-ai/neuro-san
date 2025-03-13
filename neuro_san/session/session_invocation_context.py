@@ -11,7 +11,6 @@
 # END COPYRIGHT
 from typing import Any
 from typing import Dict
-from typing import List
 
 from asyncio import Future
 
@@ -106,12 +105,6 @@ class SessionInvocationContext(InvocationContext):
         :return: The metadata to pass along with any request
         """
         return self.metadata
-
-    def set_logs(self, logs: List[Any]):
-        """
-        :param logs: A list of strings corresponding to journal entries.
-        """
-        self.journal.set_logs(logs)
 
     def reset_origination(self):
         """

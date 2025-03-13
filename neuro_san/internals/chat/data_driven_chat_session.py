@@ -49,7 +49,6 @@ class DataDrivenChatSession:
         # This block contains top candidates for state storage that needs to be
         # retained when session_ids go away.
         self.front_man: FrontMan = None
-        self.logs: List[Any] = None
 
         self.registry: AgentToolRegistry = registry
         self.latest_response = None
@@ -158,9 +157,6 @@ class DataDrivenChatSession:
             chat_message: Dict[str, Any] = convert_to_chat_message(raw_message, self.front_man.get_origin())
             chat_messages.append(chat_message)
 
-        # Save the logs from the journal
-        self.logs = journal.get_logs()
-
         return iter(chat_messages)
 
     async def streaming_chat(self, user_input: str,
@@ -227,12 +223,6 @@ class DataDrivenChatSession:
                 last received input.
         """
         return self.last_input_timestamp
-
-    def get_logs(self) -> List[Any]:
-        """
-        :return: A list of strings corresponding to journal entries.
-        """
-        return self.logs
 
     def prepare_chat_context(self, chat_message_history: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
