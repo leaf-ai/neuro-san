@@ -76,7 +76,7 @@ class ConciergeService(concierge_pb2_grpc.ConciergeServiceServicer):
         request_log = None
         log_marker: str = "concierge request"
         service_logging_dict: Dict[str, str] = {
-            "request_id": f"{self.request_logger.get_server_name_for_logs()}-{uuid.uuid4()}"
+            "request_id": f"server-{uuid.uuid4()}"
         }
         request_log = self.request_logger.start_request("Describe",
                                                         log_marker, context,
