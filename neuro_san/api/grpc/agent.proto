@@ -35,19 +35,6 @@ service AgentService {
     // Called when a client needs the function description of an agent.
     rpc Function (FunctionRequest) returns (FunctionResponse) {}
 
-    // Called when the user needs to initialize a new chat request
-    // or respond to an LLM's request during an already initialized chat.
-    // NOTE: This method is deprecated in favor of StreamingChat
-    rpc Chat (ChatRequest) returns (ChatResponse) {}
-
-    // Polls for chat results which are processed asynchronously from Chat() above.
-    // NOTE: This method is deprecated in favor of StreamingChat
-    rpc Logs (LogsRequest) returns (LogsResponse) {}
-
-    // Resets the chat initiated with Chat() above.
-    // NOTE: This method is deprecated in favor of StreamingChat
-    rpc Reset (ResetRequest) returns (ResetResponse) {}
-
     // Unidirectional streaming method which would supercede Chat() and Logs() above.
     // Most important semantics of the streaming:
     //  1) The "answer" to a query of any agent network is the *last* streamed
@@ -180,59 +167,6 @@ message ChatResponse {
     // (Think like a URI:
     //  opportunity_finder_pipeline/opportunity_finder_process_manager/synthetic_data_generator)
     chat.ChatMessage response = 4 [json_name="response"];
-}
-
-// Request structure for Logs gRPC method
-message LogsRequest {
-
-    // A string UUID identifying the root ownership of the chat assistant's resources.
-    // When calling Logs(), this cannot be blank.
-    string session_id = 1 [json_name="session_id"];
-}
-
-// Response structure for Logs gRPC method
-message LogsResponse {
-
-    // The request that generated this response
-    LogsRequest request = 1;
-
-    // A string UUID identifying the root ownership of the chat assistant's resources.
-    string session_id = 2 [json_name="session_id"];
-
-    // Enum describing the status of the given session_id
-    // See the definition of the AgentStatus enum above for details
-    // on how to respond.
-    AgentStatus status = 3;
-
-    // A single string representing the most recent chat response
-    string chat_response = 4 [json_name="chat_response"];
-
-    // A list of strings representing the "thought process" logs thus far.
-    repeated string logs = 5;
-}
-
-
-// Request structure for Reset gRPC method
-message ResetRequest {
-
-    // A string UUID identifying the root ownership of the chat assistant's resources.
-    // When calling Reset(), this cannot be blank.
-    string session_id = 1 [json_name="session_id"];
-}
-
-// Response structure for Reset gRPC method
-message ResetResponse {
-
-    // The request that generated this response
-    ResetRequest request = 1;
-
-    // A string UUID identifying the root ownership of the chat assistant's resources.
-    string session_id = 2 [json_name="session_id"];
-
-    // Enum describing the status of the given session_id
-    // See the definition of the AgentStatus enum above for details
-    // on how to respond.
-    AgentStatus status = 3;
 }
 
 // Request structure for Connectivity gRPC method
