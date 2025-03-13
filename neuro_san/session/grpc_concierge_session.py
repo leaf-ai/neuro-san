@@ -69,7 +69,7 @@ class GrpcConciergeSession(AbstractServiceSession, ConciergeSession):
                                         security_cfg, umbrella_timeout,
                                         timeout_in_seconds)
 
-    def describe(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
+    def list(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
         """
         :param request_dict: A dictionary version of the ConciergeRequest
                     protobuf structure. Has the following keys:
@@ -80,13 +80,13 @@ class GrpcConciergeSession(AbstractServiceSession, ConciergeSession):
         """
         # pylint: disable=no-member
         return self.call_grpc_method(
-            "describe",
-            self._describe_from_stub,
+            "list",
+            self._list_from_stub,
             request_dict,
             concierge_messages.ConciergeRequest())
 
     @staticmethod
-    def _describe_from_stub(stub, timeout_in_seconds,
+    def _list_from_stub(stub, timeout_in_seconds,
                             metadata, credentials, *args):
         """
         Global method associated with the session that calls List

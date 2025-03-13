@@ -41,7 +41,7 @@ class DirectConciergeSession(ConciergeSession):
         self._metadata: Dict[str, Any] = metadata
         self._security_cfg: Dict[str, Any] = security_cfg
 
-    def describe(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
+    def list(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
         """
         :param request_dict: A dictionary version of the ConciergeRequest
                     protobuf structure. Has the following keys:

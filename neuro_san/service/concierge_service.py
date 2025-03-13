@@ -93,7 +93,7 @@ class ConciergeService(concierge_pb2_grpc.ConciergeServiceServicer):
         # Delegate to Direct*Session
         session = DirectConciergeSession(metadata=metadata,
                                          security_cfg=self.security_cfg)
-        response_dict = session.describe(request_dict)
+        response_dict = session.list(request_dict)
 
         # Convert the response dictionary to a grpc message
         response_string = json.dumps(response_dict)

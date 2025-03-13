@@ -30,7 +30,7 @@ class ConciergeSession:
     # This port number will also be mentioned in its Dockerfile
     DEFAULT_HTTP_PORT: int = AgentSession.DEFAULT_HTTP_PORT
 
-    def describe(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
+    def list(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
         """
         :param request_dict: A dictionary version of the ConciergeRequest
                     protobuf structure. Has the following keys:

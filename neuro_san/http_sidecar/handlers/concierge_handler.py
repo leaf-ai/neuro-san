@@ -32,7 +32,7 @@ class ConciergeHandler(BaseRequestHandler):
             data: Dict[str, Any] = {}
             metadata: Dict[str, Any] = self.get_metadata()
             grpc_session: ConciergeSession = self.get_concierge_grpc_session(metadata)
-            result_dict: Dict[str, Any] = grpc_session.describe(data)
+            result_dict: Dict[str, Any] = grpc_session.list(data)
 
             # Return gRPC response to the HTTP client
             self.set_header("Content-Type", "application/json")
