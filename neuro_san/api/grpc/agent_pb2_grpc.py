@@ -34,21 +34,6 @@ class AgentServiceStub(object):
                 request_serializer=neuro__san_dot_api_dot_grpc_dot_agent__pb2.FunctionRequest.SerializeToString,
                 response_deserializer=neuro__san_dot_api_dot_grpc_dot_agent__pb2.FunctionResponse.FromString,
                 )
-        self.Chat = channel.unary_unary(
-                '/dev.cognizant_ai.neuro_san.api.grpc.agent.AgentService/Chat',
-                request_serializer=neuro__san_dot_api_dot_grpc_dot_agent__pb2.ChatRequest.SerializeToString,
-                response_deserializer=neuro__san_dot_api_dot_grpc_dot_agent__pb2.ChatResponse.FromString,
-                )
-        self.Logs = channel.unary_unary(
-                '/dev.cognizant_ai.neuro_san.api.grpc.agent.AgentService/Logs',
-                request_serializer=neuro__san_dot_api_dot_grpc_dot_agent__pb2.LogsRequest.SerializeToString,
-                response_deserializer=neuro__san_dot_api_dot_grpc_dot_agent__pb2.LogsResponse.FromString,
-                )
-        self.Reset = channel.unary_unary(
-                '/dev.cognizant_ai.neuro_san.api.grpc.agent.AgentService/Reset',
-                request_serializer=neuro__san_dot_api_dot_grpc_dot_agent__pb2.ResetRequest.SerializeToString,
-                response_deserializer=neuro__san_dot_api_dot_grpc_dot_agent__pb2.ResetResponse.FromString,
-                )
         self.StreamingChat = channel.unary_stream(
                 '/dev.cognizant_ai.neuro_san.api.grpc.agent.AgentService/StreamingChat',
                 request_serializer=neuro__san_dot_api_dot_grpc_dot_agent__pb2.ChatRequest.SerializeToString,
@@ -70,31 +55,6 @@ class AgentServiceServicer(object):
 
     def Function(self, request, context):
         """Called when a client needs the function description of an agent.
-        """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def Chat(self, request, context):
-        """Called when the user needs to initialize a new chat request
-        or respond to an LLM's request during an already initialized chat.
-        NOTE: This method is deprecated in favor of StreamingChat
-        """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def Logs(self, request, context):
-        """Polls for chat results which are processed asynchronously from Chat() above.
-        NOTE: This method is deprecated in favor of StreamingChat
-        """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def Reset(self, request, context):
-        """Resets the chat initiated with Chat() above.
-        NOTE: This method is deprecated in favor of StreamingChat
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -130,21 +90,6 @@ def add_AgentServiceServicer_to_server(servicer, server):
                     servicer.Function,
                     request_deserializer=neuro__san_dot_api_dot_grpc_dot_agent__pb2.FunctionRequest.FromString,
                     response_serializer=neuro__san_dot_api_dot_grpc_dot_agent__pb2.FunctionResponse.SerializeToString,
-            ),
-            'Chat': grpc.unary_unary_rpc_method_handler(
-                    servicer.Chat,
-                    request_deserializer=neuro__san_dot_api_dot_grpc_dot_agent__pb2.ChatRequest.FromString,
-                    response_serializer=neuro__san_dot_api_dot_grpc_dot_agent__pb2.ChatResponse.SerializeToString,
-            ),
-            'Logs': grpc.unary_unary_rpc_method_handler(
-                    servicer.Logs,
-                    request_deserializer=neuro__san_dot_api_dot_grpc_dot_agent__pb2.LogsRequest.FromString,
-                    response_serializer=neuro__san_dot_api_dot_grpc_dot_agent__pb2.LogsResponse.SerializeToString,
-            ),
-            'Reset': grpc.unary_unary_rpc_method_handler(
-                    servicer.Reset,
-                    request_deserializer=neuro__san_dot_api_dot_grpc_dot_agent__pb2.ResetRequest.FromString,
-                    response_serializer=neuro__san_dot_api_dot_grpc_dot_agent__pb2.ResetResponse.SerializeToString,
             ),
             'StreamingChat': grpc.unary_stream_rpc_method_handler(
                     servicer.StreamingChat,
@@ -184,57 +129,6 @@ class AgentService(object):
         return grpc.experimental.unary_unary(request, target, '/dev.cognizant_ai.neuro_san.api.grpc.agent.AgentService/Function',
             neuro__san_dot_api_dot_grpc_dot_agent__pb2.FunctionRequest.SerializeToString,
             neuro__san_dot_api_dot_grpc_dot_agent__pb2.FunctionResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def Chat(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/dev.cognizant_ai.neuro_san.api.grpc.agent.AgentService/Chat',
-            neuro__san_dot_api_dot_grpc_dot_agent__pb2.ChatRequest.SerializeToString,
-            neuro__san_dot_api_dot_grpc_dot_agent__pb2.ChatResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def Logs(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/dev.cognizant_ai.neuro_san.api.grpc.agent.AgentService/Logs',
-            neuro__san_dot_api_dot_grpc_dot_agent__pb2.LogsRequest.SerializeToString,
-            neuro__san_dot_api_dot_grpc_dot_agent__pb2.LogsResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def Reset(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/dev.cognizant_ai.neuro_san.api.grpc.agent.AgentService/Reset',
-            neuro__san_dot_api_dot_grpc_dot_agent__pb2.ResetRequest.SerializeToString,
-            neuro__san_dot_api_dot_grpc_dot_agent__pb2.ResetResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

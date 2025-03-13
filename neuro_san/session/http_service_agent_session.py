@@ -157,15 +157,6 @@ class HttpServiceAgentSession(AgentSession):
         except Exception as exc:  # pylint: disable=broad-exception-caught
             raise ValueError(self.help_message(path)) from exc
 
-    def chat(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
-        raise NotImplementedError
-
-    def logs(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
-        raise NotImplementedError
-
-    def reset(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
-        raise NotImplementedError
-
     def streaming_chat(self, request_dict: Dict[str, Any]) -> Generator[Dict[str, Any], None, None]:
         """
         :param request_dict: A dictionary version of the ChatRequest

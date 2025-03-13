@@ -65,23 +65,6 @@ class AgentServicerToServer:
                     request_deserializer=agent__pb2.ChatRequest.FromString,
                     response_serializer=agent__pb2.ChatResponse.SerializeToString,
             ),
-
-            # Below here are deprecated
-            'Chat': unary_unary_rpc_method_handler(
-                    self.servicer.Chat,
-                    request_deserializer=agent__pb2.ChatRequest.FromString,
-                    response_serializer=agent__pb2.ChatResponse.SerializeToString,
-            ),
-            'Logs': unary_unary_rpc_method_handler(
-                    self.servicer.Logs,
-                    request_deserializer=agent__pb2.LogsRequest.FromString,
-                    response_serializer=agent__pb2.LogsResponse.SerializeToString,
-            ),
-            'Reset': unary_unary_rpc_method_handler(
-                    self.servicer.Reset,
-                    request_deserializer=agent__pb2.ResetRequest.FromString,
-                    response_serializer=agent__pb2.ResetResponse.SerializeToString,
-            ),
         }
 
         # Prepare the service name on a per-agent basis
