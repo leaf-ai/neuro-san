@@ -106,12 +106,6 @@ class SessionInvocationContext(InvocationContext):
         """
         return self.metadata
 
-    def reset_origination(self):
-        """
-        Resets the origination
-        """
-        self.origination = Origination()
-
     def close(self):
         """
         Release resources owned by this context
