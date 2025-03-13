@@ -35,7 +35,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\"neuro_san/api/grpc/concierge.proto\x12-dev.cognizant_ai.neuro_san.api.grpc.concierge\"\x12\n\x10\x43onciergeRequest\"M\n\tAgentInfo\x12\x1e\n\nagent_name\x18\x01 \x01(\tR\nagent_name\x12 \n\x0b\x64\x65scription\x18\x02 \x01(\tR\x0b\x64\x65scription\"e\n\x11\x43onciergeResponse\x12P\n\x06\x61gents\x18\x01 \x03(\x0b\x32\x38.dev.cognizant_ai.neuro_san.api.grpc.concierge.AgentInfoR\x06\x61gents2\xa4\x01\n\x10\x43onciergeService\x12\x8f\x01\n\x08\x44\x65scribe\x12?.dev.cognizant_ai.neuro_san.api.grpc.concierge.ConciergeRequest\x1a@.dev.cognizant_ai.neuro_san.api.grpc.concierge.ConciergeResponse\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\"neuro_san/api/grpc/concierge.proto\x12-dev.cognizant_ai.neuro_san.api.grpc.concierge\"\x12\n\x10\x43onciergeRequest\"M\n\tAgentInfo\x12\x1e\n\nagent_name\x18\x01 \x01(\tR\nagent_name\x12 \n\x0b\x64\x65scription\x18\x02 \x01(\tR\x0b\x64\x65scription\"e\n\x11\x43onciergeResponse\x12P\n\x06\x61gents\x18\x01 \x03(\x0b\x32\x38.dev.cognizant_ai.neuro_san.api.grpc.concierge.AgentInfoR\x06\x61gents2\xa0\x01\n\x10\x43onciergeService\x12\x8b\x01\n\x04List\x12?.dev.cognizant_ai.neuro_san.api.grpc.concierge.ConciergeRequest\x1a@.dev.cognizant_ai.neuro_san.api.grpc.concierge.ConciergeResponse\"\x00\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -49,5 +49,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CONCIERGERESPONSE']._serialized_start=184
   _globals['_CONCIERGERESPONSE']._serialized_end=285
   _globals['_CONCIERGESERVICE']._serialized_start=288
-  _globals['_CONCIERGESERVICE']._serialized_end=452
+  _globals['_CONCIERGESERVICE']._serialized_end=448
 # @@protoc_insertion_point(module_scope)

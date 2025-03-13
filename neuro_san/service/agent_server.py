@@ -136,7 +136,7 @@ class AgentServer:
         concierge_service: ConciergeService = \
             ConciergeService(server_lifetime,
                              security_cfg,
-                             self.forwarded_request_metadata)
+                             self.server_logging)
         concierge_pb2_grpc.add_ConciergeServiceServicer_to_server(
             concierge_service,
             server)

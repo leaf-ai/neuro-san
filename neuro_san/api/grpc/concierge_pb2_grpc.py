@@ -46,8 +46,8 @@ class ConciergeServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.Describe = channel.unary_unary(
-                '/dev.cognizant_ai.neuro_san.api.grpc.concierge.ConciergeService/Describe',
+        self.List = channel.unary_unary(
+                '/dev.cognizant_ai.neuro_san.api.grpc.concierge.ConciergeService/List',
                 request_serializer=neuro__san_dot_api_dot_grpc_dot_concierge__pb2.ConciergeRequest.SerializeToString,
                 response_deserializer=neuro__san_dot_api_dot_grpc_dot_concierge__pb2.ConciergeResponse.FromString,
                 _registered_method=True)
@@ -57,7 +57,7 @@ class ConciergeServiceServicer(object):
     """The service
     """
 
-    def Describe(self, request, context):
+    def List(self, request, context):
         """Called when a client needs the information about available agents.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -67,8 +67,8 @@ class ConciergeServiceServicer(object):
 
 def add_ConciergeServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'Describe': grpc.unary_unary_rpc_method_handler(
-                    servicer.Describe,
+            'List': grpc.unary_unary_rpc_method_handler(
+                    servicer.List,
                     request_deserializer=neuro__san_dot_api_dot_grpc_dot_concierge__pb2.ConciergeRequest.FromString,
                     response_serializer=neuro__san_dot_api_dot_grpc_dot_concierge__pb2.ConciergeResponse.SerializeToString,
             ),
@@ -85,7 +85,7 @@ class ConciergeService(object):
     """
 
     @staticmethod
-    def Describe(request,
+    def List(request,
             target,
             options=(),
             channel_credentials=None,
@@ -98,7 +98,7 @@ class ConciergeService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/dev.cognizant_ai.neuro_san.api.grpc.concierge.ConciergeService/Describe',
+            '/dev.cognizant_ai.neuro_san.api.grpc.concierge.ConciergeService/List',
             neuro__san_dot_api_dot_grpc_dot_concierge__pb2.ConciergeRequest.SerializeToString,
             neuro__san_dot_api_dot_grpc_dot_concierge__pb2.ConciergeResponse.FromString,
             options,

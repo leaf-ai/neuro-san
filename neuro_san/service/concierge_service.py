@@ -29,7 +29,7 @@ from leaf_server_common.server.request_logger import RequestLogger
 from neuro_san.api.grpc import concierge_pb2 as concierge_messages
 from neuro_san.api.grpc import concierge_pb2_grpc
 
-
+from neuro_san.service.agent_server_logging import AgentServerLogging
 from neuro_san.session.direct_concierge_session import DirectConciergeSession
 
 
@@ -42,7 +42,7 @@ class ConciergeService(concierge_pb2_grpc.ConciergeServiceServicer):
     def __init__(self,
                  request_logger: RequestLogger,
                  security_cfg: Dict[str, Any],
-                 forwarded_request_metadata: List[str]):
+                 server_logging: AgentServerLogging):
         """
         Set the gRPC interface up for health checking so that the service
         will be opened to callers when the mesh sees it operational, if this
@@ -54,15 +54,17 @@ class ConciergeService(concierge_pb2_grpc.ConciergeServiceServicer):
                         secure the TLS and the authentication of the gRPC
                         connection.  Supplying this implies use of a secure
                         GRPC Channel.  If None, uses insecure channel.
-        :param forwarded_request_metadata: A list of http metadata request keys
-                        to forward to logs/other requests
+        :param server_logging: An AgentServerLogging instance initialized so that
+                        spawned asynchronous threads can also properly initialize
+                        their logging.
         """
         self.request_logger = request_logger
         self.security_cfg = security_cfg
-        self.forwarder = GrpcMetadataForwarder(forwarded_request_metadata)
+        self.server_logging: AgentServerLogging = server_logging
+        self.forwarder: GrpcMetadataForwarder = self.server_logging.get_forwarder()
 
     # pylint: disable=no-member
-    def Describe(self, request: concierge_messages.ConciergeRequest,
+    def List(self, request: concierge_messages.ConciergeRequest,
                  context: grpc.ServicerContext) \
             -> concierge_messages.ConciergeResponse:
         """
@@ -78,7 +80,7 @@ class ConciergeService(concierge_pb2_grpc.ConciergeServiceServicer):
         service_logging_dict: Dict[str, str] = {
             "request_id": f"server-{uuid.uuid4()}"
         }
-        request_log = self.request_logger.start_request("Describe",
+        request_log = self.request_logger.start_request("List",
                                                         log_marker, context,
                                                         service_logging_dict)
 
@@ -100,6 +102,6 @@ class ConciergeService(concierge_pb2_grpc.ConciergeServiceServicer):
         Parse(response_string, response)
 
         if request_log is not None:
-            self.request_logger.finish_request("Describe", log_marker, request_log)
+            self.request_logger.finish_request("List", log_marker, request_log)
 
         return response

@@ -89,10 +89,10 @@ class GrpcConciergeSession(AbstractServiceSession, ConciergeSession):
     def _describe_from_stub(stub, timeout_in_seconds,
                             metadata, credentials, *args):
         """
-        Global method associated with the session that calls Describe
+        Global method associated with the session that calls List
         given a grpc Stub already set up with a channel (socket) to call with.
         """
-        response = stub.Describe(*args, timeout=timeout_in_seconds,
+        response = stub.List(*args, timeout=timeout_in_seconds,
                                  metadata=metadata,
                                  credentials=credentials)
         return response

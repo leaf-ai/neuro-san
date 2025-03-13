@@ -72,7 +72,7 @@ class HttpSidecar:
             {"agent_name": "concierge",
              "port": self.port,
              "forwarded_request_metadata": self.forwarded_request_metadata}
-        handlers.append(("/describe", ConciergeHandler, concierge_data))
+        handlers.append(("/api/v1/list", ConciergeHandler, concierge_data))
 
         for agent_name in self.agents.keys():
             # For each of registered agents, we define 3 request paths -

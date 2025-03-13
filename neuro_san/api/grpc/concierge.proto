@@ -24,10 +24,10 @@ package dev.cognizant_ai.neuro_san.api.grpc.concierge;
 service ConciergeService {
 
     // Called when a client needs the information about available agents.
-    rpc Describe (ConciergeRequest) returns (ConciergeResponse) {}
+    rpc List (ConciergeRequest) returns (ConciergeResponse) {}
 }
 
-// Request structure for Describe gRPC method
+// Request structure for List gRPC method
 message ConciergeRequest {
 }
 
@@ -40,7 +40,7 @@ message AgentInfo {
     string description = 2 [json_name="description"];
 }
 
-// Response structure for Describe gRPC method
+// Response structure for List gRPC method
 message ConciergeResponse {
 
     // List of agent descriptions
