@@ -22,7 +22,6 @@ from datetime import datetime
 from openai import BadRequestError
 
 from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
-from neuro_san.internals.chat.chat_session import ChatSession
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.graph.tools.front_man import FrontMan
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
@@ -35,7 +34,7 @@ from neuro_san.internals.run_context.interfaces.run_context import RunContext
 
 
 # pylint: disable=too-many-instance-attributes
-class DataDrivenChatSession(ChatSession):
+class DataDrivenChatSession:
     """
     ChatSession implementation that consolidates policy
     in using data-driven agent tool graphs.

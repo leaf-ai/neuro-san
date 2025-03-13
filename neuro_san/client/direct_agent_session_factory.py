@@ -14,7 +14,6 @@ from typing import Dict
 from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
-from neuro_san.session.chat_session_map import ChatSessionMap
 from neuro_san.session.direct_agent_session import DirectAgentSession
 from neuro_san.session.external_agent_session_factory import ExternalAgentSessionFactory
 from neuro_san.session.session_invocation_context import SessionInvocationContext
@@ -25,7 +24,6 @@ class DirectAgentSessionFactory:
     """
     Sets up everything needed to use a DirectAgentSession more as a library.
     This includes:
-        * a ChatSessionMap
         * Some reading of AgentToolRegistries
     """
 
@@ -33,11 +31,6 @@ class DirectAgentSessionFactory:
         """
         Constructor
         """
-        init_arguments = {
-            "chat_sessions": {}
-        }
-        self.chat_session_map: ChatSessionMap = ChatSessionMap(init_arguments)
-
         manifest_restorer = RegistryManifestRestorer()
         self.manifest_tool_registries: Dict[str, AgentToolRegistry] = manifest_restorer.restore()
 
@@ -57,8 +50,7 @@ class DirectAgentSessionFactory:
 
         invocation_context = SessionInvocationContext(factory, metadata)
         invocation_context.start()
-        session: DirectAgentSession = DirectAgentSession(chat_session_map=self.chat_session_map,
-                                                         tool_registry=tool_registry,
+        session: DirectAgentSession = DirectAgentSession(tool_registry=tool_registry,
                                                          invocation_context=invocation_context,
                                                          metadata=metadata)
         return session

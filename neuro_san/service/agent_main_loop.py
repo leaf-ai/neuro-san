@@ -15,9 +15,7 @@ See class comment for details
 from typing import Dict
 from typing import List
 
-import logging
 import multiprocessing
-
 import os
 
 from argparse import ArgumentParser
@@ -25,7 +23,6 @@ from argparse import ArgumentParser
 from leaf_server_common.server.server_loop_callbacks import ServerLoopCallbacks
 
 from neuro_san.interfaces.agent_session import AgentSession
-from neuro_san.internals.chat.chat_session import ChatSession
 from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.service.agent_server import AgentServer
@@ -35,12 +32,7 @@ from neuro_san.service.agent_server import DEFAULT_MAX_CONCURRENT_REQUESTS
 from neuro_san.service.agent_server import DEFAULT_REQUEST_LIMIT
 from neuro_san.service.agent_server import DEFAULT_FORWARDED_REQUEST_METADATA
 from neuro_san.service.agent_service import AgentService
-from neuro_san.session.chat_session_map import ChatSessionMap
 from neuro_san.http_sidecar.http_sidecar import HttpSidecar
-
-# A *single* global variable which contains a mapping of
-# string keys -> ChatSession implementations
-CHAT_SESSIONS: Dict[str, ChatSession] = {}
 
 
 # pylint: disable=too-many-instance-attributes
@@ -56,11 +48,6 @@ class AgentMainLoop(ServerLoopCallbacks):
         self.port: int = 0
         self.http_port: int = 0
 
-        # Points to the global
-        init_arguments = {
-            "chat_sessions": CHAT_SESSIONS
-        }
-        self.chat_session_map = ChatSessionMap(init_arguments)
         self.tool_registries: Dict[str, AgentToolRegistry] = {}
 
         self.server_name: str = DEFAULT_SERVER_NAME
@@ -128,7 +115,6 @@ class AgentMainLoop(ServerLoopCallbacks):
 
         self.server = AgentServer(self.port,
                                   server_loop_callbacks=self,
-                                  chat_session_map=self.chat_session_map,
                                   tool_registries=self.tool_registries,
                                   server_name=self.server_name,
                                   server_name_for_logs=self.server_name_for_logs,
@@ -155,8 +141,6 @@ class AgentMainLoop(ServerLoopCallbacks):
         """
         Periodically called by the main server loop of ServerLifetime.
         """
-        self.chat_session_map.prune()
-
         # Report back on service activity so the ServerLifetime that calls
         # this method can properly yield/sleep depending on how many requests
         # are in motion.
@@ -166,15 +150,6 @@ class AgentMainLoop(ServerLoopCallbacks):
                 return True
 
         return False
-
-    def shutdown_callback(self):
-        """
-        Called by the main server loop when it's time to shut down.
-        """
-        logger = logging.getLogger(self.__class__.__name__)
-
-        logger.info("Shutdown: cleaning up ChatSessionMap")
-        self.chat_session_map.cleanup()
 
 
 if __name__ == '__main__':

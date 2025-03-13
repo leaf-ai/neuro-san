@@ -51,31 +51,6 @@ service AgentService {
     rpc Connectivity(ConnectivityRequest) returns (ConnectivityResponse) {}
 }
 
-enum AgentStatus {
-    // The status is unknown.  Very rare.
-    UNKNOWN = 0;
-
-    // The given session_id is alive and well
-    // on this service instance and the gRPC method
-    // can functionally proceed with a valid result.
-    FOUND = 1;
-
-    // Returned if the service instance does not find
-    // the session_id given in the request.
-    // For continuing chat streams, this could imply
-    // a series of client-side retries as multiple
-    // service instances will not keep track of the same
-    // assistants.
-    NOT_FOUND = 2;
-
-    // Returned when no session_id was given (initiation
-    // of new chat by client) and a new assistant is created.
-    // This is only ever returned by Chat()
-    // and this is an indication that the client should retain
-    // the returned session_id to pursue further conversation.
-    CREATED = 3;
-}
-
 // Request structure for Function gRPC method
 message FunctionRequest {
 }
@@ -98,20 +73,10 @@ message FunctionResponse {
     // The functional description of the agent.
     // Any initial chat prompt is obtained from the Function's description.
     Function function = 1 [json_name="function"];
-
-    // Enum describing the status
-    // See the definition of the Status enum above for details
-    // on how to respond.
-    AgentStatus status = 2;
 }
 
 // Request structure for Chat gRPC method
 message ChatRequest {
-
-    // A string UUID identifying the root ownership of the chat assistant's resources.
-    // Upon first contact this can be blank, as the client does not yet possess
-    // the right information.
-    string session_id = 1 [json_name="session_id"];
 
     // User input to initiate or continue the chat
     string user_input = 2 [json_name="user_input"];
@@ -126,7 +91,6 @@ message ChatRequest {
     // Supercedes user_input above
     chat.ChatMessage user_message = 4 [json_name="user_message"];
 
-    // Supercedes session_id above.
     // Message for holding the state of play for any chat session
     // such that should the client send this back to the service,
     // a different server knows exactly where to pick up where the previous
@@ -147,14 +111,6 @@ message ChatResponse {
 
     // The request that generated this response
     ChatRequest request = 1;
-
-    // A string UUID identifying the root ownership of the chat assistant's resources.
-    string session_id = 2 [json_name="session_id"];
-
-    // Enum describing the status of the given session_id
-    // See the definition of the AgentStatus enum above for details
-    // on how to respond.
-    AgentStatus status = 3;
 
     // Optionally returned.
     // Idea is that all of the above come back immediately to establish
@@ -199,10 +155,5 @@ message ConnectivityResponse {
     // The description of the agent network's internal connectivity
     // ... as far as the agent wants the outside world to know..
     repeated ConnectivityInfo connectivity_info = 1 [json_name="connectivity_info"];
-
-    // Enum describing the status
-    // See the definition of the Status enum above for details
-    // on how to respond.
-    AgentStatus status = 2;
 }
 

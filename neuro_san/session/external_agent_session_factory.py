@@ -81,14 +81,11 @@ class ExternalAgentSessionFactory(AsyncAgentSessionFactory):
             # Optimization: We want to create a different kind of session to minimize socket usage
             # and potentially relieve the direct user of the burden of having to start a server
 
-            chat_session_map = None
-
             manifest_restorer = RegistryManifestRestorer()
             manifest_tool_registries: Dict[str, AgentToolRegistry] = manifest_restorer.restore()
 
             tool_registry: AgentToolRegistry = self.get_tool_registry(agent_name, manifest_tool_registries)
-            session = AsyncDirectAgentSession(chat_session_map, tool_registry, invocation_context,
-                                              metadata=metadata)
+            session = AsyncDirectAgentSession(tool_registry, invocation_context, metadata=metadata)
 
         if session is None:
             session = AsyncGrpcServiceAgentSession(host, port, agent_name=agent_name,
