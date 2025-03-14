@@ -130,9 +130,8 @@ class DirectAgentSession(AgentSession):
         """
         extractor = DictionaryExtractor(request_dict)
 
-        # Get the user input. Prefer the newer-style from the user_message
-        user_input: str = request_dict.get("user_input")
-        user_input = extractor.get("user_message.text", user_input)
+        # Get the user input.
+        user_input = extractor.get("user_message.text")
 
         chat_context: Dict[str, Any] = request_dict.get("chat_context")
         sly_data: Dict[str, Any] = request_dict.get("sly_data")
