@@ -19,7 +19,6 @@ from neuro_san.internals.run_context.langchain.langchain_run_context import Lang
 from neuro_san.internals.run_context.openai.openai_run_context import OpenAIRunContext
 
 
-# pylint: disable=too-few-public-methods
 class RunContextFactory:
     """
     Creates the correct kind of RunContext

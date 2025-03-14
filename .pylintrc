@@ -42,3 +42,4 @@ suggestion-mode=yes
 disable=
     duplicate-code,
     missing-module-docstring,
+    too-few-public-methods,

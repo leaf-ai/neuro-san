@@ -16,7 +16,6 @@ from typing import Dict
 from neuro_san.interfaces.concierge_session import ConciergeSession
 
 
-# pylint: disable=too-few-public-methods
 class DirectConciergeSession(ConciergeSession):
     """
     Service-agnostic guts for a ConciergeSession.

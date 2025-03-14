@@ -23,7 +23,6 @@ import neuro_san.api.grpc.agent_pb2 as agent__pb2
 from neuro_san.api.grpc.agent_pb2_grpc import AgentServiceServicer
 
 
-# pylint: disable=too-few-public-methods
 class AgentServicerToServer:
     """
     Taken from generated gRPC code from the agent_pb2_grpc.py file

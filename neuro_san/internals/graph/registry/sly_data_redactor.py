@@ -16,7 +16,6 @@ from leaf_common.config.config_filter import ConfigFilter
 from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
 
-# pylint: disable=too-few-public-methods
 class SlyDataRedactor(ConfigFilter):
     """
     An implementation of the ConfigFilter interface which redacts sly data

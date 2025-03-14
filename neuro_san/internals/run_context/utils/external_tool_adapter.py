@@ -20,7 +20,6 @@ from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgen
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 
 
-# pylint: disable=too-few-public-methods
 class ExternalToolAdapter:
     """
     Class handles setting up a connection to an external agent server

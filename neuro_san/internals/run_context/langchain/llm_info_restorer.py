@@ -24,7 +24,6 @@ from leaf_common.persistence.interface.restorer import Restorer
 from neuro_san.internals.utils.file_of_class import FileOfClass
 
 
-# pylint: disable=too-few-public-methods
 class LlmInfoRestorer(Restorer):
     """
     Implementation of the Restorer interface to read in an LlmInfo dictionary

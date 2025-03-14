@@ -16,7 +16,6 @@ import json
 from neuro_san.internals.interfaces.error_formatter import ErrorFormatter
 
 
-# pylint: disable=too-few-public-methods
 class JsonErrorFormatter(ErrorFormatter):
     """
     Implementation of ErrorFormatter interface which compiles error information

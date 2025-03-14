@@ -32,7 +32,6 @@ from neuro_san.service.agent_server_logging import AgentServerLogging
 from neuro_san.session.direct_concierge_session import DirectConciergeSession
 
 
-# pylint: disable=too-few-public-methods
 class ConciergeService(concierge_pb2_grpc.ConciergeServiceServicer):
     """
     A gRPC implementation of the Neuro-San Concierge Service.

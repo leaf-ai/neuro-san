@@ -14,7 +14,6 @@ from typing import Any
 from neuro_san.interfaces.async_agent_session import AsyncAgentSession
 
 
-# pylint: disable=too-few-public-methods
 class AsyncAgentSessionFactory:
     """
     Creates asynchronous AsyncAgentSessions for external agents.

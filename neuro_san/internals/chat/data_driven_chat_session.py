@@ -17,8 +17,6 @@ from typing import List
 import logging
 import traceback
 
-from datetime import datetime
-
 from openai import BadRequestError
 
 from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
@@ -28,7 +26,6 @@ from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.agent_framework_message import AgentFrameworkMessage
 from neuro_san.internals.messages.message_utils import convert_to_chat_message
-from neuro_san.internals.messages.message_utils import pretty_the_messages
 from neuro_san.internals.run_context.factory.run_context_factory import RunContextFactory
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 
@@ -135,9 +132,6 @@ class DataDrivenChatSession:
 
             logger = logging.getLogger(self.__class__.__name__)
             logger.error(traceback.format_exc())
-
-        # Update the polling response.
-        prettied_messages = pretty_the_messages(raw_messages)
 
         chat_messages: List[Dict[str, Any]] = []
         for raw_message in raw_messages:

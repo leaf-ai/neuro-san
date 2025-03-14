@@ -18,7 +18,7 @@ from neuro_san.session.grpc_service_agent_session import GrpcServiceAgentSession
 from neuro_san.session.http_service_agent_session import HttpServiceAgentSession
 
 
-# pylint: disable=too-few-public-methods,too-many-arguments,too-many-positional-arguments
+# pylint: disable=too-many-arguments,too-many-positional-arguments
 class AgentSessionFactory:
     """
     Factory class for agent sessions.
