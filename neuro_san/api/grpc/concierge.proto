@@ -1,0 +1,49 @@
+
+// Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
+// All Rights Reserved.
+// Issued under the Academic Public License.
+//
+// You can be released from the terms, and requirements of the Academic Public
+// License by purchasing a commercial license.
+// Purchase of a commercial license is mandatory for any use of the
+// neuro-san SDK Software in commercial settings.
+//
+// END COPYRIGHT
+
+// To obtain information concerning the code generation that is used by this Interface Definition Language
+// please see the following:
+//
+// Go - https://developers.google.com/protocol-buffers/docs/reference/go-generated
+// Python - https://developers.google.com/protocol-buffers/docs/reference/python-generated
+//
+syntax = "proto3";
+
+package dev.cognizant_ai.neuro_san.api.grpc.concierge;
+
+// The service
+service ConciergeService {
+
+    // Called when a client needs the information about available agents.
+    rpc List (ConciergeRequest) returns (ConciergeResponse) {}
+}
+
+// Request structure for List gRPC method
+message ConciergeRequest {
+}
+
+// Description of an agent's function
+message AgentInfo {
+    // Agent name
+    string agent_name =  1 [json_name="agent_name"];
+
+    // Outward-facing description of what the agent does.
+    string description = 2 [json_name="description"];
+}
+
+// Response structure for List gRPC method
+message ConciergeResponse {
+
+    // List of agent descriptions
+    repeated AgentInfo agents = 1 [json_name="agents"];
+}
+

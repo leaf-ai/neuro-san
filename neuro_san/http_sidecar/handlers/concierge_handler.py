@@ -15,24 +15,24 @@ See class comment for details
 from typing import Any, Dict
 
 from neuro_san.http_sidecar.handlers.base_request_handler import BaseRequestHandler
-from neuro_san.interfaces.async_agent_session import AsyncAgentSession
+from neuro_san.interfaces.concierge_session import ConciergeSession
 
 
-class FunctionHandler(BaseRequestHandler):
+class ConciergeHandler(BaseRequestHandler):
     """
-    Handler class for neuro-san "function" API call.
+    Handler class for neuro-san "concierge" API call.
     """
 
-    async def get(self):
+    def get(self):
         """
-        Implementation of GET request handler for "function" API call.
+        Implementation of GET request handler for "concierge" API call.
         """
 
         try:
             data: Dict[str, Any] = {}
             metadata: Dict[str, Any] = self.get_metadata()
-            grpc_session: AsyncAgentSession = self.get_agent_grpc_session(metadata)
-            result_dict: Dict[str, Any] = await grpc_session.function(data)
+            grpc_session: ConciergeSession = self.get_concierge_grpc_session(metadata)
+            result_dict: Dict[str, Any] = grpc_session.list(data)
 
             # Return gRPC response to the HTTP client
             self.set_header("Content-Type", "application/json")
@@ -41,4 +41,4 @@ class FunctionHandler(BaseRequestHandler):
         except Exception as exc:  # pylint: disable=broad-exception-caught
             self.process_exception(exc)
         finally:
-            await self.flush()
+            self.flush()
