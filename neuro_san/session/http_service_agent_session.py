@@ -125,7 +125,6 @@ class HttpServiceAgentSession(AgentSession):
         :return: A dictionary version of the FunctionResponse
                     protobufs structure. Has the following keys:
                 "function" - the dictionary description of the function
-                "status" - status for finding the function.
         """
         path: str = self._get_request_path("function")
         try:
@@ -146,7 +145,6 @@ class HttpServiceAgentSession(AgentSession):
                 "connectivity_info" - the list of connectivity descriptions for
                                     each node in the agent network the service
                                     wants the client ot know about.
-                "status" - status for finding the function.
         """
         path: str = self._get_request_path("connectivity")
         try:
@@ -161,28 +159,11 @@ class HttpServiceAgentSession(AgentSession):
         """
         :param request_dict: A dictionary version of the ChatRequest
                     protobufs structure. Has the following keys:
-            "session_id"  - A string UUID identifying the root ownership of the
-                              chat session's resources.
-                              Upon first contact this can be blank.
-            "user_input"    - A string representing the user input to the chat stream
-
+            "user_message" - A ChatMessage dict representing the user input to the chat stream
+            "chat_context" - A ChatContext dict representing the state of the previous conversation
+                            (if any)
         :return: An iterator of dictionary versions of the ChatResponse
                     protobufs structure. Has the following keys:
-            "session_id"  - A string UUID identifying the root ownership of the
-                              chat session's resources.
-                              This will always be filled upon response.
-            "status"        - An int representing the chat session's status. Can be one of:
-                              FOUND     - The given session_id is alive and well
-                                          on this service instance and the user_input
-                                          has been registered in the chat stream.
-                              NOT_FOUND - Returned if the service instance does not find
-                                          the session_id given in the request.
-                                          For continuing chat streams, this could imply
-                                          a series of client-side retries as multiple
-                                          service instances will not keep track of the same
-                                          chat sessions.
-                              CREATED   - Returned when no session_id was given (initiation
-                                          of new chat by client) and a new chat session is created.
             "response"      - An optional ChatMessage dictionary.  See chat.proto for details.
 
             Note that responses to the chat input might be numerous and will come as they

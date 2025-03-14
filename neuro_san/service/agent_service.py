@@ -33,7 +33,6 @@ from neuro_san.api.grpc import agent_pb2 as service_messages
 from neuro_san.api.grpc import agent_pb2_grpc
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.service.agent_server_logging import AgentServerLogging
-from neuro_san.session.chat_session_map import ChatSessionMap
 from neuro_san.session.direct_agent_session import DirectAgentSession
 from neuro_san.session.external_agent_session_factory import ExternalAgentSessionFactory
 from neuro_san.session.session_invocation_context import SessionInvocationContext
@@ -54,7 +53,6 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
     def __init__(self,
                  request_logger: RequestLogger,
                  security_cfg: Dict[str, Any],
-                 chat_session_map: ChatSessionMap,
                  agent_name: str,
                  tool_registry: AgentToolRegistry,
                  server_logging: AgentServerLogging):
@@ -69,8 +67,6 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
                         secure the TLS and the authentication of the gRPC
                         connection.  Supplying this implies use of a secure
                         GRPC Channel.  If None, uses insecure channel.
-        :param chat_session_map: The ChatSessionMap containing the global
-                        map of session_id string to Agent
         :param agent_name: The agent name for the service
         :param tool_registry: The AgentToolRegistry to use for the service.
         :param server_logging: An AgentServerLogging instance initialized so that
@@ -82,8 +78,6 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
 
         self.server_logging: AgentServerLogging = server_logging
         self.forwarder: GrpcMetadataForwarder = self.server_logging.get_forwarder()
-
-        self.chat_session_map: ChatSessionMap = chat_session_map
 
         # When we get to 1 AsyncioExecutor per request, we should also do a
         # leaf_server_common.logging.logging_setup.setup_extra_logging_fields()
@@ -129,8 +123,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         request_dict: Dict[str, Any] = MessageToDict(request)
 
         # Delegate to Direct*Session
-        session = DirectAgentSession(chat_session_map=self.chat_session_map,
-                                     tool_registry=self.tool_registry,
+        session = DirectAgentSession(tool_registry=self.tool_registry,
                                      invocation_context=None,
                                      metadata=metadata,
                                      security_cfg=self.security_cfg)
@@ -178,8 +171,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         request_dict: Dict[str, Any] = MessageToDict(request)
 
         # Delegate to Direct*Session
-        session = DirectAgentSession(chat_session_map=self.chat_session_map,
-                                     tool_registry=self.tool_registry,
+        session = DirectAgentSession(tool_registry=self.tool_registry,
                                      invocation_context=None,
                                      metadata=metadata,
                                      security_cfg=self.security_cfg)
@@ -222,6 +214,8 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         # Get the metadata to forward on to another service
         metadata: Dict[str, str] = copy.copy(service_logging_dict)
         metadata.update(self.forwarder.forward(context))
+        if metadata.get("request_id") is None:
+            metadata["request_id"] = service_logging_dict.get("request_id")
 
         # Prepare
         factory = ExternalAgentSessionFactory(use_direct=False)
@@ -231,12 +225,10 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         # Set up logging inside async thread
         # Prefer any request_id from the client over what we generated on the server.
         executor: AsyncioExecutor = invocation_context.get_asyncio_executor()
-        _ = executor.submit(None, self.server_logging.setup_logging, metadata,
-                            metadata.get("request_id", service_logging_dict.get("request_id")))
+        _ = executor.submit(None, self.server_logging.setup_logging, metadata, metadata.get("request_id"))
 
         # Delegate to Direct*Session
-        session = DirectAgentSession(chat_session_map=self.chat_session_map,
-                                     tool_registry=self.tool_registry,
+        session = DirectAgentSession(tool_registry=self.tool_registry,
                                      invocation_context=invocation_context,
                                      metadata=metadata,
                                      security_cfg=self.security_cfg)

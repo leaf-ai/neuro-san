@@ -11,7 +11,6 @@
 # END COPYRIGHT
 from typing import Any
 from typing import Dict
-from typing import List
 
 from asyncio import Future
 
@@ -21,7 +20,7 @@ from leaf_server_common.logging.logging_setup import setup_extra_logging_fields
 from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
-from neuro_san.internals.journals.compatibility_journal import CompatibilityJournal
+from neuro_san.internals.journals.message_journal import MessageJournal
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.origination import Origination
 
@@ -50,7 +49,7 @@ class SessionInvocationContext(InvocationContext):
         self.asyncio_executor: AsyncioExecutor = AsyncioExecutor()
         self.origination: Origination = Origination()
         self.queue: AsyncCollatingQueue = AsyncCollatingQueue()
-        self.journal: Journal = CompatibilityJournal(self.queue)
+        self.journal: Journal = MessageJournal(self.queue)
         self.metadata: Dict[str, str] = metadata
         self.request_reporting: Dict[str, Any] = {}
 
@@ -106,18 +105,6 @@ class SessionInvocationContext(InvocationContext):
         :return: The metadata to pass along with any request
         """
         return self.metadata
-
-    def set_logs(self, logs: List[Any]):
-        """
-        :param logs: A list of strings corresponding to journal entries.
-        """
-        self.journal.set_logs(logs)
-
-    def reset_origination(self):
-        """
-        Resets the origination
-        """
-        self.origination = Origination()
 
     def close(self):
         """

@@ -26,7 +26,6 @@ from neuro_san.service.agent_server_logging import AgentServerLogging
 from neuro_san.service.agent_servicer_to_server import AgentServicerToServer
 from neuro_san.service.agent_service import AgentService
 from neuro_san.service.concierge_service import ConciergeService
-from neuro_san.session.chat_session_map import ChatSessionMap
 
 DEFAULT_SERVER_NAME: str = 'neuro-san.Agent'
 DEFAULT_SERVER_NAME_FOR_LOGS: str = 'Agent Server'
@@ -50,7 +49,6 @@ class AgentServer:
     # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, port: int,
                  server_loop_callbacks: ServerLoopCallbacks,
-                 chat_session_map: ChatSessionMap,
                  tool_registries: Dict[str, AgentToolRegistry],
                  server_name: str = DEFAULT_SERVER_NAME,
                  server_name_for_logs: str = DEFAULT_SERVER_NAME_FOR_LOGS,
@@ -63,8 +61,6 @@ class AgentServer:
         :param port: The integer port number for the service to listen on
         :param server_loop_callbacks: The ServerLoopCallbacks instance for
                 break out methods in main serving loop.
-        :param chat_session_map: The ChatSessionMap containing the global
-                        map of session_id string to Agent
         :param tool_registries: A dictionary of agent name to AgentToolRegistry to use for the session.
         :param server_name: The name of the service
         :param server_name_for_logs: The name of the service for log files
@@ -83,7 +79,6 @@ class AgentServer:
 
         self.logger = logging.getLogger(__name__)
 
-        self.chat_session_map: ChatSessionMap = chat_session_map
         self.tool_registries: Dict[str, AgentToolRegistry] = tool_registries
         self.server_name: str = server_name
         self.server_name_for_logs: str = server_name_for_logs
@@ -124,7 +119,6 @@ class AgentServer:
         for agent_name, tool_registry in self.tool_registries.items():
 
             service = AgentService(server_lifetime, security_cfg,
-                                   self.chat_session_map,
                                    agent_name,
                                    tool_registry,
                                    self.server_logging)

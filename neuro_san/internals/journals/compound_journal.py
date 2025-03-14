@@ -48,18 +48,6 @@ class CompoundJournal(Journal):
         for journal in self.journals:
             await journal.write(entry, origin)
 
-    def get_logs(self) -> List[Any]:
-        """
-        :return: A list of strings corresponding to journal entries
-                 from the first Journal instance in the list that will return something..
-        """
-        logs: List[Any] = None
-        for journal in self.journals:
-            logs = journal.get_logs()
-            if logs is not None:
-                break
-        return logs
-
     def add_journal(self, journal: Journal):
         """
         Adds a journal to the list

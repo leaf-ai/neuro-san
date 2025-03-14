@@ -22,7 +22,6 @@ from datetime import datetime
 from openai import BadRequestError
 
 from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
-from neuro_san.internals.chat.chat_session import ChatSession
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.graph.tools.front_man import FrontMan
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
@@ -35,7 +34,7 @@ from neuro_san.internals.run_context.interfaces.run_context import RunContext
 
 
 # pylint: disable=too-many-instance-attributes
-class DataDrivenChatSession(ChatSession):
+class DataDrivenChatSession:
     """
     ChatSession implementation that consolidates policy
     in using data-driven agent tool graphs.
@@ -50,7 +49,6 @@ class DataDrivenChatSession(ChatSession):
         # This block contains top candidates for state storage that needs to be
         # retained when session_ids go away.
         self.front_man: FrontMan = None
-        self.logs: List[Any] = None
 
         self.registry: AgentToolRegistry = registry
         self.latest_response = None
@@ -159,9 +157,6 @@ class DataDrivenChatSession(ChatSession):
             chat_message: Dict[str, Any] = convert_to_chat_message(raw_message, self.front_man.get_origin())
             chat_messages.append(chat_message)
 
-        # Save the logs from the journal
-        self.logs = journal.get_logs()
-
         return iter(chat_messages)
 
     async def streaming_chat(self, user_input: str,
@@ -228,12 +223,6 @@ class DataDrivenChatSession(ChatSession):
                 last received input.
         """
         return self.last_input_timestamp
-
-    def get_logs(self) -> List[Any]:
-        """
-        :return: A list of strings corresponding to journal entries.
-        """
-        return self.logs
 
     def prepare_chat_context(self, chat_message_history: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
