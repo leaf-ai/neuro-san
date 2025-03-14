@@ -87,7 +87,7 @@ class GrpcConciergeSession(AbstractServiceSession, ConciergeSession):
 
     @staticmethod
     def _list_from_stub(stub, timeout_in_seconds,
-                            metadata, credentials, *args):
+                        metadata, credentials, *args):
         """
         Global method associated with the session that calls List
         given a grpc Stub already set up with a channel (socket) to call with.
