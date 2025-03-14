@@ -26,6 +26,7 @@ from neuro_san.http_sidecar.handlers.health_check_handler import HealthCheckHand
 from neuro_san.http_sidecar.handlers.connectivity_handler import ConnectivityHandler
 from neuro_san.http_sidecar.handlers.function_handler import FunctionHandler
 from neuro_san.http_sidecar.handlers.streaming_chat_handler import StreamingChatHandler
+from neuro_san.http_sidecar.handlers.concierge_handler import ConciergeHandler
 
 
 class HttpSidecar:
@@ -67,6 +68,12 @@ class HttpSidecar:
         """
         handlers = []
         handlers.append(("/", HealthCheckHandler))
+        concierge_data: Dict[str, Any] = \
+            {"agent_name": "concierge",
+             "port": self.port,
+             "forwarded_request_metadata": self.forwarded_request_metadata}
+        handlers.append(("/api/v1/list", ConciergeHandler, concierge_data))
+
         for agent_name in self.agents.keys():
             # For each of registered agents, we define 3 request paths -
             # one for each of neuro-san service API methods.
