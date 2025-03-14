@@ -51,10 +51,7 @@ class DataDrivenChatSession:
         self.front_man: FrontMan = None
 
         self.registry: AgentToolRegistry = registry
-        self.latest_response = None
-        self.last_input_timestamp = datetime.now()
         self.sly_data: Dict[str, Any] = {}
-        self.last_streamed_index: int = 0
 
     async def set_up(self, invocation_context: InvocationContext,
                      chat_context: Dict[str, Any] = None):
@@ -106,20 +103,11 @@ class DataDrivenChatSession:
                 without the content itself having been created yet.  This is a building
                 block of streaming results even though direct callers may not actually
                 be streaming.
-
-        Results are polled from get_latest_response() below, as this non-streaming
-        version can take longer than the lifetime of a socket.
         """
         if self.front_man is None:
             await self.set_up(invocation_context)
         else:
             self.front_man.update_invocation_context(invocation_context)
-
-        # Remember when we were last given input
-        self.last_input_timestamp = datetime.now()
-
-        # While deciding how to respond, there is no response yet
-        self.clear_latest_response()
 
         # Update sly data, if any.
         # Note that since this instance is the owner of the sly_data,
@@ -150,7 +138,6 @@ class DataDrivenChatSession:
 
         # Update the polling response.
         prettied_messages = pretty_the_messages(raw_messages)
-        self.latest_response = prettied_messages
 
         chat_messages: List[Dict[str, Any]] = []
         for raw_message in raw_messages:
@@ -182,7 +169,6 @@ class DataDrivenChatSession:
         # Save information about chat
         chat_messages: Iterator[Dict[str, Any]] = await self.chat(user_input, invocation_context, sly_data)
         message_list: List[Dict[str, Any]] = list(chat_messages)
-        self.last_streamed_index = len(message_list) - 1
 
         # Stream over chat state as the last message
         return_chat_context: Dict[str, Any] = self.prepare_chat_context(message_list)
@@ -196,19 +182,6 @@ class DataDrivenChatSession:
         queue: AsyncCollatingQueue = invocation_context.get_queue()
         await queue.put_final_item()
 
-    def get_latest_response(self) -> str:
-        """
-        :return: The most recent response to the user from the chat agent.
-                Can be None if the chat agent is still chewing on the previous user input.
-        """
-        return self.latest_response
-
-    def clear_latest_response(self):
-        """
-        Clears out the latest response so as not to return duplicates.
-        """
-        self.latest_response = None
-
     async def delete_resources(self):
         """
         Frees up any service-side resources.
@@ -216,13 +189,6 @@ class DataDrivenChatSession:
         if self.front_man is not None:
             await self.front_man.delete_resources(None)
             self.front_man = None
-
-    def get_last_input_timestamp(self) -> Any:
-        """
-        :return: The result of datetime.now() when the chat agent
-                last received input.
-        """
-        return self.last_input_timestamp
 
     def prepare_chat_context(self, chat_message_history: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
