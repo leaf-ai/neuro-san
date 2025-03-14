@@ -31,7 +31,7 @@ class ConnectivityHandler(BaseRequestHandler):
         try:
             data: Dict[str, Any] = {}
             metadata: Dict[str, Any] = self.get_metadata()
-            grpc_session: AsyncAgentSession = self.get_grpc_session(metadata)
+            grpc_session: AsyncAgentSession = self.get_agent_grpc_session(metadata)
             result_dict: Dict[str, Any] = await grpc_session.connectivity(data)
 
             # Return gRPC response to the HTTP client
