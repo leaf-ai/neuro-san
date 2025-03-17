@@ -76,6 +76,14 @@ class AgentCli:
             sly_data = json.loads(self.args.sly_data)
             print(f"sly_data is {sly_data}")
 
+        chat_filter: Dict[str, Any] = None
+        if self.args.chat_filter is not None:
+            chat_filter = {
+                "chat_filter_type": "MINIMAL"
+            }
+            if bool(self.args.chat_filter):
+                chat_filter["chat_filter_type"] = "MAXIMAL"
+
         empty: Dict[str, Any] = {}
         try:
             response: Dict[str, Any] = self.session.function(empty)
@@ -108,13 +116,13 @@ Some suggestions:
             print(f"    See any one of the files in {self.thinking_dir} for agent network chat details.\n")
 
         state: Dict[str, Any] = {
-            "last_logs": [],
             "last_chat_response": None,
             "prompt": self.default_prompt,
             "timeout": self.input_timeout_seconds,
             "num_input": 0,
             "user_input": user_input,
             "sly_data": sly_data,
+            "chat_filter": chat_filter,
         }
 
         input_processor = StreamingInputProcessor(self.default_input,
@@ -243,9 +251,9 @@ Have external tools that can be found in the local agent manifest use a service 
         # How do we receive messages?
         group = arg_parser.add_argument_group(title="Message Filtering",
                                               description="What kind of messages will we receive?")
-        group.add_argument("--maximal", default=True, action="store_true",
+        group.add_argument("--maximal", dest="chat_filter", action="store_true",
                            help="Allow all messages to come from the server")
-        group.add_argument("--minimal", dest="maximal", action="store_false",
+        group.add_argument("--minimal", dest="chat_filter", action="store_false",
                            help="Allow only the bare minimum of messages to come from the server")
         self.arg_groups[group.title] = group
 

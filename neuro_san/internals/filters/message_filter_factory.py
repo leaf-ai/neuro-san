@@ -40,7 +40,7 @@ class MessageFilterFactory:
 
         # For now the default is MAXIMAL simply to emulate current behavior.
         # After the ChatFilter API gets released this will eventually change to "MINIMAL".
-        default: str = "MAXIMAL"
+        default: str = "MINIMAL"
         chat_filter_type: Any = default
 
         # Get what was in the request
