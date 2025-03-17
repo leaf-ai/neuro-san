@@ -27,7 +27,6 @@ class AbstractInputProcessor:
         """
         Constructor
         """
-        self.session_id: str = None
 
     def process_once(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -55,9 +54,7 @@ class AbstractInputProcessor:
             }
         }
 
-        if chat_context is None:
-            chat_request["session_id"] = self.session_id
-        elif bool(chat_context):
+        if bool(chat_context):
             # Recall that non-empty dictionaries evaluate to True
             chat_request["chat_context"] = chat_context
 

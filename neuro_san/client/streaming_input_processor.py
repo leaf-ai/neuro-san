@@ -71,11 +71,7 @@ class StreamingInputProcessor(AbstractInputProcessor):
         chat_responses: Generator[Dict[str, Any], None, None] = self.session.streaming_chat(chat_request)
         for chat_response in chat_responses:
 
-            session_id: str = chat_response.get("session_id")
             response: Dict[str, Any] = chat_response.get("response", empty)
-
-            if session_id is not None:
-                self.session_id = session_id
 
             self.processor.process_message(response)
 
