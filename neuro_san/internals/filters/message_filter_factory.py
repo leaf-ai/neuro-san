@@ -13,9 +13,9 @@ from typing import Any
 from typing import Dict
 from typing import Type
 
-from neuro_san.internals.filters.maximal_message_fileter import MaximalMessageFilter
-from neuro_san.internals.filters.message_fileter import MessageFilter
-from neuro_san.internals.filters.minimal_message_fileter import MinimalMessageFilter
+from neuro_san.internals.filters.maximal_message_filter import MaximalMessageFilter
+from neuro_san.internals.filters.message_filter import MessageFilter
+from neuro_san.internals.filters.minimal_message_filter import MinimalMessageFilter
 
 TYPE_TO_MESSAGE_FILTER_CLASS: Dict[Any, Type[MessageFilter]] = {
     0:  MinimalMessageFilter,
