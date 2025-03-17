@@ -15,15 +15,14 @@ from typing import Dict
 from typing import Generator
 from copy import copy
 
-from neuro_san.client.abstract_input_processor import AbstractInputProcessor
 from neuro_san.client.thinking_file_message_processor import ThinkingFileMessageProcessor
 from neuro_san.interfaces.agent_session import AgentSession
+from neuro_san.internals.messages.chat_message_type import ChatMessageType
 from neuro_san.internals.messages.origination import Origination
 from neuro_san.message_processing.basic_message_processor import BasicMessageProcessor
 
 
-# pylint: disable=too-many-arguments,too-many-positional-arguments
-class StreamingInputProcessor(AbstractInputProcessor):
+class StreamingInputProcessor:
     """
     Processes AgentCli input by using the neuro-san streaming API.
     """
@@ -92,3 +91,30 @@ class StreamingInputProcessor(AbstractInputProcessor):
         print(f"\nResponse from {origin_str}:")
         print(f"{last_chat_response}")
         return return_state
+
+    def formulate_chat_request(self, user_input: str,
+                               sly_data: Dict[str, Any] = None,
+                               chat_context: Dict[str, Any] = None) -> Dict[str, Any]:
+        """
+        Formulates a single chat request given the user_input
+        :param user_input: The string to send
+        :param sly_data: The sly_data dictionary to send
+        :param chat_context: The chat context dictionary that allows the context of a
+                    conitinuing conversation to be reconstructed on another server.
+        :return: A dictionary representing the chat request to send
+        """
+        chat_request = {
+            "user_message": {
+                "type": ChatMessageType.HUMAN,
+                "text": user_input
+            }
+        }
+
+        if bool(chat_context):
+            # Recall that non-empty dictionaries evaluate to True
+            chat_request["chat_context"] = chat_context
+
+        if sly_data is not None and len(sly_data.keys()) > 0:
+            chat_request["sly_data"] = sly_data
+
+        return chat_request

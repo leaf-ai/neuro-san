@@ -24,7 +24,6 @@ from timedinput import timedinput
 from grpc import RpcError
 from grpc import StatusCode
 
-from neuro_san.client.abstract_input_processor import AbstractInputProcessor
 from neuro_san.client.agent_session_factory import AgentSessionFactory
 from neuro_san.client.streaming_input_processor import StreamingInputProcessor
 from neuro_san.interfaces.agent_session import AgentSession
@@ -118,11 +117,10 @@ Some suggestions:
             "sly_data": sly_data,
         }
 
-        input_processor: AbstractInputProcessor = \
-                StreamingInputProcessor(self.default_input,
-                                        self.args.thinking_file,
-                                        self.session,
-                                        self.thinking_dir)
+        input_processor = StreamingInputProcessor(self.default_input,
+                                                  self.args.thinking_file,
+                                                  self.session,
+                                                  self.thinking_dir)
 
         while not self.is_done(state):
 
