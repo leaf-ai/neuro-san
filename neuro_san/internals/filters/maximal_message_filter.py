@@ -29,4 +29,8 @@ class MaximalMessageFilter(MessageFilter):
         :param message_type: The ChatMessageType of the chat_message_dictionary to process.
         :return: True if the message should be allowed through to the client. False otherwise.
         """
-        return True
+        # As long as the dictionary has some keys in it, we will pass it on.
+        if any(chat_message_dict):
+            return True
+
+        return False

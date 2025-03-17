@@ -25,6 +25,8 @@ from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.chat.connectivity_reporter import ConnectivityReporter
 from neuro_san.internals.chat.data_driven_chat_session import DataDrivenChatSession
+from neuro_san.internals.filters.message_filter import MessageFilter
+from neuro_san.internals.filters.message_filter_factory import MessageFilterFactory
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.graph.tools.front_man import FrontMan
 from neuro_san.session.session_invocation_context import SessionInvocationContext
@@ -133,9 +135,7 @@ class DirectAgentSession(AgentSession):
         # Get the user input.
         user_input = extractor.get("user_message.text")
 
-        chat_context: Dict[str, Any] = request_dict.get("chat_context")
-        sly_data: Dict[str, Any] = request_dict.get("sly_data")
-
+        # Create the gateway to the internals.
         chat_session = DataDrivenChatSession(registry=self.tool_registry)
 
         # Prepare the response dictionary
@@ -147,6 +147,13 @@ class DirectAgentSession(AgentSession):
             # There is no ChatMessage response in the dictionary in this case
             yield template_response_dict
             return
+
+        # Create a message filter so as to minimize network traffic per what the user wants
+        chat_filter: Dict[str, Any] = request_dict.get("chat_filter")
+        message_filter: MessageFilter = MessageFilterFactory.create_message_filter(chat_filter)
+
+        chat_context: Dict[str, Any] = request_dict.get("chat_context")
+        sly_data: Dict[str, Any] = request_dict.get("sly_data")
 
         # Create an asynchronous background task to process the user input.
         # This might take a few minutes, which can be longer than some
@@ -169,7 +176,7 @@ class DirectAgentSession(AgentSession):
         for message in generator.synchronously_iterate(self.invocation_context.get_queue()):
 
             response_dict: Dict[str, Any] = copy(template_response_dict)
-            if any(message):
+            if message_filter.allow(message):
                 # We expect the message to be a dictionary form of chat.ChatMessage
                 response_dict["response"] = message
                 yield response_dict
