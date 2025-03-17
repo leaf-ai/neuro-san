@@ -76,13 +76,18 @@ class AgentCli:
             sly_data = json.loads(self.args.sly_data)
             print(f"sly_data is {sly_data}")
 
-        chat_filter: Dict[str, Any] = None
-        if self.args.chat_filter is not None:
-            chat_filter = {
-                "chat_filter_type": "MINIMAL"
-            }
-            if bool(self.args.chat_filter):
-                chat_filter["chat_filter_type"] = "MAXIMAL"
+        # Note: If nothing is specified the server assumes the chat_filter_type
+        #       should be "MINIMAL", however for this client which is aimed at
+        #       developers, we specifically want a default MAXIMAL client to
+        #       show all the bells and whistles of the output that a typical
+        #       end user will not care about and not appreciate the extra
+        #       data charges on their cell phone.
+        chat_filter: Dict[str, Any] = {
+            "chat_filter_type": "MAXIMAL"
+        }
+        if self.args.chat_filter is not None and \
+                not bool(self.args.chat_filter):
+            chat_filter["chat_filter_type"] = "MINIMAL"
 
         empty: Dict[str, Any] = {}
         try:
@@ -251,7 +256,7 @@ Have external tools that can be found in the local agent manifest use a service 
         # How do we receive messages?
         group = arg_parser.add_argument_group(title="Message Filtering",
                                               description="What kind of messages will we receive?")
-        group.add_argument("--maximal", dest="chat_filter", action="store_true",
+        group.add_argument("--maximal", default=True, dest="chat_filter", action="store_true",
                            help="Allow all messages to come from the server")
         group.add_argument("--minimal", dest="chat_filter", action="store_false",
                            help="Allow only the bare minimum of messages to come from the server")
