@@ -12,13 +12,11 @@
 from typing import Any
 from typing import Dict
 from typing import List
-from typing import Union
 
 from langchain_core.messages.base import BaseMessage
 
 from neuro_san.internals.interfaces.async_hopper import AsyncHopper
 from neuro_san.internals.journals.journal import Journal
-from neuro_san.internals.messages.legacy_logs_message import LegacyLogsMessage
 from neuro_san.internals.messages.message_utils import convert_to_chat_message
 
 
@@ -36,24 +34,6 @@ class MessageJournal(Journal):
                        any message will be put().
         """
         self.hopper: AsyncHopper = hopper
-
-    async def write(self, entry: Union[str, bytes], origin: List[Dict[str, Any]]):
-        """
-        :param entry: Add a string-ish entry to the logs.
-                    Can be either a string or bytes.
-        :param origin: A List of origin dictionaries indicating the origin of the run.
-                The origin can be considered a path to the original call to the front-man.
-                Origin dictionaries themselves each have the following keys:
-                    "tool"                  The string name of the tool in the spec
-                    "instantiation_index"   An integer indicating which incarnation
-                                            of the tool is being dealt with.
-        """
-        # Decoding bytes to string if necessary
-        if isinstance(entry, bytes):
-            entry = entry.decode('utf-8')
-
-        legacy = LegacyLogsMessage(content=entry)
-        await self.write_message(legacy, origin)
 
     async def write_message(self, message: BaseMessage, origin: List[Dict[str, Any]]):
         """

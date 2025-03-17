@@ -203,8 +203,6 @@ def convert_to_base_message(chat_message: Dict[str, Any], langchain_only: bool =
         base_message = SystemMessage(content=content)
     elif chat_message_type == ChatMessageType.HUMAN:
         base_message = HumanMessage(content=content)
-    elif chat_message_type == ChatMessageType.TOOL:
-        base_message = ToolMessage(content=content)
     elif chat_message_type == ChatMessageType.AI:
         base_message = AIMessage(content=content)
     elif chat_message_type == ChatMessageType.AGENT_TOOL_RESULT:

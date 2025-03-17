@@ -24,7 +24,6 @@ from leaf_common.config.dictionary_overlay import DictionaryOverlay
 
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
-from neuro_san.internals.messages.message_utils import pretty_the_messages
 from neuro_san.internals.messages.message_utils import get_last_message_with_content
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.run import Run
@@ -194,11 +193,10 @@ class OpenAIRunContext(RunContext):
                 (len(latest_messages) > len(messages) or
                     (len(latest_message_with_content.content[0].text.value) >
                         len(last_message_with_content.content[0].text.value)))):
-                number_of_new_messages = len(latest_messages) - len(messages)
-                new_messages = latest_messages[-number_of_new_messages:]
-                if journal is not None:
-                    await journal.write(pretty_the_messages(new_messages),
-                                        self.get_origin())
+                # number_of_new_messages = len(latest_messages) - len(messages)
+                # new_messages = latest_messages[-number_of_new_messages:]
+                # Write to the journal
+                # if journal is not None:
                 messages = latest_messages
 
             run = OpenAIRun(openai_run)
