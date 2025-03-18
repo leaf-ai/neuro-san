@@ -12,7 +12,7 @@
 from typing import Any
 from typing import Dict
 
-from neuro_san.internals.run_context.interfaces.context_type_llm_factory import ContextTypeLlmFactory
+from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
 from neuro_san.internals.run_context.langchain.default_llm_factory import DefaultLlmFactory
 
 

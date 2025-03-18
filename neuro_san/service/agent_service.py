@@ -31,8 +31,8 @@ from leaf_server_common.server.request_logger import RequestLogger
 
 from neuro_san.api.grpc import agent_pb2 as service_messages
 from neuro_san.api.grpc import agent_pb2_grpc
-from neuro_san.interfaces.context_type_llm_factory import ContextTypeLlmFactory
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
+from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
 from neuro_san.internals.run_context.factory.master_llm_factory import MasterLlmFactory
 from neuro_san.service.agent_server_logging import AgentServerLogging
 from neuro_san.session.direct_agent_session import DirectAgentSession
