@@ -41,10 +41,6 @@ class ThinkingFileMessageProcessor(MessageProcessor):
         :param chat_message_dict: The ChatMessage dictionary to process.
         :param message_type: The ChatMessageType of the chat_message_dictionary to process.
         """
-        if message_type == ChatMessageType.LEGACY_LOGS:
-            # Now that we are sending messages from deep within the infrastructure,
-            # write those.  The LEGACY_LOGS messages should be redundant with these.
-            return
 
         # Process any text in the message
         text: str = chat_message_dict.get("text")

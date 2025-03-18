@@ -72,9 +72,7 @@ class DataDrivenChatSession:
                                                                        invocation_context=invocation_context,
                                                                        chat_context=chat_context)
 
-        journal: Journal = invocation_context.get_journal()
         self.front_man = self.registry.create_front_man(self.sly_data, run_context)
-        await journal.write("setting up chat agent(s)...", self.front_man.get_origin())
 
         await self.front_man.create_resources()
 
@@ -114,10 +112,7 @@ class DataDrivenChatSession:
         if sly_data is not None:
             self.sly_data.update(sly_data)
 
-        journal: Journal = invocation_context.get_journal()
         try:
-            await journal.write("consulting chat agent(s)...", self.front_man.get_origin())
-
             # DEF - drill further down for iterator from here to enable getting
             #       messages from downstream agents.
             raw_messages: List[Any] = await self.front_man.submit_message(user_input)

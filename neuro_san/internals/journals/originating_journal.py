@@ -12,7 +12,6 @@
 from typing import Any
 from typing import Dict
 from typing import List
-from typing import Union
 
 from langchain_core.messages.base import BaseMessage
 
@@ -45,23 +44,6 @@ class OriginatingJournal(Journal):
         :return: The origin associated with this Journal
         """
         return self.origin
-
-    async def write(self, entry: Union[str, bytes], origin: List[Dict[str, Any]] = None):
-        """
-        Writes a single string entry into the wrapped_journal.
-        :param entry: The logs entry to write
-        :param origin: A List of origin dictionaries indicating the origin of the run.
-                The origin can be considered a path to the original call to the front-man.
-                Origin dictionaries themselves each have the following keys:
-                    "tool"                  The string name of the tool in the spec
-                    "instantiation_index"   An integer indicating which incarnation
-                                            of the tool is being dealt with.
-                For this particular implementation we expect this to be None
-        """
-        use_origin: List[Dict[str, Any]] = self.origin
-        if origin is not None:
-            use_origin = origin
-        await self.wrapped_journal.write(entry, use_origin)
 
     async def write_message(self, message: BaseMessage, origin: List[Dict[str, Any]] = None):
         """

@@ -87,14 +87,6 @@ class BranchTool(CallingTool, CallableTool):
         assignments_str: str = "\n".join(assignments)
         return assignments_str
 
-    def get_takes_awhile(self) -> bool:
-        """
-        :return: True if the component's function takes a decent bit of time.
-                Default is False.
-        """
-        takes_awhile = self.get_callable_tool_names(self.agent_tool_spec) is not None
-        return takes_awhile
-
     def get_command(self) -> str:
         """
         :return: A string describing the objective of the component.
@@ -134,19 +126,10 @@ class BranchTool(CallingTool, CallableTool):
         assignments = self.get_assignments()
         instructions = self.get_instructions()
 
-        origin: List[Dict[str, Any]] = self.get_origin()
-
         decision_name = self.get_decision_name()
         component_name = self.get_name()
         assistant_name = f"{decision_name}_{component_name}"
-        await self.journal.write(f"setting up {component_name} assistant...", origin)
-
         await self.create_resources(assistant_name, instructions, assignments)
-
-        upper_component = component_name.upper()
-        await self.journal.write(f"{upper_component} CALLED>>> {instructions}{assignments}", origin)
-        if self.get_takes_awhile():
-            await self.journal.write("This may take awhile...", origin)
 
         command = self.get_command()
         run: Run = await self.run_context.submit_message(command)
@@ -157,7 +140,6 @@ class BranchTool(CallingTool, CallableTool):
         messages = await self.integrate_callable_response(run, messages)
 
         response = generate_response(messages)
-        await self.journal.write(f"{upper_component} RETURNED>>> {response}", origin)
         return response
 
     def get_origin(self) -> List[Dict[str, Any]]:
