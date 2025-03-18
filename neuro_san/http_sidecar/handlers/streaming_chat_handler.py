@@ -15,8 +15,6 @@ See class comment for details
 from typing import Any, Dict, Generator
 import json
 
-import asyncio
-
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.json_format import Parse
 
