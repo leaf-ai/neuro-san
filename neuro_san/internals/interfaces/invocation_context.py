@@ -15,9 +15,9 @@ from typing import Dict
 
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 
-from neuro_san.interfaces.llm_factory import LlmFactory
 from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
+from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.origination import Origination
 
@@ -87,8 +87,8 @@ class InvocationContext:
         """
         raise NotImplementedError
 
-    def get_llm_factory(self) -> LlmFactory:
+    def get_llm_factory(self) -> ContextTypeLlmFactory:
         """
-        :return: The LlmFactory instance
+        :return: The ContextTypeLlmFactory instance for the session
         """
         raise NotImplementedError

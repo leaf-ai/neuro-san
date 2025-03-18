@@ -26,11 +26,12 @@ from langchain_openai.chat_models.azure import AzureChatOpenAI
 
 from leaf_common.config.dictionary_overlay import DictionaryOverlay
 
-from neuro_san.interfaces.llm_factory import LlmFactory
+from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
+from neuro_san.internals.run_context.langchain.llm_factory import LlmFactory
 from neuro_san.internals.run_context.langchain.llm_info_restorer import LlmInfoRestorer
 
 
-class DefaultLlmFactory(LlmFactory):
+class DefaultLlmFactory(ContextTypeLlmFactory, LlmFactory):
     """
     Factory class for LLM operations
 

@@ -12,7 +12,7 @@
 from typing import Dict
 
 from neuro_san.interfaces.agent_session import AgentSession
-from neuro_san.interfaces.llm_factory import LlmFactory
+from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
 from neuro_san.internals.run_context.langchain.default_llm_factory import DefaultLlmFactory
 from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
@@ -36,12 +36,6 @@ class DirectAgentSessionFactory:
         manifest_restorer = RegistryManifestRestorer()
         self.manifest_tool_registries: Dict[str, AgentToolRegistry] = manifest_restorer.restore()
 
-        # Not happy that this goes direct to langchain implementation,
-        # but can fix that with next LlmFactory extension.
-        self.llm_factory: LlmFactory = DefaultLlmFactory()
-        # Load once.
-        self.llm_factory.load()
-
     def create_session(self, agent_name: str, use_direct: bool = False,
                        metadata: Dict[str, str] = None) -> AgentSession:
         """
@@ -56,7 +50,13 @@ class DirectAgentSessionFactory:
         factory = ExternalAgentSessionFactory(use_direct=use_direct)
         tool_registry: AgentToolRegistry = factory.get_tool_registry(agent_name, self.manifest_tool_registries)
 
-        invocation_context = SessionInvocationContext(factory, self.llm_factory, metadata)
+        # Not happy that this goes direct to langchain implementation,
+        # but can fix that with next LlmFactory extension.
+        llm_factory: ContextTypeLlmFactory = DefaultLlmFactory()
+        # Load once now that we know what tool registry to use.
+        llm_factory.load()
+
+        invocation_context = SessionInvocationContext(factory, llm_factory, metadata)
         invocation_context.start()
         session: DirectAgentSession = DirectAgentSession(tool_registry=tool_registry,
                                                          invocation_context=invocation_context,
