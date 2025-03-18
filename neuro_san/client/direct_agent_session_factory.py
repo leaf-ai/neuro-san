@@ -50,8 +50,6 @@ class DirectAgentSessionFactory:
         factory = ExternalAgentSessionFactory(use_direct=use_direct)
         tool_registry: AgentToolRegistry = factory.get_tool_registry(agent_name, self.manifest_tool_registries)
 
-        # Not happy that this goes direct to langchain implementation,
-        # but can fix that with next LlmFactory extension.
         llm_factory: ContextTypeLlmFactory = MasterLlmFactory.create_llm_factory()
         # Load once now that we know what tool registry to use.
         llm_factory.load()
