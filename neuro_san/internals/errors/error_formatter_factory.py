@@ -14,7 +14,6 @@ from neuro_san.internals.errors.string_error_formatter import StringErrorFormatt
 from neuro_san.internals.interfaces.error_formatter import ErrorFormatter
 
 
-# pylint: disable=too-few-public-methods
 class ErrorFormatterFactory:
     """
     Factory class to create an appropriate ErrorFormatter

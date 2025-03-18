@@ -24,7 +24,6 @@ from leaf_common.config.dictionary_overlay import DictionaryOverlay
 from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
 
-# pylint: disable=too-few-public-methods
 class DefaultsConfigFilter(ConfigFilter):
     """
     ConfigFilter implementation for copying top-level defaults

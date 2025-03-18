@@ -13,6 +13,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 
+from neuro_san.internals.filters.answer_message_filter import AnswerMessageFilter
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
 from neuro_san.message_processing.message_processor import MessageProcessor
 
@@ -29,6 +30,7 @@ class AnswerMessageProcessor(MessageProcessor):
         """
         self.answer: str = None
         self.answer_origin: List[Dict[str, Any]] = None
+        self.filter: AnswerMessageFilter = AnswerMessageFilter()
 
     def get_answer(self) -> str:
         """
@@ -55,21 +57,12 @@ class AnswerMessageProcessor(MessageProcessor):
         :param chat_message_dict: The ChatMessage dictionary to process.
         :param message_type: The ChatMessageType of the chat_message_dictionary to process.
         """
-        if message_type != ChatMessageType.AI:
-            # Final answers are only ever AI Messages
+        if not self.filter.allow_message(chat_message_dict, message_type):
+            # Does not pass the criteria for a message holding a final answer
             return
 
         origin: List[Dict[str, Any]] = chat_message_dict.get("origin")
-        if origin is None or len(origin) != 1:
-            # Final answers only come from the FrontMan,
-            # whose origin length is the only one of length 1.
-            return
-
         text = chat_message_dict.get("text")
-        if text is None:
-            # Final answers need to be text (for now).
-            # There might be more options in the future.
-            return
 
         # Record what we got.
         # We might get another as we go along, but the last message in the stream

@@ -34,7 +34,6 @@ from neuro_san.internals.graph.registry.string_common_defs_config_filter \
     import StringCommonDefsConfigFilter
 
 
-# pylint: disable=too-few-public-methods
 class AgentToolRegistryRestorer(Restorer):
     """
     Implementation of the Restorer interface to read in an AgentToolRegistry

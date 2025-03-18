@@ -30,7 +30,6 @@ from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegi
 from neuro_san.internals.utils.file_of_class import FileOfClass
 
 
-# pylint: disable=too-few-public-methods
 class RegistryManifestRestorer(Restorer):
     """
     This interface provides a way to retrieve an object

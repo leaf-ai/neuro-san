@@ -15,15 +15,14 @@ from typing import Dict
 from typing import Generator
 from copy import copy
 
-from neuro_san.client.abstract_input_processor import AbstractInputProcessor
 from neuro_san.client.thinking_file_message_processor import ThinkingFileMessageProcessor
 from neuro_san.interfaces.agent_session import AgentSession
+from neuro_san.internals.messages.chat_message_type import ChatMessageType
 from neuro_san.internals.messages.origination import Origination
 from neuro_san.message_processing.basic_message_processor import BasicMessageProcessor
 
 
-# pylint: disable=too-many-arguments,too-many-positional-arguments
-class StreamingInputProcessor(AbstractInputProcessor):
+class StreamingInputProcessor:
     """
     Processes AgentCli input by using the neuro-san streaming API.
     """
@@ -54,6 +53,7 @@ class StreamingInputProcessor(AbstractInputProcessor):
         last_chat_response = state.get("last_chat_response")
         num_input = state.get("num_input")
         chat_context = state.get("chat_context", empty)
+        chat_filter = state.get("chat_filter", empty)
         origin_str: str = ""
 
         if user_input is None or user_input == self.default_input:
@@ -64,18 +64,15 @@ class StreamingInputProcessor(AbstractInputProcessor):
         # Note that by design, a client does not have to interpret the
         # chat_context at all. It merely needs to pass it along to continue
         # the conversation.
-        chat_request: Dict[str, Any] = self.formulate_chat_request(user_input, sly_data, chat_context)
+        chat_request: Dict[str, Any] = self.formulate_chat_request(user_input, sly_data,
+                                                                   chat_context, chat_filter)
         self.processor.reset()
 
         return_state: Dict[str, Any] = copy(state)
         chat_responses: Generator[Dict[str, Any], None, None] = self.session.streaming_chat(chat_request)
         for chat_response in chat_responses:
 
-            session_id: str = chat_response.get("session_id")
             response: Dict[str, Any] = chat_response.get("response", empty)
-
-            if session_id is not None:
-                self.session_id = session_id
 
             self.processor.process_message(response)
 
@@ -96,3 +93,35 @@ class StreamingInputProcessor(AbstractInputProcessor):
         print(f"\nResponse from {origin_str}:")
         print(f"{last_chat_response}")
         return return_state
+
+    def formulate_chat_request(self, user_input: str,
+                               sly_data: Dict[str, Any] = None,
+                               chat_context: Dict[str, Any] = None,
+                               chat_filter: Dict[str, Any] = None) -> Dict[str, Any]:
+        """
+        Formulates a single chat request given the user_input
+        :param user_input: The string to send
+        :param sly_data: The sly_data dictionary to send
+        :param chat_context: The chat context dictionary that allows the context of a
+                    conitinuing conversation to be reconstructed on another server.
+        :param chat_filter: The ChatFilter to apply to the request.
+        :return: A dictionary representing the chat request to send
+        """
+        chat_request = {
+            "user_message": {
+                "type": ChatMessageType.HUMAN,
+                "text": user_input
+            }
+        }
+
+        if bool(chat_context):
+            # Recall that non-empty dictionaries evaluate to True
+            chat_request["chat_context"] = chat_context
+
+        if sly_data is not None and len(sly_data.keys()) > 0:
+            chat_request["sly_data"] = sly_data
+
+        if chat_filter is not None and len(chat_filter.keys()) > 0:
+            chat_request["chat_filter"] = chat_filter
+
+        return chat_request

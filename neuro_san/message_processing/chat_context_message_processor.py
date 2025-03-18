@@ -12,6 +12,7 @@
 from typing import Any
 from typing import Dict
 
+from neuro_san.internals.filters.chat_context_message_filter import ChatContextMessageFilter
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
 from neuro_san.message_processing.message_processor import MessageProcessor
 
@@ -27,6 +28,7 @@ class ChatContextMessageProcessor(MessageProcessor):
         Constructor
         """
         self.chat_context: Dict[str, Any] = {}
+        self.filter = ChatContextMessageFilter()
 
     def get_chat_context(self) -> Dict[str, Any]:
         """
@@ -47,8 +49,8 @@ class ChatContextMessageProcessor(MessageProcessor):
         :param chat_message_dict: The ChatMessage dictionary to process.
         :param message_type: The ChatMessageType of the chat_message_dictionary to process.
         """
-        if message_type != ChatMessageType.AGENT_FRAMEWORK:
-            # chat_context only ever comes from AGENT_FRAMEWORK Messages
+        if not self.filter.allow_message(chat_message_dict, message_type):
+            # Filter says no
             return
 
         # Normally the very last message holds the chat_context.

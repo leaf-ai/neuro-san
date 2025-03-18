@@ -11,7 +11,6 @@
 # END COPYRIGHT
 
 
-# pylint: disable=too-few-public-methods
 class ErrorFormatter:
     """
     Interface describing how error formatting can be called.

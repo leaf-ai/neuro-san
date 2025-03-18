@@ -14,7 +14,6 @@ from typing import Any
 from typing import Dict
 
 
-# pylint: disable=too-few-public-methods
 class CodedTool:
     """
     Interface contract for a coded tool to squelch the anti-pattern of

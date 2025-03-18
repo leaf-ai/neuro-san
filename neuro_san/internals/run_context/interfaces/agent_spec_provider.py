@@ -13,7 +13,6 @@ from typing import Any
 from typing import Dict
 
 
-# pylint: disable=too-few-public-methods
 class AgentSpecProvider:
     """
     Interface for an entity to return a copy of the agent spec that pertains to it.

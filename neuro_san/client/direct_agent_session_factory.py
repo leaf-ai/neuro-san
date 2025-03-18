@@ -19,7 +19,6 @@ from neuro_san.session.external_agent_session_factory import ExternalAgentSessio
 from neuro_san.session.session_invocation_context import SessionInvocationContext
 
 
-# pylint: disable=too-few-public-methods
 class DirectAgentSessionFactory:
     """
     Sets up everything needed to use a DirectAgentSession more as a library.

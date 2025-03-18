@@ -40,7 +40,7 @@ DEFAULT_REQUEST_LIMIT: int = 1000 * 1000
 DEFAULT_FORWARDED_REQUEST_METADATA: str = "request_id user_id"
 
 
-# pylint: disable=too-few-public-methods,too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes
 class AgentServer:
     """
     Server implementation for the Agent gRPC Service.

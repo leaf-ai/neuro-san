@@ -15,7 +15,6 @@ from typing import List
 from neuro_san.internals.interfaces.async_hopper import AsyncHopper
 
 
-# pylint: disable=too-few-public-methods
 class ListHopper(AsyncHopper):
     """
     An AsyncHopper implementation for tests that captures items in a list

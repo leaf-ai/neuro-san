@@ -24,9 +24,7 @@ from timedinput import timedinput
 from grpc import RpcError
 from grpc import StatusCode
 
-from neuro_san.client.abstract_input_processor import AbstractInputProcessor
 from neuro_san.client.agent_session_factory import AgentSessionFactory
-from neuro_san.client.polling_input_processor import PollingInputProcessor
 from neuro_san.client.streaming_input_processor import StreamingInputProcessor
 from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.utils.file_of_class import FileOfClass
@@ -51,7 +49,6 @@ class AgentCli:
         self.arg_groups: Dict[str, Any] = {}
 
         self.session: AgentSession = None
-        self.session_id: str = None
         self.thinking_dir: str = None
 
     # pylint: disable=too-many-branches
@@ -78,6 +75,19 @@ class AgentCli:
         if self.args.sly_data is not None:
             sly_data = json.loads(self.args.sly_data)
             print(f"sly_data is {sly_data}")
+
+        # Note: If nothing is specified the server assumes the chat_filter_type
+        #       should be "MINIMAL", however for this client which is aimed at
+        #       developers, we specifically want a default MAXIMAL client to
+        #       show all the bells and whistles of the output that a typical
+        #       end user will not care about and not appreciate the extra
+        #       data charges on their cell phone.
+        chat_filter: Dict[str, Any] = {
+            "chat_filter_type": "MAXIMAL"
+        }
+        if self.args.chat_filter is not None and \
+                not bool(self.args.chat_filter):
+            chat_filter["chat_filter_type"] = "MINIMAL"
 
         empty: Dict[str, Any] = {}
         try:
@@ -111,29 +121,19 @@ Some suggestions:
             print(f"    See any one of the files in {self.thinking_dir} for agent network chat details.\n")
 
         state: Dict[str, Any] = {
-            "last_logs": [],
             "last_chat_response": None,
             "prompt": self.default_prompt,
             "timeout": self.input_timeout_seconds,
             "num_input": 0,
             "user_input": user_input,
             "sly_data": sly_data,
+            "chat_filter": chat_filter,
         }
 
-        input_processor: AbstractInputProcessor = None
-        if self.args.stream:
-            input_processor = StreamingInputProcessor(self.default_input,
-                                                      self.args.thinking_file,
-                                                      self.session,
-                                                      self.thinking_dir)
-        else:
-            # Note: Polling is deprecated
-            input_processor = PollingInputProcessor(self.default_prompt,
-                                                    self.default_input,
-                                                    self.input_timeout_seconds,
-                                                    self.args.thinking_file,
-                                                    self.session,
-                                                    self.poll_timeout_seconds)
+        input_processor = StreamingInputProcessor(self.default_input,
+                                                  self.args.thinking_file,
+                                                  self.session,
+                                                  self.thinking_dir)
 
         while not self.is_done(state):
 
@@ -254,12 +254,12 @@ Have external tools that can be found in the local agent manifest use a service 
         self.arg_groups[group.title] = group
 
         # How do we receive messages?
-        group = arg_parser.add_argument_group(title="Message Parsing",
-                                              description="How do we receive messages?")
-        group.add_argument("--stream", default=True, action="store_true",
-                           help="Use streaming chat instead of polling")
-        group.add_argument("--poll", dest="stream", action="store_false",
-                           help="Use polling chat instead of streaming")
+        group = arg_parser.add_argument_group(title="Message Filtering",
+                                              description="What kind of messages will we receive?")
+        group.add_argument("--maximal", default=True, dest="chat_filter", action="store_true",
+                           help="Allow all messages to come from the server")
+        group.add_argument("--minimal", dest="chat_filter", action="store_false",
+                           help="Allow only the bare minimum of messages to come from the server")
         self.arg_groups[group.title] = group
 
         # How are we capturing output?

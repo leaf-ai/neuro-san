@@ -13,6 +13,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 
+from neuro_san.internals.filters.message_filter import MessageFilter
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
 from neuro_san.message_processing.message_processor import MessageProcessor
 
@@ -47,16 +48,6 @@ class CompositeMessageProcessor(MessageProcessor):
         if message_processor is not None:
             self.message_processors.append(message_processor)
 
-    def get_message_type(self, chat_message_dict: Dict[str, Any]) -> ChatMessageType:
-        """
-        Convert the message type in the ChatMessage dictionary to the enum we want to work with
-        :param chat_message_dict: The ChatMessage dictionary to consider.
-        :return: The ChatMessageType of the chat_message_dict
-        """
-        response_type: str = chat_message_dict.get("type")
-        message_type: ChatMessageType = ChatMessageType.from_response_type(response_type)
-        return message_type
-
     def reset(self):
         """
         Resets any previously accumulated state
@@ -88,7 +79,7 @@ class CompositeMessageProcessor(MessageProcessor):
                             Can be None to kick the process off.
         """
         if message_type is None:
-            message_type = self.get_message_type(chat_message_dict)
+            message_type = MessageFilter.get_message_type(chat_message_dict)
 
         for message_processor in self.message_processors:
             message_processor.process_message(chat_message_dict, message_type)
@@ -104,7 +95,7 @@ class CompositeMessageProcessor(MessageProcessor):
                             Can be None to kick the process off.
         """
         if message_type is None:
-            message_type = self.get_message_type(chat_message_dict)
+            message_type = MessageFilter.get_message_type(chat_message_dict)
 
         for message_processor in self.message_processors:
             await message_processor.async_process_message(chat_message_dict, message_type)

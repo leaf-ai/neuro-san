@@ -75,11 +75,24 @@ message FunctionResponse {
     Function function = 1 [json_name="function"];
 }
 
+// Type of filtering for StreamingChat
+enum ChatFilterType {
+    UNKNOWN = 0;    // Unknown value. Default behavior is MINIMAL
+    MINIMAL = 1;    // Stream the bare minimum messages to provide an answer and chat_context
+    MAXIMAL = 2;    // Stream everything possible for maximum debugging information.
+}
+
+// Allows for controlling the messages that get streamed via StreamingChat.
+message ChatFilter {
+
+    // For now allow for an enum to describe how we want chat messages streamed.
+    // In the future the description of this server-side filter might offer more
+    // fine-grained control (hence an encapsulating structure).
+    ChatFilterType chat_filter_type = 1 [json_name="chat_filter_type"];
+}
+
 // Request structure for Chat gRPC method
 message ChatRequest {
-
-    // User input to initiate or continue the chat
-    string user_input = 2 [json_name="user_input"];
 
     // This is an entirely optional map whose keys refer to data that is better
     // left out of the LLM chat stream.  The keys themselves might appear in the
@@ -88,7 +101,8 @@ message ChatRequest {
     // which then grab the values by programmatic means.
     google.protobuf.Struct sly_data = 3 [json_name="sly_data"];
 
-    // Supercedes user_input above
+    // To send basic user input, simply add a user_message to your request
+    // and fill in its "text" field.
     chat.ChatMessage user_message = 4 [json_name="user_message"];
 
     // Message for holding the state of play for any chat session
@@ -104,6 +118,10 @@ message ChatRequest {
     //      to continue the conversation (your new user_input adding to the exchange).
     //      No client-side parsing of the ChatContext is explicitly required.
     chat.ChatContext chat_context = 5 [json_name="chat_context"];
+
+    // A structure defining a server-side filter on what kind of messages come
+    // over the stream. When not present, defaults to MINIMAL chat filter.
+    ChatFilter chat_filter = 6 [json_name="chat_filter"];
 }
 
 // Response structure for Chat gRPC method
