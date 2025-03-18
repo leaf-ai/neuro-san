@@ -13,6 +13,7 @@
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Type
 
 import os
 
@@ -20,6 +21,8 @@ from langchain_core.callbacks.base import BaseCallbackHandler
 from langchain_core.language_models.base import BaseLanguageModel
 
 from leaf_common.config.dictionary_overlay import DictionaryOverlay
+from leaf_common.config.resolver import Resolver
+from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
 from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
 from neuro_san.internals.run_context.langchain.langchain_llm_factory import LangChainLlmFactory
@@ -78,6 +81,43 @@ class DefaultLlmFactory(ContextTypeLlmFactory, LangChainLlmFactory):
             self.llm_infos = self.overlayer.overlay(self.llm_infos, extra_llm_infos)
 
         # Resolve any new llm factories
+        extractor = DictionaryExtractor(self.llm_infos)
+        llm_factory_classes: List[str] = []
+        llm_factory_classes = extractor.get("classes.factories", llm_factory_classes)
+        if not isinstance(llm_factory_classes, List):
+            raise ValueError(f"The classes.factories key in {llm_info_file} must be a list of strings")
+
+        for llm_factory_class_name in llm_factory_classes:
+            if not isinstance(llm_factory_class_name, str):
+                raise ValueError(f"The value for the classes.factories key in {llm_info_file} "
+                                 "must be a list of strings")
+            class_split: List[str] = llm_factory_class_name.split(".")
+            if len(class_split) <= 2:
+                raise ValueError(f"Value in the classes.factories in {llm_info_file} must be of the form "
+                                 "<package_name>.<module_name>.<ClassName>")
+            # Create a list of a single package given the name in the value
+            packages: List[str] = [".".join(class_split[:-2])]
+            class_name: str = class_split[-1]
+            resolver = Resolver(packages)
+
+            # Resolve the class name
+            llm_factory_class: Type[LangChainLlmFactory] = \
+                resolver.resolve_class_in_module(class_name, module_name=class_split[-2])
+
+            # Instantiate it
+            try:
+                llm_factory: LangChainLlmFactory = llm_factory_class()
+            except TypeError as exception:
+                raise ValueError(f"Class {llm_factory_class_name} in {llm_info_file} "
+                                 "must have a no-args constructor") from exception
+
+            # Make sure its the correct type
+            if not isinstance(llm_factory, LangChainLlmFactory):
+                raise ValueError(f"Class {llm_factory_class_name} in {llm_info_file} "
+                                 "must be of type LangChainLlmFactory")
+
+            # Success. Tack it on to the list
+            self.llm_factories.append(llm_factory)
 
     def create_llm(self, config: Dict[str, Any], callbacks: List[BaseCallbackHandler] = None) -> BaseLanguageModel:
         """
@@ -175,14 +215,14 @@ class DefaultLlmFactory(ContextTypeLlmFactory, LangChainLlmFactory):
         """
         llm: BaseLanguageModel = None
 
-        found_exception: Exception = None
-
         # Loop through the loaded factories in order until we can find one
         # that can create the llm.
+        found_exception: Exception = None
         for llm_factory in self.llm_factories:
             try:
                 llm = llm_factory.create_base_chat_model(config, callbacks)
-                if llm is not None:
+                if llm is not None and isinstance(llm, BaseLanguageModel):
+                    # We found what we were looking for
                     found_exception = None
                     break
             except ValueError as exception:
@@ -222,19 +262,3 @@ class DefaultLlmFactory(ContextTypeLlmFactory, LangChainLlmFactory):
             max_prompt_tokens = use_max_tokens
 
         return max_prompt_tokens
-
-    def get_value_or_env(self, config: Dict[str, Any], key: str, env_key: str) -> Any:
-        """
-        :param config: The config dictionary to search
-        :param key: The key for the config to look for
-        :param env_key: The os.environ key whose value should be gotten if either
-                        the key does not exist or the value for the key is None
-        """
-        value = None
-        if config is not None:
-            value = config.get(key)
-
-        if value is None:
-            value = os.getenv(env_key)
-
-        return value

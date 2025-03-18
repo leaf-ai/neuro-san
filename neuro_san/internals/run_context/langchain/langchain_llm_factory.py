@@ -14,6 +14,8 @@ from typing import Any
 from typing import Dict
 from typing import List
 
+import os
+
 from langchain_core.callbacks.base import BaseCallbackHandler
 from langchain_core.language_models.base import BaseLanguageModel
 
@@ -57,3 +59,19 @@ class LangChainLlmFactory:
                 unknown to this method.
         """
         raise NotImplementedError
+
+    def get_value_or_env(self, config: Dict[str, Any], key: str, env_key: str) -> Any:
+        """
+        :param config: The config dictionary to search
+        :param key: The key for the config to look for
+        :param env_key: The os.environ key whose value should be gotten if either
+                        the key does not exist or the value for the key is None
+        """
+        value = None
+        if config is not None:
+            value = config.get(key)
+
+        if value is None:
+            value = os.getenv(env_key)
+
+        return value
