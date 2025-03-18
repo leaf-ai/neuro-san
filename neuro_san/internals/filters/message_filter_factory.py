@@ -19,8 +19,10 @@ from neuro_san.internals.filters.minimal_message_filter import MinimalMessageFil
 
 TYPE_TO_MESSAGE_FILTER_CLASS: Dict[Any, Type[MessageFilter]] = {
     0:  MinimalMessageFilter,
-    1:  MaximalMessageFilter,
+    1:  MinimalMessageFilter,
+    2:  MaximalMessageFilter,
 
+    "UNKNOWN":  MinimalMessageFilter,
     "MINIMAL":  MinimalMessageFilter,
     "MAXIMAL":  MaximalMessageFilter,
 }
