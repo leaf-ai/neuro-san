@@ -18,7 +18,7 @@ from langchain_core.callbacks.base import BaseCallbackHandler
 from langchain_core.language_models.base import BaseLanguageModel
 
 
-class LlmFactory:
+class LangChainLlmFactory:
     """
     Interface for Factory classes creating LLM BaseLanguageModels
 
