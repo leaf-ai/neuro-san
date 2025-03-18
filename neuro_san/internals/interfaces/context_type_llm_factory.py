@@ -51,8 +51,8 @@ class ContextTypeLlmFactory:
     def create_llm(self, config: Dict[str, Any]) -> Any:
         """
         Create an llm instance BaseLanguageModel from the fully-specified llm config.
-        :param config: The fully specified llm config which is a product of
-                    _create_full_llm_config() above.
+        :param config: The fully specified llm config from which the LLM instance
+                    should be created.
         :return: An llm instance native to the context type.
                 Can raise a ValueError if the config's class or model_name value is
                 unknown to this method.
