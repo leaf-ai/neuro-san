@@ -77,8 +77,9 @@ message FunctionResponse {
 
 // Type of filtering for StreamingChat
 enum ChatFilterType {
-    MINIMAL = 0;    // Stream the bare minimum messages to provide an answer and chat_context
-    MAXIMAL = 1;    // Stream everything possible for maximum debugging information.
+    UNKNOWN = 0;    // Unknown value. Default behavior is MINIMAL
+    MINIMAL = 1;    // Stream the bare minimum messages to provide an answer and chat_context
+    MAXIMAL = 2;    // Stream everything possible for maximum debugging information.
 }
 
 // Allows for controlling the messages that get streamed via StreamingChat.
@@ -119,7 +120,7 @@ message ChatRequest {
     chat.ChatContext chat_context = 5 [json_name="chat_context"];
 
     // A structure defining a server-side filter on what kind of messages come
-    // over the stream.
+    // over the stream. When not present, defaults to MINIMAL chat filter.
     ChatFilter chat_filter = 6 [json_name="chat_filter"];
 }
 
