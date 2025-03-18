@@ -17,6 +17,7 @@ from asyncio import Future
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 from leaf_server_common.logging.logging_setup import setup_extra_logging_fields
 
+from neuro_san.interfaces.llm_factory import LlmFactory
 from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
@@ -33,12 +34,14 @@ class SessionInvocationContext(InvocationContext):
     """
 
     def __init__(self, async_session_factory: AsyncAgentSessionFactory,
+                 llm_factory: LlmFactory,
                  metadata: Dict[str, str] = None):
         """
         Constructor
 
         :param async_session_factory: The AsyncAgentSessionFactory to use
                         when connecting with external agents.
+        :param llm_factory: The LlmFactory instance
         :param metadata: A grpc metadata of key/value pairs to be inserted into
                          the header. Default is None. Preferred format is a
                          dictionary of string keys to string values.
@@ -52,6 +55,7 @@ class SessionInvocationContext(InvocationContext):
         self.journal: Journal = MessageJournal(self.queue)
         self.metadata: Dict[str, str] = metadata
         self.request_reporting: Dict[str, Any] = {}
+        self.llm_factory: LlmFactory = llm_factory
 
     def start(self):
         """
@@ -119,3 +123,9 @@ class SessionInvocationContext(InvocationContext):
         :return: The request reporting dictionary
         """
         return self.request_reporting
+
+    def get_llm_factory(self) -> LlmFactory:
+        """
+        :return: The LlmFactory instance
+        """
+        return self.llm_factory
