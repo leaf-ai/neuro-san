@@ -30,7 +30,6 @@ from langchain_community.callbacks.manager import openai_callback_var
 from langchain_core.callbacks.base import BaseCallbackHandler
 from langchain_core.language_models.base import BaseLanguageModel
 from langchain_openai.chat_models.base import ChatOpenAI
-from langchain_openai.chat_models.azure import AzureChatOpenAI
 
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 
@@ -174,17 +173,16 @@ class LangChainTokenCounter:
     @staticmethod
     def get_callback_for_llm(llm: BaseLanguageModel) -> Any:
         """
-        :param llm: A BaseLanguageModel returned from LlmFactory.
+        :param llm: A BaseLanguageModel returned from an LlmFactory.
         :return: A handle to a no-args function, that when called will
                 open up a context manager for token counting.
                 Can be None if no such entity exists for the llm type
         """
 
-        if isinstance(llm, (AzureChatOpenAI, ChatOpenAI)):
+        if isinstance(llm, ChatOpenAI):
             # Notes:
             #   * ChatOpenAI needs to have stream_usage=True configured
             #     in order to get good token info back reliably.
-            #   * AzureOpenAI - unclear what needs to be done if anything 3/4/2025
             return get_openai_callback
 
         if isinstance(llm, ChatAnthropic):
@@ -198,13 +196,13 @@ class LangChainTokenCounter:
     @staticmethod
     def get_context_var_for_llm(llm: BaseLanguageModel) -> ContextVar:
         """
-        :param llm: A BaseLanguageModel returned from LlmFactory.
+        :param llm: A BaseLanguageModel returned from an LlmFactory.
         :return: A ContextVar that corresponds to where token counting callback
                 information is going.
                 Can be None if no such entity exists for the llm type
         """
 
-        if isinstance(llm, (AzureChatOpenAI, ChatOpenAI)):
+        if isinstance(llm, ChatOpenAI):
             return openai_callback_var
 
         if isinstance(llm, ChatAnthropic):

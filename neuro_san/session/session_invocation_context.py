@@ -19,12 +19,14 @@ from leaf_server_common.logging.logging_setup import setup_extra_logging_fields
 
 from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
+from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.message_journal import MessageJournal
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.origination import Origination
 
 
+# pylint: disable=too-many-instance-attributes
 class SessionInvocationContext(InvocationContext):
     """
     Implementation of InvocationContext which encapsulates specific policy classes that pertain to
@@ -33,12 +35,14 @@ class SessionInvocationContext(InvocationContext):
     """
 
     def __init__(self, async_session_factory: AsyncAgentSessionFactory,
+                 llm_factory: ContextTypeLlmFactory,
                  metadata: Dict[str, str] = None):
         """
         Constructor
 
         :param async_session_factory: The AsyncAgentSessionFactory to use
                         when connecting with external agents.
+        :param llm_factory: The ContextTypeLlmFactory instance
         :param metadata: A grpc metadata of key/value pairs to be inserted into
                          the header. Default is None. Preferred format is a
                          dictionary of string keys to string values.
@@ -52,6 +56,7 @@ class SessionInvocationContext(InvocationContext):
         self.journal: Journal = MessageJournal(self.queue)
         self.metadata: Dict[str, str] = metadata
         self.request_reporting: Dict[str, Any] = {}
+        self.llm_factory: ContextTypeLlmFactory = llm_factory
 
     def start(self):
         """
@@ -119,3 +124,9 @@ class SessionInvocationContext(InvocationContext):
         :return: The request reporting dictionary
         """
         return self.request_reporting
+
+    def get_llm_factory(self) -> ContextTypeLlmFactory:
+        """
+        :return: The ContextTypeLlmFactory instance for the session
+        """
+        return self.llm_factory

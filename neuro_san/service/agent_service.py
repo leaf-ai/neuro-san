@@ -32,6 +32,7 @@ from leaf_server_common.server.request_logger import RequestLogger
 from neuro_san.api.grpc import agent_pb2 as service_messages
 from neuro_san.api.grpc import agent_pb2_grpc
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
+from neuro_san.internals.run_context.langchain.default_llm_factory import DefaultLlmFactory
 from neuro_san.service.agent_server_logging import AgentServerLogging
 from neuro_san.session.direct_agent_session import DirectAgentSession
 from neuro_san.session.external_agent_session_factory import ExternalAgentSessionFactory
@@ -79,12 +80,15 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         self.server_logging: AgentServerLogging = server_logging
         self.forwarder: GrpcMetadataForwarder = self.server_logging.get_forwarder()
 
-        # When we get to 1 AsyncioExecutor per request, we should also do a
-        # leaf_server_common.logging.logging_setup.setup_extra_logging_fields()
-        # for each executor thread.
         self.tool_registry: AgentToolRegistry = tool_registry
         self.agent_name: str = agent_name
         self.request_counter = AtomicCounter()
+
+        # Not happy that this goes direct to langchain implementation,
+        # but can fix that with next LlmFactory extension.
+        self.llm_factory = DefaultLlmFactory()
+        # Load once.
+        self.llm_factory.load()
 
     def get_request_count(self) -> int:
         """
@@ -219,7 +223,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
 
         # Prepare
         factory = ExternalAgentSessionFactory(use_direct=False)
-        invocation_context = SessionInvocationContext(factory, metadata)
+        invocation_context = SessionInvocationContext(factory, self.llm_factory, metadata)
         invocation_context.start()
 
         # Set up logging inside async thread

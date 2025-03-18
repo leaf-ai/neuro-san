@@ -12,13 +12,9 @@
 
 from typing import Any
 from typing import Dict
-from typing import List
-
-from langchain_core.callbacks.base import BaseCallbackHandler
-from langchain_core.language_models.base import BaseLanguageModel
 
 
-class LlmFactory:
+class ContextTypeLlmFactory:
     """
     Interface for Factory classes creating LLM BaseLanguageModels
 
@@ -45,14 +41,19 @@ class LlmFactory:
                                     the model description in this class.
     """
 
-    def create_base_chat_model(self, config: Dict[str, Any],
-                               callbacks: List[BaseCallbackHandler] = None) -> BaseLanguageModel:
+    def load(self):
         """
-        Create a BaseLanguageModel from the fully-specified llm config.
-        :param config: The fully specified llm config which is a product of
-                    _create_full_llm_config() above.
-        :param callbacks: A list of BaseCallbackHandlers to add to the chat model.
-        :return: A BaseLanguageModel (can be Chat or LLM)
+        Goes through the process of loading any user extensions and/or configuration
+        files
+        """
+        raise NotImplementedError
+
+    def create_llm(self, config: Dict[str, Any]) -> Any:
+        """
+        Create an llm instance BaseLanguageModel from the fully-specified llm config.
+        :param config: The fully specified llm config from which the LLM instance
+                    should be created.
+        :return: An llm instance native to the context type.
                 Can raise a ValueError if the config's class or model_name value is
                 unknown to this method.
         """

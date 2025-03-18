@@ -61,7 +61,7 @@ from neuro_san.internals.run_context.langchain.langchain_run import LangChainRun
 from neuro_san.internals.run_context.langchain.langchain_openai_function_tool \
     import LangChainOpenAIFunctionTool
 from neuro_san.internals.run_context.langchain.langchain_token_counter import LangChainTokenCounter
-from neuro_san.internals.run_context.langchain.llm_factory import LlmFactory
+from neuro_san.internals.run_context.langchain.default_llm_factory import DefaultLlmFactory
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
 
@@ -179,8 +179,7 @@ class LangChainRunContext(RunContext):
             callbacks.append(LoggingCallbackHandler(self.logger))
 
         # Create the model we will use.
-        llm_factory = LlmFactory()
-        llm_factory.load()
+        llm_factory: DefaultLlmFactory = self.invocation_context.get_llm_factory()
         self.llm = llm_factory.create_llm(self.llm_config, callbacks=callbacks)
 
         # Now that we have a name, we can create an ErrorDetector for the output.
