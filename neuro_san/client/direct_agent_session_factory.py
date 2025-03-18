@@ -13,7 +13,7 @@ from typing import Dict
 
 from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
-from neuro_san.internals.run_context.langchain.default_llm_factory import DefaultLlmFactory
+from neuro_san.internals.run_context.factory.master_llm_factory import MasterLlmFactory
 from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.session.direct_agent_session import DirectAgentSession
@@ -52,7 +52,7 @@ class DirectAgentSessionFactory:
 
         # Not happy that this goes direct to langchain implementation,
         # but can fix that with next LlmFactory extension.
-        llm_factory: ContextTypeLlmFactory = DefaultLlmFactory()
+        llm_factory: ContextTypeLlmFactory = MasterLlmFactory.create_llm_factory()
         # Load once now that we know what tool registry to use.
         llm_factory.load()
 
