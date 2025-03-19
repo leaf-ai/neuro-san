@@ -114,8 +114,13 @@ class DefaultLlmFactory(ContextTypeLlmFactory, LangChainLlmFactory):
         resolver = Resolver(packages)
 
         # Resolve the class name
-        llm_factory_class: Type[LangChainLlmFactory] = \
-            resolver.resolve_class_in_module(class_name, module_name=class_split[-2])
+        llm_factory_class: Type[LangChainLlmFactory] = None
+        try:
+            llm_factory_class: Type[LangChainLlmFactory] = \
+                resolver.resolve_class_in_module(class_name, module_name=class_split[-2])
+        except AttributeError as exception:
+            raise ValueError(f"Class {llm_factory_class_name} in {llm_info_file} "
+                             "not found in PYTHONPATH") from exception
 
         # Instantiate it
         try:
@@ -181,6 +186,7 @@ class DefaultLlmFactory(ContextTypeLlmFactory, LangChainLlmFactory):
         # config we are going to use.
         full_config: Dict[str, Any] = self.overlayer.overlay(default_config, config)
         full_config["class"] = chat_class_name
+        full_config["model_name"] = llm_entry.get("use_model_name", use_model_name)
 
         # Attempt to get a max_tokens through calculation
         full_config["max_tokens"] = self.get_max_prompt_tokens(full_config)

@@ -1,0 +1,79 @@
+
+# Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
+# All Rights Reserved.
+# Issued under the Academic Public License.
+#
+# You can be released from the terms, and requirements of the Academic Public
+# License by purchasing a commercial license.
+# Purchase of a commercial license is mandatory for any use of the
+# neuro-san SDK Software in commercial settings.
+#
+# END COPYRIGHT
+
+{
+    # OpenAI models
+
+    # Model context and output tokens: https://platform.openai.com/docs/models
+    # Model compatibility: https://platform.openai.com/docs/models#model-endpoint-compatibility
+    "test-gpt-4o": {
+        "use_model_name": "test-gpt-4o-2024-08-06",
+    },
+    "test-gpt-4o-2024-08-06": {
+        "class": "test-openai",
+        "use_model_name": "gpt-4o-2024-08-06",
+        "model_info_url": "https://platform.openai.com/docs/models/gpt-4o",
+        "modalities": {
+            "input": [ "text", "image" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [ "tools" ],
+        "context_window_size": 128000,
+        "max_output_tokens": 16384,
+        "knowledge_cutoff": "09/30/2023",
+    },
+
+    # These are data for each LLM class, so they don't have to be repeated for each
+    # LLM info entry above.
+    "classes": {
+
+        # You can list your own classes to create the llms given a config
+        # if the stock llms do not suit your needs. An example entry would look
+        # like this:
+        #
+        "factories": [ "tests.neuro_san.test_llm_factory.TestLlmFactory" ],
+        #
+        # Any classes listed must:
+        #   * Exist in the PYTHONPATH of your server
+        #   * Derive from neuro_san.internals.run_context.langchain.langchain_llm_factory.LangChainLlmFactory
+        #   * Have a no-args constructor
+
+        "test-openai": {
+            "token_counting": "callback",   # Uses OpenAICallbackHandler
+            "args": {
+                # Note that we can only supply arguments that are "Just Data" in nature.
+                # See https://python.langchain.com/api_reference/openai/chat_models/langchain_openai.chat_models.base.ChatOpenAI.html
+                "temperature": 0.7,
+                "openai_api_key": null,
+                "openai_api_base": null,
+                "openai_organization": null,
+                "openai_proxy": null,
+                "request_timeout": null,
+                "max_retries": 2,
+                "presence_penalty": null,
+                "frequency_penalty": null,
+                "seed": null,
+                "logprobs": null,
+                "top_logprobs": null,
+                "logit_bias": null,
+                # streaming is always on. Without it token counting will not work.
+                # n is always 1.  neuro-san will only ever consider a single chat completion.
+                "top_p": null,
+                "max_tokens": null,         # This is always for output
+                "tiktoken_model_name": null,
+                "stop": null,
+
+                # If you really need more parameters, you will likely have to create your own LlmFactory.
+            }
+        },
+    }
+}
