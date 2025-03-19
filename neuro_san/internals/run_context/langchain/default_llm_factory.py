@@ -88,36 +88,47 @@ class DefaultLlmFactory(ContextTypeLlmFactory, LangChainLlmFactory):
             raise ValueError(f"The classes.factories key in {llm_info_file} must be a list of strings")
 
         for llm_factory_class_name in llm_factory_classes:
-            if not isinstance(llm_factory_class_name, str):
-                raise ValueError(f"The value for the classes.factories key in {llm_info_file} "
-                                 "must be a list of strings")
-            class_split: List[str] = llm_factory_class_name.split(".")
-            if len(class_split) <= 2:
-                raise ValueError(f"Value in the classes.factories in {llm_info_file} must be of the form "
-                                 "<package_name>.<module_name>.<ClassName>")
-            # Create a list of a single package given the name in the value
-            packages: List[str] = [".".join(class_split[:-2])]
-            class_name: str = class_split[-1]
-            resolver = Resolver(packages)
-
-            # Resolve the class name
-            llm_factory_class: Type[LangChainLlmFactory] = \
-                resolver.resolve_class_in_module(class_name, module_name=class_split[-2])
-
-            # Instantiate it
-            try:
-                llm_factory: LangChainLlmFactory = llm_factory_class()
-            except TypeError as exception:
-                raise ValueError(f"Class {llm_factory_class_name} in {llm_info_file} "
-                                 "must have a no-args constructor") from exception
-
-            # Make sure its the correct type
-            if not isinstance(llm_factory, LangChainLlmFactory):
-                raise ValueError(f"Class {llm_factory_class_name} in {llm_info_file} "
-                                 "must be of type LangChainLlmFactory")
-
+            llm_factory: LangChainLlmFactory = self.resolve_one_llm_factory(llm_factory_class_name, llm_info_file)
             # Success. Tack it on to the list
             self.llm_factories.append(llm_factory)
+
+    def resolve_one_llm_factory(self, llm_factory_class_name: str, llm_info_file: str) -> LangChainLlmFactory:
+        """
+        :param llm_factory_class_name: A single class name to resolve.
+        :param llm_info_file: The name of the hocon file with the class names, to reference
+                        when exceptions are thrown.
+        :return: A LangChainLlmFactory instance as per the input
+        """
+        if not isinstance(llm_factory_class_name, str):
+            raise ValueError(f"The value for the classes.factories key in {llm_info_file} "
+                             "must be a list of strings")
+
+        class_split: List[str] = llm_factory_class_name.split(".")
+        if len(class_split) <= 2:
+            raise ValueError(f"Value in the classes.factories in {llm_info_file} must be of the form "
+                             "<package_name>.<module_name>.<ClassName>")
+
+        # Create a list of a single package given the name in the value
+        packages: List[str] = [".".join(class_split[:-2])]
+        class_name: str = class_split[-1]
+        resolver = Resolver(packages)
+
+        # Resolve the class name
+        llm_factory_class: Type[LangChainLlmFactory] = \
+            resolver.resolve_class_in_module(class_name, module_name=class_split[-2])
+
+        # Instantiate it
+        try:
+            llm_factory: LangChainLlmFactory = llm_factory_class()
+        except TypeError as exception:
+            raise ValueError(f"Class {llm_factory_class_name} in {llm_info_file} "
+                             "must have a no-args constructor") from exception
+
+        # Make sure its the correct type
+        if not isinstance(llm_factory, LangChainLlmFactory):
+            raise ValueError(f"Class {llm_factory_class_name} in {llm_info_file} "
+                             "must be of type LangChainLlmFactory")
+        return llm_factory
 
     def create_llm(self, config: Dict[str, Any], callbacks: List[BaseCallbackHandler] = None) -> BaseLanguageModel:
         """
