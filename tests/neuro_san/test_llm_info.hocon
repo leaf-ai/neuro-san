@@ -10,6 +10,8 @@
 #
 # END COPYRIGHT
 
+# To add this to the mix of your agent server/library set your AGENT_LLM_INFO_FILE env var
+# to point to this file.
 {
     # OpenAI models
 
