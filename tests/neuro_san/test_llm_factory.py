@@ -14,11 +14,11 @@ from typing import Any
 from typing import Dict
 from typing import List
 
+import json
+
 from langchain_core.callbacks.base import BaseCallbackHandler
 from langchain_core.language_models.base import BaseLanguageModel
 from langchain_openai.chat_models.base import ChatOpenAI
-
-import json
 
 from neuro_san.internals.run_context.langchain.langchain_llm_factory import LangChainLlmFactory
 
