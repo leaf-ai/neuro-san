@@ -54,10 +54,13 @@ class HttpSidecar:
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata.split(" ")
 
     def setup_logging(self):
+        """
+        Setup logging from configuration file.
+        """
         server_dir = Path(__file__).parent
         log_config = server_dir / "logging.json"
         try:
-            with open(log_config, "r") as f_log:
+            with open(log_config, "r", encoding='utf-8') as f_log:
                 config = json.load(f_log)
                 logging.config.dictConfig(config)
         except Exception as exc:  # pylint: disable=broad-exception-caught
