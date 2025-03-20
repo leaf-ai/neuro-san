@@ -27,7 +27,8 @@ class ConciergeHandler(BaseRequestHandler):
         """
         Implementation of GET request handler for "concierge" API call.
         """
-
+        request_id: int = self.get_request_id()
+        self.logger.info("Start GET %s/list request [%d]", self.agent_name, request_id)
         try:
             data: Dict[str, Any] = {}
             metadata: Dict[str, Any] = self.get_metadata()
@@ -42,3 +43,4 @@ class ConciergeHandler(BaseRequestHandler):
             self.process_exception(exc)
         finally:
             self.flush()
+            self.logger.info("Finish GET %s/list request [%d]", self.agent_name, request_id)

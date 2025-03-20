@@ -28,6 +28,8 @@ class FunctionHandler(BaseRequestHandler):
         Implementation of GET request handler for "function" API call.
         """
 
+        request_id: int = self.get_request_id()
+        self.logger.info("Start GET %s/function request [%d]", self.agent_name, request_id)
         try:
             data: Dict[str, Any] = {}
             metadata: Dict[str, Any] = self.get_metadata()
@@ -42,3 +44,4 @@ class FunctionHandler(BaseRequestHandler):
             self.process_exception(exc)
         finally:
             await self.flush()
+            self.logger.info("Finish GET %s/function request [%d]", self.agent_name, request_id)

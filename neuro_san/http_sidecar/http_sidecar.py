@@ -14,7 +14,9 @@ See class comment for details
 """
 
 import copy
+import json
 import logging
+from pathlib import Path
 from typing import Any, Dict, List
 
 from tornado.ioloop import IOLoop
@@ -48,14 +50,27 @@ class HttpSidecar:
         self.port = port
         self.http_port = http_port
         self.agents = copy.deepcopy(agents)
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = None
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata.split(" ")
+
+    def setup_logging(self):
+        server_dir = Path(__file__).parent
+        log_config = server_dir / "logging.json"
+        try:
+            with open(log_config, "r") as f_log:
+                config = json.load(f_log)
+                logging.config.dictConfig(config)
+        except Exception as exc:  # pylint: disable=broad-exception-caught
+            print(f"FAILED to setup http server logging: {exc}")
 
     def __call__(self):
         """
         Method to be called by a process running tornado HTTP server
         to actually start serving requests.
         """
+        self.setup_logging()
+        self.logger = logging.getLogger(self.__class__.__name__)
+
         app = self.make_app()
         app.listen(self.http_port)
         self.logger.info("HTTP server is running on port %d", self.http_port)

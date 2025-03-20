@@ -45,6 +45,8 @@ class BaseRequestHandler(RequestHandler):
         grpc.StatusCode.DEADLINE_EXCEEDED: 504
     }
 
+    request_id: int = 0
+
     # pylint: disable=attribute-defined-outside-init
     def initialize(self, agent_name, port, forwarded_request_metadata):
         """
@@ -72,6 +74,14 @@ class BaseRequestHandler(RequestHandler):
             if item_name in headers.keys():
                 result[item_name] = headers[item_name]
         return result
+
+    def get_request_id(self) -> int:
+        """
+        Get unique request id for logging purposes.
+        """
+        id: int = BaseRequestHandler.request_id
+        BaseRequestHandler.request_id += 1
+        return id
 
     def get_agent_grpc_session(self, metadata: Dict[str, Any]) -> AsyncAgentSession:
         """

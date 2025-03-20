@@ -55,7 +55,8 @@ class StreamingChatHandler(BaseRequestHandler):
         """
         Implementation of POST request handler for streaming chat API call.
         """
-
+        request_id: int = self.get_request_id()
+        self.logger.info("Start POST %s/streaming_chat request [%d]", self.agent_name, request_id)
         try:
             # Parse JSON body
             data = json.loads(self.request.body)
@@ -74,5 +75,6 @@ class StreamingChatHandler(BaseRequestHandler):
             self.process_exception(exc)
         finally:
             await self.flush()
-        # We are done with response stream:
-        await self.finish()
+            # We are done with response stream:
+            await self.finish()
+            self.logger.info("Finish POST %s/streaming_chat request [%d]", self.agent_name, request_id)
