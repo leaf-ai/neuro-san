@@ -129,3 +129,7 @@ Here is how streaming_chat() works for the langchain implementation in perhaps t
         * Each tool/node that is actualy called has its RunContext's delete_resources() method called,
             thus tearing down any resources associated with that agent's communication with the
             outside world (LLM or agent network, or whatever).
+
+Here is an image to help:
+![](neuro_san_information_flow_bw.png)
+
