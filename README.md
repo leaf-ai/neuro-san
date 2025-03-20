@@ -224,7 +224,7 @@ of how to construct a chat client in Python.
 A little deeper under the hood, that agent_cli client uses these classes under neuro_san/session
 to connect to a server:
 
-Synchronous conntection:
+Synchronous connection:
 * GrpcServiceAgentSession
 * HttpServiceAgentSession
 
