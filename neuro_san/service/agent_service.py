@@ -32,7 +32,8 @@ from leaf_server_common.server.request_logger import RequestLogger
 from neuro_san.api.grpc import agent_pb2 as service_messages
 from neuro_san.api.grpc import agent_pb2_grpc
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
-from neuro_san.internals.run_context.langchain.default_llm_factory import DefaultLlmFactory
+from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
+from neuro_san.internals.run_context.factory.master_llm_factory import MasterLlmFactory
 from neuro_san.service.agent_server_logging import AgentServerLogging
 from neuro_san.session.direct_agent_session import DirectAgentSession
 from neuro_san.session.external_agent_session_factory import ExternalAgentSessionFactory
@@ -84,9 +85,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         self.agent_name: str = agent_name
         self.request_counter = AtomicCounter()
 
-        # Not happy that this goes direct to langchain implementation,
-        # but can fix that with next LlmFactory extension.
-        self.llm_factory = DefaultLlmFactory()
+        self.llm_factory: ContextTypeLlmFactory = MasterLlmFactory.create_llm_factory()
         # Load once.
         self.llm_factory.load()
 

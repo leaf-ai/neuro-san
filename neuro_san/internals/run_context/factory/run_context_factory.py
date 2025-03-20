@@ -13,6 +13,7 @@ from typing import Any
 from typing import Dict
 
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
+from neuro_san.internals.run_context.factory.master_llm_factory import MasterLlmFactory
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 from neuro_san.internals.run_context.interfaces.tool_caller import ToolCaller
 from neuro_san.internals.run_context.langchain.langchain_run_context import LangChainRunContext
@@ -63,10 +64,7 @@ class RunContextFactory:
         default_llm_config = use_config.get("llm_config", default_llm_config)
 
         # Prepare for sanity in checks below
-        context_type: str = use_config.get("context_type")
-        if context_type is None:
-            context_type = "langchain"
-        context_type = context_type.lower()
+        context_type: str = MasterLlmFactory.get_context_type(use_config)
 
         use_invocation_context: InvocationContext = invocation_context
         if use_invocation_context is None and parent_run_context is not None:
