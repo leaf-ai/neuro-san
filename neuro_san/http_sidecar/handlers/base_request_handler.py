@@ -79,9 +79,9 @@ class BaseRequestHandler(RequestHandler):
         """
         Get unique request id for logging purposes.
         """
-        id: int = BaseRequestHandler.request_id
+        req_id: int = BaseRequestHandler.request_id
         BaseRequestHandler.request_id += 1
-        return id
+        return req_id
 
     def get_agent_grpc_session(self, metadata: Dict[str, Any]) -> AsyncAgentSession:
         """
