@@ -28,7 +28,6 @@ from pydantic_core import ValidationError
 
 from langchain.agents import Agent
 from langchain.agents import AgentExecutor
-from langchain.agents.conversational.base import ConversationalAgent
 from langchain.agents.tool_calling_agent.base import create_tool_calling_agent
 from langchain.base_language import BaseLanguageModel
 from langchain.callbacks.tracers.logging import LoggingCallbackHandler
