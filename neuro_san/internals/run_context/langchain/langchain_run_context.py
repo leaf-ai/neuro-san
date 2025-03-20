@@ -211,8 +211,8 @@ class LangChainRunContext(RunContext):
             # Per empirical experience, this is "last".
             self.agent.last = JournalingToolsAgentOutputParser(self.journal)
         else:
-            self.agent = ConversationalAgent.from_llm_and_tools(self.llm, self.tools,
-                                                                prefix=instructions)
+            # There's no need for "intermediate step" since llm has no tools.
+            self.agent = prompt_template | self.llm | JournalingToolsAgentOutputParser(self.journal)
 
     async def _create_base_tool(self, name: str) -> BaseTool:
         """
