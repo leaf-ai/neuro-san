@@ -74,6 +74,4 @@ COPY --chown=${USERNAME}:${USERNAME} . ${APP_SOURCE}
 
 # Generate any grc
 USER ${USERNAME}
-RUN cd ${APP_SOURCE} ; ./neuro_san/api/scripts/do_generate.sh
-
 WORKDIR ${APP_HOME}
