@@ -14,7 +14,6 @@ See class comment for details
 """
 
 import copy
-import json
 import logging
 from typing import Any, Dict, List
 
