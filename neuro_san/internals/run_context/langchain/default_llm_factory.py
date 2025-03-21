@@ -13,25 +13,24 @@
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Type
 
 import os
 
-from langchain_anthropic.chat_models import ChatAnthropic
-from langchain_ollama import ChatOllama
-from langchain_nvidia_ai_endpoints import ChatNVIDIA
 from langchain_core.callbacks.base import BaseCallbackHandler
 from langchain_core.language_models.base import BaseLanguageModel
-from langchain_openai.chat_models.base import ChatOpenAI
-from langchain_openai.chat_models.azure import AzureChatOpenAI
 
 from leaf_common.config.dictionary_overlay import DictionaryOverlay
+from leaf_common.config.resolver import Resolver
+from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
 from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
-from neuro_san.internals.run_context.langchain.llm_factory import LlmFactory
+from neuro_san.internals.run_context.langchain.langchain_llm_factory import LangChainLlmFactory
 from neuro_san.internals.run_context.langchain.llm_info_restorer import LlmInfoRestorer
+from neuro_san.internals.run_context.langchain.standard_langchain_llm_factory import StandardLangChainLlmFactory
 
 
-class DefaultLlmFactory(ContextTypeLlmFactory, LlmFactory):
+class DefaultLlmFactory(ContextTypeLlmFactory, LangChainLlmFactory):
     """
     Factory class for LLM operations
 
@@ -64,6 +63,9 @@ class DefaultLlmFactory(ContextTypeLlmFactory, LlmFactory):
         """
         self.llm_infos: Dict[str, Any] = {}
         self.overlayer = DictionaryOverlay()
+        self.llm_factories: List[LangChainLlmFactory] = [
+            StandardLangChainLlmFactory()
+        ]
 
     def load(self):
         """
@@ -77,6 +79,61 @@ class DefaultLlmFactory(ContextTypeLlmFactory, LlmFactory):
         if llm_info_file is not None and len(llm_info_file) > 0:
             extra_llm_infos: Dict[str, Any] = restorer.restore(file_reference=llm_info_file)
             self.llm_infos = self.overlayer.overlay(self.llm_infos, extra_llm_infos)
+
+        # Resolve any new llm factories
+        extractor = DictionaryExtractor(self.llm_infos)
+        llm_factory_classes: List[str] = []
+        llm_factory_classes = extractor.get("classes.factories", llm_factory_classes)
+        if not isinstance(llm_factory_classes, List):
+            raise ValueError(f"The classes.factories key in {llm_info_file} must be a list of strings")
+
+        for llm_factory_class_name in llm_factory_classes:
+            llm_factory: LangChainLlmFactory = self.resolve_one_llm_factory(llm_factory_class_name, llm_info_file)
+            # Success. Tack it on to the list
+            self.llm_factories.append(llm_factory)
+
+    def resolve_one_llm_factory(self, llm_factory_class_name: str, llm_info_file: str) -> LangChainLlmFactory:
+        """
+        :param llm_factory_class_name: A single class name to resolve.
+        :param llm_info_file: The name of the hocon file with the class names, to reference
+                        when exceptions are thrown.
+        :return: A LangChainLlmFactory instance as per the input
+        """
+        if not isinstance(llm_factory_class_name, str):
+            raise ValueError(f"The value for the classes.factories key in {llm_info_file} "
+                             "must be a list of strings")
+
+        class_split: List[str] = llm_factory_class_name.split(".")
+        if len(class_split) <= 2:
+            raise ValueError(f"Value in the classes.factories in {llm_info_file} must be of the form "
+                             "<package_name>.<module_name>.<ClassName>")
+
+        # Create a list of a single package given the name in the value
+        packages: List[str] = [".".join(class_split[:-2])]
+        class_name: str = class_split[-1]
+        resolver = Resolver(packages)
+
+        # Resolve the class name
+        llm_factory_class: Type[LangChainLlmFactory] = None
+        try:
+            llm_factory_class: Type[LangChainLlmFactory] = \
+                resolver.resolve_class_in_module(class_name, module_name=class_split[-2])
+        except AttributeError as exception:
+            raise ValueError(f"Class {llm_factory_class_name} in {llm_info_file} "
+                             "not found in PYTHONPATH") from exception
+
+        # Instantiate it
+        try:
+            llm_factory: LangChainLlmFactory = llm_factory_class()
+        except TypeError as exception:
+            raise ValueError(f"Class {llm_factory_class_name} in {llm_info_file} "
+                             "must have a no-args constructor") from exception
+
+        # Make sure its the correct type
+        if not isinstance(llm_factory, LangChainLlmFactory):
+            raise ValueError(f"Class {llm_factory_class_name} in {llm_info_file} "
+                             "must be of type LangChainLlmFactory")
+        return llm_factory
 
     def create_llm(self, config: Dict[str, Any], callbacks: List[BaseCallbackHandler] = None) -> BaseLanguageModel:
         """
@@ -129,6 +186,7 @@ class DefaultLlmFactory(ContextTypeLlmFactory, LlmFactory):
         # config we are going to use.
         full_config: Dict[str, Any] = self.overlayer.overlay(default_config, config)
         full_config["class"] = chat_class_name
+        full_config["model_name"] = llm_entry.get("use_model_name", use_model_name)
 
         # Attempt to get a max_tokens through calculation
         full_config["max_tokens"] = self.get_max_prompt_tokens(full_config)
@@ -172,145 +230,24 @@ class DefaultLlmFactory(ContextTypeLlmFactory, LlmFactory):
                 Can raise a ValueError if the config's class or model_name value is
                 unknown to this method.
         """
-        # Construct the LLM
         llm: BaseLanguageModel = None
-        chat_class: str = config.get("class")
-        if chat_class is not None:
-            chat_class = chat_class.lower()
 
-        model_name: str = config.get("model_name")
+        # Loop through the loaded factories in order until we can find one
+        # that can create the llm.
+        found_exception: Exception = None
+        for llm_factory in self.llm_factories:
+            try:
+                llm = llm_factory.create_base_chat_model(config, callbacks)
+                if llm is not None and isinstance(llm, BaseLanguageModel):
+                    # We found what we were looking for
+                    found_exception = None
+                    break
+            except ValueError as exception:
+                # Let the next model have a crack
+                found_exception = exception
 
-        if chat_class == "openai":
-            llm = ChatOpenAI(
-                            model_name=model_name,
-                            temperature=config.get("temperature"),
-                            openai_api_key=self.get_value_or_env(config, "openai_api_key",
-                                                                 "OPENAI_API_KEY"),
-                            openai_api_base=self.get_value_or_env(config, "openai_api_base",
-                                                                  "OPENAI_API_BASE"),
-                            openai_organization=self.get_value_or_env(config, "openai_organization",
-                                                                      "OPENAI_ORG_ID"),
-                            openai_proxy=self.get_value_or_env(config, "openai_organization",
-                                                               "OPENAI_PROXY"),
-                            request_timeout=config.get("request_timeout"),
-                            max_retries=config.get("max_retries"),
-                            presence_penalty=config.get("presence_penalty"),
-                            frequency_penalty=config.get("frequency_penalty"),
-                            seed=config.get("seed"),
-                            logprobs=config.get("logprobs"),
-                            top_logprobs=config.get("top_logprobs"),
-                            logit_bias=config.get("logit_bias"),
-                            streaming=True,     # streaming is always on. Without it token counting will not work.
-                            n=1,                # n is always 1.  neuro-san will only ever consider one chat completion.
-                            top_p=config.get("top_p"),
-                            max_tokens=config.get("max_tokens"),    # This is always for output
-                            tiktoken_model_name=config.get("tiktoken_model_name"),
-                            stop=config.get("stop"),
-
-                            # Set stream_usage to True in order to get token counting chunks.
-                            stream_usage=True,
-                            callbacks=callbacks)
-        elif chat_class == "azure-openai":
-            llm = AzureChatOpenAI(
-                            model_name=model_name,
-                            temperature=config.get("temperature"),
-                            openai_api_key=self.get_value_or_env(config, "openai_api_key",
-                                                                 "OPENAI_API_KEY"),
-                            openai_api_base=self.get_value_or_env(config, "openai_api_base",
-                                                                  "OPENAI_API_BASE"),
-                            openai_organization=self.get_value_or_env(config, "openai_organization",
-                                                                      "OPENAI_ORG_ID"),
-                            openai_proxy=self.get_value_or_env(config, "openai_organization",
-                                                               "OPENAI_PROXY"),
-                            request_timeout=config.get("request_timeout"),
-                            max_retries=config.get("max_retries"),
-                            presence_penalty=config.get("presence_penalty"),
-                            frequency_penalty=config.get("frequency_penalty"),
-                            seed=config.get("seed"),
-                            logprobs=config.get("logprobs"),
-                            top_logprobs=config.get("top_logprobs"),
-                            logit_bias=config.get("logit_bias"),
-                            streaming=True,     # streaming is always on. Without it token counting will not work.
-                            n=1,                # n is always 1.  neuro-san will only ever consider one chat completion.
-                            top_p=config.get("top_p"),
-                            max_tokens=config.get("max_tokens"),    # This is always for output
-                            tiktoken_model_name=config.get("tiktoken_model_name"),
-                            stop=config.get("stop"),
-
-                            # Azure-specific
-                            azure_endpoint=self.get_value_or_env(config, "azure_endpoint",
-                                                                 "AZURE_OPENAI_ENDPOINT"),
-                            deployment_name=config.get("deployment_name"),
-                            openai_api_version=self.get_value_or_env(config, "openai_api_version",
-                                                                     "OPENAI_API_VERSION"),
-
-                            # AD here means "ActiveDirectory"
-                            azure_ad_token=self.get_value_or_env(config, "azure_ad_token",
-                                                                 "AZURE_OPENAI_AD_TOKEN"),
-                            model_version=config.get("model_version"),
-                            openai_api_type=self.get_value_or_env(config, "openai_api_type",
-                                                                  "OPENAI_API_TYPE"),
-                            callbacks=callbacks)
-        elif chat_class == "anthropic":
-            llm = ChatAnthropic(
-                            model_name=model_name,
-                            max_tokens=config.get("max_tokens"),    # This is always for output
-                            temperature=config.get("temperature"),
-                            top_k=config.get("top_k"),
-                            top_p=config.get("top_p"),
-                            default_request_timeout=config.get("default_request_timeout"),
-                            max_retries=config.get("max_retries"),
-                            stop_sequences=config.get("stop_sequences"),
-                            anthropic_api_url=self.get_value_or_env(config, "anthropic_api_url",
-                                                                    "ANTHROPIC_API_URL"),
-                            anthropic_api_key=self.get_value_or_env(config, "anthropic_api_key",
-                                                                    "ANTHROPIC_API_KEY"),
-                            streaming=True,     # streaming is always on. Without it token counting will not work.
-                            # Set stream_usage to True in order to get token counting chunks.
-                            stream_usage=True,
-                            callbacks=callbacks)
-        elif chat_class == "ollama":
-            # Higher temperature is more random
-            llm = ChatOllama(
-                            model=model_name,
-                            mirostat=config.get("mirostat"),
-                            mirostat_eta=config.get("mirostat_eta"),
-                            mirostat_tau=config.get("mirostat_tau"),
-                            num_ctx=config.get("num_ctx"),
-                            num_gpu=config.get("num_gpu"),
-                            num_thread=config.get("num_thread"),
-                            num_predict=config.get("num_predict", config.get("max_tokens")),
-                            repeat_last_n=config.get("repeat_last_n"),
-                            repeat_penalty=config.get("repeat_penalty"),
-                            temperature=config.get("temperature"),
-                            seed=config.get("seed"),
-                            stop=config.get("stop"),
-                            tfs_z=config.get("tfs_z"),
-                            top_k=config.get("top_k"),
-                            top_p=config.get("top_p"),
-                            keep_alive=config.get("keep_alive"),
-                            base_url=config.get("base_url"),
-
-                            callbacks=callbacks)
-        elif chat_class == "nvidia":
-            # Higher temperature is more random
-            llm = ChatNVIDIA(
-                            base_url=config.get("base_url"),
-                            model=model_name,
-                            temperature=config.get("temperature"),
-                            max_tokens=config.get("max_tokens"),
-                            top_p=config.get("top_p"),
-                            seed=config.get("seed"),
-                            stop=config.get("stop"),
-                            nvidia_api_key=self.get_value_or_env(config, "nvidia_api_key",
-                                                                 "NVIDIA_API_KEY"),
-                            nvidia_base_url=self.get_value_or_env(config, "nvidia_base_url",
-                                                                  "NVIDIA_BASE_URL"),
-                            callbacks=callbacks)
-        elif chat_class is None:
-            raise ValueError(f"Class name {chat_class} for model_name {model_name} is unspecified.")
-        else:
-            raise ValueError(f"Class {chat_class} for model_name {model_name} is unrecognized.")
+        if found_exception is not None:
+            raise found_exception
 
         return llm
 
@@ -342,19 +279,3 @@ class DefaultLlmFactory(ContextTypeLlmFactory, LlmFactory):
             max_prompt_tokens = use_max_tokens
 
         return max_prompt_tokens
-
-    def get_value_or_env(self, config: Dict[str, Any], key: str, env_key: str) -> Any:
-        """
-        :param config: The config dictionary to search
-        :param key: The key for the config to look for
-        :param env_key: The os.environ key whose value should be gotten if either
-                        the key does not exist or the value for the key is None
-        """
-        value = None
-        if config is not None:
-            value = config.get(key)
-
-        if value is None:
-            value = os.getenv(env_key)
-
-        return value
