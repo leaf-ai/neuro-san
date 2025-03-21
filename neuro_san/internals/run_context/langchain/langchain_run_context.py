@@ -210,7 +210,16 @@ class LangChainRunContext(RunContext):
             # Per empirical experience, this is "last".
             self.agent.last = JournalingToolsAgentOutputParser(self.journal)
         else:
-            # There's no need for "intermediate step" since llm has no tools.
+            # This uses LangChain Expression Language (LCEL), which enables a functional, pipeline-style composition
+            # using "|". Here, we pass `agent_scratchpad` in the input message, but since we don't explicitly assign it
+            # to `intermediate_steps` (as done in `create_tool_calling_agent`), it remains unused by the prompt.
+            #
+            # In contrast, `create_tool_calling_agent` can be written in LCEL as
+            # RunnablePassthrough | prompt | llm_with_tools | ToolsAgentOutputParser
+            # where RunnablePassthrough `agent scratchpad` convert (AgentAction, tool output) tuples into ToolMessages.
+            #
+            # By skipping this step, our agent functions as a pure LLM-driven system with a defined role,
+            # without tool invocation logic influencing its decision-making.
             self.agent = prompt_template | self.llm | JournalingToolsAgentOutputParser(self.journal)
 
     async def _create_base_tool(self, name: str) -> BaseTool:
