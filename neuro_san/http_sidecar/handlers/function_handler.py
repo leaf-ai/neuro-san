@@ -28,11 +28,11 @@ class FunctionHandler(BaseRequestHandler):
         Implementation of GET request handler for "function" API call.
         """
 
-        request_id: int = self.get_request_id()
-        self.logger.info("Start GET %s/function request [%d]", self.agent_name, request_id)
+        metadata: Dict[str, Any] = self.get_metadata()
+        request_id: int = self.get_request_id(metadata)
+        self.logger.info("Start GET %s/function request [%s]", self.agent_name, request_id)
         try:
             data: Dict[str, Any] = {}
-            metadata: Dict[str, Any] = self.get_metadata()
             grpc_session: AsyncAgentSession = self.get_agent_grpc_session(metadata)
             result_dict: Dict[str, Any] = await grpc_session.function(data)
 
@@ -44,4 +44,4 @@ class FunctionHandler(BaseRequestHandler):
             self.process_exception(exc)
         finally:
             await self.flush()
-            self.logger.info("Finish GET %s/function request [%d]", self.agent_name, request_id)
+            self.logger.info("Finish GET %s/function request [%s]", self.agent_name, request_id)

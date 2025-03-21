@@ -75,11 +75,16 @@ class BaseRequestHandler(RequestHandler):
                 result[item_name] = headers[item_name]
         return result
 
-    def get_request_id(self) -> int:
+    def get_request_id(self, metadata: Dict[str, str]) -> str:
         """
         Get unique request id for logging purposes.
+        :param metadata: incoming request metadata
         """
-        req_id: int = BaseRequestHandler.request_id
+        # If request metadata has "request_id" already specified, use it:
+        req_id: str = metadata.get("request_id", None)
+        if req_id:
+            return req_id
+        req_id = f"request-{BaseRequestHandler.request_id}"
         BaseRequestHandler.request_id += 1
         return req_id
 

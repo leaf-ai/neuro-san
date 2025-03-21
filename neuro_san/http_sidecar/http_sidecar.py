@@ -16,14 +16,16 @@ See class comment for details
 import copy
 import json
 import logging
-from pathlib import Path
 from typing import Any, Dict, List
 
 from tornado.ioloop import IOLoop
 from tornado.web import Application
 
+from leaf_common.logging.logging_setup import LoggingSetup
+
 from neuro_san.service.agent_server import DEFAULT_FORWARDED_REQUEST_METADATA
 
+from neuro_san.internals.utils.file_of_class import FileOfClass
 from neuro_san.http_sidecar.handlers.health_check_handler import HealthCheckHandler
 from neuro_san.http_sidecar.handlers.connectivity_handler import ConnectivityHandler
 from neuro_san.http_sidecar.handlers.function_handler import FunctionHandler
@@ -57,14 +59,10 @@ class HttpSidecar:
         """
         Setup logging from configuration file.
         """
-        server_dir = Path(__file__).parent
-        log_config = server_dir / "logging.json"
-        try:
-            with open(log_config, "r", encoding='utf-8') as f_log:
-                config = json.load(f_log)
-                logging.config.dictConfig(config)
-        except Exception as exc:  # pylint: disable=broad-exception-caught
-            print(f"FAILED to setup http server logging: {exc}")
+        log_config = FileOfClass(__file__).get_file_in_basis("logging.json")
+        log_setup: LoggingSetup =\
+            LoggingSetup(default_log_config_file=log_config, default_log_level="INFO")
+        log_setup.setup()
 
     def __call__(self):
         """
