@@ -128,7 +128,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "application/json-seq": {
+              "application/json-lines": {
                 "schema": {
                   "$ref": "#/components/schemas/ChatResponse"
                 }
@@ -138,7 +138,7 @@
           "default": {
             "description": "Default error response",
             "content": {
-              "application/json-seq": {
+              "application/json-lines": {
                 "schema": {
                   "$ref": "#/components/schemas/Status"
                 }
