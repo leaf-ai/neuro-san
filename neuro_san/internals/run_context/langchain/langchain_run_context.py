@@ -28,7 +28,6 @@ from pydantic_core import ValidationError
 
 from langchain.agents import Agent
 from langchain.agents import AgentExecutor
-from langchain.agents.conversational.base import ConversationalAgent
 from langchain.agents.tool_calling_agent.base import create_tool_calling_agent
 from langchain.base_language import BaseLanguageModel
 from langchain.callbacks.tracers.logging import LoggingCallbackHandler
@@ -211,8 +210,17 @@ class LangChainRunContext(RunContext):
             # Per empirical experience, this is "last".
             self.agent.last = JournalingToolsAgentOutputParser(self.journal)
         else:
-            self.agent = ConversationalAgent.from_llm_and_tools(self.llm, self.tools,
-                                                                prefix=instructions)
+            # This uses LangChain Expression Language (LCEL), which enables a functional, pipeline-style composition
+            # using "|". Here, we pass `agent_scratchpad` in the input message, but since we don't explicitly assign it
+            # to `intermediate_steps` (as done in `create_tool_calling_agent`), it remains unused by the prompt.
+            #
+            # In contrast, `create_tool_calling_agent` can be written in LCEL as
+            # RunnablePassthrough | prompt | llm_with_tools | ToolsAgentOutputParser
+            # where RunnablePassthrough `agent scratchpad` convert (AgentAction, tool output) tuples into ToolMessages.
+            #
+            # By skipping this step, our agent functions as a pure LLM-driven system with a defined role,
+            # without tool invocation logic influencing its decision-making.
+            self.agent = prompt_template | self.llm | JournalingToolsAgentOutputParser(self.journal)
 
     async def _create_base_tool(self, name: str) -> BaseTool:
         """
