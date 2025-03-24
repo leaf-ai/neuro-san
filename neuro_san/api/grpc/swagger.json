@@ -1,40 +1,53 @@
 {
-  "openapi": "3.0.0",
+  "openapi": "3.0.3",
   "info": {
-    "title": "agent",
-    "description": "",
-    "version": "1"
+    "title": "AgentService API",
+    "description": "The service comprises all the exchanges to the backend in support of a single agent's\n services.  Routing is done by way of agent name on the grpc service hosting the agent,\n so as to keep info about which agents are hosted private (grpc gives the hand when a\n particular agent is unknown.",
+    "version": "0.0.1"
   },
   "servers": [
     {
-      "url": "https://neuro-san.decisionai.ml/api/v1"
+      "url": "https://neuro-san.decisionai.ml"
     },
     {
-      "url": "http://localhost:8081/api/v1"
+      "url": "http://localhost:8081"
     }
   ],
   "paths": {
-    "/{agent_name}/function": {
+    "/api/v1/{agent_name}/connectivity": {
       "get": {
-        "operationId": "dev.cognizant_ai.neuro_san.api.grpc.agent.AgentService.Function",
-        "description": "Called when a client needs the function description of an agent.",
+        "tags": [
+          "AgentService"
+        ],
+        "description": "Called when a client needs the internal connectivity description of an agent.",
+        "operationId": "AgentService_Connectivity",
         "parameters": [
-            {
-                "in": "path",
-                "name": "agent_name",
-                "required": true,
-                "type": "string",
-                "minimum": 1,
-                "description": "The name of the agent"
+          {
+            "name": "agent_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
             }
+          }
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "OK",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.agent.FunctionResponse"
+                  "$ref": "#/components/schemas/ConnectivityResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
                 }
               }
             }
@@ -42,15 +55,59 @@
         }
       }
     },
-    "/{agent_name}/streaming_chat": {
+    "/api/v1/{agent_name}/function": {
+      "get": {
+        "tags": [
+          "AgentService"
+        ],
+        "description": "Called when a client needs the function description of an agent.",
+        "operationId": "AgentService_Function",
+        "parameters": [
+          {
+            "name": "agent_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FunctionResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/{agent_name}/streaming_chat": {
       "post": {
-        "operationId": "dev.cognizant_ai.neuro_san.api.grpc.agent.AgentService.StreamingChat",
-        "description": "Unidirectional streaming method which would supercede Chat() and Logs() above.\nMost important semantics of the streaming:\n1) The \"answer\" to a query of any agent network is the *last* streamed\nAI message whose origin list is of length 1 - this indicates it is from\nthe FrontMan of the agent network.\n2) To RESTfully continue your conversation with the agent network:\nThe very last AGENT_FRAMEWORK message before the stream closes will\nhave its chat_context field filled in with a structure. You can\ncopy this whole-cloth to the chat_context of your next StreamingChat\nrequest to continue the conversation.",
+        "tags": [
+          "AgentService"
+        ],
+        "description": "Unidirectional streaming method which would supercede Chat() and Logs() above.\n Most important semantics of the streaming:\n  1) The \"answer\" to a query of any agent network is the *last* streamed\n     AI message whose origin list is of length 1 - this indicates it is from\n     the FrontMan of the agent network.\n  2) To RESTfully continue your conversation with the agent network:\n     The very last AGENT_FRAMEWORK message before the stream closes will\n     have its chat_context field filled in with a structure. You can\n     copy this whole-cloth to the chat_context of your next StreamingChat\n     request to continue the conversation.",
+        "operationId": "AgentService_StreamingChat",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.agent.ChatRequest"
+                "$ref": "#/components/schemas/ChatRequest"
               }
             }
           },
@@ -58,50 +115,32 @@
           "required": true
         },
         "parameters": [
-            {
-                "in": "path",
-                "name": "agent_name",
-                "required": true,
-                "type": "string",
-                "minimum": 1,
-                "description": "The name of the agent"
+          {
+            "name": "agent_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
             }
+          }
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "OK",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.agent.ChatResponse"
+                  "$ref": "#/components/schemas/ChatResponse"
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/{agent_name}/connectivity": {
-      "get": {
-        "operationId": "dev.cognizant_ai.neuro_san.api.grpc.agent.AgentService.Connectivity",
-        "description": "Called when a client needs the internal connectivity description of an agent.",
-        "parameters": [
-            {
-                "in": "path",
-                "name": "agent_name",
-                "required": true,
-                "type": "string",
-                "minimum": 1,
-                "description": "The name of the agent"
-            }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
+          },
+          "default": {
+            "description": "Default error response",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.agent.ConnectivityResponse"
+                  "$ref": "#/components/schemas/Status"
                 }
               }
             }
@@ -112,137 +151,156 @@
   },
   "components": {
     "schemas": {
-      "google.protobuf.Struct": {
+      "ChatContext": {
         "type": "object",
         "properties": {
-          "fields": {
-            "$ref": "#/components/schemas/google.protobuf.Value"
-          }
-        }
-      },
-      "google.protobuf.Value": {
-        "type": "object",
-        "properties": {
-          "nullValue": {
-            "$ref": "#/components/schemas/google.protobuf.NullValue"
-          },
-          "numberValue": {
-            "type": "string",
-            "format": "double"
-          },
-          "stringValue": {
-            "type": "string"
-          },
-          "boolValue": {
-            "type": "boolean"
-          },
-          "structValue": {
-            "$ref": "#/components/schemas/google.protobuf.Struct"
-          },
-          "listValue": {
-            "$ref": "#/components/schemas/google.protobuf.ListValue"
-          }
-        }
-      },
-      "google.protobuf.NullValue": {
-        "type": "number",
-        "enum": [
-          0
-        ],
-        "description": "0 - NULL_VALUE "
-      },
-      "google.protobuf.ListValue": {
-        "type": "object",
-        "properties": {
-          "values": {
+          "chat_histories": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/google.protobuf.Value"
-            }
-          }
-        }
-      },
-      "dev.cognizant_ai.neuro_san.api.grpc.agent.FunctionRequest": {
-        "type": "object",
-        "properties": {},
-        "description": "Request structure for Function gRPC method"
-      },
-      "dev.cognizant_ai.neuro_san.api.grpc.agent.Function": {
-        "type": "object",
-        "properties": {
-          "description": {
-            "type": "string",
-            "description": "Outward-facing description of what the agent does."
-          },
-          "parameters": {
-            "$ref": "#/components/schemas/google.protobuf.Struct"
+              "$ref": "#/components/schemas/ChatHistory"
+            },
+            "description": "A potentially full list of chat histories that pertain to the node.\n These will typically come in the last message of any particular agent's\n chat stream.   Do not expect any or all internal agents will broadcast their\n chat history, but you can at least expect the front-man to broadcast his."
           }
         },
-        "description": "Description of an agent's function"
+        "description": "Message for holding the state of play for any chat session\n such that should the client send this back to the service,\n a different server knows exactly where to pick up where the previous\n conversation left off."
       },
-      "dev.cognizant_ai.neuro_san.api.grpc.agent.FunctionResponse": {
-        "type": "object",
-        "properties": {
-          "function": {
-            "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.agent.Function"
-          }
-        },
-        "description": "Response structure for Function gRPC method"
-      },
-      "dev.cognizant_ai.neuro_san.api.grpc.agent.ChatFilterType": {
-        "type": "number",
-        "enum": [
-          0,
-          1,
-          2
-        ],
-        "description": "0 - UNKNOWN // Unknown value. Default behavior is MINIMAL\n1 - MINIMAL // Stream the bare minimum messages to provide an answer and chat_context\n2 - MAXIMAL // Stream everything possible for maximum debugging information."
-      },
-      "dev.cognizant_ai.neuro_san.api.grpc.agent.ChatFilter": {
+      "ChatFilter": {
         "type": "object",
         "properties": {
           "chat_filter_type": {
-            "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.agent.ChatFilterType"
+            "type": "integer",
+            "description": "For now allow for an enum to describe how we want chat messages streamed.\n In the future the description of this server-side filter might offer more\n fine-grained control (hence an encapsulating structure).",
+            "format": "enum"
           }
         },
         "description": "Allows for controlling the messages that get streamed via StreamingChat."
       },
-      "dev.cognizant_ai.neuro_san.api.grpc.agent.ChatRequest": {
+      "ChatHistory": {
         "type": "object",
         "properties": {
-          "sly_data": {
-            "$ref": "#/components/schemas/google.protobuf.Struct"
+          "origin": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Origin"
+            }
           },
-          "user_message": {
-            "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.chat.ChatMessage"
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChatMessage"
+            }
+          }
+        },
+        "description": "A structure for storing chat history for a given node in the graph\n described by the origin."
+      },
+      "ChatMessage": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "integer",
+            "description": "The type of chat message",
+            "format": "enum"
+          },
+          "text": {
+            "type": "string",
+            "description": "String contents of any chat message"
+          },
+          "mime_data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MimeData"
+            },
+            "description": "Optional bytes for any non-text media referenced by this message.\n For some chat sources, the string text field might also be populated as a\n reference for how the data was created.  If this happens, then\n it should be safe to assume that the text is enough to represent the\n message in any history carried forward.\n\n As of 1/13/25 this is a forward-looking, experimental field not likely\n to be used in regular operation until we can get proper plumbing of such\n data in place."
+          },
+          "origin": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Origin"
+            },
+            "description": "Optional list of Origin structures (see above) describing the origin of the chat message.\n The intent here is to be able to distiguish responses from nested agents.\n\n For each top-level agent/front-man (perhaps on another server) that is called,\n an extra structure is added to the list."
+          },
+          "structure": {
+            "type": "object",
+            "description": "Optional structure for a message whose contents are parsed JSON.\n The idea is to have the server side do the parsing when requested\n by the agent spec.\n\n As of 1/30/25 this is a forward-looking, experimental field not likely\n to be used in regular operation until we can get proper plumbing of such\n data in place."
           },
           "chat_context": {
-            "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.chat.ChatContext"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChatContext"
+              }
+            ],
+            "description": "Message for holding the state of play for any chat session\n such that should the client send this back to the service,\n a different server knows exactly where to pick up where the previous\n conversation left off."
+          },
+          "tool_result_origin": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Origin"
+            },
+            "description": "Optional list of Origin structures (see above) describing the origin of\n a tool result."
+          }
+        },
+        "description": "Structure describing a single chat message.\n This could be a single response, or a list of these might comprise\n a chat history."
+      },
+      "ChatRequest": {
+        "type": "object",
+        "properties": {
+          "agent_name": {
+            "type": "string"
+          },
+          "sly_data": {
+            "type": "object",
+            "description": "This is an entirely optional map whose keys refer to data that is better\n left out of the LLM chat stream.  The keys themselves might appear in the\n chat stream, referring to the data, but the data itself does not.\n The intent is for the key references to be passed to tools,\n which then grab the values by programmatic means."
+          },
+          "user_message": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChatMessage"
+              }
+            ],
+            "description": "To send basic user input, simply add a user_message to your request\n and fill in its \"text\" field."
+          },
+          "chat_context": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChatContext"
+              }
+            ],
+            "description": "Message for holding the state of play for any chat session\n such that should the client send this back to the service,\n a different server knows exactly where to pick up where the previous\n conversation left off. There are 2 uses:\n  1)  When this is not present in the request, a completely new conversation\n      is initiated.\n  2)  To RESTfully continue an existing conversation: The last AGENT_FRAMEWORK\n      message that was streamed from your previous StreamingChat() call\n      will have its chat_context field filled in its ChatMessage.\n      Simply take the value there and put it here for your next request\n      to continue the conversation (your new user_input adding to the exchange).\n      No client-side parsing of the ChatContext is explicitly required."
           },
           "chat_filter": {
-            "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.agent.ChatFilter"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChatFilter"
+              }
+            ],
+            "description": "A structure defining a server-side filter on what kind of messages come\n over the stream. When not present, defaults to MINIMAL chat filter."
           }
         },
         "description": "Request structure for Chat gRPC method"
       },
-      "dev.cognizant_ai.neuro_san.api.grpc.agent.ChatResponse": {
+      "ChatResponse": {
         "type": "object",
         "properties": {
           "request": {
-            "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.agent.ChatRequest"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            ],
+            "description": "The request that generated this response"
           },
           "response": {
-            "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.chat.ChatMessage"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChatMessage"
+              }
+            ],
+            "description": "Optionally returned.\n Idea is that all of the above come back immediately to establish\n the connection, but likely the field below would not initially be filled in.\n Later on, as messages return from agents, later streamed versions of this\n message would have response below filled in with single messages from\n specific agents any time any one of them has something new to say.\n The origin info on the ChatMessage would allow the client to place\n just where in the agent hierarchy the message comes from.\n (Think like a URI:\n  opportunity_finder_pipeline/opportunity_finder_process_manager/synthetic_data_generator)"
           }
         },
         "description": "Response structure for Chat gRPC method"
       },
-      "dev.cognizant_ai.neuro_san.api.grpc.agent.ConnectivityRequest": {
-        "type": "object",
-        "properties": {},
-        "description": "Request structure for Connectivity gRPC method"
-      },
-      "dev.cognizant_ai.neuro_san.api.grpc.agent.ConnectivityInfo": {
+      "ConnectivityInfo": {
         "type": "object",
         "properties": {
           "origin": {
@@ -254,109 +312,63 @@
             "items": {
               "type": "string"
             },
-            "description": "A list of tool nodes that are possible to reach from the origin\n\nThis might include references into external agent networks, perhaps hosted\non other servers.  Separate calls to those guys will need to be made\nin order to gain information about their own connectivity, if this is\nactually desired by the client.\n\nWorth noting that server-side agent descriptions are allowed to\nwithhold connectivity info they deem private, or too much of an\nimplementation detail.  That is, connectivity reported is only\nas much as the server wants a client to know."
+            "description": "A list of tool nodes that are possible to reach from the origin\n\n This might include references into external agent networks, perhaps hosted\n on other servers.  Separate calls to those guys will need to be made\n in order to gain information about their own connectivity, if this is\n actually desired by the client.\n\n Worth noting that server-side agent descriptions are allowed to\n withhold connectivity info they deem private, or too much of an\n implementation detail.  That is, connectivity reported is only\n as much as the server wants a client to know."
           }
         }
       },
-      "dev.cognizant_ai.neuro_san.api.grpc.agent.ConnectivityResponse": {
+      "ConnectivityResponse": {
         "type": "object",
         "properties": {
           "connectivity_info": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.agent.ConnectivityInfo"
+              "$ref": "#/components/schemas/ConnectivityInfo"
             },
-            "description": "The description of the agent network's internal connectivity\n... as far as the agent wants the outside world to know.."
+            "description": "The description of the agent network's internal connectivity\n ... as far as the agent wants the outside world to know.."
           }
         },
         "description": "Response structure for Connectivity gRPC method"
       },
-      "dev.cognizant_ai.neuro_san.api.grpc.chat.Origin": {
+      "Function": {
         "type": "object",
         "properties": {
-          "tool": {
+          "description": {
             "type": "string",
-            "description": "String name of the originating tool, as per the agent spec."
+            "description": "Outward-facing description of what the agent does."
           },
-          "instantiation_index": {
-            "type": "integer",
-            "format": "int32",
-            "description": "Some tools can be called more than once by one or more different paths.\nAllow for an instantiation index to distinguish these in the chat stream.\nIndex counting starts at 0."
-          }
-        }
-      },
-      "dev.cognizant_ai.neuro_san.api.grpc.chat.ChatHistory": {
-        "type": "object",
-        "properties": {
-          "origin": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.chat.Origin"
-            }
-          },
-          "messages": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.chat.ChatMessage"
-            }
+          "parameters": {
+            "type": "object",
+            "description": "Optional map of parameters that the agent needs in order to work.\n This is really a pydantic/OpenAI function description, which is\n a bit too complex to specify directly in protobuf."
           }
         },
-        "description": "A structure for storing chat history for a given node in the graph\ndescribed by the origin."
+        "description": "Description of an agent's function"
       },
-      "dev.cognizant_ai.neuro_san.api.grpc.chat.ChatContext": {
+      "FunctionResponse": {
         "type": "object",
         "properties": {
-          "chat_histories": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.chat.ChatHistory"
-            },
-            "description": "A potentially full list of chat histories that pertain to the node.\nThese will typically come in the last message of any particular agent's\nchat stream.   Do not expect any or all internal agents will broadcast their\nchat history, but you can at least expect the front-man to broadcast his."
+          "function": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Function"
+              }
+            ],
+            "description": "The functional description of the agent.\n Any initial chat prompt is obtained from the Function's description."
           }
         },
-        "description": "Message for holding the state of play for any chat session\nsuch that should the client send this back to the service,\na different server knows exactly where to pick up where the previous\nconversation left off."
+        "description": "Response structure for Function gRPC method"
       },
-      "dev.cognizant_ai.neuro_san.api.grpc.chat.ChatMessage": {
+      "GoogleProtobufAny": {
         "type": "object",
         "properties": {
-          "type": {
-            "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.chat.ChatMessage.ChatMessageType"
-          },
-          "text": {
+          "@type": {
             "type": "string",
-            "description": "String contents of any chat message"
-          },
-          "mime_data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.mime_data.MimeData"
-            },
-            "description": "Optional bytes for any non-text media referenced by this message.\nFor some chat sources, the string text field might also be populated as a\nreference for how the data was created.  If this happens, then\nit should be safe to assume that the text is enough to represent the\nmessage in any history carried forward.\n\nAs of 1/13/25 this is a forward-looking, experimental field not likely\nto be used in regular operation until we can get proper plumbing of such\ndata in place."
-          },
-          "origin": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.chat.Origin"
-            },
-            "description": "Optional list of Origin structures (see above) describing the origin of the chat message.\nThe intent here is to be able to distiguish responses from nested agents.\n\nFor each top-level agent/front-man (perhaps on another server) that is called,\nan extra structure is added to the list."
-          },
-          "structure": {
-            "$ref": "#/components/schemas/google.protobuf.Struct"
-          },
-          "chat_context": {
-            "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.chat.ChatContext"
-          },
-          "tool_result_origin": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.chat.Origin"
-            },
-            "description": "Optional list of Origin structures (see above) describing the origin of\na tool result."
+            "description": "The type of the serialized message."
           }
         },
-        "description": "Structure describing a single chat message.\nThis could be a single response, or a list of these might comprise\na chat history."
+        "additionalProperties": true,
+        "description": "Contains an arbitrary serialized message along with a @type that describes the type of the serialized message."
       },
-      "dev.cognizant_ai.neuro_san.api.grpc.mime_data.MimeData": {
+      "MimeData": {
         "type": "object",
         "properties": {
           "mime_type": {
@@ -365,25 +377,53 @@
           },
           "mime_bytes": {
             "type": "string",
-            "format": "byte",
-            "description": "Raw bytes of the image"
+            "description": "Raw bytes of the image",
+            "format": "bytes"
           }
         },
         "description": "A Message identifying image data"
       },
-      "dev.cognizant_ai.neuro_san.api.grpc.chat.ChatMessage.ChatMessageType": {
-        "type": "number",
-        "enum": [
-          0,
-          1,
-          2,
-          4,
-          100,
-          101,
-          103
-        ],
-        "description": "0 - UNKNOWN // Note: UNKNOWN is not a langchain thing.\n1 - SYSTEM \n2 - HUMAN \n4 - AI \n100 - AGENT // These are not out-of-the-box langchain messages\n101 - AGENT_FRAMEWORK \n103 - AGENT_TOOL_RESULT // Used at agent-level to represent AI Messages that\nare actually generated by tools as their results."
+      "Origin": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string",
+            "description": "String name of the originating tool, as per the agent spec."
+          },
+          "instantiation_index": {
+            "type": "integer",
+            "description": "Some tools can be called more than once by one or more different paths.\n Allow for an instantiation index to distinguish these in the chat stream.\n Index counting starts at 0.",
+            "format": "int32"
+          }
+        }
+      },
+      "Status": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client."
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GoogleProtobufAny"
+            },
+            "description": "A list of messages that carry the error details.  There is a common set of message types for APIs to use."
+          }
+        },
+        "description": "The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors)."
       }
     }
-  }
+  },
+  "tags": [
+    {
+      "name": "AgentService"
+    }
+  ]
 }

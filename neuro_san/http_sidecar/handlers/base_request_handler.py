@@ -60,6 +60,10 @@ class BaseRequestHandler(RequestHandler):
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata
         self.logger = logging.getLogger(self.__class__.__name__)
 
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.set_header("Access-Control-Allow-Headers", "Content-Type, Transfer-Encoding")
+
     def get_metadata(self) -> Dict[str, Any]:
         """
         Extract user metadata defined by self.forwarded_request_metadata list
