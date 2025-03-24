@@ -1,0 +1,389 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "agent",
+    "description": "",
+    "version": "1"
+  },
+  "servers": [
+    {
+      "url": "https://neuro-san.decisionai.ml/api/v1"
+    },
+    {
+      "url": "http://localhost:8081/api/v1"
+    }
+  ],
+  "paths": {
+    "/{agent_name}/function": {
+      "get": {
+        "operationId": "dev.cognizant_ai.neuro_san.api.grpc.agent.AgentService.Function",
+        "description": "Called when a client needs the function description of an agent.",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "agent_name",
+                "required": true,
+                "type": "string",
+                "minimum": 1,
+                "description": "The name of the agent"
+            }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.agent.FunctionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{agent_name}/streaming_chat": {
+      "post": {
+        "operationId": "dev.cognizant_ai.neuro_san.api.grpc.agent.AgentService.StreamingChat",
+        "description": "Unidirectional streaming method which would supercede Chat() and Logs() above.\nMost important semantics of the streaming:\n1) The \"answer\" to a query of any agent network is the *last* streamed\nAI message whose origin list is of length 1 - this indicates it is from\nthe FrontMan of the agent network.\n2) To RESTfully continue your conversation with the agent network:\nThe very last AGENT_FRAMEWORK message before the stream closes will\nhave its chat_context field filled in with a structure. You can\ncopy this whole-cloth to the chat_context of your next StreamingChat\nrequest to continue the conversation.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.agent.ChatRequest"
+              }
+            }
+          },
+          "description": "Request structure for Chat gRPC method",
+          "required": true
+        },
+        "parameters": [
+            {
+                "in": "path",
+                "name": "agent_name",
+                "required": true,
+                "type": "string",
+                "minimum": 1,
+                "description": "The name of the agent"
+            }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.agent.ChatResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{agent_name}/connectivity": {
+      "get": {
+        "operationId": "dev.cognizant_ai.neuro_san.api.grpc.agent.AgentService.Connectivity",
+        "description": "Called when a client needs the internal connectivity description of an agent.",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "agent_name",
+                "required": true,
+                "type": "string",
+                "minimum": 1,
+                "description": "The name of the agent"
+            }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.agent.ConnectivityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "google.protobuf.Struct": {
+        "type": "object",
+        "properties": {
+          "fields": {
+            "$ref": "#/components/schemas/google.protobuf.Value"
+          }
+        }
+      },
+      "google.protobuf.Value": {
+        "type": "object",
+        "properties": {
+          "nullValue": {
+            "$ref": "#/components/schemas/google.protobuf.NullValue"
+          },
+          "numberValue": {
+            "type": "string",
+            "format": "double"
+          },
+          "stringValue": {
+            "type": "string"
+          },
+          "boolValue": {
+            "type": "boolean"
+          },
+          "structValue": {
+            "$ref": "#/components/schemas/google.protobuf.Struct"
+          },
+          "listValue": {
+            "$ref": "#/components/schemas/google.protobuf.ListValue"
+          }
+        }
+      },
+      "google.protobuf.NullValue": {
+        "type": "number",
+        "enum": [
+          0
+        ],
+        "description": "0 - NULL_VALUE "
+      },
+      "google.protobuf.ListValue": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/google.protobuf.Value"
+            }
+          }
+        }
+      },
+      "dev.cognizant_ai.neuro_san.api.grpc.agent.FunctionRequest": {
+        "type": "object",
+        "properties": {},
+        "description": "Request structure for Function gRPC method"
+      },
+      "dev.cognizant_ai.neuro_san.api.grpc.agent.Function": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "Outward-facing description of what the agent does."
+          },
+          "parameters": {
+            "$ref": "#/components/schemas/google.protobuf.Struct"
+          }
+        },
+        "description": "Description of an agent's function"
+      },
+      "dev.cognizant_ai.neuro_san.api.grpc.agent.FunctionResponse": {
+        "type": "object",
+        "properties": {
+          "function": {
+            "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.agent.Function"
+          }
+        },
+        "description": "Response structure for Function gRPC method"
+      },
+      "dev.cognizant_ai.neuro_san.api.grpc.agent.ChatFilterType": {
+        "type": "number",
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "description": "0 - UNKNOWN // Unknown value. Default behavior is MINIMAL\n1 - MINIMAL // Stream the bare minimum messages to provide an answer and chat_context\n2 - MAXIMAL // Stream everything possible for maximum debugging information."
+      },
+      "dev.cognizant_ai.neuro_san.api.grpc.agent.ChatFilter": {
+        "type": "object",
+        "properties": {
+          "chat_filter_type": {
+            "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.agent.ChatFilterType"
+          }
+        },
+        "description": "Allows for controlling the messages that get streamed via StreamingChat."
+      },
+      "dev.cognizant_ai.neuro_san.api.grpc.agent.ChatRequest": {
+        "type": "object",
+        "properties": {
+          "sly_data": {
+            "$ref": "#/components/schemas/google.protobuf.Struct"
+          },
+          "user_message": {
+            "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.chat.ChatMessage"
+          },
+          "chat_context": {
+            "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.chat.ChatContext"
+          },
+          "chat_filter": {
+            "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.agent.ChatFilter"
+          }
+        },
+        "description": "Request structure for Chat gRPC method"
+      },
+      "dev.cognizant_ai.neuro_san.api.grpc.agent.ChatResponse": {
+        "type": "object",
+        "properties": {
+          "request": {
+            "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.agent.ChatRequest"
+          },
+          "response": {
+            "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.chat.ChatMessage"
+          }
+        },
+        "description": "Response structure for Chat gRPC method"
+      },
+      "dev.cognizant_ai.neuro_san.api.grpc.agent.ConnectivityRequest": {
+        "type": "object",
+        "properties": {},
+        "description": "Request structure for Connectivity gRPC method"
+      },
+      "dev.cognizant_ai.neuro_san.api.grpc.agent.ConnectivityInfo": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "The agent network node whose connectivity is being described"
+          },
+          "tools": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "A list of tool nodes that are possible to reach from the origin\n\nThis might include references into external agent networks, perhaps hosted\non other servers.  Separate calls to those guys will need to be made\nin order to gain information about their own connectivity, if this is\nactually desired by the client.\n\nWorth noting that server-side agent descriptions are allowed to\nwithhold connectivity info they deem private, or too much of an\nimplementation detail.  That is, connectivity reported is only\nas much as the server wants a client to know."
+          }
+        }
+      },
+      "dev.cognizant_ai.neuro_san.api.grpc.agent.ConnectivityResponse": {
+        "type": "object",
+        "properties": {
+          "connectivity_info": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.agent.ConnectivityInfo"
+            },
+            "description": "The description of the agent network's internal connectivity\n... as far as the agent wants the outside world to know.."
+          }
+        },
+        "description": "Response structure for Connectivity gRPC method"
+      },
+      "dev.cognizant_ai.neuro_san.api.grpc.chat.Origin": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string",
+            "description": "String name of the originating tool, as per the agent spec."
+          },
+          "instantiation_index": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Some tools can be called more than once by one or more different paths.\nAllow for an instantiation index to distinguish these in the chat stream.\nIndex counting starts at 0."
+          }
+        }
+      },
+      "dev.cognizant_ai.neuro_san.api.grpc.chat.ChatHistory": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.chat.Origin"
+            }
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.chat.ChatMessage"
+            }
+          }
+        },
+        "description": "A structure for storing chat history for a given node in the graph\ndescribed by the origin."
+      },
+      "dev.cognizant_ai.neuro_san.api.grpc.chat.ChatContext": {
+        "type": "object",
+        "properties": {
+          "chat_histories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.chat.ChatHistory"
+            },
+            "description": "A potentially full list of chat histories that pertain to the node.\nThese will typically come in the last message of any particular agent's\nchat stream.   Do not expect any or all internal agents will broadcast their\nchat history, but you can at least expect the front-man to broadcast his."
+          }
+        },
+        "description": "Message for holding the state of play for any chat session\nsuch that should the client send this back to the service,\na different server knows exactly where to pick up where the previous\nconversation left off."
+      },
+      "dev.cognizant_ai.neuro_san.api.grpc.chat.ChatMessage": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.chat.ChatMessage.ChatMessageType"
+          },
+          "text": {
+            "type": "string",
+            "description": "String contents of any chat message"
+          },
+          "mime_data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.mime_data.MimeData"
+            },
+            "description": "Optional bytes for any non-text media referenced by this message.\nFor some chat sources, the string text field might also be populated as a\nreference for how the data was created.  If this happens, then\nit should be safe to assume that the text is enough to represent the\nmessage in any history carried forward.\n\nAs of 1/13/25 this is a forward-looking, experimental field not likely\nto be used in regular operation until we can get proper plumbing of such\ndata in place."
+          },
+          "origin": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.chat.Origin"
+            },
+            "description": "Optional list of Origin structures (see above) describing the origin of the chat message.\nThe intent here is to be able to distiguish responses from nested agents.\n\nFor each top-level agent/front-man (perhaps on another server) that is called,\nan extra structure is added to the list."
+          },
+          "structure": {
+            "$ref": "#/components/schemas/google.protobuf.Struct"
+          },
+          "chat_context": {
+            "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.chat.ChatContext"
+          },
+          "tool_result_origin": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/dev.cognizant_ai.neuro_san.api.grpc.chat.Origin"
+            },
+            "description": "Optional list of Origin structures (see above) describing the origin of\na tool result."
+          }
+        },
+        "description": "Structure describing a single chat message.\nThis could be a single response, or a list of these might comprise\na chat history."
+      },
+      "dev.cognizant_ai.neuro_san.api.grpc.mime_data.MimeData": {
+        "type": "object",
+        "properties": {
+          "mime_type": {
+            "type": "string",
+            "description": "MIME type of the image data"
+          },
+          "mime_bytes": {
+            "type": "string",
+            "format": "byte",
+            "description": "Raw bytes of the image"
+          }
+        },
+        "description": "A Message identifying image data"
+      },
+      "dev.cognizant_ai.neuro_san.api.grpc.chat.ChatMessage.ChatMessageType": {
+        "type": "number",
+        "enum": [
+          0,
+          1,
+          2,
+          4,
+          100,
+          101,
+          103
+        ],
+        "description": "0 - UNKNOWN // Note: UNKNOWN is not a langchain thing.\n1 - SYSTEM \n2 - HUMAN \n4 - AI \n100 - AGENT // These are not out-of-the-box langchain messages\n101 - AGENT_FRAMEWORK \n103 - AGENT_TOOL_RESULT // Used at agent-level to represent AI Messages that\nare actually generated by tools as their results."
+      }
+    }
+  }
+}

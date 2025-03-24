@@ -36,6 +36,9 @@ class ConnectivityHandler(BaseRequestHandler):
 
             # Return gRPC response to the HTTP client
             self.set_header("Content-Type", "application/json")
+            self.set_header("Access-Control-Allow-Origin", "*")
+            self.set_header("Access-Control-Allow-Methods", "GET")
+            self.set_header("Access-Control-Allow-Headers", "Content-Type")
             self.write(result_dict)
 
         except Exception as exc:  # pylint: disable=broad-exception-caught
