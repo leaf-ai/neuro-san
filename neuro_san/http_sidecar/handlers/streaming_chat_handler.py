@@ -37,7 +37,7 @@ class StreamingChatHandler(BaseRequestHandler):
         :param generator: async gRPC generator
         """
         # Set up headers for chunked response
-        self.set_header("Content-Type", "application/json")
+        self.set_header("Content-Type", "application/json-seq")
         self.set_header("Transfer-Encoding", "chunked")
         # Flush headers immediately
         await self.flush()
