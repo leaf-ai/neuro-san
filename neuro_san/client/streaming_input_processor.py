@@ -20,6 +20,7 @@ from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
 from neuro_san.internals.messages.origination import Origination
 from neuro_san.message_processing.basic_message_processor import BasicMessageProcessor
+from neuro_san.session.direct_agent_session import DirectAgentSession
 
 
 class StreamingInputProcessor:
@@ -66,7 +67,7 @@ class StreamingInputProcessor:
         # the conversation.
         chat_request: Dict[str, Any] = self.formulate_chat_request(user_input, sly_data,
                                                                    chat_context, chat_filter)
-        self.processor.reset()
+        self.reset()
 
         return_state: Dict[str, Any] = copy(state)
         chat_responses: Generator[Dict[str, Any], None, None] = self.session.streaming_chat(chat_request)
@@ -125,3 +126,15 @@ class StreamingInputProcessor:
             chat_request["chat_filter"] = chat_filter
 
         return chat_request
+
+    def reset(self):
+        """
+        Reset for a new exchange
+        """
+        # Reset the message processor to recieve a new answer
+        self.processor.reset()
+
+        if isinstance(self.session, DirectAgentSession):
+            # Direct sessions need their Origination reset otherwise chat_context
+            # origins do not match up.
+            self.session.reset()
