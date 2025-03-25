@@ -11,6 +11,7 @@
 # END COPYRIGHT
 from typing import List
 
+from neuro_san.internals.filters.answer_message_filter import AnswerMessageFilter
 from neuro_san.internals.filters.chat_context_message_filter import ChatContextMessageFilter
 from neuro_san.internals.filters.compound_message_filter import CompoundMessageFilter
 from neuro_san.internals.filters.message_filter import MessageFilter
@@ -27,6 +28,7 @@ class MinimalMessageFilter(CompoundMessageFilter):
         Constructor
         """
         filters: List[MessageFilter] = [
+            AnswerMessageFilter(),
             ChatContextMessageFilter(),
         ]
         super().__init__(filters)

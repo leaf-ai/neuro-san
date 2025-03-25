@@ -20,7 +20,6 @@ import traceback
 from openai import BadRequestError
 
 from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
-from neuro_san.internals.filters.answer_message_filter import AnswerMessageFilter
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.graph.tools.front_man import FrontMan
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
@@ -160,17 +159,9 @@ class DataDrivenChatSession:
         chat_messages: Iterator[Dict[str, Any]] = await self.chat(user_input, invocation_context, sly_data)
         message_list: List[Dict[str, Any]] = list(chat_messages)
 
-        # Look for the final answer
-        answer: str = ""
-        answer_filter = AnswerMessageFilter()
-        for message in message_list:
-            if answer_filter.allow_message(message, answer_filter.get_message_type(message)):
-                answer = message.get("text", "")
-
         # Stream over chat state as the last message
-        # Include the chat_context and final answer.
         return_chat_context: Dict[str, Any] = self.prepare_chat_context(message_list)
-        message = AgentFrameworkMessage(content=answer, chat_context=return_chat_context)
+        message = AgentFrameworkMessage(content="", chat_context=return_chat_context)
         journal: Journal = invocation_context.get_journal()
         await journal.write_message(message, origin=None)
 
