@@ -30,7 +30,7 @@ TOP_LEVEL=${ANOTHER_LEVEL_UP%/*}
 GENERATED_DIR=neuro_san/api/grpc
 
 # Ordering matters w/rt where generated file is output
-PROTO_PATH="--proto_path=${TOP_LEVEL}"
+PROTO_PATH="--proto_path=${TOP_LEVEL} --proto_path=${TOP_LEVEL}/neuro_san/api/grpc"
 echo "PROTO_PATH is ${PROTO_PATH}"
 
 # Inputs to the script
