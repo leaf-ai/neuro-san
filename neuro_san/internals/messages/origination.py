@@ -120,3 +120,9 @@ class Origination:
         full_path = full_path.replace("./", "/")
 
         return full_path
+
+    def reset(self):
+        """
+        Resets the origination tracking
+        """
+        self.tool_to_index_map = {}
