@@ -29,6 +29,7 @@ from langchain_community.callbacks.manager import get_bedrock_anthropic_callback
 from langchain_community.callbacks.manager import openai_callback_var
 from langchain_core.callbacks.base import BaseCallbackHandler
 from langchain_core.language_models.base import BaseLanguageModel
+from langchain_openai.chat_models.azure import AzureChatOpenAI
 from langchain_openai.chat_models.base import ChatOpenAI
 
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
@@ -179,9 +180,11 @@ class LangChainTokenCounter:
                 Can be None if no such entity exists for the llm type
         """
 
-        if isinstance(llm, ChatOpenAI):
+        if isinstance(llm, (ChatOpenAI, AzureChatOpenAI)):
             # Notes:
             #   * ChatOpenAI needs to have stream_usage=True configured
+            #     in order to get good token info back reliably.
+            #   * AzureChatOpenAI needs to have stream_options.include_usage=True configured
             #     in order to get good token info back reliably.
             return get_openai_callback
 
