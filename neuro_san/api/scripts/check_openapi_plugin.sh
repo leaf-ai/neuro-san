@@ -4,12 +4,6 @@ set -e
 
 REQUIRED_GO_VERSION="1.23"
 
-# Function to compare Go versions
-version_ge() {
-  [ "$1" = "$2" ] && return 0
-  [ "$(printf "%s\n" "$@" | sort -V | head -n 1)" != "$1" ]
-}
-
 echo "🔍 Checking for protoc-gen-openapi in PATH..."
 
 if command -v protoc-gen-openapi >/dev/null 2>&1 && [ -x "$(command -v protoc-gen-openapi)" ]; then
