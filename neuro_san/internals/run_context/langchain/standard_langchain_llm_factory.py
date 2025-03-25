@@ -19,8 +19,8 @@ from langchain_ollama import ChatOllama
 from langchain_nvidia_ai_endpoints import ChatNVIDIA
 from langchain_core.callbacks.base import BaseCallbackHandler
 from langchain_core.language_models.base import BaseLanguageModel
-from langchain_openai.chat_models.base import ChatOpenAI
 from langchain_openai.chat_models.azure import AzureChatOpenAI
+from langchain_openai.chat_models.base import ChatOpenAI
 
 from neuro_san.internals.run_context.langchain.langchain_llm_factory import LangChainLlmFactory
 
@@ -102,6 +102,9 @@ class StandardLangChainLlmFactory(LangChainLlmFactory):
                             stream_usage=True,
                             callbacks=callbacks)
         elif chat_class == "azure-openai":
+            stream_options: Dict[str, Any] = {
+                "include_usage": True
+            }
             llm = AzureChatOpenAI(
                             model_name=model_name,
                             temperature=config.get("temperature"),
@@ -141,6 +144,8 @@ class StandardLangChainLlmFactory(LangChainLlmFactory):
                             model_version=config.get("model_version"),
                             openai_api_type=self.get_value_or_env(config, "openai_api_type",
                                                                   "OPENAI_API_TYPE"),
+                            # Needed for token counting
+                            stream_options=stream_options,
                             callbacks=callbacks)
         elif chat_class == "anthropic":
             llm = ChatAnthropic(
