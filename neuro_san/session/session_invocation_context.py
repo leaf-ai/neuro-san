@@ -130,3 +130,13 @@ class SessionInvocationContext(InvocationContext):
         :return: The ContextTypeLlmFactory instance for the session
         """
         return self.llm_factory
+
+    def reset(self):
+        """
+        Resets the instance for a subsequent use for another exchange with the agent network.
+        """
+        # Origination needs to be reset so that origin information can match up
+        # with what is in the chat_context. If we do not reset this, then library calls
+        # to DirectAgentSession do not properly carry forward any memory of the conversation
+        # in subsequent interactions with the same network.
+        self.origination.reset()

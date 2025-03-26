@@ -174,6 +174,12 @@ class AsyncDirectAgentSession(AsyncAgentSession):
                 response_dict["response"] = message
                 yield response_dict
 
+    def reset(self):
+        """
+        Allows for re-use of the same instance for clients
+        """
+        self.invocation_context.reset()
+
     def close(self):
         """
         Tears down resources created

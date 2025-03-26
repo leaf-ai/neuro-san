@@ -37,7 +37,7 @@ class StreamingChatHandler(BaseRequestHandler):
         :param generator: async gRPC generator
         """
         # Set up headers for chunked response
-        self.set_header("Content-Type", "application/json")
+        self.set_header("Content-Type", "application/json-lines")
         self.set_header("Transfer-Encoding", "chunked")
         # Flush headers immediately
         await self.flush()
@@ -78,3 +78,11 @@ class StreamingChatHandler(BaseRequestHandler):
             # We are done with response stream:
             await self.finish()
             self.logger.info("Finish POST %s/streaming_chat %s", self.agent_name, request_id)
+        # We are done with response stream:
+        await self.finish()
+
+    async def options(self):
+        """
+        Implementation of OPTIONS request handler for streaming chat API call.
+        """
+        await self.flush()
