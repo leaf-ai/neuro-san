@@ -96,6 +96,18 @@ touch "${GENERATED_DIR}"/__init__.py
 ALL_PROTO_FILES=""
 ALL_PROTO_FILES="${ALL_PROTO_FILES} ${LOCAL_PROTO_FILES}"
 
+# Install google API related protobufs:
+GOOGLE_API_FILES="annotations.proto http.proto"
+GOOGLE_API_DIR="${TOP_LEVEL}"/"${GENERATED_DIR}"/google/api
+mkdir -p "${GOOGLE_API_DIR}"
+
+for PROTO_FILE in ${GOOGLE_API_FILES}
+do
+    curl --header "Accept: application/vnd.github.raw+json" \
+        --output "${GOOGLE_API_DIR}"/"${PROTO_FILE}" \
+    --location --show-error --silent --fail \
+    "https://api.github.com/repos/googleapis/googleapis/contents/google/api"/"${PROTO_FILE}"
+done
 
 # Generate the python files and make them happy w/rt Python 3
 for PROTO_FILE in ${ALL_PROTO_FILES}
@@ -120,13 +132,12 @@ do
 done
 
 # Now generate OpenAI specification for our service
-
 # Check that we have necessary protoc plug-in installed:
 "${TOP_LEVEL}"/neuro_san/api/scripts/check_openapi_plugin.sh
 
 # Generate OpenAPI service specification
 echo "generating OpenAPI specification for ${TOP_LEVEL}/${GENERATED_DIR}/agent.proto"
-python -m grpc_tools.protoc "${PROTO_PATH}" \
+python -m grpc_tools.protoc ${PROTO_PATH} \
     --openapi_out="${TOP_LEVEL}"/${GENERATED_DIR} "${TOP_LEVEL}"/${GENERATED_DIR}/agent.proto
 
 # OpenAPI plug-in always generates openapi.yaml,
