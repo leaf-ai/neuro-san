@@ -69,5 +69,22 @@ class ChatHistoryMessageProcessor(MessageProcessor):
 
     def transform_message(self, chat_message_dict: Dict[str, Any]) -> Dict[str, Any]:
         """
+        Prepare a message such that it can be re-ingested by the system nicely.
         """
-        return chat_message_dict
+        transformed: Dict[str, Any] = copy(chat_message_dict)
+        text: str = transformed.get("text")
+
+        # Braces are a problem for chat history being read back into the system
+        # if they are not properly escaped.
+
+        # First replace any escaped braces with normal braces
+        text = text.replace(r"\{", "{")
+        text = text.replace(r"\}", "}")
+
+        # Now replace normal braces with escaped braces.
+        # Idea is to catch everything pre-escaped or not
+        text = text.replace("{", r"\{")
+        text = text.replace("}", r"\}")
+
+        transformed["text"] = text
+        return transformed
