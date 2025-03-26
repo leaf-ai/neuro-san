@@ -63,6 +63,7 @@ from neuro_san.internals.run_context.langchain.langchain_run import LangChainRun
 from neuro_san.internals.run_context.langchain.langchain_token_counter import LangChainTokenCounter
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
+from neuro_san.toolbox.prebuilt_tools import PrebuiltTools
 
 
 MINUTES: float = 60.0
@@ -256,6 +257,8 @@ class LangChainRunContext(RunContext):
                 agent_message = AgentMessage(content=message)
                 await self.journal.write_message(agent_message)
                 self.logger.info(message)
+        elif (toolbox := agent_spec.get('toolbox')) and (tool_name := toolbox.get('tool_name')):
+            return PrebuiltTools(tool_name, **(toolbox.get('parameters') or {}))
         else:
             function_json = agent_spec.get("function")
 
