@@ -304,7 +304,7 @@ Have external tools that can be found in the local agent manifest use a service 
             with open(self.args.thinking_file, "w", encoding="utf-8") as thinking:
                 thinking.write("\n")
         else:
-            # Use the stem of the thinking file (i.e. no ".txt" extention) as the
+            # Use the stem of the thinking file (i.e. no ".txt" extension) as the
             # basis for the thinking directory
             self.thinking_dir, extension = os.path.splitext(self.args.thinking_file)
             _ = extension

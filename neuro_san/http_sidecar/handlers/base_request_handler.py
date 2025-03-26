@@ -12,14 +12,17 @@
 """
 See class comment for details
 """
-import json
-import logging
 from typing import Any
 from typing import Dict
 from typing import List
 from typing import Tuple
 
+import json
+import logging
+import os
+
 import grpc
+
 from tornado.web import RequestHandler
 
 from neuro_san.interfaces.async_agent_session import AsyncAgentSession
@@ -59,6 +62,11 @@ class BaseRequestHandler(RequestHandler):
         self.port: int = port
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata
         self.logger = logging.getLogger(self.__class__.__name__)
+
+        if os.environ.get("AGENT_ALLOW_CORS_HEADERS") is not None:
+            self.set_header("Access-Control-Allow-Origin", "*")
+            self.set_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+            self.set_header("Access-Control-Allow-Headers", "Content-Type, Transfer-Encoding")
 
     def get_metadata(self) -> Dict[str, Any]:
         """
