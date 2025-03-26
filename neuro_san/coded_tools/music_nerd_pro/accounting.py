@@ -38,16 +38,3 @@ class Accountant(CodedTool):
         print(f"{tool_name} response: ", tool_response)
         print(f"========== Done with {tool_name} ==========")
         return tool_response
-
-
-# Example usage:
-if __name__ == "__main__":
-    an_accountant = Accountant()
-    # Initial running cost
-    a_running_cost = 0.0
-    a_response_1 = an_accountant.invoke(args={"running_cost": a_running_cost}, sly_data={})
-    an_updated_running_cost = a_response_1["running_cost"]
-    print(f"Updated running cost: {an_updated_running_cost}")
-    a_response_2 = an_accountant.invoke(args={"running_cost": an_updated_running_cost}, sly_data={})
-    an_updated_running_cost = a_response_2["running_cost"]
-    print(f"Updated running cost: {an_updated_running_cost}")
