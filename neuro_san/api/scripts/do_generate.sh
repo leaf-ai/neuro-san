@@ -122,12 +122,12 @@ done
 # Now generate OpenAI specification for our service
 
 # Check that we have necessary protoc plug-in installed:
-${TOP_LEVEL}/neuro_san/api/scripts/check_openapi_plugin.sh
+"${TOP_LEVEL}"/neuro_san/api/scripts/check_openapi_plugin.sh
 
 # Generate OpenAPI service specification
 echo "generating OpenAPI specification for ${TOP_LEVEL}/${GENERATED_DIR}/agent.proto"
-python -m grpc_tools.protoc ${PROTO_PATH} \
-    --openapi_out=${TOP_LEVEL}/${GENERATED_DIR} ${TOP_LEVEL}/${GENERATED_DIR}/agent.proto
+python -m grpc_tools.protoc "${PROTO_PATH}" \
+    --openapi_out="${TOP_LEVEL}"/${GENERATED_DIR} "${TOP_LEVEL}"/${GENERATED_DIR}/agent.proto
 
 # OpenAPI plug-in always generates openapi.yaml,
 # so we rename it and convert to json format
