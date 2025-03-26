@@ -4,6 +4,9 @@
     "formatters": {
         "structured": {
             "format": "{\"message\": \"%(message)s\", \"user_id\": \"%(user_id)s\", \"Timestamp\": \"%(iso_timestamp)s\", \"source\": \"%(source)s\", \"message_type\": \"%(message_type)s\", \"request_id\": \"%(request_id)s\"}"
+        },
+        "http_structured": {
+            "format": "{\"message\": \"%(message)s\", \"Timestamp\": \"%(iso_timestamp)s\", \"source\": \"%(source)s\", \"message_type\": \"%(message_type)s\"}"
         }
     },
     "handlers": {
@@ -16,9 +19,22 @@
             "level": "INFO",
             "formatter": "structured",
             "stream": "ext://sys.stdout"
+        },
+        "http_console": {
+            "class": "logging.StreamHandler",
+            "level": "INFO",
+            "formatter": "http_structured",
+            "stream": "ext://sys.stdout"
         }
     },
     "loggers": {
+        "HttpSidecar": {
+            "level": "INFO",
+            "handlers": [
+                "http_console"
+            ],
+            "propagate": false
+        },
         "my_module": {
             "level": "INFO",
             "handlers": [

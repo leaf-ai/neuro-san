@@ -45,6 +45,8 @@ class BaseRequestHandler(RequestHandler):
         grpc.StatusCode.DEADLINE_EXCEEDED: 504
     }
 
+    HTTP_LOGGER_NAME: str = "HttpSidecar"
+
     request_id: int = 0
 
     # pylint: disable=attribute-defined-outside-init
@@ -60,7 +62,7 @@ class BaseRequestHandler(RequestHandler):
         self.agent_name: str = agent_name
         self.port: int = port
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = logging.getLogger(BaseRequestHandler.HTTP_LOGGER_NAME)
 
     def get_metadata(self) -> Dict[str, Any]:
         """
@@ -77,16 +79,17 @@ class BaseRequestHandler(RequestHandler):
 
     def get_request_id(self, metadata: Dict[str, str]) -> str:
         """
-        Get unique request id for logging purposes.
+        Construct request id string for logging purposes.
         :param metadata: incoming request metadata
         """
+        # Try to extract "user_id" from meta-data:
+        user_id: str = metadata.get("user_id", "None")
         # If request metadata has "request_id" already specified, use it:
         req_id: str = metadata.get("request_id", None)
-        if req_id:
-            return req_id
-        req_id = f"request-{BaseRequestHandler.request_id}"
-        BaseRequestHandler.request_id += 1
-        return req_id
+        if not req_id:
+            req_id = f"request-{BaseRequestHandler.request_id}"
+            BaseRequestHandler.request_id += 1
+        return f"user_id: {user_id} request_id: {req_id}"
 
     def get_agent_grpc_session(self, metadata: Dict[str, Any]) -> AsyncAgentSession:
         """

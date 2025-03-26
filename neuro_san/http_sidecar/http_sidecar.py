@@ -15,13 +15,15 @@ See class comment for details
 
 import copy
 import logging
+import pathlib
 from typing import Any, Dict, List
 
 from tornado.ioloop import IOLoop
 from tornado.web import Application
 
-from leaf_common.logging.logging_setup import LoggingSetup
+from leaf_server_common.logging.logging_setup import setup_logging
 
+from neuro_san.http_sidecar.handlers.base_request_handler import BaseRequestHandler
 from neuro_san.service.agent_server import DEFAULT_FORWARDED_REQUEST_METADATA
 
 from neuro_san.internals.utils.file_of_class import FileOfClass
@@ -48,6 +50,7 @@ class HttpSidecar:
         :param forwarded_request_metadata: A space-delimited list of http metadata request keys
                to forward to logs/other requests
         """
+        self.server_name_for_logs: str = "Http Server"
         self.port = port
         self.http_port = http_port
         self.agents = copy.deepcopy(agents)
@@ -58,10 +61,23 @@ class HttpSidecar:
         """
         Setup logging from configuration file.
         """
-        log_config = FileOfClass(__file__).get_file_in_basis("logging.json")
-        log_setup: LoggingSetup =\
-            LoggingSetup(default_log_config_file=log_config, default_log_level="INFO")
-        log_setup.setup()
+
+        # Need to initialize the forwarded metadata default values
+        extra_logging_defaults: Dict[str, str] = {
+            "source": self.server_name_for_logs
+        }
+        if len(self.forwarded_request_metadata) > 0:
+            for key in self.forwarded_request_metadata:
+                extra_logging_defaults[key] = "None"
+
+        current_dir: str = pathlib.Path(__file__).parent.resolve()
+        setup_logging(self.server_name_for_logs, current_dir,
+                      'AGENT_SERVICE_LOG_JSON',
+                      'AGENT_SERVICE_LOG_LEVEL',
+                      extra_logging_defaults)
+
+        # This module within openai library can be quite chatty w/rt http requests
+        logging.getLogger("httpx").setLevel(logging.WARNING)
 
     def __call__(self):
         """
@@ -69,7 +85,11 @@ class HttpSidecar:
         to actually start serving requests.
         """
         self.setup_logging()
-        self.logger = logging.getLogger(self.__class__.__name__)
+        # For our Http server, we have separate logging setup,
+        # because things like "user_id" and "request_id"
+        # can only be extracted and used on per-request basis.
+        # Async Http server is single-threaded.
+        self.logger = logging.getLogger(BaseRequestHandler.HTTP_LOGGER_NAME)
 
         app = self.make_app()
         app.listen(self.http_port)

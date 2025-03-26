@@ -56,8 +56,8 @@ class StreamingChatHandler(BaseRequestHandler):
         Implementation of POST request handler for streaming chat API call.
         """
         metadata: Dict[str, Any] = self.get_metadata()
-        request_id: int = self.get_request_id(metadata)
-        self.logger.info("Start POST %s/streaming_chat request [%s]", self.agent_name, request_id)
+        request_id: str = self.get_request_id(metadata)
+        self.logger.info("Start POST %s/streaming_chat %s", self.agent_name, request_id)
         try:
             # Parse JSON body
             data = json.loads(self.request.body)
@@ -77,4 +77,4 @@ class StreamingChatHandler(BaseRequestHandler):
             await self.flush()
             # We are done with response stream:
             await self.finish()
-            self.logger.info("Finish POST %s/streaming_chat request [%s]", self.agent_name, request_id)
+            self.logger.info("Finish POST %s/streaming_chat %s", self.agent_name, request_id)
