@@ -137,6 +137,7 @@ done
 
 # Generate OpenAPI service specification
 echo "generating OpenAPI specification for ${TOP_LEVEL}/${GENERATED_DIR}/agent.proto"
+# shellcheck disable=SC2086    # PROTO_PATH is compilation of cmd line args
 python -m grpc_tools.protoc ${PROTO_PATH} \
     --openapi_out="${TOP_LEVEL}"/${GENERATED_DIR} "${TOP_LEVEL}"/${GENERATED_DIR}/agent.proto
 
