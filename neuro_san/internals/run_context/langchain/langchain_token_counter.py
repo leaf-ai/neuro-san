@@ -184,8 +184,8 @@ class LangChainTokenCounter:
             # Notes:
             #   * ChatOpenAI needs to have stream_usage=True configured
             #     in order to get good token info back reliably.
-            #   * AzureChatOpenAI needs to have stream_options.include_usage=True configured
-            #     in order to get good token info back reliably.
+            #   * AzureChatOpenAI needs to have model_kwargs.stream_options.include_usage=True
+            #     configured in order to get good token info back reliably.
             return get_openai_callback
 
         if isinstance(llm, ChatAnthropic):
