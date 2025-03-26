@@ -1,5 +1,6 @@
 from typing import Any
 from typing import Dict
+from typing import Union
 
 from neuro_san.interfaces.coded_tool import CodedTool
 
@@ -38,3 +39,9 @@ class Accountant(CodedTool):
         print(f"{tool_name} response: ", tool_response)
         print(f"========== Done with {tool_name} ==========")
         return tool_response
+
+    async def async_invoke(self, args: Dict[str, Any], sly_data: Dict[str, Any]) -> Union[Dict[str, Any], str]:
+        """
+        Delegates to the synchronous invoke method because it's quick, non-blocking.
+        """
+        return self.invoke(args, sly_data)
