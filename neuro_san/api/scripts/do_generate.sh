@@ -135,7 +135,7 @@ python -m grpc_tools.protoc ${PROTO_PATH} \
 OPENAPI_RESULT=${TOP_LEVEL}/${GENERATED_DIR}/openapi.yaml
 REQUIRED_RESULT=${TOP_LEVEL}/${GENERATED_DIR}/agent_service.json
 
-${TOP_LEVEL}/neuro_san/api/scripts/convert_yaml_to_json.sh ${OPENAPI_RESULT} ${REQUIRED_RESULT}
+"${TOP_LEVEL}"/neuro_san/api/scripts/convert_yaml_to_json.sh "${OPENAPI_RESULT}" "${REQUIRED_RESULT}"
 
 echo "generated output: ${REQUIRED_RESULT}"
 
