@@ -102,8 +102,10 @@ class StandardLangChainLlmFactory(LangChainLlmFactory):
                             stream_usage=True,
                             callbacks=callbacks)
         elif chat_class == "azure-openai":
-            stream_options: Dict[str, Any] = {
-                "include_usage": True
+            model_kwargs: Dict[str, Any] = {
+                "stream_options": {
+                    "include_usage": True
+                }
             }
             llm = AzureChatOpenAI(
                             model_name=model_name,
@@ -145,7 +147,7 @@ class StandardLangChainLlmFactory(LangChainLlmFactory):
                             openai_api_type=self.get_value_or_env(config, "openai_api_type",
                                                                   "OPENAI_API_TYPE"),
                             # Needed for token counting
-                            stream_options=stream_options,
+                            model_kwargs=model_kwargs,
                             callbacks=callbacks)
         elif chat_class == "anthropic":
             llm = ChatAnthropic(
