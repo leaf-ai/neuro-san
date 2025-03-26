@@ -4,7 +4,7 @@ from typing import Dict
 from neuro_san.interfaces.coded_tool import CodedTool
 
 
-class AccountingAPI(CodedTool):
+class Accountant(CodedTool):
     """
     A tool that updates a running cost each time it is called.
     """
@@ -42,7 +42,7 @@ class AccountingAPI(CodedTool):
 
 # Example usage:
 if __name__ == "__main__":
-    an_accountant = AccountingAPI()
+    an_accountant = Accountant()
     # Initial running cost
     a_running_cost = 0.0
     a_response_1 = an_accountant.invoke(args={"running_cost": a_running_cost}, sly_data={})
