@@ -61,8 +61,7 @@ class AgentServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def StreamingChat(self, request, context):
-        """Unidirectional streaming method which would supercede Chat() and Logs() above.
-        Most important semantics of the streaming:
+        """Most important semantics of the streaming:
         1) The "answer" to a query of any agent network is the *last* streamed
         AI message whose origin list is of length 1 - this indicates it is from
         the FrontMan of the agent network.
