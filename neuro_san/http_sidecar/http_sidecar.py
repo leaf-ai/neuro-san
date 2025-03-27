@@ -61,7 +61,7 @@ class HttpSidecar:
         Setup logging from configuration file.
         """
 
-        # Need to initialize the forwarded metadata default values
+        # Logging data common for all incoming requests:
         extra_logging_defaults: Dict[str, str] = {
             "source": self.server_name_for_logs
         }
