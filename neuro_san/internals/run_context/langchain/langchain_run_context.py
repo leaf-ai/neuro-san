@@ -234,6 +234,7 @@ class LangChainRunContext(RunContext):
 
         # Check our own local factory. Most tools live in the neighborhood.
         agent_spec: Dict[str, Any] = factory.get_agent_tool_spec(name)
+        prebuilt_tool: str = agent_spec.get('prebuilt_tool')
         if agent_spec is None:
 
             # See if the agent name given could reference an external agent.
@@ -257,8 +258,9 @@ class LangChainRunContext(RunContext):
                 agent_message = AgentMessage(content=message)
                 await self.journal.write_message(agent_message)
                 self.logger.info(message)
-        elif (toolbox := agent_spec.get('toolbox')) and (tool_name := toolbox.get('tool_name')):
-            return PrebuiltBaseToolFactory(tool_name, **(toolbox.get('parameters') or {}))
+        elif prebuilt_tool:
+            prebuilt_tool_factory = PrebuiltBaseToolFactory(prebuilt_tool, agent_spec.get('args'))
+            return prebuilt_tool_factory.get_agent_tool()
         else:
             function_json = agent_spec.get("function")
 
