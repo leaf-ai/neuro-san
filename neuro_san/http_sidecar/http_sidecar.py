@@ -26,7 +26,6 @@ from leaf_server_common.logging.logging_setup import setup_logging
 from neuro_san.http_sidecar.handlers.base_request_handler import BaseRequestHandler
 from neuro_san.service.agent_server import DEFAULT_FORWARDED_REQUEST_METADATA
 
-from neuro_san.internals.utils.file_of_class import FileOfClass
 from neuro_san.http_sidecar.handlers.health_check_handler import HealthCheckHandler
 from neuro_san.http_sidecar.handlers.connectivity_handler import ConnectivityHandler
 from neuro_san.http_sidecar.handlers.function_handler import FunctionHandler
