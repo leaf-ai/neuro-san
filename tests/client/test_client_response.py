@@ -59,17 +59,14 @@ class TestClientResponse(unittest.TestCase):
             self.agent_process = TestClientResponse.get_agent_cli_subprocess(TestClientResponse.agent,
                                                                              input_file,
                                                                              response_file.name)
-            try:
-                print(f"agent: {TestClientResponse.agent}")
-                print(f"input_file: {input_file}")
-                print(f"response_file: {response_file.name}")
-                with open(response_file.name, "r", encoding="utf-8") as fp:
-                    response = fp.read()
-                    self.assertGreater(len(response), 0, "Response file is empty!")
-                    self.assertIn(response_keyword.lower(), response.lower(),
-                                  f"response_keyword {response_keyword} not in response {response}")
-            finally:
-                response_file.close()
+            print(f"agent: {TestClientResponse.agent}")
+            print(f"input_file: {input_file}")
+            print(f"response_file: {response_file.name}")
+            with open(response_file.name, "r", encoding="utf-8") as fp:
+                response = fp.read()
+                self.assertGreater(len(response), 0, "Response file is empty!")
+                self.assertIn(response_keyword.lower(), response.lower(),
+                              f"response_keyword {response_keyword} not in response {response}")
 
 
 if __name__ == "__main__":
