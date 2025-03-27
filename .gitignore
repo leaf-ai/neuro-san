@@ -32,3 +32,5 @@ site/
 #       exported via GitHub zip/tar.gz and wheel file mechanisms.
 # **/grpc/generated/*
 
+# macOS folder metadata
+.DS_Store
