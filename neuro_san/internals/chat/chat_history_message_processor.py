@@ -94,7 +94,7 @@ class ChatHistoryMessageProcessor(MessageProcessor):
         # JSON spec does not allow control characters in strings and newlines in particular
         # can be a problem for http clients that expect one full JSON message per line.
         # Replace any lurking newlines with the 2 raw characters \ and n.
-        text = text.replace("\n", r"\n")
+        # DEF - for the future.
 
         transformed["text"] = text
         return transformed
