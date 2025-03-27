@@ -17,11 +17,8 @@ fi
 
 echo "🔄 Converting $INPUT → $OUTPUT..."
 
-if command -v yq &>/dev/null; then
-  echo "✅ Using yq..."
-  yq -o=json "$INPUT" > "$OUTPUT"
-elif command -v python3 &>/dev/null; then
-  echo "⚠️ yq not found — falling back to Python..."
+if command -v python3 &>/dev/null; then
+  echo "Using Python..."
   python3 - <<EOF
 import sys, json, yaml
 with open("$INPUT") as f:
@@ -30,7 +27,7 @@ with open("$OUTPUT", "w") as f:
     json.dump(data, f, indent=2)
 EOF
 else
-  echo "❌ Neither 'yq' nor 'python3' is available. Please install one of them."
+  echo "❌ 'python3' is not available. Please install it."
   exit 1
 fi
 

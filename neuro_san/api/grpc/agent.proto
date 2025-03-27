@@ -21,7 +21,7 @@ syntax = "proto3";
 package dev.cognizant_ai.neuro_san.api.grpc.agent;
 
 import "google/protobuf/struct.proto";
-import "neuro_san/api/grpc/google/api/annotations.proto";
+import "google/api/annotations.proto";
 
 import "neuro_san/api/grpc/chat.proto";
 
@@ -41,7 +41,6 @@ service AgentService {
         };
     }
 
-    // Unidirectional streaming method which would supercede Chat() and Logs() above.
     // Most important semantics of the streaming:
     //  1) The "answer" to a query of any agent network is the *last* streamed
     //     AI message whose origin list is of length 1 - this indicates it is from
