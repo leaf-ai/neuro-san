@@ -83,13 +83,17 @@ class ChatHistoryMessageProcessor(MessageProcessor):
         # if they are not properly escaped.
 
         # First replace any escaped braces with normal braces
-        text = text.replace(r"{{", "{")
-        text = text.replace(r"}}", "}")
+        text = text.replace("{{", "{")
+        text = text.replace("}}", "}")
 
         # Now replace normal braces with escaped braces.
         # Idea is to catch everything pre-escaped or not
         text = text.replace("{", "{{")
         text = text.replace("}", "}}")
+
+        # Newlines can be a problem for http clients that expect one full JSON message per line.
+        text = text.replace(r"\\n", r"\n")
+        text = text.replace(r"\n", r"\\n")
 
         transformed["text"] = text
         return transformed
