@@ -50,26 +50,26 @@ class TestClientResponse(unittest.TestCase):
         """
         Query an agent network and assert the response contains the expected value
         """
-        input_file = os.path.join(INPUT_FILE_DIR, "beatles_prompt.txt")
         # To inspect the response_file (for debugging prupose), pass
         # "delete=False" argument to prevent temp file deletion
-        response_file = tempfile.NamedTemporaryFile(dir=INPUT_FILE_DIR, prefix="tmp_", suffix=".txt")
-        response_keyword = "Beatles"
+        with tempfile.NamedTemporaryFile(dir=INPUT_FILE_DIR, prefix="tmp_", suffix=".txt") as response_file:
+            input_file = os.path.join(INPUT_FILE_DIR, "beatles_prompt.txt")
+            response_keyword = "Beatles"
 
-        self.agent_process = TestClientResponse.get_agent_cli_subprocess(TestClientResponse.agent,
-                                                                         input_file,
-                                                                         response_file.name)
-        try:
-            print(f"agent: {TestClientResponse.agent}")
-            print(f"input_file: {input_file}")
-            print(f"response_file: {response_file.name}")
-            with open(response_file.name, "r", encoding="utf-8") as fp:
-                response = fp.read()
-                self.assertGreater(len(response), 0, "Response file is empty!")
-                self.assertIn(response_keyword.lower(), response.lower(),
-                              f"response_keyword {response_keyword} not in response {response}")
-        finally:
-            response_file.close()
+            self.agent_process = TestClientResponse.get_agent_cli_subprocess(TestClientResponse.agent,
+                                                                             input_file,
+                                                                             response_file.name)
+            try:
+                print(f"agent: {TestClientResponse.agent}")
+                print(f"input_file: {input_file}")
+                print(f"response_file: {response_file.name}")
+                with open(response_file.name, "r", encoding="utf-8") as fp:
+                    response = fp.read()
+                    self.assertGreater(len(response), 0, "Response file is empty!")
+                    self.assertIn(response_keyword.lower(), response.lower(),
+                                  f"response_keyword {response_keyword} not in response {response}")
+            finally:
+                response_file.close()
 
 
 if __name__ == "__main__":
