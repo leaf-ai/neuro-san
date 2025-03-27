@@ -19,16 +19,24 @@ class TestClientResponse(unittest.TestCase):
     response_file = tempfile.NamedTemporaryFile(dir=input_file_dir, prefix="tmp_beatles_response_", suffix=".txt")
     response_keyword = "Beatles"
 
-    def setUp(self):
-        self.agent_process = subprocess.Popen(["python3", "-m", "neuro_san.client.agent_cli",
-                                               "--connection", "direct",
-                                               "--agent", TestClientResponse.agent,
-                                               "--first_prompt_file", TestClientResponse.input_file,
-                                               "--response_output_file", TestClientResponse.response_file.name,
-                                               "--one_shot"
-                                               ])
+    @staticmethod
+    def get_agent_cli_subprocess(agent, input_file, response_file):
+        agent_cli_subprocess = subprocess.Popen(["python3", "-m", "neuro_san.client.agent_cli",
+                                                 "--connection", "direct",
+                                                 "--agent", agent,
+                                                 "--first_prompt_file", input_file,
+                                                 "--response_output_file", response_file,
+                                                 "--one_shot"
+                                                 ])
         # Wait for the server to start
         time.sleep(15)
+
+        return agent_cli_subprocess
+
+    def setUp(self):
+        self.agent_process = TestClientResponse.get_agent_cli_subprocess(TestClientResponse.agent,
+                                                                         TestClientResponse.input_file,
+                                                                         TestClientResponse.response_file.name)
 
     def tearDown(self):
         if self.agent_process:
