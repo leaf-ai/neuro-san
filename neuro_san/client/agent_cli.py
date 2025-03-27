@@ -52,6 +52,7 @@ class AgentCli:
         self.thinking_dir: str = None
 
     # pylint: disable=too-many-branches
+    # pylint: disable=too-many-locals
     def main(self):
         """
         Main entry point for command line user interaction
@@ -152,6 +153,11 @@ Some suggestions:
 
             state["user_input"] = user_input
             state = input_processor.process_once(state)
+
+            if self.args.response_output_file is not None:
+                with open(self.args.response_output_file, 'w', encoding="utf-8") as output_file:
+                    output_file.write(state["last_chat_response"])
+                    output_file.write("\n")
 
     def parse_args(self):
         """
@@ -273,6 +279,8 @@ Have external tools that can be found in the local agent manifest use a service 
                                 "internal agent chatter in separate files. "
                                 "This is a separate text stream from the user/assistant chat. "
                                 "Only available when streaming (which is the default).")
+        group.add_argument("--response_output_file", type=str,
+                           help="File that captures the response to the user input")
         self.arg_groups[group.title] = group
 
     def open_session(self):
