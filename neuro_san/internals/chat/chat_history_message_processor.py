@@ -78,13 +78,13 @@ class ChatHistoryMessageProcessor(MessageProcessor):
         # if they are not properly escaped.
 
         # First replace any escaped braces with normal braces
-        text = text.replace(r"\{", "{")
-        text = text.replace(r"\}", "}")
+        text = text.replace(r"{{", "{")
+        text = text.replace(r"}}", "}")
 
         # Now replace normal braces with escaped braces.
         # Idea is to catch everything pre-escaped or not
-        text = text.replace("{", r"\{")
-        text = text.replace("}", r"\}")
+        text = text.replace("{", r"{{")
+        text = text.replace("}", r"}}")
 
         transformed["text"] = text
         return transformed
