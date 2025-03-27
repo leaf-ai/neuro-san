@@ -34,3 +34,6 @@ site/
 
 # macOS folder metadata
 .DS_Store
+
+# Temporary integrtion test files
+tmp_*
