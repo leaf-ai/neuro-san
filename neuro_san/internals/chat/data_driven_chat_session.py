@@ -20,6 +20,7 @@ import traceback
 from openai import BadRequestError
 
 from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
+from neuro_san.internals.chat.chat_history_message_processor import ChatHistoryMessageProcessor
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.graph.tools.front_man import FrontMan
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
@@ -28,6 +29,7 @@ from neuro_san.internals.messages.agent_framework_message import AgentFrameworkM
 from neuro_san.internals.messages.message_utils import convert_to_chat_message
 from neuro_san.internals.run_context.factory.run_context_factory import RunContextFactory
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
+from neuro_san.message_processing.message_processor import MessageProcessor
 
 
 # pylint: disable=too-many-instance-attributes
@@ -189,9 +191,12 @@ class DataDrivenChatSession:
                 the conversation such that it could be taken up on a different
                 server instance
         """
+        processor: MessageProcessor = ChatHistoryMessageProcessor()
+        processor.process_messages(chat_message_history)
+
         chat_history: Dict[str, Any] = {
             "origin": self.front_man.get_origin(),
-            "messages": chat_message_history
+            "messages": processor.get_message_history()
         }
 
         # For now, we only send the front man's chat history, as that is the
