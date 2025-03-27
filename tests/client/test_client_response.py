@@ -4,6 +4,8 @@ import tempfile
 import time
 import unittest
 
+import pytest
+
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 FIXTURES_PATH = os.path.join(ROOT_DIR, "..", "fixtures")
 
@@ -33,6 +35,7 @@ class TestClientResponse(unittest.TestCase):
             self.agent_process.terminate()
             self.agent_process.wait()
 
+    @pytest.mark.integration
     def test_beatles(self):
         try:
             print(f"agent: {TestClientResponse.agent}")
