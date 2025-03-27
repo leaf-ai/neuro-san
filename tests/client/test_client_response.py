@@ -13,8 +13,9 @@ class TestClientResponse(unittest.TestCase):
     agent = "music_nerd_pro"
     input_file_dir = os.path.join(FIXTURES_PATH, "client")
     input_file = os.path.join(input_file_dir, "beatles_prompt.txt")
-    response_file = tempfile.NamedTemporaryFile(dir=input_file_dir,
-                                                prefix="tmp_beatles_response_", suffix=".txt", delete=False)
+    # To inspect the response_file (for debugging prupose), pass "delete=False" argument to prevent temp file deletion
+    response_file = tempfile.NamedTemporaryFile(dir=input_file_dir, prefix="tmp_beatles_response_", suffix=".txt")
+    response_keyword = "Beatles"
 
     def setUp(self):
         self.agent_process = subprocess.Popen(["python3", "-m", "neuro_san.client.agent_cli",
@@ -25,7 +26,7 @@ class TestClientResponse(unittest.TestCase):
                                                "--one_shot"
                                                ])
         # Wait for the server to start
-        time.sleep(10)
+        time.sleep(15)
 
     def tearDown(self):
         if self.agent_process:
@@ -39,7 +40,9 @@ class TestClientResponse(unittest.TestCase):
             print(f"response_file: {TestClientResponse.response_file.name}")
             with open(TestClientResponse.response_file.name, "r") as fp:
                 response = fp.read()
-                self.assertGreater(len(response), 0)
+                self.assertGreater(len(response), 0, "Response file is empty!")
+                self.assertIn(TestClientResponse.response_keyword.lower(), response.lower(),
+                              f"response_keyword {TestClientResponse.response_keyword} not in response {response}")
         finally:
             TestClientResponse.response_file.close()
 
