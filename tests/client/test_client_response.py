@@ -77,7 +77,7 @@ class TestMusicNerdProClient(unittest.TestCase):
 
             try:
                 agent_process = TestMusicNerdProClient.get_agent_cli_subprocess(TestMusicNerdProClient.agent,
-                                                                            input_file, response_file.name)
+                                                                                input_file, response_file.name)
                 self.assert_response(response_file, response_keyword)
             finally:
                 TestMusicNerdProClient.destruct_agent_cli_subprocess(agent_process)
