@@ -51,6 +51,18 @@ class TestClientResponse(unittest.TestCase):
             agent_process.terminate()
             agent_process.wait()
 
+    def assert_response(self, response_file, response_keyword):
+        """
+        :param response_file: file containing the agent network response to prompt
+        :param response_keyword: the keyword we expect to be in the response file
+        :return: None
+        """
+        with open(response_file.name, "r", encoding="utf-8") as fp:
+            response = fp.read()
+            self.assertGreater(len(response), 0, "Response file is empty!")
+            self.assertIn(response_keyword.lower(), response.lower(),
+                          f"response_keyword {response_keyword} not in response {response}")
+
     @pytest.mark.integration
     def test_beatles(self):
         """
@@ -65,13 +77,8 @@ class TestClientResponse(unittest.TestCase):
 
             try:
                 agent_process = TestClientResponse.get_agent_cli_subprocess(TestClientResponse.agent,
-                                                                            input_file,
-                                                                            response_file.name)
-                with open(response_file.name, "r", encoding="utf-8") as fp:
-                    response = fp.read()
-                    self.assertGreater(len(response), 0, "Response file is empty!")
-                    self.assertIn(response_keyword.lower(), response.lower(),
-                                  f"response_keyword {response_keyword} not in response {response}")
+                                                                            input_file, response_file.name)
+                self.assert_response(response_file, response_keyword)
             finally:
                 TestClientResponse.destruct_agent_cli_subprocess(agent_process)
 
