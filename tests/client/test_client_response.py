@@ -7,7 +7,8 @@ import unittest
 import pytest
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-FIXTURES_PATH = os.path.join(ROOT_DIR, "..", "fixtures")
+FIXTURES_DIR = os.path.join(ROOT_DIR, "..", "fixtures")
+INPUT_FILE_DIR = os.path.join(FIXTURES_DIR, "client")
 
 
 class TestClientResponse(unittest.TestCase):
@@ -17,11 +18,6 @@ class TestClientResponse(unittest.TestCase):
     """
 
     agent = "music_nerd_pro"
-    input_file_dir = os.path.join(FIXTURES_PATH, "client")
-    input_file = os.path.join(input_file_dir, "beatles_prompt.txt")
-    # To inspect the response_file (for debugging prupose), pass "delete=False" argument to prevent temp file deletion
-    response_file = tempfile.NamedTemporaryFile(dir=input_file_dir, prefix="tmp_beatles_response_", suffix=".txt")
-    response_keyword = "Beatles"
 
     @staticmethod
     def get_agent_cli_subprocess(agent, input_file, response_file):
@@ -44,11 +40,6 @@ class TestClientResponse(unittest.TestCase):
 
         return agent_cli_subprocess
 
-    def setUp(self):
-        self.agent_process = TestClientResponse.get_agent_cli_subprocess(TestClientResponse.agent,
-                                                                         TestClientResponse.input_file,
-                                                                         TestClientResponse.response_file.name)
-
     def tearDown(self):
         if self.agent_process:
             self.agent_process.terminate()
@@ -59,17 +50,26 @@ class TestClientResponse(unittest.TestCase):
         """
         Query an agent network and assert the response contains the expected value
         """
+        input_file = os.path.join(INPUT_FILE_DIR, "beatles_prompt.txt")
+        # To inspect the response_file (for debugging prupose), pass
+        # "delete=False" argument to prevent temp file deletion
+        response_file = tempfile.NamedTemporaryFile(dir=INPUT_FILE_DIR, prefix="tmp_", suffix=".txt")
+        response_keyword = "Beatles"
+
+        self.agent_process = TestClientResponse.get_agent_cli_subprocess(TestClientResponse.agent,
+                                                                         input_file,
+                                                                         response_file.name)
         try:
             print(f"agent: {TestClientResponse.agent}")
-            print(f"input_file: {TestClientResponse.input_file}")
-            print(f"response_file: {TestClientResponse.response_file.name}")
-            with open(TestClientResponse.response_file.name, "r", encoding="utf-8") as fp:
+            print(f"input_file: {input_file}")
+            print(f"response_file: {response_file.name}")
+            with open(response_file.name, "r", encoding="utf-8") as fp:
                 response = fp.read()
                 self.assertGreater(len(response), 0, "Response file is empty!")
-                self.assertIn(TestClientResponse.response_keyword.lower(), response.lower(),
-                              f"response_keyword {TestClientResponse.response_keyword} not in response {response}")
+                self.assertIn(response_keyword.lower(), response.lower(),
+                              f"response_keyword {response_keyword} not in response {response}")
         finally:
-            TestClientResponse.response_file.close()
+            response_file.close()
 
 
 if __name__ == "__main__":
