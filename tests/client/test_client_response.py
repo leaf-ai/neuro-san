@@ -28,6 +28,7 @@ class TestClientResponse(unittest.TestCase):
 
         :return: a Popen object representing the running process
         """
+        # pylint: disable=consider-using-with
         agent_cli_subprocess = subprocess.Popen(["python3", "-m", "neuro_san.client.agent_cli",
                                                  "--connection", "direct",
                                                  "--agent", agent,
@@ -40,11 +41,6 @@ class TestClientResponse(unittest.TestCase):
 
         return agent_cli_subprocess
 
-    def tearDown(self):
-        if self.agent_process:
-            self.agent_process.terminate()
-            self.agent_process.wait()
-
     @pytest.mark.integration
     def test_beatles(self):
         """
@@ -56,17 +52,22 @@ class TestClientResponse(unittest.TestCase):
             input_file = os.path.join(INPUT_FILE_DIR, "beatles_prompt.txt")
             response_keyword = "Beatles"
 
-            self.agent_process = TestClientResponse.get_agent_cli_subprocess(TestClientResponse.agent,
-                                                                             input_file,
-                                                                             response_file.name)
-            print(f"agent: {TestClientResponse.agent}")
-            print(f"input_file: {input_file}")
-            print(f"response_file: {response_file.name}")
-            with open(response_file.name, "r", encoding="utf-8") as fp:
-                response = fp.read()
-                self.assertGreater(len(response), 0, "Response file is empty!")
-                self.assertIn(response_keyword.lower(), response.lower(),
-                              f"response_keyword {response_keyword} not in response {response}")
+            try:
+                agent_process = TestClientResponse.get_agent_cli_subprocess(TestClientResponse.agent,
+                                                                            input_file,
+                                                                            response_file.name)
+                print(f"agent: {TestClientResponse.agent}")
+                print(f"input_file: {input_file}")
+                print(f"response_file: {response_file.name}")
+                with open(response_file.name, "r", encoding="utf-8") as fp:
+                    response = fp.read()
+                    self.assertGreater(len(response), 0, "Response file is empty!")
+                    self.assertIn(response_keyword.lower(), response.lower(),
+                                  f"response_keyword {response_keyword} not in response {response}")
+            finally:
+                if agent_process:
+                    agent_process.terminate()
+                    agent_process.wait()
 
 
 if __name__ == "__main__":
