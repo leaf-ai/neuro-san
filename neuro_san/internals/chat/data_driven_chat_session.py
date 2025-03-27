@@ -192,8 +192,7 @@ class DataDrivenChatSession:
                 server instance
         """
         processor: MessageProcessor = ChatHistoryMessageProcessor()
-        for message in chat_message_history:
-            processor.process_message(message, message.get("type"))
+        processor.process_messages(chat_message_history)
 
         chat_history: Dict[str, Any] = {
             "origin": self.front_man.get_origin(),

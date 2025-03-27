@@ -49,7 +49,7 @@ class ChatHistoryMessageProcessor(MessageProcessor):
             return
 
         transformed_message_dict: Dict[str, Any] = chat_message_dict
-        if not self.saw_first_system and message_type is ChatMessageType.SYSTEM:
+        if not self.saw_first_system and message_type == ChatMessageType.SYSTEM:
             transformed_message_dict = self.redact_instructions(chat_message_dict)
             self.saw_first_system = True
         else:

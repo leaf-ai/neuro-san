@@ -11,6 +11,7 @@
 # END COPYRIGHT
 from typing import Any
 from typing import Dict
+from typing import List
 
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
 
@@ -53,3 +54,21 @@ class MessageProcessor:
         :param message_type: The ChatMessageType of the chat_message_dictionary to process.
         """
         self.process_message(chat_message_dict, message_type)
+
+    def process_messages(self, chat_message_dicts: List[Dict[str, Any]]):
+        """
+        Convenience method for processing lists of messages.
+        :param chat_message_dicts: The messages to process.
+        """
+        for message in chat_message_dicts:
+            message_type: ChatMessageType = message.get("type")
+            self.process_message(message, message_type)
+
+    async def async_process_messages(self, chat_message_dicts: List[Dict[str, Any]]):
+        """
+        Convenience method for asynchronouslt processing lists of messages.
+        :param chat_message_dicts: The messages to process.
+        """
+        for message in chat_message_dicts:
+            message_type: ChatMessageType = message.get("type")
+            await self.async_process_message(message, message_type)
