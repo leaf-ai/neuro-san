@@ -50,10 +50,14 @@ class ChatHistoryMessageProcessor(MessageProcessor):
 
         transformed_message_dict: Dict[str, Any] = chat_message_dict
         if not self.saw_first_system and message_type == ChatMessageType.SYSTEM:
+            # Redact the first SYSTEM message we see. This has the front-man prompt in it,
+            # and when read in, we replace it with what the agent has anyway to prevent
+            # a prompting takeover.
             transformed_message_dict = self.redact_instructions(chat_message_dict)
             self.saw_first_system = True
         else:
-            transformed_message_dict = self.transform_message(chat_message_dict)
+            # Transform the message with properly escaped text.
+            transformed_message_dict = self.escape_message(chat_message_dict)
 
         self.message_history.append(transformed_message_dict)
 
@@ -67,9 +71,10 @@ class ChatHistoryMessageProcessor(MessageProcessor):
         redacted["text"] = "<redacted>"
         return redacted
 
-    def transform_message(self, chat_message_dict: Dict[str, Any]) -> Dict[str, Any]:
+    def escape_message(self, chat_message_dict: Dict[str, Any]) -> Dict[str, Any]:
         """
         Prepare a message such that it can be re-ingested by the system nicely.
+        This means properly escaping any text that is sent.
         """
         transformed: Dict[str, Any] = copy(chat_message_dict)
         text: str = transformed.get("text")
@@ -83,8 +88,8 @@ class ChatHistoryMessageProcessor(MessageProcessor):
 
         # Now replace normal braces with escaped braces.
         # Idea is to catch everything pre-escaped or not
-        text = text.replace("{", r"{{")
-        text = text.replace("}", r"}}")
+        text = text.replace("{", "{{")
+        text = text.replace("}", "}}")
 
         transformed["text"] = text
         return transformed
