@@ -65,9 +65,6 @@ class HttpSidecar:
         extra_logging_defaults: Dict[str, str] = {
             "source": self.server_name_for_logs
         }
-        if len(self.forwarded_request_metadata) > 0:
-            for key in self.forwarded_request_metadata:
-                extra_logging_defaults[key] = "None"
 
         current_dir: str = pathlib.Path(__file__).parent.resolve()
         setup_logging(self.server_name_for_logs, current_dir,
