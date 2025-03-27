@@ -5,7 +5,7 @@ from langchain_community.agent_toolkits.openapi.toolkit import RequestsToolkit
 from langchain_community.utilities.requests import TextRequestsWrapper
 
 
-class PrebuiltTools:
+class PrebuiltBaseToolFactory:
     """
     A factory class that returns prebuilt tools based on the provided tool name.
 
