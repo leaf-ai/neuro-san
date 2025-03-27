@@ -92,8 +92,8 @@ class ChatHistoryMessageProcessor(MessageProcessor):
         text = text.replace("}", "}}")
 
         # Newlines can be a problem for http clients that expect one full JSON message per line.
-        text = text.replace(r"\\n", r"\n")
-        text = text.replace(r"\n", r"\\n")
+        text = text.replace(r"\n", "\n")
+        text = text.replace("\n", r"\n")
 
         transformed["text"] = text
         return transformed
