@@ -11,7 +11,7 @@ FIXTURES_DIR = os.path.join(ROOT_DIR, "..", "fixtures")
 INPUT_FILE_DIR = os.path.join(FIXTURES_DIR, "client")
 
 
-class TestClientResponse(unittest.TestCase):
+class TestMusicNerdProClient(unittest.TestCase):
     """
     This class allows you to pass a prompt specified in a file to an agent network
     and get the response in another file. This helps with integration testing
@@ -76,11 +76,11 @@ class TestClientResponse(unittest.TestCase):
             agent_process = None
 
             try:
-                agent_process = TestClientResponse.get_agent_cli_subprocess(TestClientResponse.agent,
+                agent_process = TestMusicNerdProClient.get_agent_cli_subprocess(TestMusicNerdProClient.agent,
                                                                             input_file, response_file.name)
                 self.assert_response(response_file, response_keyword)
             finally:
-                TestClientResponse.destruct_agent_cli_subprocess(agent_process)
+                TestMusicNerdProClient.destruct_agent_cli_subprocess(agent_process)
 
 
 if __name__ == "__main__":
