@@ -111,7 +111,7 @@ string of a JSON dictionary. For example:
 To run a specifc unit test
 
 - `pytest -v PathToPythonTestFile::TestClassName::TestMethodName`
-- `pytest -v ./tests/client/test_client_response.py::TestClientResponse::test_beatles`
+- `pytest -v ./tests/client/test_client_response.py::TestMusicNerdProClient::test_beatles`
 
 To run all unit tests
 
