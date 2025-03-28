@@ -245,7 +245,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         chat_filter_type: str = chat_filter_dict.get("chat_filter_type", "MINIMAL")
 
         for response_dict in response_dict_iterator:
-            
+
             # Do not return the request when the filter is MINIMAL
             if chat_filter_type != "MINIMAL":
                 response_dict["request"] = request_dict
