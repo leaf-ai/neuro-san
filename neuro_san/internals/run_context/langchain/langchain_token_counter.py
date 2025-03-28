@@ -18,6 +18,7 @@ from asyncio import Task
 from contextvars import Context
 from contextvars import ContextVar
 from contextvars import copy_context
+from time import time
 
 from langchain_anthropic.chat_models import ChatAnthropic
 from langchain_community.callbacks.bedrock_anthropic_callback \
@@ -86,6 +87,9 @@ class LangChainTokenCounter:
 
         retval: Any = None
 
+        # Take a time stamp so we measure another thing people care about - latency.
+        start_time: float = time()
+
         # Attempt to count tokens/costs while invoking the agent.
         # The means by which this happens is on a per-LLM basis, so get the right hook
         # given the LLM we've got.
@@ -127,7 +131,10 @@ class LangChainTokenCounter:
             # No token counting was available for the LLM, but we still need to invoke.
             retval = await awaitable
 
-        await self.report(callback)
+        end_time: float = time()
+        time_taken_in_seconds: float = end_time - start_time
+
+        await self.report(callback, time_taken_in_seconds)
 
         return retval
 
@@ -147,14 +154,16 @@ class LangChainTokenCounter:
 
         return task
 
-    async def report(self, callback: BaseCallbackHandler):
+    async def report(self, callback: BaseCallbackHandler, time_taken_in_seconds: float):
         """
         Report on the token accounting results of the callback
+
         :param callback: A BaseCallbackHandler instance that contains token counting information
+        :param time_taken_in_seconds: The amount of time the awaitable took in count_tokens()
         """
         # Token counting results are collected in the callback, if there are any.
         # Different LLMs can count things in different ways, so normalize.
-        token_dict: Dict[str, Any] = self.normalize_token_count(callback)
+        token_dict: Dict[str, Any] = self.normalize_token_count(callback, time_taken_in_seconds)
         if token_dict is None or not bool(token_dict):
             return
 
@@ -215,14 +224,17 @@ class LangChainTokenCounter:
         return None
 
     @staticmethod
-    def normalize_token_count(callback: BaseCallbackHandler) -> Dict[str, Any]:
+    def normalize_token_count(callback: BaseCallbackHandler, time_taken_in_seconds: float) -> Dict[str, Any]:
         """
         Normalizes the values in the token counting callback into a standard dictionary
 
         :param callback: A BaseCallbackHandler instance that contains token counting information
+        :param time_taken_in_seconds: The amount of time the awaitable took in count_tokens()
         """
 
-        token_dict: Dict[str, Any] = {}
+        token_dict: Dict[str, Any] = {
+            "time_taken_in_seconds": time_taken_in_seconds
+        }
         if callback is None:
             return token_dict
 
@@ -234,8 +246,9 @@ class LangChainTokenCounter:
                 "completion_tokens": callback.completion_tokens,
                 "successful_requests": callback.successful_requests,
                 "total_cost": callback.total_cost,
+                "time_taken_in_seconds": time_taken_in_seconds,
                 "caveats": [
-                    "Only doing token accounting for OpenAI and Anthropic models for now.",
+                    "Only doing token accounting for OpenAI, AzureOpenAI and Anthropic models for now.",
                     "Each LLM Branch Node also includes accounting for each of its callees.",
                 ]
             }
