@@ -93,7 +93,7 @@
         "tags": [
           "AgentService"
         ],
-        "description": "Most important semantics of the streaming:\n  1) The \"answer\" to a query of any agent network is the *last* streamed\n     AI message whose origin list is of length 1 - this indicates it is from\n     the FrontMan of the agent network.\n  2) To RESTfully continue your conversation with the agent network:\n     The very last AGENT_FRAMEWORK message before the stream closes will\n     have its chat_context field filled in with a structure. You can\n     copy this whole-cloth to the chat_context of your next StreamingChat\n     request to continue the conversation.",
+        "description": "Most important semantics of the streaming:\n  1) The \"answer\" to a query of any agent network is in the *last* streamed\n     AGENT_FRAMEWORK message.\n  2) To RESTfully continue your conversation with the agent network:\n     The very last AGENT_FRAMEWORK message before the stream closes will\n     have its chat_context field filled in with a structure. You can\n     copy this whole-cloth to the chat_context of your next StreamingChat\n     request to continue the conversation.",
         "operationId": "AgentService_StreamingChat",
         "parameters": [
           {
