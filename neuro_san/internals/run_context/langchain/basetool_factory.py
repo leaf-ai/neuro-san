@@ -45,14 +45,18 @@ class BaseToolFactory:
     ### Extending the Class:
     If additional tools need to be integrated, extend this class by adding appropriate conditions in the
     `get_agent_tool` method. Ensure that the tool name is unique and that required arguments are handled properly.
+
+    **Note:** Future plans include providing a structured extensibility path for this factory class,
+    allowing custom tools to be registered dynamically without modifying the core implementation.
     """
-    def __init__(self):
-        pass
 
     def get_agent_tool(self, tool_name: str, args: Dict = None) -> BaseTool:
         """
         This method acts as a factory that dynamically creates and returns an instance of a supported tool.
         Depending on the specified `tool_name`, it initializes the corresponding tool with the provided arguments.
+        param: tool_name: name or key of the tool to use
+        param: args: arguments or parameters for class instantiation
+        return: Tool Class which is a subclass of Langchain's BaseTool class
         """
         if tool_name == "bing_search":
             # Some available args are
