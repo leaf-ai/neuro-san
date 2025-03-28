@@ -30,6 +30,7 @@ from neuro_san.internals.messages.message_utils import convert_to_chat_message
 from neuro_san.internals.run_context.factory.run_context_factory import RunContextFactory
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 from neuro_san.message_processing.message_processor import MessageProcessor
+from neuro_san.message_processing.answer_message_processor import AnswerMessageProcessor
 
 
 # pylint: disable=too-many-instance-attributes
@@ -161,9 +162,19 @@ class DataDrivenChatSession:
         chat_messages: Iterator[Dict[str, Any]] = await self.chat(user_input, invocation_context, sly_data)
         message_list: List[Dict[str, Any]] = list(chat_messages)
 
-        # Stream over chat state as the last message
+        # Determine the chat_context to enable continuing the conversation
         return_chat_context: Dict[str, Any] = self.prepare_chat_context(message_list)
-        message = AgentFrameworkMessage(content="", chat_context=return_chat_context)
+
+        # Find "the answer" and have that be the content of the last message we send
+        answer_processor = AnswerMessageProcessor()
+        answer_processor.process_messages(message_list)
+        answer: str = answer_processor.get_answer()
+        if answer is None:
+            # Can't have content as None or problems arise.
+            answer = ""
+
+        # Stream over chat state as the last message
+        message = AgentFrameworkMessage(content=answer, chat_context=return_chat_context)
         journal: Journal = invocation_context.get_journal()
         await journal.write_message(message, origin=None)
 

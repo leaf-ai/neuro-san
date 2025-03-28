@@ -30,12 +30,12 @@ class AnswerMessageFilter(MessageFilter):
         :param message_type: The ChatMessageType of the chat_message_dictionary to process.
         :return: True if the message should be allowed through to the client. False otherwise.
         """
-        if message_type != ChatMessageType.AI:
-            # Final answers are only ever AI Messages
+        if message_type != ChatMessageType.AI and message_type != ChatMessageType.AGENT_FRAMEWORK:
+            # Final answers are only ever AI or AgentFramework Messages
             return False
 
         origin: List[Dict[str, Any]] = chat_message_dict.get("origin")
-        if origin is None or len(origin) != 1:
+        if origin is not None and len(origin) > 1:
             # Final answers only come from the FrontMan,
             # whose origin length is the only one of length 1.
             return False
