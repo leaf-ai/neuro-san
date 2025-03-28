@@ -63,7 +63,7 @@ from neuro_san.internals.run_context.langchain.langchain_run import LangChainRun
 from neuro_san.internals.run_context.langchain.langchain_token_counter import LangChainTokenCounter
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
-from neuro_san.internals.run_context.langchain.prebuilt_basetool_factory import PrebuiltBaseToolFactory
+from neuro_san.internals.run_context.langchain.basetool_factory import BaseToolFactory
 
 
 MINUTES: float = 60.0
@@ -234,7 +234,7 @@ class LangChainRunContext(RunContext):
 
         # Check our own local factory. Most tools live in the neighborhood.
         agent_spec: Dict[str, Any] = factory.get_agent_tool_spec(name)
-        prebuilt_tool: str = agent_spec.get('prebuilt_tool')
+        base_tool: str = agent_spec.get('base_tool')
         if agent_spec is None:
 
             # See if the agent name given could reference an external agent.
@@ -258,9 +258,9 @@ class LangChainRunContext(RunContext):
                 agent_message = AgentMessage(content=message)
                 await self.journal.write_message(agent_message)
                 self.logger.info(message)
-        elif prebuilt_tool:
-            prebuilt_tool_factory = PrebuiltBaseToolFactory(prebuilt_tool, agent_spec.get('args'))
-            return prebuilt_tool_factory.get_agent_tool()
+        elif base_tool:
+            base_tool_factory = BaseToolFactory()
+            return base_tool_factory.get_agent_tool(base_tool, agent_spec.get('args'))
         else:
             function_json = agent_spec.get("function")
 
