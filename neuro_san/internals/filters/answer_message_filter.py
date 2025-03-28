@@ -30,7 +30,7 @@ class AnswerMessageFilter(MessageFilter):
         :param message_type: The ChatMessageType of the chat_message_dictionary to process.
         :return: True if the message should be allowed through to the client. False otherwise.
         """
-        if message_type != ChatMessageType.AI and message_type != ChatMessageType.AGENT_FRAMEWORK:
+        if message_type not in (ChatMessageType.AI, ChatMessageType.AGENT_FRAMEWORK):
             # Final answers are only ever AI or AgentFramework Messages
             return False
 
