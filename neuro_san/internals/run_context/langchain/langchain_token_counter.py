@@ -121,7 +121,8 @@ class LangChainTokenCounter:
                 task: Task = new_context.run(self.create_task, awaitable)
                 retval = await task
 
-            callback_var.set(old_callback)
+            if callback_var is not None:
+                callback_var.set(old_callback)
         else:
             # No token counting was available for the LLM, but we still need to invoke.
             retval = await awaitable
