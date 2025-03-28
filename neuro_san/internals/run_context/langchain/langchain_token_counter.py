@@ -131,6 +131,7 @@ class LangChainTokenCounter:
             # No token counting was available for the LLM, but we still need to invoke.
             retval = await awaitable
 
+        # Figure out how much time our agent took.
         end_time: float = time()
         time_taken_in_seconds: float = end_time - start_time
 
