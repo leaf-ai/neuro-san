@@ -8,7 +8,16 @@
 
 From the top-level:
 
-In a new virtual environment:
+Set PYTHONPATH environment variable
+
+    export PYTHONPATH=$(pwd)
+
+Create and activate a new virtual environment:
+
+    python3 -m venv venv
+    . ./venv/bin/activate
+
+Install packages specified in the following requirments files:
 
     pip install -r requirements.txt
     pip install -r requirements-build.txt
@@ -95,6 +104,31 @@ message.
 You can send private data that does not go into the chat stream as a single escaped
 string of a JSON dictionary. For example:
 --sly_data "{ \"login\": \"<your login>\" }"
+
+
+### Running Python unit/integration tests
+
+To run a specifc unit test
+
+- `pytest -v PathToPythonTestFile::TestClassName::TestMethodName`
+- `pytest -v ./tests/client/test_client_response.py::TestMusicNerdProClient::test_beatles`
+
+To run all unit tests
+
+- `pytest -v ./tests`
+
+To debug a specific unit test
+
+- Import pytest in the test source file
+  - `import pytest`
+- Set a trace to stop the debugger on the next line
+  - `pytest.set_trace()`
+- Run pytest with '--pdb' flag
+  - `pytest -v --pdb ./tests/client/test_client_response.py`
+
+To run all integration tests
+
+- `pytest -v -m "integration"`
 
 ## Creating a new agent network
 

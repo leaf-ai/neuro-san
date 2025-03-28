@@ -21,6 +21,8 @@ syntax = "proto3";
 package dev.cognizant_ai.neuro_san.api.grpc.agent;
 
 import "google/protobuf/struct.proto";
+import "google/api/annotations.proto";
+
 import "neuro_san/api/grpc/chat.proto";
 
 option go_package = "github.com/leaf-ai/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/agent/v1;agent";
@@ -33,9 +35,12 @@ option go_package = "github.com/leaf-ai/neuro_san/internal/gen/dev.cognizant_ai/
 service AgentService {
 
     // Called when a client needs the function description of an agent.
-    rpc Function (FunctionRequest) returns (FunctionResponse) {}
+    rpc Function (FunctionRequest) returns (FunctionResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/{agent_name}/function"
+        };
+    }
 
-    // Unidirectional streaming method which would supercede Chat() and Logs() above.
     // Most important semantics of the streaming:
     //  1) The "answer" to a query of any agent network is the *last* streamed
     //     AI message whose origin list is of length 1 - this indicates it is from
@@ -45,10 +50,19 @@ service AgentService {
     //     have its chat_context field filled in with a structure. You can
     //     copy this whole-cloth to the chat_context of your next StreamingChat
     //     request to continue the conversation.
-    rpc StreamingChat(ChatRequest) returns (stream ChatResponse) {}
+    rpc StreamingChat(ChatRequest) returns (stream ChatResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/{agent_name}/streaming_chat"
+            body: "*"
+        };
+    }
 
     // Called when a client needs the internal connectivity description of an agent.
-    rpc Connectivity(ConnectivityRequest) returns (ConnectivityResponse) {}
+    rpc Connectivity(ConnectivityRequest) returns (ConnectivityResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/{agent_name}/connectivity"
+        };
+    }
 }
 
 // Request structure for Function gRPC method
@@ -93,7 +107,6 @@ message ChatFilter {
 
 // Request structure for Chat gRPC method
 message ChatRequest {
-
     // This is an entirely optional map whose keys refer to data that is better
     // left out of the LLM chat stream.  The keys themselves might appear in the
     // chat stream, referring to the data, but the data itself does not.

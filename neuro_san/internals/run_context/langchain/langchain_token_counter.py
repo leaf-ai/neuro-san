@@ -205,7 +205,7 @@ class LangChainTokenCounter:
                 Can be None if no such entity exists for the llm type
         """
 
-        if isinstance(llm, ChatOpenAI):
+        if isinstance(llm, (ChatOpenAI, AzureChatOpenAI)):
             return openai_callback_var
 
         if isinstance(llm, ChatAnthropic):
