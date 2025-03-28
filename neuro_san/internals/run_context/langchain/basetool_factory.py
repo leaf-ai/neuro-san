@@ -8,7 +8,7 @@ from langchain_community.utilities.requests import TextRequestsWrapper
 from langchain.tools import BaseTool
 
 
-class PrebuiltBaseToolFactory:
+class BaseToolFactory:
     """
     A factory class for creating instances of various prebuilt tools.
 
@@ -46,33 +46,32 @@ class PrebuiltBaseToolFactory:
     If additional tools need to be integrated, extend this class by adding appropriate conditions in the
     `get_agent_tool` method. Ensure that the tool name is unique and that required arguments are handled properly.
     """
-    def __init__(self, tool_name: str, args: Dict = None):
-        self.tool_name = tool_name
-        self.args = args
+    def __init__(self):
+        pass
 
-    def get_agent_tool(self) -> BaseTool:
+    def get_agent_tool(self, tool_name: str, args: Dict = None) -> BaseTool:
         """
         This method acts as a factory that dynamically creates and returns an instance of a supported tool.
         Depending on the specified `tool_name`, it initializes the corresponding tool with the provided arguments.
         """
-        if self.tool_name == "bing_search":
+        if tool_name == "bing_search":
             # Some available args are
             # num_results: int
-            return BingSearchResults(**self.args, api_wrapper=BingSearchAPIWrapper())
+            return BingSearchResults(**args, api_wrapper=BingSearchAPIWrapper())
 
-        if self.tool_name == "tavily_search":
+        if tool_name == "tavily_search":
             # Some available args are
             # max_results: int
-            return TavilySearchResults(**self.args)
+            return TavilySearchResults(**args)
 
-        if self.tool_name in ["requests_get", "requests_post", "requests_patch", "requests_put", "requests_delete"]:
+        if tool_name in ["requests_get", "requests_post", "requests_patch", "requests_put", "requests_delete"]:
             # Available args are
             # headers: Dict[str, str] | None = None,
             # aiosession: ClientSession | None = None,
             # auth: Any | None = None,
             # response_content_type: Literal['text', 'json'] = "text"
             request_toolkit = RequestsToolkit(
-                requests_wrapper=TextRequestsWrapper(**self.args),
+                requests_wrapper=TextRequestsWrapper(**args),
                 allow_dangerous_requests=True,
             )
             request_tools = request_toolkit.get_tools()
@@ -83,10 +82,10 @@ class PrebuiltBaseToolFactory:
                 "requests_put": request_tools[3],
                 "requests_delete": request_tools[4],
             }
-            return mapping[self.tool_name]
+            return mapping[tool_name]
 
         raise ValueError(
-            f"""Tool '{self.tool_name}' is not supported.
+            f"""Tool '{tool_name}' is not supported.
             Ensure that you have provided a valid tool name from the supported list:
             'bing_search', 'tavily_search', 'requests_get', 'requests_post', 'requests_patch', 'requests_put',
             'requests_delete'.

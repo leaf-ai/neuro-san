@@ -31,7 +31,7 @@
         },
         {
             "name": "search_tool",
-            "prebuilt_tool": "bing_search",
+            "base_tool": "bing_search",
             "args": {
                 "num_results": 3
             }
