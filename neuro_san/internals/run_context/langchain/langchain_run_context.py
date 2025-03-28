@@ -63,7 +63,7 @@ from neuro_san.internals.run_context.langchain.langchain_run import LangChainRun
 from neuro_san.internals.run_context.langchain.langchain_token_counter import LangChainTokenCounter
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
-from neuro_san.internals.run_context.langchain.basetool_factory import BaseToolFactory
+from neuro_san.internals.run_context.langchain.base_tool_factory import BaseToolFactory
 
 
 MINUTES: float = 60.0
