@@ -91,6 +91,9 @@ class StreamingInputProcessor:
         }
         return_state.update(update)
 
+        if origin_str is None or len(origin_str) == 0:
+            origin_str = "agent network"
+
         print(f"\nResponse from {origin_str}:")
         print(f"{last_chat_response}")
         return return_state

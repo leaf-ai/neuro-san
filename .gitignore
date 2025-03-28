@@ -37,3 +37,6 @@ site/
 
 # Temporary integrtion test files
 tmp_*
+
+# Transient openapi file
+neuro_san/api/grpc/openapi.yaml

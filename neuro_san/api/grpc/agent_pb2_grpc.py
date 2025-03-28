@@ -62,9 +62,8 @@ class AgentServiceServicer(object):
 
     def StreamingChat(self, request, context):
         """Most important semantics of the streaming:
-        1) The "answer" to a query of any agent network is the *last* streamed
-        AI message whose origin list is of length 1 - this indicates it is from
-        the FrontMan of the agent network.
+        1) The "answer" to a query of any agent network is in the *last* streamed
+        AGENT_FRAMEWORK message.
         2) To RESTfully continue your conversation with the agent network:
         The very last AGENT_FRAMEWORK message before the stream closes will
         have its chat_context field filled in with a structure. You can
