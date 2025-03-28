@@ -4,7 +4,7 @@ import tempfile
 import time
 import unittest
 
-import pytest
+# import pytest
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 FIXTURES_DIR = os.path.join(ROOT_DIR, "..", "fixtures")
@@ -63,7 +63,7 @@ class TestMusicNerdProClient(unittest.TestCase):
             self.assertIn(response_keyword.lower(), response.lower(),
                           f"response_keyword {response_keyword} not in response {response}")
 
-    @pytest.mark.integration
+    # @pytest.mark.integration
     def test_beatles(self):
         """
         Query an agent network and assert the response contains the expected value
