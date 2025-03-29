@@ -67,8 +67,8 @@ class BaseToolFactory:
         This method acts as a factory that dynamically creates and returns an instance of a supported tool.
         Depending on the specified `tool_name`, it initializes the corresponding tool with the provided arguments.
 
-        :param: tool_name: name or key of the tool to use
-        :param: args: arguments or parameters for class instantiation
+        :param tool_name: name or key of the tool to use
+        :param args: arguments or parameters for class instantiation
         :return: Tool Class which is a subclass of Langchain's BaseTool class
         """
         if tool_name == "bing_search":
