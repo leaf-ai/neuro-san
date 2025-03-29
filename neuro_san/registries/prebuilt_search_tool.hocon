@@ -31,54 +31,54 @@
         },
         {
             "name": "search_tool",
-            // The "base_tool" specifies which prebuilt tool should be instantiated.
-            // In this case, "bing_search" is chosen, which allows querying Bing for search results.
+            # The "base_tool" specifies which prebuilt tool should be instantiated.
+            # In this case, "bing_search" is chosen, which allows querying Bing for search results.
             
-            // Documentation on the Bing search tool:
-            // - LangChain's Bing Search Tool: https://python.langchain.com/docs/integrations/tools/bing_search
-            // - Microsoft Bing Search API: https://learn.microsoft.com/en-us/bing/search-apis/
+            # Documentation on the Bing search tool:
+            # - LangChain's Bing Search Tool: https://python.langchain.com/docs/integrations/tools/bing_search
+            # - Microsoft Bing Search API: https://learn.microsoft.com/en-us/bing/search-apis/
             
-            // This tool is registered by subclass BaseTool in LangChain, which converts it into a callable function.
-            // More about function specifications and custom langchain tools:
-            // - LangChain Function Specification: https://python.langchain.com/docs/how_to/custom_tools/
+            # This tool is registered by subclass BaseTool in LangChain, which converts it into a callable function.
+            # More about function specifications and custom langchain tools:
+            # - LangChain Function Specification: https://python.langchain.com/docs/how_to/custom_tools/
             "base_tool": "bing_search",
-            // "args" contains the parameters that will be passed to the selected tool.
-            // These arguments must align with the tool’s expected function signature.
-            // 
-            // For "bing_search", one of the key parameters is "num_results", which determines 
-            // how many search results should be returned from Bing.
-            // 
-            // Other tools will have different required/optional arguments, so be sure to refer to
-            // the tool’s documentation to understand what parameters can be configured.
+            # "args" contains the parameters that will be passed to the selected tool.
+            # These arguments must align with the tool’s expected function signature.
+            # 
+            # For "bing_search", one of the key parameters is "num_results", which determines 
+            # how many search results should be returned from Bing.
+            # 
+            # Other tools will have different required/optional arguments, so be sure to refer to
+            # the tool’s documentation to understand what parameters can be configured.
             "args": {
                 "num_results": 3
             }
-            // -------------------------------------------------------------------------------
-            // CURRENTLY AVAILABLE TOOLS
-            // The following tools can be used as values for "base_tool":
-            //
-            // 1️) "bing_search"      - Uses Bing to perform web searches.
-            // 2️) "tavily_search"    - Uses Tavily for search queries.
-            // 3️) "requests_get"     - Makes an HTTP GET request.
-            // 4️) "requests_post"    - Makes an HTTP POST request.
-            // 5️) "requests_patch"   - Makes an HTTP PATCH request.
-            // 6️) "requests_put"     - Makes an HTTP PUT request.
-            // 7️) "requests_delete"  - Makes an HTTP DELETE request.
-            //
-            // Each of these tools may require specific arguments in the "args" section.
-            // Refer to the tool's documentation for more details.
-            // -------------------------------------------------------------------------------
+            # -------------------------------------------------------------------------------
+            # CURRENTLY AVAILABLE TOOLS
+            # The following tools can be used as values for "base_tool":
+            #
+            # 1️) "bing_search"      - Uses Bing to perform web searches.
+            # 2️) "tavily_search"    - Uses Tavily for search queries.
+            # 3️) "requests_get"     - Makes an HTTP GET request.
+            # 4️) "requests_post"    - Makes an HTTP POST request.
+            # 5️) "requests_patch"   - Makes an HTTP PATCH request.
+            # 6️) "requests_put"     - Makes an HTTP PUT request.
+            # 7️) "requests_delete"  - Makes an HTTP DELETE request.
+            #
+            # Each of these tools may require specific arguments in the "args" section.
+            # Refer to the tool's documentation for more details.
+            # -------------------------------------------------------------------------------
 
-            // -------------------------------------------------------------------------------
-            // FUTURE EXTENSIBILITY PLAN
-            //
-            // - The tool factory is expected to support user-defined custom tools in the future.
-            // - This would allow dynamic tool registration without modifying core code.
-            // - Potential implementation could involve loading tools via config/hocon file.
-            //
-            // Until an extensibility mechanism is introduced, new tools must be manually added 
-            // to the factory class in the codebase.
-            // -------------------------------------------------------------------------------
+            # -------------------------------------------------------------------------------
+            # FUTURE EXTENSIBILITY PLAN
+            #
+            # - The tool factory is expected to support user-defined custom tools in the future.
+            # - This would allow dynamic tool registration without modifying core code.
+            # - Potential implementation could involve loading tools via config/hocon file.
+            #
+            # Until an extensibility mechanism is introduced, new tools must be manually added 
+            # to the factory class in the codebase.
+            # -------------------------------------------------------------------------------
         }
     ]
 }
