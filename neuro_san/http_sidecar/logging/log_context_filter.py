@@ -16,6 +16,7 @@ See class comment for details
 import contextvars
 import logging
 
+
 class LogContextFilter(logging.Filter):
     """
     Custom logging filter for Http server.

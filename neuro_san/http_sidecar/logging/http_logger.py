@@ -20,6 +20,7 @@ from leaf_server_common.logging.logging_setup import setup_logging
 
 from neuro_san.http_sidecar.logging.log_context_filter import LogContextFilter
 
+
 class HttpLogger:
     """
     Custom logger class for use by Http server.
