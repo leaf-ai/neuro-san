@@ -37,4 +37,3 @@ class LogContextFilter(logging.Filter):
         Create log context class instance.
         """
         cls.log_context = contextvars.ContextVar("http_server_context", default={})
-

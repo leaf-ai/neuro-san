@@ -14,17 +14,12 @@ See class comment for details
 """
 
 import copy
-import logging
-import pathlib
 from typing import Any, Dict, List
 
 from tornado.ioloop import IOLoop
 from tornado.web import Application
 
-from leaf_server_common.logging.logging_setup import setup_logging
-
 from neuro_san.http_sidecar.logging.http_logger import HttpLogger
-from neuro_san.http_sidecar.handlers.base_request_handler import BaseRequestHandler
 from neuro_san.service.agent_server import DEFAULT_FORWARDED_REQUEST_METADATA
 
 from neuro_san.http_sidecar.handlers.health_check_handler import HealthCheckHandler
@@ -81,12 +76,6 @@ class HttpSidecar:
         Method to be called by a process running tornado HTTP server
         to actually start serving requests.
         """
-        # self.setup_logging()
-        # # For our Http server, we have separate logging setup,
-        # # because things like "user_id" and "request_id"
-        # # can only be extracted and used on per-request basis.
-        # # Async Http server is single-threaded.
-        # self.logger = logging.getLogger(BaseRequestHandler.HTTP_LOGGER_NAME)
         self.logger = HttpLogger()
 
         app = self.make_app()

@@ -18,7 +18,6 @@ from typing import List
 from typing import Tuple
 
 import json
-import logging
 import os
 
 import grpc
@@ -138,7 +137,7 @@ class BaseRequestHandler(RequestHandler):
             # Handle invalid JSON input
             self.set_status(400)
             self.write({"error": "Invalid JSON format"})
-            self.logger.error("error: Invalid JSON format")
+            self.logger.error({}, "error: Invalid JSON format")
             return
 
         if isinstance(exc, grpc.aio.AioRpcError):
@@ -147,13 +146,13 @@ class BaseRequestHandler(RequestHandler):
             self.set_status(http_status)
             err_msg: str = f"status: {http_status} grpc: {err_name} details: {err_details}"
             self.write({"error": err_msg})
-            self.logger.error("Http server error: %s", err_msg)
+            self.logger.error({}, "Http server error: %s", err_msg)
             return
 
         # General exception case:
         self.set_status(500)
         self.write({"error": "Internal server error"})
-        self.logger.error("Internal server error: %s", str(exc))
+        self.logger.error({}, "Internal server error: %s", str(exc))
 
     def data_received(self, chunk):
         """

@@ -21,6 +21,9 @@ from leaf_server_common.logging.logging_setup import setup_logging
 from neuro_san.http_sidecar.logging.log_context_filter import LogContextFilter
 
 class HttpLogger:
+    """
+    Custom logger class for use by Http server.
+    """
 
     HTTP_LOGGER_NAME: str = "HttpServer"
 
@@ -85,5 +88,8 @@ class HttpLogger:
         logging.getLogger("httpx").setLevel(logging.WARNING)
 
     def prepare_filter(self, metadata: Dict[str, Any]):
+        """
+        Prepare logging filter using request metadata,
+        """
         metadata["source"] = HttpLogger.HTTP_LOGGER_NAME
         LogContextFilter.log_context.set(metadata)
