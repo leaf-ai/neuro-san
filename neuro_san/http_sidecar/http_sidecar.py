@@ -23,6 +23,7 @@ from tornado.web import Application
 
 from leaf_server_common.logging.logging_setup import setup_logging
 
+from neuro_san.http_sidecar.logging.http_logger import HttpLogger
 from neuro_san.http_sidecar.handlers.base_request_handler import BaseRequestHandler
 from neuro_san.service.agent_server import DEFAULT_FORWARDED_REQUEST_METADATA
 
@@ -56,41 +57,42 @@ class HttpSidecar:
         self.logger = None
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata.split(" ")
 
-    def setup_logging(self):
-        """
-        Setup logging from configuration file.
-        """
-
-        # Logging data common for all incoming requests:
-        extra_logging_defaults: Dict[str, str] = {
-            "source": self.server_name_for_logs
-        }
-
-        current_dir: str = pathlib.Path(__file__).parent.resolve()
-        setup_logging(self.server_name_for_logs, current_dir,
-                      'AGENT_SERVICE_LOG_JSON',
-                      'AGENT_SERVICE_LOG_LEVEL',
-                      extra_logging_defaults)
-
-        # This module within openai library can be quite chatty w/rt http requests
-        logging.getLogger("httpx").setLevel(logging.WARNING)
+    # def setup_logging(self):
+    #     """
+    #     Setup logging from configuration file.
+    #     """
+    #
+    #     # Logging data common for all incoming requests:
+    #     extra_logging_defaults: Dict[str, str] = {
+    #         "source": self.server_name_for_logs
+    #     }
+    #
+    #     current_dir: str = pathlib.Path(__file__).parent.resolve()
+    #     setup_logging(self.server_name_for_logs, current_dir,
+    #                   'AGENT_SERVICE_LOG_JSON',
+    #                   'AGENT_SERVICE_LOG_LEVEL',
+    #                   extra_logging_defaults)
+    #
+    #     # This module within openai library can be quite chatty w/rt http requests
+    #     logging.getLogger("httpx").setLevel(logging.WARNING)
 
     def __call__(self):
         """
         Method to be called by a process running tornado HTTP server
         to actually start serving requests.
         """
-        self.setup_logging()
-        # For our Http server, we have separate logging setup,
-        # because things like "user_id" and "request_id"
-        # can only be extracted and used on per-request basis.
-        # Async Http server is single-threaded.
-        self.logger = logging.getLogger(BaseRequestHandler.HTTP_LOGGER_NAME)
+        # self.setup_logging()
+        # # For our Http server, we have separate logging setup,
+        # # because things like "user_id" and "request_id"
+        # # can only be extracted and used on per-request basis.
+        # # Async Http server is single-threaded.
+        # self.logger = logging.getLogger(BaseRequestHandler.HTTP_LOGGER_NAME)
+        self.logger = HttpLogger()
 
         app = self.make_app()
         app.listen(self.http_port)
-        self.logger.info("HTTP server is running on port %d", self.http_port)
-        self.logger.debug("Serving agents: %s", repr(self.agents.keys()))
+        self.logger.info({}, "HTTP server is running on port %d", self.http_port)
+        self.logger.debug({}, "Serving agents: %s", repr(self.agents.keys()))
         IOLoop.current().start()
 
     def make_app(self):
@@ -117,12 +119,12 @@ class HttpSidecar:
                  "forwarded_request_metadata": self.forwarded_request_metadata}
             route: str = f"/api/v1/{agent_name}/connectivity"
             handlers.append((route, ConnectivityHandler, request_data))
-            self.logger.info("Registering URL path: %s", route)
+            self.logger.info({}, "Registering URL path: %s", route)
             route: str = f"/api/v1/{agent_name}/function"
             handlers.append((route, FunctionHandler, request_data))
-            self.logger.info("Registering URL path: %s", route)
+            self.logger.info({}, "Registering URL path: %s", route)
             route: str = f"/api/v1/{agent_name}/streaming_chat"
             handlers.append((route, StreamingChatHandler, request_data))
-            self.logger.info("Registering URL path: %s", route)
+            self.logger.info({}, "Registering URL path: %s", route)
 
         return Application(handlers)

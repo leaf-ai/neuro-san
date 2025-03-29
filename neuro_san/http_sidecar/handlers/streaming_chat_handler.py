@@ -31,10 +31,11 @@ class StreamingChatHandler(BaseRequestHandler):
     """
 
     async def stream_out(self,
-                         generator: Generator[Generator[ChatResponse, None, None], None, None]):
+                         generator: Generator[Generator[ChatResponse, None, None], None, None]) -> int:
         """
         Process streaming out generator output to HTTP connection.
         :param generator: async gRPC generator
+        :return: number of chat responses streamed out.
         """
         # Set up headers for chunked response
         self.set_header("Content-Type", "application/json-lines")
@@ -42,6 +43,7 @@ class StreamingChatHandler(BaseRequestHandler):
         # Flush headers immediately
         await self.flush()
 
+        sent_out: int = 0
         # async for result_message in result_generator:
         # result_generator = self.async_generator()
         async for sub_generator in generator:
@@ -50,14 +52,16 @@ class StreamingChatHandler(BaseRequestHandler):
                 result_str: str = json.dumps(result_dict) + "\n"
                 self.write(result_str)
                 await self.flush()
+                sent_out += 1
+        return sent_out
 
     async def post(self):
         """
         Implementation of POST request handler for streaming chat API call.
         """
         metadata: Dict[str, Any] = self.get_metadata()
-        request_id: str = self.get_request_id(metadata)
-        self.logger.info("Start POST %s/streaming_chat %s", self.agent_name, request_id)
+        self.logger.info(metadata, "Start POST %s/streaming_chat", self.agent_name)
+        sent_out = 0
         try:
             # Parse JSON body
             data = json.loads(self.request.body)
@@ -69,7 +73,7 @@ class StreamingChatHandler(BaseRequestHandler):
             # here we are getting Generator of Generators of ChatResponses!
             result_generator: Generator[Generator[ChatResponse, None, None], None, None] =\
                 grpc_session.streaming_chat(grpc_request)
-            await self.stream_out(result_generator)
+            sent_out = await self.stream_out(result_generator)
 
         except Exception as exc:  # pylint: disable=broad-exception-caught
             self.process_exception(exc)
@@ -77,9 +81,7 @@ class StreamingChatHandler(BaseRequestHandler):
             await self.flush()
             # We are done with response stream:
             await self.finish()
-            self.logger.info("Finish POST %s/streaming_chat %s", self.agent_name, request_id)
-        # We are done with response stream:
-        await self.finish()
+            self.logger.info(metadata, "Finish POST %s/streaming_chat %d responses", self.agent_name, sent_out)
 
     async def options(self):
         """

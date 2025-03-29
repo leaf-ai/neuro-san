@@ -25,6 +25,7 @@ import grpc
 
 from tornado.web import RequestHandler
 
+from neuro_san.http_sidecar.logging.http_logger import HttpLogger
 from neuro_san.interfaces.async_agent_session import AsyncAgentSession
 from neuro_san.interfaces.concierge_session import ConciergeSession
 from neuro_san.session.async_grpc_service_agent_session import AsyncGrpcServiceAgentSession
@@ -48,8 +49,6 @@ class BaseRequestHandler(RequestHandler):
         grpc.StatusCode.DEADLINE_EXCEEDED: 504
     }
 
-    HTTP_LOGGER_NAME: str = "HttpSidecar"
-
     request_id: int = 0
 
     # pylint: disable=attribute-defined-outside-init
@@ -65,7 +64,7 @@ class BaseRequestHandler(RequestHandler):
         self.agent_name: str = agent_name
         self.port: int = port
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata
-        self.logger = logging.getLogger(BaseRequestHandler.HTTP_LOGGER_NAME)
+        self.logger = HttpLogger()
 
         if os.environ.get("AGENT_ALLOW_CORS_HEADERS") is not None:
             self.set_header("Access-Control-Allow-Origin", "*")
@@ -83,21 +82,13 @@ class BaseRequestHandler(RequestHandler):
         for item_name in self.forwarded_request_metadata:
             if item_name in headers.keys():
                 result[item_name] = headers[item_name]
+            elif item_name == "request_id":
+                # Generate unique id so we have some way to track this request:
+                result[item_name] = f"request-{BaseRequestHandler.request_id}"
+                BaseRequestHandler.request_id += 1
+            else:
+                result[item_name] = "None"
         return result
-
-    def get_request_id(self, metadata: Dict[str, str]) -> str:
-        """
-        Construct request id string for logging purposes.
-        :param metadata: incoming request metadata
-        """
-        # Try to extract "user_id" from meta-data:
-        user_id: str = metadata.get("user_id", "None")
-        # If request metadata has "request_id" already specified, use it:
-        req_id: str = metadata.get("request_id", None)
-        if not req_id:
-            req_id = f"request-{BaseRequestHandler.request_id}"
-            BaseRequestHandler.request_id += 1
-        return f"user_id: {user_id} request_id: {req_id}"
 
     def get_agent_grpc_session(self, metadata: Dict[str, Any]) -> AsyncAgentSession:
         """
