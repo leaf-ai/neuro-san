@@ -11,6 +11,7 @@
 # END COPYRIGHT
 from typing import Any
 from typing import Dict
+from typing import List
 
 from leaf_common.config.config_filter import ConfigFilter
 from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
@@ -22,14 +23,17 @@ class SlyDataRedactor(ConfigFilter):
     based on calling-agent specs.
     """
 
-    def __init__(self, calling_agent_tool_spec: Dict[str, Any]):
+    def __init__(self, calling_agent_tool_spec: Dict[str, Any],
+                 config_keys: List[str] = []):
         """
         Constructor
 
         :param calling_agent_tool_spec: The dictionary describing the JSON agent tool
                             that is providing the sly_data.
+        :param keys: A list of config keys in reverse precedence order.
         """
         self.agent_tool_spec: Dict[str, Any] = calling_agent_tool_spec
+        self.config_keys: List[str] = config_keys
 
     def filter_config(self, basis_config: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -41,7 +45,9 @@ class SlyDataRedactor(ConfigFilter):
         empty: Dict[str, Any] = {}
 
         extractor = DictionaryExtractor(self.agent_tool_spec)
-        allow_dict: Dict[str, Any] = extractor.get("allow.sly_data", empty)
+        allow_dict: Dict[str, Any] = empty
+        for config_key in self.config_keys:
+            allow_dict = extractor.get(config_key, allow_dict)
 
         # Recall empty dictionaries evaluate to False (as well as boolean values)
         if not bool(allow_dict):

@@ -302,6 +302,6 @@ Some things to try:
         if parent_run_context is not None:
             parent_spec = parent_run_context.get_agent_tool_spec()
 
-        redactor = SlyDataRedactor(parent_spec)
+        redactor = SlyDataRedactor(parent_spec, config_keys=["allow.sly_data", "allow.to_downstream.sly_data"])
         redacted: Dict[str, Any] = redactor.filter_config(sly_data)
         return redacted

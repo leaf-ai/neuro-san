@@ -42,7 +42,7 @@ class TestSlyDataRedactor(TestCase):
                 }
             }
         }
-        redactor = SlyDataRedactor(agent_spec)
+        redactor = SlyDataRedactor(agent_spec, config_keys=["allow.sly_data"])
 
         sly_data = {
             "yes": 1,
@@ -65,7 +65,7 @@ class TestSlyDataRedactor(TestCase):
                 "sly_data": True
             }
         }
-        redactor = SlyDataRedactor(agent_spec)
+        redactor = SlyDataRedactor(agent_spec, config_keys=["allow.sly_data"])
 
         sly_data = {
             "yes": 1,
@@ -88,7 +88,7 @@ class TestSlyDataRedactor(TestCase):
                 "sly_data": False
             }
         }
-        redactor = SlyDataRedactor(agent_spec)
+        redactor = SlyDataRedactor(agent_spec, config_keys=["allow.sly_data"])
 
         sly_data = {
             "yes": 1,
@@ -108,7 +108,7 @@ class TestSlyDataRedactor(TestCase):
         """
         agent_spec = {
         }
-        redactor = SlyDataRedactor(agent_spec)
+        redactor = SlyDataRedactor(agent_spec, config_keys=["allow.sly_data"])
 
         sly_data = {
             "yes": 1,
@@ -134,7 +134,7 @@ class TestSlyDataRedactor(TestCase):
                 }
             }
         }
-        redactor = SlyDataRedactor(agent_spec)
+        redactor = SlyDataRedactor(agent_spec, config_keys=["allow.sly_data"])
 
         sly_data = {
             "yes": 1,
