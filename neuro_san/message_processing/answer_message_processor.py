@@ -67,5 +67,7 @@ class AnswerMessageProcessor(MessageProcessor):
         # Record what we got.
         # We might get another as we go along, but the last message in the stream
         # meeting the criteria above is our final answer.
-        self.answer = text
-        self.answer_origin = origin
+        if text is not None:
+            self.answer = text
+        if origin is not None:
+            self.answer_origin = origin
