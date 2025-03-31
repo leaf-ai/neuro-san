@@ -4,9 +4,6 @@
     "formatters": {
         "structured": {
             "format": "{\"message\": \"%(message)s\", \"user_id\": \"%(user_id)s\", \"Timestamp\": \"%(iso_timestamp)s\", \"source\": \"%(source)s\", \"message_type\": \"%(message_type)s\", \"request_id\": \"%(request_id)s\"}"
-        },
-        "http_structured": {
-            "format": "{\"message\": \"%(message)s\", \"Timestamp\": \"%(iso_timestamp)s\", \"source\": \"%(source)s\", \"message_type\": \"%(message_type)s\"}"
         }
     },
     "filters": {

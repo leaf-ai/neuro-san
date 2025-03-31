@@ -52,25 +52,6 @@ class HttpSidecar:
         self.logger = None
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata.split(" ")
 
-    # def setup_logging(self):
-    #     """
-    #     Setup logging from configuration file.
-    #     """
-    #
-    #     # Logging data common for all incoming requests:
-    #     extra_logging_defaults: Dict[str, str] = {
-    #         "source": self.server_name_for_logs
-    #     }
-    #
-    #     current_dir: str = pathlib.Path(__file__).parent.resolve()
-    #     setup_logging(self.server_name_for_logs, current_dir,
-    #                   'AGENT_SERVICE_LOG_JSON',
-    #                   'AGENT_SERVICE_LOG_LEVEL',
-    #                   extra_logging_defaults)
-    #
-    #     # This module within openai library can be quite chatty w/rt http requests
-    #     logging.getLogger("httpx").setLevel(logging.WARNING)
-
     def __call__(self):
         """
         Method to be called by a process running tornado HTTP server
