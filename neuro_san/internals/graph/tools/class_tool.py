@@ -16,6 +16,7 @@ from typing import List
 import json
 
 from asyncio import AbstractEventLoop
+from copy import deepcopy
 from logging import getLogger
 from logging import Logger
 
@@ -62,12 +63,20 @@ class ClassTool(AbstractCallableTool):
         super().__init__(factory, agent_tool_spec, sly_data)
         self.run_context: RunContext = RunContextFactory.create_run_context(parent_run_context, self)
         self.journal: Journal = self.run_context.get_journal()
+        self.full_name: str = Origination.get_full_name_from_origin(self.run_context.get_origin())
+        self.logger: Logger = getLogger(self.full_name)
+
+        # Put together the arguments to pass to the CodedTool
         self.arguments: Dict[str, Any] = {}
         if arguments is not None:
             self.arguments = arguments
 
-        full_name: str = Origination.get_full_name_from_origin(self.run_context.get_origin())
-        self.logger: Logger = getLogger(full_name)
+        # Set some standard args so CodedTool can know about origin, but only if they are
+        # not already set by other infrastructure.
+        if self.arguments.get("origin") is None:
+            self.arguments["origin"] = deepcopy(self.run_context.get_origin())
+        if self.arguments.get("origin_str") is None:
+            self.arguments["origin_str"] = self.full_name
 
     # pylint: disable=too-many-locals
     async def build(self) -> List[Any]:
