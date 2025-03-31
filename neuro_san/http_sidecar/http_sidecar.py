@@ -14,12 +14,12 @@ See class comment for details
 """
 
 import copy
-import logging
 from typing import Any, Dict, List
 
 from tornado.ioloop import IOLoop
 from tornado.web import Application
 
+from neuro_san.http_sidecar.logging.http_logger import HttpLogger
 from neuro_san.service.agent_server import DEFAULT_FORWARDED_REQUEST_METADATA
 
 from neuro_san.http_sidecar.handlers.health_check_handler import HealthCheckHandler
@@ -45,10 +45,11 @@ class HttpSidecar:
         :param forwarded_request_metadata: A space-delimited list of http metadata request keys
                to forward to logs/other requests
         """
+        self.server_name_for_logs: str = "Http Server"
         self.port = port
         self.http_port = http_port
         self.agents = copy.deepcopy(agents)
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = None
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata.split(" ")
 
     def __call__(self):
@@ -56,10 +57,12 @@ class HttpSidecar:
         Method to be called by a process running tornado HTTP server
         to actually start serving requests.
         """
+        self.logger = HttpLogger()
+
         app = self.make_app()
         app.listen(self.http_port)
-        self.logger.info("HTTP server is running on port %d", self.http_port)
-        self.logger.debug("Serving agents: %s", repr(self.agents.keys()))
+        self.logger.info({}, "HTTP server is running on port %d", self.http_port)
+        self.logger.debug({}, "Serving agents: %s", repr(self.agents.keys()))
         IOLoop.current().start()
 
     def make_app(self):
@@ -86,12 +89,12 @@ class HttpSidecar:
                  "forwarded_request_metadata": self.forwarded_request_metadata}
             route: str = f"/api/v1/{agent_name}/connectivity"
             handlers.append((route, ConnectivityHandler, request_data))
-            self.logger.info("Registering URL path: %s", route)
+            self.logger.info({}, "Registering URL path: %s", route)
             route: str = f"/api/v1/{agent_name}/function"
             handlers.append((route, FunctionHandler, request_data))
-            self.logger.info("Registering URL path: %s", route)
+            self.logger.info({}, "Registering URL path: %s", route)
             route: str = f"/api/v1/{agent_name}/streaming_chat"
             handlers.append((route, StreamingChatHandler, request_data))
-            self.logger.info("Registering URL path: %s", route)
+            self.logger.info({}, "Registering URL path: %s", route)
 
         return Application(handlers)
