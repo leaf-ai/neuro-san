@@ -51,18 +51,21 @@ class BaseRequestHandler(RequestHandler):
     request_id: int = 0
 
     # pylint: disable=attribute-defined-outside-init
-    def initialize(self, agent_name, port, forwarded_request_metadata):
+    def initialize(self, agent_name, port,
+                   forwarded_request_metadata, openapi_spec_file):
         """
         This method is called by Tornado framework to allow
         injecting service-specific data into local handler context.
         :param agent_name: name of receiving neuro-san agent
         :param port: gRPC service port.
         :param forwarded_request_metadata: request metadata to forward.
+        :param openapi_spec_file: file path to OpenAPI service spec.
         """
         #
         self.agent_name: str = agent_name
         self.port: int = port
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata
+        self.openapi_spec_file: str = openapi_spec_file
         self.logger = HttpLogger()
 
         if os.environ.get("AGENT_ALLOW_CORS_HEADERS") is not None:

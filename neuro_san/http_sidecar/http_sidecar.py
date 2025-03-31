@@ -36,12 +36,14 @@ class HttpSidecar:
     """
     def __init__(self, port: int, http_port: int,
                  agents: Dict[str, Any],
+                 openapi_service_spec_path: str,
                  forwarded_request_metadata: str = DEFAULT_FORWARDED_REQUEST_METADATA):
         """
         Constructor:
         :param port: port for gRPC neuro-san service;
         :param http_port: port for http neuro-san service;
         :param agents: dictionary of registered agents;
+        :param openapi_service_spec_path: path to a file with OpenAPI service specification;
         :param forwarded_request_metadata: A space-delimited list of http metadata request keys
                to forward to logs/other requests
         """
@@ -50,6 +52,7 @@ class HttpSidecar:
         self.http_port = http_port
         self.agents = copy.deepcopy(agents)
         self.logger = None
+        self.openapi_service_spec_path: str = openapi_service_spec_path
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata.split(" ")
 
     def __call__(self):
@@ -74,7 +77,8 @@ class HttpSidecar:
         concierge_data: Dict[str, Any] = \
             {"agent_name": "concierge",
              "port": self.port,
-             "forwarded_request_metadata": self.forwarded_request_metadata}
+             "forwarded_request_metadata": self.forwarded_request_metadata,
+             "openapi_spec_file": self.openapi_spec_file}
         handlers.append(("/api/v1/list", ConciergeHandler, concierge_data))
 
         for agent_name in self.agents.keys():
@@ -86,7 +90,8 @@ class HttpSidecar:
             request_data: Dict[str, Any] =\
                 {"agent_name": agent_name,
                  "port": self.port,
-                 "forwarded_request_metadata": self.forwarded_request_metadata}
+                 "forwarded_request_metadata": self.forwarded_request_metadata,
+                 "openapi_spec_file": self.openapi_spec_file}
             route: str = f"/api/v1/{agent_name}/connectivity"
             handlers.append((route, ConnectivityHandler, request_data))
             self.logger.info({}, "Registering URL path: %s", route)
@@ -98,3 +103,15 @@ class HttpSidecar:
             self.logger.info({}, "Registering URL path: %s", route)
 
         return Application(handlers)
+
+    def build_request_data(self, agent_name: str) -> Dict[str, Any]:
+        """
+        Build request data for Http handlers.
+        :param agent_name: name of an agent this request data is for.
+        """
+        return  {
+            "agent_name": agent_name,
+            "port": self.port,
+            "forwarded_request_metadata": self.forwarded_request_metadata,
+            "openapi_spec_file": self.openapi_spec_file
+        }
