@@ -27,7 +27,7 @@ from neuro_san.http_sidecar.handlers.connectivity_handler import ConnectivityHan
 from neuro_san.http_sidecar.handlers.function_handler import FunctionHandler
 from neuro_san.http_sidecar.handlers.streaming_chat_handler import StreamingChatHandler
 from neuro_san.http_sidecar.handlers.concierge_handler import ConciergeHandler
-from neuro_san.http_sidecar.handlers.openapi_publish_handler import OpenapiPublishHandler
+from neuro_san.http_sidecar.handlers.openapi_publish_handler import OpenApiPublishHandler
 
 
 class HttpSidecar:
@@ -79,7 +79,7 @@ class HttpSidecar:
         concierge_data: Dict[str, Any] = self.build_request_data("concierge")
         handlers.append(("/api/v1/list", ConciergeHandler, concierge_data))
         openapi_spec_data: Dict[str, Any] = self.build_request_data("openapi")
-        handlers.append(("/api/v1/docs", OpenapiPublishHandler, openapi_spec_data))
+        handlers.append(("/api/v1/docs", OpenApiPublishHandler, openapi_spec_data))
 
         for agent_name in self.agents.keys():
             # For each of registered agents, we define 3 request paths -

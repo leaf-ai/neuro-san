@@ -18,7 +18,7 @@ from typing import Any, Dict
 from neuro_san.http_sidecar.handlers.base_request_handler import BaseRequestHandler
 
 
-class OpenapiPublishHandler(BaseRequestHandler):
+class OpenApiPublishHandler(BaseRequestHandler):
     """
     Handler class for neuro-san OpenAPI service spec publishing"concierge" API call.
     """
