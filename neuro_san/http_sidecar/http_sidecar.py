@@ -35,6 +35,7 @@ class HttpSidecar:
     Class provides simple http endpoint for neuro-san API,
     working as a client to neuro-san gRPC service.
     """
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(self, port: int, http_port: int,
                  agents: Dict[str, Any],
                  openapi_service_spec_path: str,
@@ -105,7 +106,7 @@ class HttpSidecar:
         :param agent_name: name of an agent this request data is for.
         :return: a dictionary with request data to be passed to a http handler.
         """
-        return  {
+        return {
             "agent_name": agent_name,
             "port": self.port,
             "forwarded_request_metadata": self.forwarded_request_metadata,
