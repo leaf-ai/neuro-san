@@ -180,7 +180,7 @@ class DataDrivenChatSession:
         redactor = SlyDataRedactor(front_man_spec,
                                    config_keys=["allow.to_upstream.sly_data"],
                                    allow_empty_dict=False)
-        return_sly_data: Dict[str, Any] = redactor.filter_config(sly_data)
+        return_sly_data: Dict[str, Any] = redactor.filter_config(self.sly_data)
 
         # Stream over chat state as the last message
         message = AgentFrameworkMessage(content=answer, chat_context=return_chat_context,
