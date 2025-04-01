@@ -60,7 +60,6 @@ class StreamingInputProcessor:
         if user_input is None or user_input == self.default_input:
             return state
 
-        print(f"Sending user_input {user_input}")
         sly_data: Dict[str, Any] = state.get("sly_data")
         # Note that by design, a client does not have to interpret the
         # chat_context at all. It merely needs to pass it along to continue

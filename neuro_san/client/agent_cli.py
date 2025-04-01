@@ -160,6 +160,7 @@ Some suggestions:
             if user_input == "quit":
                 break
 
+            print(f"Sending user_input {user_input}")
             state["user_input"] = user_input
             state = input_processor.process_once(state)
 
