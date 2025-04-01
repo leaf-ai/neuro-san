@@ -122,6 +122,30 @@ class TestSlyDataRedactor(TestCase):
         self.assertIsNone(redacted.get("no"))
         self.assertIsNone(redacted.get("not_mentioned"))
 
+    def test_key_list(self):
+        """
+        Tests basic list specification where listed keys get through
+        """
+        agent_spec = {
+            "allow": {
+                "sly_data": ["yes"]
+            }
+        }
+        redactor = SlyDataRedactor(agent_spec, config_keys=["allow.sly_data"])
+
+        sly_data = {
+            "yes": 1,
+            "no": 0,
+            "not_mentioned": -1,
+        }
+
+        redacted: Dict[str, Any] = redactor.filter_config(sly_data)
+
+        self.assertIsNotNone(redacted.get("yes"))
+        self.assertIsNone(redacted.get("no"))
+        self.assertIsNone(redacted.get("not_mentioned"))
+
+
     def test_translation(self):
         """
         Tests translation of keys for the SlyDataRedactor
