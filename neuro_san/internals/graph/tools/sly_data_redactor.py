@@ -74,6 +74,8 @@ class SlyDataRedactor(ConfigFilter):
             return self.maybe_empty(empty)
 
         if isinstance(allow_dict, List):
+            # What was configured was a list.
+            # Turn the string keys listed into a dictionary for canonical processing below.
             true_dict: Dict[str, Any] = {}
             for key in allow_dict:
                 true_dict[key] = True
