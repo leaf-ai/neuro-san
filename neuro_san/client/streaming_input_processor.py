@@ -83,26 +83,19 @@ class StreamingInputProcessor:
             returned_sly_data: Dict[str, Any] = self.processor.get_sly_data()
             origin_str = Origination.get_full_name_from_origin(self.processor.get_answer_origin())
 
-        # Handle return of sly_data
-        if sly_data is None:
-            sly_data = returned_sly_data
-        else:
-            sly_data.update(returned_sly_data)
+        if origin_str is None or len(origin_str) == 0:
+            origin_str = "agent network"
 
         update = {
             "chat_context": chat_context,
             "num_input": num_input + 1,
             "last_chat_response": last_chat_response,
             "user_input": None,
-            "sly_data": sly_data,
+            "returned_sly_data": returned_sly_data,
+            "origin_str": origin_str
         }
         return_state.update(update)
 
-        if origin_str is None or len(origin_str) == 0:
-            origin_str = "agent network"
-
-        print(f"\nResponse from {origin_str}:")
-        print(f"{last_chat_response}")
         return return_state
 
     def formulate_chat_request(self, user_input: str,
