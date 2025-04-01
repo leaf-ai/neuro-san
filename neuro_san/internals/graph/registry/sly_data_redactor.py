@@ -24,23 +24,30 @@ class SlyDataRedactor(ConfigFilter):
     """
 
     def __init__(self, calling_agent_tool_spec: Dict[str, Any],
-                 config_keys: List[str] = []):
+                 config_keys: List[str] = [],
+                 allow_empty_dict: bool = True):
         """
         Constructor
 
         :param calling_agent_tool_spec: The dictionary describing the JSON agent tool
                             that is providing the sly_data.
         :param keys: A list of config keys in reverse precedence order.
+        :param allow_empty_dict: Default is true which allows filter_config() to return
+                    an empty dictionary.  When set to False and empty this yields
+                    a None value.
         """
         self.agent_tool_spec: Dict[str, Any] = calling_agent_tool_spec
         self.config_keys: List[str] = config_keys
+        self.allow_empty_dict: bool = allow_empty_dict
 
     def filter_config(self, basis_config: Dict[str, Any]) -> Dict[str, Any]:
         """
         :param basis_config: Source of the sly_data to redact.
-        :return: A new sly_data dictionary with proper redactions per the "allow.sly_data"
-                dictionary on the agent spec.  If no such key exists, then no sly_data
-                gets through to the agent to be called.
+        :return: A new sly_data dictionary with proper redactions per the config_keys on the
+                agent_tool_spec.  If no such keys exist, then no sly_data
+                gets through to the agent to be called.  Also, if allow_empty_dict
+                is set to true, this method can return an empty dictionary.
+                When allow_empty_dict is set to False and empty dictionary returns a None value.
         """
         empty: Dict[str, Any] = {}
 
@@ -54,15 +61,15 @@ class SlyDataRedactor(ConfigFilter):
         # Recall empty dictionaries evaluate to False (as well as boolean values)
         if not bool(allow_dict):
             # By default we don't let anything through
-            return empty
+            return self.maybe_empty(empty)
 
         if isinstance(allow_dict, bool) and bool(allow_dict):
             # The value is a simple True, so let everything through.
-            return basis_config
+            return self.maybe_empty(basis_config)
 
         if not bool(basis_config) or not isinstance(basis_config, Dict):
             # There is no dictionary content, so nothing to redact
-            return empty
+            return self.maybe_empty(empty)
 
         # Got rid of all the easy cases.
         # Now leaf through the keys of the dictionaries.
@@ -82,4 +89,16 @@ class SlyDataRedactor(ConfigFilter):
                 # Use the same key and the same value in the explicit allow
                 redacted[source_key] = source_value
 
-        return redacted
+        return self.maybe_empty(redacted)
+
+    def maybe_empty(self, test_dict: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        :param test_dict: The dictionary to test for emptiness
+        :return: If the test_dict is empty and the instance is not configured
+                to return empty dictionaries, then return None. Otherise return
+                the test_dict in its entirety
+        """
+        # Recall empty dictionaries evaluate to False
+        if not self.allow_empty_dict and not bool(test_dict):
+            return None
+        return test_dict

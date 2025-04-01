@@ -22,6 +22,7 @@ from openai import BadRequestError
 from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.internals.chat.chat_history_message_processor import ChatHistoryMessageProcessor
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
+from neuro_san.internals.graph.registry.sly_data_redactor import SlyDataRedactor
 from neuro_san.internals.graph.tools.front_man import FrontMan
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
@@ -173,8 +174,16 @@ class DataDrivenChatSession:
             # Can't have content as None or problems arise.
             answer = ""
 
+        # Send back sly_data as the front-man permits
+        front_man_spec: Dict[str, Any] = self.front_man.get_agent_tool_spec()
+        redactor = SlyDataRedactor(front_man_spec,
+                                   config_keys=["allow.to_upstream.sly_data"],
+                                   allow_empty_dict=False)
+        return_sly_data: Dict[str, Any] = redactor.redact(sly_data)
+
         # Stream over chat state as the last message
-        message = AgentFrameworkMessage(content=answer, chat_context=return_chat_context)
+        message = AgentFrameworkMessage(content=answer, chat_context=return_chat_context,
+                                        sly_data=return_sly_data)
         journal: Journal = invocation_context.get_journal()
         await journal.write_message(message, origin=None)
 
