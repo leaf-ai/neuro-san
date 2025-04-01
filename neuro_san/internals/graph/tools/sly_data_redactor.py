@@ -73,6 +73,12 @@ class SlyDataRedactor(ConfigFilter):
             # There is no dictionary content, so nothing to redact
             return self.maybe_empty(empty)
 
+        if isinstance(allow_dict, List):
+            true_dict: Dict[str, Any] = {}
+            for key in allow_dict:
+                true_dict[key] = True
+            allow_dict = true_dict
+
         # Got rid of all the easy cases.
         # Now leaf through the keys of the dictionaries.
         # For now, just do top-level keys. Can get more complicated later if need be.
