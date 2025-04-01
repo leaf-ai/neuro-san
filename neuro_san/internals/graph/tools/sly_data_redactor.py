@@ -21,6 +21,61 @@ class SlyDataRedactor(ConfigFilter):
     """
     An implementation of the ConfigFilter interface which redacts sly data
     based on calling-agent specs.
+
+    Sections of the agent spec that are effected depending on how/where this is
+    called are typically:
+        * allow.to_downstream.sly_data - filters sly_data sent to external tools
+        * allow.from_downstream.sly_data - filters sly_data coming back from external tools
+        * allow.to_upstream.sly_data - filters sly_data sent by front-man to client
+
+    Values for these keys can take a variety of forms.
+    Most descriptive is a dictionary whose keys are keys to be found
+    in the sly_data and whose values are true/false values letting
+    that private data through:
+        "allow": {
+            "to_downstream": {
+                "sly_data": {
+                    "bearer_token": true,
+                    "scratchpad": false,
+                }
+            }
+        }
+
+    This could be shorted to a list form that describes only
+    the keys to let through and anything omitted is redacted:
+        "allow": {
+            "to_downstream": {
+                "sly_data": [ "bearer_token" ]
+            }
+        }
+
+    Something useful for debugging is a boolean value that lets everything through:
+        "allow": {
+            "to_downstream": {
+                "sly_data": true
+            }
+        }
+
+    But our stance is security by default, so when nothing is listed, it is
+    equivalent to this, which lets nothing through:
+        "allow": {
+            "to_downstream": {
+                "sly_data": false
+            }
+        }
+
+    Finally, an advanced feature of the dictionary form allows for translation
+    from one key to another:
+        "allow": {
+            "to_downstream": {
+                "sly_data": {
+                    "bearer_token": true,   # let through
+                    "secret": "api_key",    # let through, but value from "secret"
+                                            # is moved to a new key called "api_key"
+                    "scratchpad": false,    # not let through
+                }
+            }
+        }
     """
 
     def __init__(self, calling_agent_tool_spec: Dict[str, Any],
@@ -31,7 +86,10 @@ class SlyDataRedactor(ConfigFilter):
 
         :param calling_agent_tool_spec: The dictionary describing the JSON agent tool
                             that is providing the sly_data.
-        :param keys: A list of config keys in reverse precedence order.
+        :param config_keys: A list of config keys in reverse precedence order.
+                    That is, the further on in the list you get, the greater the precedence.
+                    Each string is a fully qualified identifier that can span multiple
+                    dictionaries like: "allow.to_upstream.sly_data".
         :param allow_empty_dict: Default is true which allows filter_config() to return
                     an empty dictionary.  When set to False and empty this yields
                     a None value.
