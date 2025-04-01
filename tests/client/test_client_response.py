@@ -75,6 +75,10 @@ class TestMusicNerdProClient(unittest.TestCase):
             response_keyword = "Beatles"
             agent_process = None
 
+            with open(input_file, "r", encoding="utf-8") as fp:
+                input = fp.read()
+                print(f"input: {input}")
+
             try:
                 agent_process = TestMusicNerdProClient.get_agent_cli_subprocess(TestMusicNerdProClient.agent,
                                                                                 input_file, response_file.name)
