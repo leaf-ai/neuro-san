@@ -30,19 +30,19 @@ from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.utils.file_of_class import FileOfClass
 
 
-# pylint: disable=too-many-instance-attributes
 class AgentCli:
     """
     Command line tool for communicating with a Agent service
     running in a container.
     """
 
+    DEFAULT_INPUT: str = "DEFAULT"
+    DEFAULT_PROMPT: str = "Please enter your response ('quit' to terminate):\n"
+
     def __init__(self):
         """
         Constructor
         """
-        self.default_prompt: str = "Please enter your response ('quit' to terminate):\n"
-        self.default_input: str = "DEFAULT"
         self.poll_timeout_seconds: float = 5.0
         self.input_timeout_seconds: float = 5000.0
         self.args = None
@@ -51,8 +51,6 @@ class AgentCli:
         self.session: AgentSession = None
         self.thinking_dir: str = None
 
-    # pylint: disable=too-many-branches
-    # pylint: disable=too-many-locals
     def main(self):
         """
         Main entry point for command line user interaction
@@ -121,9 +119,20 @@ Some suggestions:
         else:
             print(f"    See any one of the files in {self.thinking_dir} for agent network chat details.\n")
 
+        self.loop_until_done(user_input, sly_data, chat_filter)
+
+    def loop_until_done(self, user_input: str, sly_data: Dict[str, Any],
+                        chat_filter: Dict[str, Any]):
+        """
+        Loop trading off between user input and agent response until done.
+        :param user_input: The initial user input (if any)
+        :param sly_data: The initial sly data dictionary (if any)
+        :param chat_filter: The chat filter dictionary to use
+        """
+
         state: Dict[str, Any] = {
             "last_chat_response": None,
-            "prompt": self.default_prompt,
+            "prompt": self.DEFAULT_PROMPT,
             "timeout": self.input_timeout_seconds,
             "num_input": 0,
             "user_input": user_input,
@@ -131,7 +140,7 @@ Some suggestions:
             "chat_filter": chat_filter,
         }
 
-        input_processor = StreamingInputProcessor(self.default_input,
+        input_processor = StreamingInputProcessor(self.DEFAULT_INPUT,
                                                   self.args.thinking_file,
                                                   self.session,
                                                   self.thinking_dir)
@@ -144,7 +153,7 @@ Some suggestions:
             if user_input is None:
                 if prompt is not None and len(prompt) > 0:
                     user_input = timedinput(prompt, timeout=timeout,
-                                            default=self.default_input)
+                                            default=self.DEFAULT_INPUT)
                 else:
                     user_input = None
 
