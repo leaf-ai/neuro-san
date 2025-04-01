@@ -37,7 +37,7 @@ class TestMusicNerdProClient(unittest.TestCase):
                                                  "--one_shot"
                                                  ])
         # Wait for the server to start
-        time.sleep(20)
+        time.sleep(40)
 
         return agent_cli_subprocess
 
