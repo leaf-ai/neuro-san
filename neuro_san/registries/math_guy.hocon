@@ -52,7 +52,7 @@ Return verbatim whatever it returns.
             "tools": ["calculator"]
         },
 
-        # The synonymizer is the lowest level tool and does not call anyone else.
+        # The calculator is a low-level CodedTool and does not call anyone else.
         # He is called by the front-man.
         {
             "name": "calculator",
