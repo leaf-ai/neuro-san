@@ -12,10 +12,10 @@
 """
 See class comment for details
 """
+import json
 from typing import Any, Dict
 
 from neuro_san.http_sidecar.handlers.base_request_handler import BaseRequestHandler
-from neuro_san.interfaces.concierge_session import ConciergeSession
 
 
 class OpenapiPublishHandler(BaseRequestHandler):
@@ -25,21 +25,19 @@ class OpenapiPublishHandler(BaseRequestHandler):
 
     def get(self):
         """
-        Implementation of GET request handler for "concierge" API call.
+        Implementation of GET request handler
+        for "publish my OpenAPI specification document" call.
         """
         metadata: Dict[str, Any] = self.get_metadata()
-        self.logger.info(metadata, "Start GET %s/list", self.agent_name)
+        self.logger.info(metadata, "Start GET %s/docs", self.agent_name)
         try:
-            data: Dict[str, Any] = {}
-            grpc_session: ConciergeSession = self.get_concierge_grpc_session(metadata)
-            result_dict: Dict[str, Any] = grpc_session.list(data)
-
-            # Return gRPC response to the HTTP client
+            with open(self.openapi_service_spec_path, "r", encoding='utf-8') as f_out:
+                result_dict: Dict[str, Any] = json.load(f_out)
+            # Return json data to the HTTP client
             self.set_header("Content-Type", "application/json")
             self.write(result_dict)
-
         except Exception as exc:  # pylint: disable=broad-exception-caught
             self.process_exception(exc)
         finally:
             self.flush()
-            self.logger.info(metadata, "Finish GET %s/list", self.agent_name)
+            self.logger.info(metadata, "Finish GET %s/docs", self.agent_name)

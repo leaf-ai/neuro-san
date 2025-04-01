@@ -27,6 +27,7 @@ from neuro_san.http_sidecar.handlers.connectivity_handler import ConnectivityHan
 from neuro_san.http_sidecar.handlers.function_handler import FunctionHandler
 from neuro_san.http_sidecar.handlers.streaming_chat_handler import StreamingChatHandler
 from neuro_san.http_sidecar.handlers.concierge_handler import ConciergeHandler
+from neuro_san.http_sidecar.handlers.openapi_publish_handler import OpenapiPublishHandler
 
 
 class HttpSidecar:
@@ -74,12 +75,10 @@ class HttpSidecar:
         """
         handlers = []
         handlers.append(("/", HealthCheckHandler))
-        concierge_data: Dict[str, Any] = \
-            {"agent_name": "concierge",
-             "port": self.port,
-             "forwarded_request_metadata": self.forwarded_request_metadata,
-             "openapi_spec_file": self.openapi_spec_file}
+        concierge_data: Dict[str, Any] = self.build_request_data("concierge")
         handlers.append(("/api/v1/list", ConciergeHandler, concierge_data))
+        openapi_spec_data: Dict[str, Any] = self.build_request_data("openapi")
+        handlers.append(("/api/v1/docs", OpenapiPublishHandler, openapi_spec_data))
 
         for agent_name in self.agents.keys():
             # For each of registered agents, we define 3 request paths -
@@ -87,11 +86,7 @@ class HttpSidecar:
             # For each request http path, we build corresponding request handler
             # and put it in "handlers" list,
             # which is used to construct tornado "application".
-            request_data: Dict[str, Any] =\
-                {"agent_name": agent_name,
-                 "port": self.port,
-                 "forwarded_request_metadata": self.forwarded_request_metadata,
-                 "openapi_spec_file": self.openapi_spec_file}
+            request_data: Dict[str, Any] = self.build_request_data(agent_name)
             route: str = f"/api/v1/{agent_name}/connectivity"
             handlers.append((route, ConnectivityHandler, request_data))
             self.logger.info({}, "Registering URL path: %s", route)
@@ -108,10 +103,11 @@ class HttpSidecar:
         """
         Build request data for Http handlers.
         :param agent_name: name of an agent this request data is for.
+        :return: a dictionary with request data to be passed to a http handler.
         """
         return  {
             "agent_name": agent_name,
             "port": self.port,
             "forwarded_request_metadata": self.forwarded_request_metadata,
-            "openapi_spec_file": self.openapi_spec_file
+            "openapi_service_spec_path": self.openapi_service_spec_path
         }

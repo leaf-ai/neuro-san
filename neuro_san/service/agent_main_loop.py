@@ -107,7 +107,7 @@ class AgentMainLoop(ServerLoopCallbacks):
         self.max_concurrent_requests = args.max_concurrent_requests
         self.request_limit = args.request_limit
         self.forwarded_request_metadata = args.forwarded_request_metadata
-        self.service_openapi_spec_file = args.service_openapi_spec_file
+        self.service_openapi_spec_file = args.openapi_service_spec_path
 
         manifest_restorer = RegistryManifestRestorer()
         manifest_tool_registries: Dict[str, AgentToolRegistry] = manifest_restorer.restore()
