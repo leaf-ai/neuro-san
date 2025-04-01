@@ -166,7 +166,7 @@ Some suggestions:
             print(f"\nResponse from {state.get('origin_str')}:")
             print(f"{state.get('last_chat_response')}")
             if state.get("returned_sly_data") is not None:
-                print("Returned sly_data is: {json.dumps(state.get('returned_sly_data'), indent=4, sort_keys=4)}")
+                print(f"Returned sly_data is: {json.dumps(state.get('returned_sly_data'), indent=4, sort_keys=4)}")
 
             if self.args.response_output_file is not None:
                 with open(self.args.response_output_file, 'w', encoding="utf-8") as output_file:

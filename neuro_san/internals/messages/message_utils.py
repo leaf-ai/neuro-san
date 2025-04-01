@@ -161,6 +161,7 @@ def convert_to_chat_message(message: BaseMessage, origin: List[Dict[str, Any]] =
         "chat_context": "chat_context",
         "tool_result_origin": "tool_result_origin",
         "structure": "structure",
+        "sly_data": "sly_data",
     }
     for src, dest in optionals.items():
         value: Any = None
