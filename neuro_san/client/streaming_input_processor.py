@@ -91,6 +91,7 @@ class StreamingInputProcessor:
             "num_input": num_input + 1,
             "last_chat_response": last_chat_response,
             "user_input": None,
+            "sly_data": None,
             "returned_sly_data": returned_sly_data,
             "origin_str": origin_str
         }
