@@ -14,7 +14,7 @@ from typing import Dict
 
 from unittest import TestCase
 
-from neuro_san.internals.graph.registry.sly_data_redactor import SlyDataRedactor
+from neuro_san.internals.graph.tools.sly_data_redactor import SlyDataRedactor
 
 
 class TestSlyDataRedactor(TestCase):
@@ -42,7 +42,7 @@ class TestSlyDataRedactor(TestCase):
                 }
             }
         }
-        redactor = SlyDataRedactor(agent_spec)
+        redactor = SlyDataRedactor(agent_spec, config_keys=["allow.sly_data"])
 
         sly_data = {
             "yes": 1,
@@ -65,7 +65,7 @@ class TestSlyDataRedactor(TestCase):
                 "sly_data": True
             }
         }
-        redactor = SlyDataRedactor(agent_spec)
+        redactor = SlyDataRedactor(agent_spec, config_keys=["allow.sly_data"])
 
         sly_data = {
             "yes": 1,
@@ -88,7 +88,7 @@ class TestSlyDataRedactor(TestCase):
                 "sly_data": False
             }
         }
-        redactor = SlyDataRedactor(agent_spec)
+        redactor = SlyDataRedactor(agent_spec, config_keys=["allow.sly_data"])
 
         sly_data = {
             "yes": 1,
@@ -108,7 +108,7 @@ class TestSlyDataRedactor(TestCase):
         """
         agent_spec = {
         }
-        redactor = SlyDataRedactor(agent_spec)
+        redactor = SlyDataRedactor(agent_spec, config_keys=["allow.sly_data"])
 
         sly_data = {
             "yes": 1,
@@ -119,6 +119,29 @@ class TestSlyDataRedactor(TestCase):
         redacted: Dict[str, Any] = redactor.filter_config(sly_data)
 
         self.assertIsNone(redacted.get("yes"))
+        self.assertIsNone(redacted.get("no"))
+        self.assertIsNone(redacted.get("not_mentioned"))
+
+    def test_key_list(self):
+        """
+        Tests basic list specification where listed keys get through
+        """
+        agent_spec = {
+            "allow": {
+                "sly_data": ["yes"]
+            }
+        }
+        redactor = SlyDataRedactor(agent_spec, config_keys=["allow.sly_data"])
+
+        sly_data = {
+            "yes": 1,
+            "no": 0,
+            "not_mentioned": -1,
+        }
+
+        redacted: Dict[str, Any] = redactor.filter_config(sly_data)
+
+        self.assertIsNotNone(redacted.get("yes"))
         self.assertIsNone(redacted.get("no"))
         self.assertIsNone(redacted.get("not_mentioned"))
 
@@ -134,7 +157,7 @@ class TestSlyDataRedactor(TestCase):
                 }
             }
         }
-        redactor = SlyDataRedactor(agent_spec)
+        redactor = SlyDataRedactor(agent_spec, config_keys=["allow.sly_data"])
 
         sly_data = {
             "yes": 1,

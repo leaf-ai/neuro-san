@@ -24,6 +24,7 @@ from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 from neuro_san.interfaces.async_agent_session import AsyncAgentSession
 from neuro_san.internals.graph.tools.abstract_callable_tool import AbstractCallableTool
 from neuro_san.internals.graph.tools.external_message_processor import ExternalMessageProcessor
+from neuro_san.internals.graph.tools.sly_data_redactor import SlyDataRedactor
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
@@ -36,6 +37,7 @@ from neuro_san.internals.run_context.interfaces.run_context import RunContext
 from neuro_san.message_processing.basic_message_processor import BasicMessageProcessor
 
 
+# pylint: disable=too-many-instance-attributes
 class ExternalTool(AbstractCallableTool):
     """
     CallableTool implementation that handles using a service to call
@@ -73,13 +75,17 @@ class ExternalTool(AbstractCallableTool):
         self.run_context: RunContext = RunContextFactory.create_run_context(parent_run_context, self)
         self.journal: Journal = self.run_context.get_journal()
         self.arguments: Dict[str, Any] = arguments
+        self.allow_from_downstream: Dict[str, Any] = allow_from_downstream
 
         self.session: AsyncAgentSession = None
         self.chat_context: Dict[str, Any] = None
         self.processor = BasicMessageProcessor()
 
-        extractor = DictionaryExtractor(allow_from_downstream)
-        raw_reporting: Union[bool, str, List[str], Dict[str, Any]] = extractor.get("reporting", False)
+        # Allow for precedence of keys from "allow.from_downstream" in the agent spec.
+        extractor = DictionaryExtractor(self.allow_from_downstream)
+        raw_reporting: Union[bool, str, List[str], Dict[str, Any]] = False
+        for key in ["reporting", "messages"]:
+            raw_reporting = extractor.get(key, raw_reporting)
 
         # Should we be reporting external messages?
         report: bool = False
@@ -144,8 +150,19 @@ class ExternalTool(AbstractCallableTool):
             response: Dict[str, Any] = chat_response.get("response", empty)
             await self.processor.async_process_message(response)
 
+        # Get stuff back from the message processing
         answer: str = self.processor.get_answer()
         self.chat_context = self.processor.get_chat_context()
+        returned_sly_data: Dict[str, Any] = self.processor.get_sly_data()
+
+        # Redact any sly_data that came back based on "allow.from_downstream.sly_data"
+        redactor = SlyDataRedactor(self.allow_from_downstream,
+                                   config_keys=["sly_data"],
+                                   allow_empty_dict=True)
+        redacted_sly_data: Dict[str, Any] = redactor.filter_config(returned_sly_data)
+        if redacted_sly_data is not None:
+            for key in redacted_sly_data:
+                self.sly_data[key] = redacted_sly_data[key]
 
         message = AgentMessage(content=f"Got result: {answer}")
         await self.journal.write_message(message)
