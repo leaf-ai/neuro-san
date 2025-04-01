@@ -145,7 +145,6 @@ class TestSlyDataRedactor(TestCase):
         self.assertIsNone(redacted.get("no"))
         self.assertIsNone(redacted.get("not_mentioned"))
 
-
     def test_translation(self):
         """
         Tests translation of keys for the SlyDataRedactor
