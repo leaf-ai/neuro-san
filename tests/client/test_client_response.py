@@ -78,8 +78,16 @@ class TestMusicNerdProClient(unittest.TestCase):
             try:
                 agent_process = TestMusicNerdProClient.get_agent_cli_subprocess(TestMusicNerdProClient.agent,
                                                                                 input_file, response_file.name)
+                poll = agent_process.poll()
+                if poll is None:
+                    print(f"agent_process {agent_process} is alive")
+
                 # Wait for the server to start
                 time.sleep(40)
+
+                poll = agent_process.poll()
+                if poll is None:
+                    print(f"agent_process {agent_process} is alive")
 
                 self.assert_response(response_file, response_keyword)
             finally:
