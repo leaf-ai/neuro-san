@@ -24,7 +24,7 @@ class SlyDataRedactor(ConfigFilter):
     """
 
     def __init__(self, calling_agent_tool_spec: Dict[str, Any],
-                 config_keys: List[str] = [],
+                 config_keys: List[str] = None,
                  allow_empty_dict: bool = True):
         """
         Constructor
@@ -38,6 +38,8 @@ class SlyDataRedactor(ConfigFilter):
         """
         self.agent_tool_spec: Dict[str, Any] = calling_agent_tool_spec
         self.config_keys: List[str] = config_keys
+        if self.config_keys is None:
+            self.config_keys = []
         self.allow_empty_dict: bool = allow_empty_dict
 
     def filter_config(self, basis_config: Dict[str, Any]) -> Dict[str, Any]:
