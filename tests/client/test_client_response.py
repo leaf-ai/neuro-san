@@ -28,14 +28,14 @@ class TestMusicNerdProClient(unittest.TestCase):
         :return: a Popen object representing the running process
         """
         # pylint: disable=consider-using-with
-        agent_cli_subprocess = subprocess.run(["python3", "-m", "neuro_san.client.agent_cli",
-                                               "--connection", "direct",
-                                               "--agent", agent,
-                                               "--first_prompt_file", input_file,
-                                               "--response_output_file", response_file,
-                                               "--one_shot"
-                                               ], #stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                              capture_output=True, text=True, check=True, timeout=30)
+        agent_cli_subprocess = subprocess.call(["python3", "-m", "neuro_san.client.agent_cli",
+                                                "--connection", "direct",
+                                                "--agent", agent,
+                                                "--first_prompt_file", input_file,
+                                                "--response_output_file", response_file,
+                                                "--one_shot"
+                                                ]) #stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                               #capture_output=True, text=True, check=True, timeout=30)
         # Wait for the server to start
         # time.sleep(40)
 
@@ -82,9 +82,10 @@ class TestMusicNerdProClient(unittest.TestCase):
             try:
                 result = TestMusicNerdProClient.get_agent_cli_subprocess(TestMusicNerdProClient.agent,
                                                                          input_file, response_file.name)
-                print(f"result.returncode {result.returncode}")
-                print(f"result.stderr: {result.stderr}")
-                print(f"result.: {result.stdout}")
+                print(f"returncode {result}")
+                #print(f"result.returncode {result.returncode}")
+                #print(f"result.stderr: {result.stderr}")
+                #print(f"result.: {result.stdout}")
                 """
                 for _ in range(100):
                     line = agent_process.stdout.readline()
