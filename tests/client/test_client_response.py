@@ -28,18 +28,18 @@ class TestMusicNerdProClient(unittest.TestCase):
         :return: a Popen object representing the running process
         """
         # pylint: disable=consider-using-with
-        """
-        agent_cli_subprocess = subprocess.run(["python3", "-m", "neuro_san.client.agent_cli",
-                                               "--connection", "direct",
-                                               "--agent", agent,
-                                               "--first_prompt_file", input_file,
-                                               "--response_output_file", response_file,
-                                               "--one_shot"
+        agent_cli_subprocess = subprocess.run(["python3", "-m", "neuro_san.client.agent_cli"#,
+                                               #"--connection", "direct",
+                                               #"--agent", agent,
+                                               #"--first_prompt_file", input_file,
+                                               #"--response_output_file", response_file,
+                                               #"--one_shot"
                                                ], #stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                               capture_output=True, text=True, check=True, timeout=30)
         """
         agent_cli_subprocess = subprocess.run(["python3", "-c", "print('Hello World!')"], #stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                               capture_output=True, text=True, check=True, timeout=30)
+        """
         # Wait for the server to start
         # Wait for the server to start
         # time.sleep(40)
