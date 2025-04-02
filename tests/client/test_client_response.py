@@ -83,12 +83,11 @@ class TestMusicNerdProClient(unittest.TestCase):
                 agent_process = TestMusicNerdProClient.get_agent_cli_subprocess(TestMusicNerdProClient.agent,
                                                                                 input_file, response_file.name)
 
-                max_num_lines = 100
-                num_lines = 0
-                while num_lines < max_num_lines:
+                for _ in range(100):
                     line = agent_process.stdout.readline()
+                    if not line:
+                        continue
                     print(f"aline: {line.rstrip()}", flush=True)
-                    num_lines += 1
 
                 poll = agent_process.poll()
                 if poll is None:
