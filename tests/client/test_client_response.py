@@ -102,6 +102,9 @@ class TestMusicNerdProClient(unittest.TestCase):
                 if poll is None:
                     print(f"agent_process {agent_process} is alive")
 
+                # Wait for the process to complete
+                agent_process.wait()
+
                 self.assert_response(response_file, response_keyword)
             finally:
                 TestMusicNerdProClient.destruct_agent_cli_subprocess(agent_process)
