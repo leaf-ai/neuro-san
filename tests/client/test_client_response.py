@@ -80,8 +80,11 @@ class TestMusicNerdProClient(unittest.TestCase):
                 print(f"input: {input}")
 
             try:
-                agent_process = TestMusicNerdProClient.get_agent_cli_subprocess(TestMusicNerdProClient.agent,
-                                                                                input_file, response_file.name)
+                result = TestMusicNerdProClient.get_agent_cli_subprocess(TestMusicNerdProClient.agent,
+                                                                         input_file, response_file.name)
+                print(f"result.returncode {result.returncode}")
+                print(f"result.stderr: {result.stderr}")
+                print(f"result.: {result.stdout}")
                 """
                 for _ in range(100):
                     line = agent_process.stdout.readline()
