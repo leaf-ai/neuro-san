@@ -20,6 +20,7 @@ from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgen
 from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.origination import Origination
+from neuro_san.internals.run_context.langchain.base_tool_factory import BaseToolFactory
 
 
 class InvocationContext:
@@ -90,5 +91,11 @@ class InvocationContext:
     def get_llm_factory(self) -> ContextTypeLlmFactory:
         """
         :return: The ContextTypeLlmFactory instance for the session
+        """
+        raise NotImplementedError
+
+    def get_base_tool_factory(self) -> BaseToolFactory:
+        """
+        :return: The BaseToolFactory instance for the session
         """
         raise NotImplementedError

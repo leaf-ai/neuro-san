@@ -1,0 +1,96 @@
+
+# Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
+# All Rights Reserved.
+# Issued under the Academic Public License.
+#
+# You can be released from the terms, and requirements of the Academic Public
+# License by purchasing a commercial license.
+# Purchase of a commercial license is mandatory for any use of the
+# neuro-san SDK Software in commercial settings.
+#
+# END COPYRIGHT
+
+{
+    # This returns BingSearchResults(api_wrapper=BingSearchAPIWrapper(), num_results=3)
+    "bing_search": {
+        "class": "langchain_community.tools.bing_search.BingSearchResults",
+        "args": {
+            "api_wrapper": {
+                "class": "langchain_community.utilities.BingSearchAPIWrapper",
+            },
+            "num_results": 3
+        }
+    },
+    # This returns TavilySearchResults(max_results=5)
+    "tavily_search": {
+        "class": "langchain_community.tools.tavily_search.TavilySearchResults",
+        "args": {
+            "max_results": 5
+        }
+    },
+    # This returns RequestsGetTool(requests_wrapper=TextRequestsWrapper(headers={}), allow_dangerous_requests=true)
+    "requests_get": {
+        "class": "langchain_community.tools.requests.tool.RequestsGetTool"
+        "args": {
+            "requests_wrapper": {
+                "class": "langchain_community.utilities.requests.TextRequestsWrapper",
+                "args": {
+                    "headers": {}
+                }
+            },
+            "allow_dangerous_requests": true
+        }
+    },
+    # This returns RequestsPostTool(requests_wrapper=TextRequestsWrapper(headers={}), allow_dangerous_requests=true)
+    "requests_post": {
+        "class": "langchain_community.tools.requests.tool.RequestsPostTool",
+        "args": {
+            "requests_wrapper": {
+                "class": "langchain_community.utilities.requests.TextRequestsWrapper",
+                "args": {
+                    "headers": {}
+                }
+            },
+            "allow_dangerous_requests": true
+        }
+    },
+    # This returns RequestsPatchTool(requests_wrapper=TextRequestsWrapper(headers={}), allow_dangerous_requests=true)
+    "requests_patch": {
+        "class": "langchain_community.tools.requests.tool.RequestsPatchTool",
+        "args": {
+            "requests_wrapper": {
+                "class": "langchain_community.utilities.requests.TextRequestsWrapper",
+                "args": {
+                    "headers": {}
+                }
+            },
+            "allow_dangerous_requests": true
+        }
+    },
+    # This returns RequestsPutTool(requests_wrapper=TextRequestsWrapper(headers={}), allow_dangerous_requests=true)
+    "requests_put": {
+        "class": "langchain_community.tools.requests.tool.RequestsPutTool",
+        "args": {
+            "requests_wrapper": {
+                "class": "langchain_community.utilities.requests.TextRequestsWrapper",
+                "args": {
+                    "headers": {}
+                }
+            },
+            "allow_dangerous_requests": true
+        }
+    },
+    # This returns RequestsDeleteTool(requests_wrapper=TextRequestsWrapper(headers={}), allow_dangerous_requests=true)
+    "requests_delete": {
+        "class": "langchain_community.tools.requests.tool.RequestsDeleteTool",
+        "args": {
+            "requests_wrapper": {
+                "class": "langchain_community.utilities.requests.TextRequestsWrapper",
+                "args": {
+                    "headers": {}
+                }
+            },
+            "allow_dangerous_requests": true
+        }
+    }
+}

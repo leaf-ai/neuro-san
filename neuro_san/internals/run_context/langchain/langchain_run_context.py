@@ -259,8 +259,9 @@ class LangChainRunContext(RunContext):
                 await self.journal.write_message(agent_message)
                 self.logger.info(message)
         elif base_tool:
-            base_tool_factory = BaseToolFactory()
-            return base_tool_factory.get_agent_tool(base_tool, agent_spec.get('args'))
+            # Create base_tool we will use
+            base_tool_factory: BaseToolFactory = self.invocation_context.get_base_tool_factory()
+            return base_tool_factory.create_agent_tool(base_tool, agent_spec.get('args'))
         else:
             function_json = agent_spec.get("function")
 
