@@ -105,6 +105,9 @@ class TestMusicNerdProClient(unittest.TestCase):
                 ##print(f"response_file.name size: {os.stat(response_file.name).st_size}")
 
                 ##self.assert_response(response_file, response_keyword)
+            except subprocess.CalledProcessError as e:
+                print(f"Command failed with exit code {e.returncode}: {e.cmd}")
+                print(f"Error output: {e.stderr}")
             finally:
                 #TestMusicNerdProClient.destruct_agent_cli_subprocess(agent_process)
                 pass
