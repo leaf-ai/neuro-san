@@ -29,14 +29,14 @@ class TestMusicNerdProClient(unittest.TestCase):
         :return: a Popen object representing the running process
         """
         # pylint: disable=consider-using-with
-        agent_cli_subprocess = subprocess.Popen(["python3", "-m", "neuro_san.client.agent_cli",
-                                                 "--connection", "direct",
-                                                 "--agent", agent,
-                                                 "--first_prompt_file", input_file,
-                                                 "--response_output_file", response_file,
-                                                 "--one_shot"
-                                                 ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                                check=True, capture_output=True)
+        agent_cli_subprocess = subprocess.run(["python3", "-m", "neuro_san.client.agent_cli",
+                                               "--connection", "direct",
+                                               "--agent", agent,
+                                               "--first_prompt_file", input_file,
+                                               "--response_output_file", response_file,
+                                               "--one_shot"
+                                               ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                              check=True, capture_output=True)
         # Wait for the server to start
         # time.sleep(40)
 
@@ -104,7 +104,7 @@ class TestMusicNerdProClient(unittest.TestCase):
                     print(f"agent_process {agent_process} is alive")
 
                 # Wait for the process to complete
-                agent_process.wait()
+                # agent_process.wait()
 
                 self.assert_response(response_file, response_keyword)
             finally:
