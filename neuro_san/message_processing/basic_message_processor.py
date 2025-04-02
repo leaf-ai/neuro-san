@@ -53,6 +53,12 @@ class BasicMessageProcessor(CompositeMessageProcessor):
         """
         return self.answer.get_answer_origin()
 
+    def get_sly_data(self) -> Dict[str, Any]:
+        """
+        :return: Any sly_data that was returned
+        """
+        return self.chat_context.get_sly_data()
+
     def get_chat_context(self) -> Dict[str, Any]:
         """
         :return: The chat_context discovered from the agent session interaction

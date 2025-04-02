@@ -33,6 +33,7 @@ from neuro_san.service.agent_server import DEFAULT_REQUEST_LIMIT
 from neuro_san.service.agent_server import DEFAULT_FORWARDED_REQUEST_METADATA
 from neuro_san.service.agent_service import AgentService
 from neuro_san.http_sidecar.http_sidecar import HttpSidecar
+from neuro_san.internals.utils.file_of_class import FileOfClass
 
 
 # pylint: disable=too-many-instance-attributes
@@ -55,6 +56,7 @@ class AgentMainLoop(ServerLoopCallbacks):
         self.max_concurrent_requests: int = DEFAULT_MAX_CONCURRENT_REQUESTS
         self.request_limit: int = DEFAULT_REQUEST_LIMIT
         self.forwarded_request_metadata: int = DEFAULT_FORWARDED_REQUEST_METADATA
+        self.service_openapi_spec_file: str = self._get_default_openapi_spec_path()
         self.server: AgentServer = None
 
     def parse_args(self):
@@ -79,7 +81,7 @@ class AgentMainLoop(ServerLoopCallbacks):
         arg_parser.add_argument("--max_concurrent_requests", type=int,
                                 default=int(os.environ.get("AGENT_MAX_CONCURRENT_REQUESTS",
                                                            self.max_concurrent_requests)),
-                                help="Maximm number of requests that can be served at the same time")
+                                help="Maximum number of requests that can be served at the same time")
         arg_parser.add_argument("--request_limit", type=int,
                                 default=int(os.environ.get("AGENT_REQUEST_LIMIT", self.request_limit)),
                                 help="Number of requests served before the server shuts down in an orderly fashion")
@@ -88,6 +90,10 @@ class AgentMainLoop(ServerLoopCallbacks):
                                                        self.forwarded_request_metadata),
                                 help="Space-delimited list of http request metadata keys to forward "
                                      "to logs/other requests")
+        arg_parser.add_argument("--openapi_service_spec_path", type=str,
+                                default=os.environ.get("AGENT_OPENAPI_SPEC",
+                                                       self.service_openapi_spec_file),
+                                help="File path to OpenAPI service specification document.")
 
         # Actually parse the args into class variables
 
@@ -101,11 +107,20 @@ class AgentMainLoop(ServerLoopCallbacks):
         self.max_concurrent_requests = args.max_concurrent_requests
         self.request_limit = args.request_limit
         self.forwarded_request_metadata = args.forwarded_request_metadata
+        self.service_openapi_spec_file = args.openapi_service_spec_path
 
         manifest_restorer = RegistryManifestRestorer()
         manifest_tool_registries: Dict[str, AgentToolRegistry] = manifest_restorer.restore()
 
         self.tool_registries = manifest_tool_registries
+
+    def _get_default_openapi_spec_path(self) -> str:
+        """
+        Return a file path to default location of OpenAPI specification file
+        for neuro-san service.
+        """
+        file_of_class = FileOfClass(__file__, path_to_basis="../api/grpc")
+        return file_of_class.get_file_in_basis("agent_service.json")
 
     def main_loop(self):
         """
@@ -127,6 +142,7 @@ class AgentMainLoop(ServerLoopCallbacks):
             self.port,
             self.http_port,
             self.tool_registries,
+            self.service_openapi_spec_file,
             forwarded_request_metadata=self.forwarded_request_metadata)
         http_server_process = multiprocessing.Process(target=http_sidecar)
         http_server_process.start()

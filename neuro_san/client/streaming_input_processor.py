@@ -60,7 +60,6 @@ class StreamingInputProcessor:
         if user_input is None or user_input == self.default_input:
             return state
 
-        print(f"Sending user_input {user_input}")
         sly_data: Dict[str, Any] = state.get("sly_data")
         # Note that by design, a client does not have to interpret the
         # chat_context at all. It merely needs to pass it along to continue
@@ -80,7 +79,11 @@ class StreamingInputProcessor:
             # Update the state if there is something to update it with
             chat_context = self.processor.get_chat_context()
             last_chat_response = self.processor.get_answer()
+            returned_sly_data: Dict[str, Any] = self.processor.get_sly_data()
             origin_str = Origination.get_full_name_from_origin(self.processor.get_answer_origin())
+
+        if origin_str is None or len(origin_str) == 0:
+            origin_str = "agent network"
 
         update = {
             "chat_context": chat_context,
@@ -88,14 +91,11 @@ class StreamingInputProcessor:
             "last_chat_response": last_chat_response,
             "user_input": None,
             "sly_data": None,
+            "returned_sly_data": returned_sly_data,
+            "origin_str": origin_str
         }
         return_state.update(update)
 
-        if origin_str is None or len(origin_str) == 0:
-            origin_str = "agent network"
-
-        print(f"\nResponse from {origin_str}:")
-        print(f"{last_chat_response}")
         return return_state
 
     def formulate_chat_request(self, user_input: str,

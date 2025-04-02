@@ -20,11 +20,11 @@ from pathlib import Path
 from leaf_common.config.dictionary_overlay import DictionaryOverlay
 from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
-from neuro_san.internals.graph.registry.sly_data_redactor import SlyDataRedactor
 from neuro_san.internals.graph.tools.branch_tool import BranchTool
 from neuro_san.internals.graph.tools.class_tool import ClassTool
 from neuro_san.internals.graph.tools.external_tool import ExternalTool
 from neuro_san.internals.graph.tools.front_man import FrontMan
+from neuro_san.internals.graph.tools.sly_data_redactor import SlyDataRedactor
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.callable_tool import CallableTool
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
@@ -302,6 +302,6 @@ Some things to try:
         if parent_run_context is not None:
             parent_spec = parent_run_context.get_agent_tool_spec()
 
-        redactor = SlyDataRedactor(parent_spec)
+        redactor = SlyDataRedactor(parent_spec, config_keys=["allow.sly_data", "allow.to_downstream.sly_data"])
         redacted: Dict[str, Any] = redactor.filter_config(sly_data)
         return redacted
