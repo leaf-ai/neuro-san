@@ -17,7 +17,8 @@ from neuro_san.api.grpc import concierge_pb2 as neuro__san_dot_api_dot_grpc_dot_
 
 
 class ConciergeServiceStub(object):
-    """The service
+    """The service provides system-wide information about resources available
+    in current instance of neuro-san.
     """
 
     def __init__(self, channel):
@@ -34,7 +35,8 @@ class ConciergeServiceStub(object):
 
 
 class ConciergeServiceServicer(object):
-    """The service
+    """The service provides system-wide information about resources available
+    in current instance of neuro-san.
     """
 
     def List(self, request, context):
@@ -60,7 +62,8 @@ def add_ConciergeServiceServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class ConciergeService(object):
-    """The service
+    """The service provides system-wide information about resources available
+    in current instance of neuro-san.
     """
 
     @staticmethod
