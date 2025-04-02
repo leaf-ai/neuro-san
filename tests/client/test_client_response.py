@@ -87,9 +87,7 @@ class TestMusicNerdProClient(unittest.TestCase):
                 num_lines = 0
                 while num_lines < max_num_lines:
                     line = agent_process.stdout.readline()
-                    if not line:
-                        break
-                    print(line.rstrip(), flush=True)
+                    print(f"aline: {line.rstrip()}", flush=True)
                     num_lines += 1
 
                 poll = agent_process.poll()
