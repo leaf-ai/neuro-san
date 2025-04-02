@@ -108,6 +108,7 @@ class TestMusicNerdProClient(unittest.TestCase):
             except subprocess.CalledProcessError as e:
                 print(f"Command failed with exit code {e.returncode}: {e.cmd}")
                 print(f"Error output: {e.stderr}")
+                self.fail()
             finally:
                 #TestMusicNerdProClient.destruct_agent_cli_subprocess(agent_process)
                 pass
