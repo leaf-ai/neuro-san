@@ -91,7 +91,7 @@ class TestMusicNerdProClient(unittest.TestCase):
                 print(f"result.stderr: {result.stderr}")
                 print(f"result.stdout: {result.stdout}")
 
-                self.assertEqual(result.stdout, "Hello World!")
+                self.assertEqual(result.stdout, "Hello World!\n")
                 """
                 for _ in range(100):
                     line = agent_process.stdout.readline()
