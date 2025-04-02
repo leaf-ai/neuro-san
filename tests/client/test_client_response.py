@@ -1,7 +1,6 @@
 import os
 import subprocess
 import tempfile
-import time
 import unittest
 
 import pytest
@@ -35,7 +34,7 @@ class TestMusicNerdProClient(unittest.TestCase):
                                                "--first_prompt_file", input_file,
                                                "--response_output_file", response_file,
                                                "--one_shot"
-                                               ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                               ], #stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                               check=True, capture_output=True)
         # Wait for the server to start
         # time.sleep(40)
@@ -90,25 +89,26 @@ class TestMusicNerdProClient(unittest.TestCase):
                         continue
                     print(f"aline: {line.rstrip()}", flush=True)
                 """
-                poll = agent_process.poll()
-                if poll is None:
-                    print(f"agent_process {agent_process} is alive")
+                #poll = agent_process.poll()
+                #if poll is None:
+                #    print(f"agent_process {agent_process} is alive")
 
                 #time.sleep(40)
 
                 print(f"response_file.name: {response_file.name}")
                 print(f"response_file.name size: {os.stat(response_file.name).st_size}")
 
-                poll = agent_process.poll()
-                if poll is None:
-                    print(f"agent_process {agent_process} is alive")
+                #poll = agent_process.poll()
+                #if poll is None:
+                #    print(f"agent_process {agent_process} is alive")
 
                 # Wait for the process to complete
                 # agent_process.wait()
 
                 self.assert_response(response_file, response_keyword)
             finally:
-                TestMusicNerdProClient.destruct_agent_cli_subprocess(agent_process)
+                #TestMusicNerdProClient.destruct_agent_cli_subprocess(agent_process)
+                pass
 
 
 if __name__ == "__main__":
