@@ -98,6 +98,11 @@ class AgentToolRegistry(AgentToolFactory):
 
             # Find the path beneath the python path
             path_split = resolved_tool_path.split(best_path)
+            if len(path_split) < 2:
+                raise ValueError("""
+Cannot find tool path for {agent_tool_path} in PYTHONPATH.
+Check to be sure your value for PYTHONPATH includes where you expect where your coded tools live.
+""")
             resolve_path = path_split[1]
 
             # Replace separators with python delimiters for later resolution
