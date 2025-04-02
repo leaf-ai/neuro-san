@@ -35,7 +35,7 @@ class TestMusicNerdProClient(unittest.TestCase):
                                                "--response_output_file", response_file,
                                                "--one_shot"
                                                ], #stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                              check=True, capture_output=True)
+                                              capture_output=True, text=True, check=True, timeout=30)
         # Wait for the server to start
         # time.sleep(40)
 
