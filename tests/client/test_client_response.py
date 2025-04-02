@@ -86,8 +86,10 @@ class TestMusicNerdProClient(unittest.TestCase):
                 if poll is None:
                     print(f"agent_process {agent_process} is alive")
 
-                # Wait for the server to start
                 time.sleep(40)
+
+                print(f"response_file.name: {response_file.name}")
+                print(f"response_file.name size: {os.stat(response_file.name).st_size}")
 
                 poll = agent_process.poll()
                 if poll is None:
