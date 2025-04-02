@@ -99,13 +99,13 @@ touch "${GENERATED_DIR}"/__init__.py
 ALL_PROTO_FILES=""
 ALL_PROTO_FILES="${ALL_PROTO_FILES} ${LOCAL_PROTO_FILES}"
 
-# Install google API related protobufs:
-GOOGLE_API_FILES="annotations.proto http.proto"
-GOOGLE_API_DIR="${TOP_LEVEL}"/"${GENERATED_DIR}"/google/api
-mkdir -p "${GOOGLE_API_DIR}"
-
 # Google API proto files are not automatically updated,
 # but if this needs to be done, uncomment the lines below:
+## Install google API related protobufs:
+#GOOGLE_API_FILES="annotations.proto http.proto"
+#GOOGLE_API_DIR="${TOP_LEVEL}"/"${GENERATED_DIR}"/google/api
+#mkdir -p "${GOOGLE_API_DIR}"
+#
 #for PROTO_FILE in ${GOOGLE_API_FILES}
 #do
 #    curl --header "Accept: application/vnd.github.raw+json" \
@@ -113,6 +113,8 @@ mkdir -p "${GOOGLE_API_DIR}"
 #    --location --show-error --silent --fail \
 #    "https://api.github.com/repos/googleapis/googleapis/contents/google/api"/"${PROTO_FILE}"
 #done
+# End of lines to uncomment if you need
+# to update Google API files with latest versions.
 
 # Generate the python files and make them happy w/rt Python 3
 for PROTO_FILE in ${ALL_PROTO_FILES}
