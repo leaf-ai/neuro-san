@@ -82,13 +82,13 @@ class TestMusicNerdProClient(unittest.TestCase):
             try:
                 agent_process = TestMusicNerdProClient.get_agent_cli_subprocess(TestMusicNerdProClient.agent,
                                                                                 input_file, response_file.name)
-
+                """
                 for _ in range(100):
                     line = agent_process.stdout.readline()
                     if not line:
                         continue
                     print(f"aline: {line.rstrip()}", flush=True)
-
+                """
                 poll = agent_process.poll()
                 if poll is None:
                     print(f"agent_process {agent_process} is alive")
