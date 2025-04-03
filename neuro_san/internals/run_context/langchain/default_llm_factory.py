@@ -286,13 +286,16 @@ class DefaultLlmFactory(ContextTypeLlmFactory, LangChainLlmFactory):
     def strip_outer_quotes(self, s: str) -> str:
         """
         :param s: The input string to sanitize.
-        :return: The input string without surrounding double quotes, if they were present.
+        :return: The input string without surrounding multiple quotes, if they were present.
         Otherwise, returns the string unchanged.
         """
-        if (s.startswith('"') and s.endswith('"')) or (s.startswith("'") and s.endswith("'")):
+        if len(s) >= 2 and s[0] in ["'", '"']:
+            quote_char = s[0]
             unquoted = s[1:-1]
-            # Only strip quotes if the inner string has no whitespace or inner quotes
-            if '"' not in unquoted and not unquoted.strip().startswith(" "):
+
+            # Only strip quotes if inner value does not contain the same quote char
+            # and does not start with whitespace
+            if quote_char not in unquoted and not unquoted.startswith(" "):
                 return unquoted
         return s
 
