@@ -280,7 +280,7 @@ class DefaultLlmFactory(ContextTypeLlmFactory, LangChainLlmFactory):
             max_prompt_tokens = use_max_tokens
 
         return max_prompt_tokens
-    
+
     def strip_outer_quotes(self, s: str) -> str:
         """
         Removes surrounding double quotes from a string if they exist.
@@ -293,7 +293,12 @@ class DefaultLlmFactory(ContextTypeLlmFactory, LangChainLlmFactory):
             str: The input string without surrounding double quotes, if they were present.
                 Otherwise, returns the string unchanged.
         """
-        return s[1:-1] if s.startswith('"') and s.endswith('"') else s
+        if (s.startswith('"') and s.endswith('"')) or (s.startswith("'") and s.endswith("'")):
+            unquoted = s[1:-1]
+            # Only strip quotes if the inner string has no whitespace or inner quotes
+            if '"' not in unquoted and not unquoted.strip().startswith(" "):
+                return unquoted
+        return s
 
     def sanitize_keys(self, d: Dict[str, Any]) -> Dict[str, Any]:
         """
