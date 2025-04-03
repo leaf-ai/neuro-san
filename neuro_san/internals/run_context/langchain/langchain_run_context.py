@@ -234,7 +234,6 @@ class LangChainRunContext(RunContext):
 
         # Check our own local factory. Most tools live in the neighborhood.
         agent_spec: Dict[str, Any] = factory.get_agent_tool_spec(name)
-        base_tool: str = agent_spec.get('base_tool')
         if agent_spec is None:
 
             # See if the agent name given could reference an external agent.
@@ -258,11 +257,13 @@ class LangChainRunContext(RunContext):
                 agent_message = AgentMessage(content=message)
                 await self.journal.write_message(agent_message)
                 self.logger.info(message)
-        elif base_tool:
-            base_tool_factory = BaseToolFactory()
-            return base_tool_factory.get_agent_tool(base_tool, agent_spec.get('args'))
         else:
-            function_json = agent_spec.get("function")
+            base_tool: str = agent_spec.get('base_tool')
+            if base_tool:
+                base_tool_factory = BaseToolFactory()
+                return base_tool_factory.get_agent_tool(base_tool, agent_spec.get('args'))
+            else:
+                function_json = agent_spec.get("function")
 
         if function_json is None:
             return None
