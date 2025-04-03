@@ -79,7 +79,7 @@ class DefaultLlmFactory(ContextTypeLlmFactory, LangChainLlmFactory):
         if llm_info_file is not None and len(llm_info_file) > 0:
             extra_llm_infos: Dict[str, Any] = restorer.restore(file_reference=llm_info_file)
             self.llm_infos = self.overlayer.overlay(self.llm_infos, extra_llm_infos)
-            
+
         # sanitize the llm_infos keys
         self.llm_infos = self.sanitize_keys(self.llm_infos)
 
