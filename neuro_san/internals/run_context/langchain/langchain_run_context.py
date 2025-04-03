@@ -262,8 +262,8 @@ class LangChainRunContext(RunContext):
             if base_tool:
                 base_tool_factory = BaseToolFactory()
                 return base_tool_factory.get_agent_tool(base_tool, agent_spec.get('args'))
-            else:
-                function_json = agent_spec.get("function")
+
+            function_json = agent_spec.get("function")
 
         if function_json is None:
             return None
