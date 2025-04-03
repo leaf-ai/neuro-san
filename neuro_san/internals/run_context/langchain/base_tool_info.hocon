@@ -11,7 +11,11 @@
 # END COPYRIGHT
 
 {
-    # This returns BingSearchResults(api_wrapper=BingSearchAPIWrapper(), num_results=3)
+    # ---------------- Bing Search Tool ----------------
+    # This configuration defines the Bing Search tool.
+    # It initializes a BingSearchResults instance with:
+    # - api_wrapper: An instance of BingSearchAPIWrapper
+    # - num_results: Specifies that the search should return 3 results
     "bing_search": {
         "class": "langchain_community.tools.bing_search.BingSearchResults",
         "args": {
@@ -21,16 +25,47 @@
             "num_results": 3
         }
     },
-    # This returns TavilySearchResults(max_results=5)
+
+    # ---------------- Tavily Search Tool ----------------
+    # This configuration sets up the Tavily Search tool.
+    # It initializes a TavilySearchResults instance with:
+    # - max_results: Specifies that the search should return 5 results
     "tavily_search": {
         "class": "langchain_community.tools.tavily_search.TavilySearchResults",
         "args": {
             "max_results": 5
         }
     },
-    # This returns RequestsGetTool(requests_wrapper=TextRequestsWrapper(headers={}), allow_dangerous_requests=true)
+
+    # ---------------- Requests Toolkit (Batch of Tools) ----------------
+    # This defines a requests toolkit that provides multiple HTTP request utilities.
+    # It initializes RequestsToolkit with:
+    # - requests_wrapper: An instance of TextRequestsWrapper (used to manage headers)
+    # - allow_dangerous_requests: Enables execution of potentially unsafe requests
+    # The `.get_tools()` method is called, meaning this toolkit returns multiple tools.
+    "requests_toolkit": {
+        "class": "langchain_community.tools.requests.tool.RequestsGetTool",
+        "args": {
+            "requests_wrapper": {
+                "class": "langchain_community.utilities.requests.TextRequestsWrapper",
+                "args": {
+                    # Empty headers dictionary (can be customized)
+                    "headers": {}
+                }
+            },
+            "allow_dangerous_requests": true
+        }
+    },
+
+    # ---------------- Individual HTTP Request Tools ----------------
+    
+    # GET request tool
+    # This sets up a tool that can send HTTP GET requests.
+    # It initializes RequestsGetTool with:
+    # - requests_wrapper: Manages request headers
+    # - allow_dangerous_requests: Enables potentially unsafe requests
     "requests_get": {
-        "class": "langchain_community.tools.requests.tool.RequestsGetTool"
+        "class": "langchain_community.tools.requests.tool.RequestsGetTool",
         "args": {
             "requests_wrapper": {
                 "class": "langchain_community.utilities.requests.TextRequestsWrapper",
@@ -41,7 +76,10 @@
             "allow_dangerous_requests": true
         }
     },
-    # This returns RequestsPostTool(requests_wrapper=TextRequestsWrapper(headers={}), allow_dangerous_requests=true)
+
+    # POST request tool
+    # This configures an HTTP POST request tool.
+    # It is similar to the GET tool but allows sending data in the request body.
     "requests_post": {
         "class": "langchain_community.tools.requests.tool.RequestsPostTool",
         "args": {
@@ -54,7 +92,9 @@
             "allow_dangerous_requests": true
         }
     },
-    # This returns RequestsPatchTool(requests_wrapper=TextRequestsWrapper(headers={}), allow_dangerous_requests=true)
+
+    # PATCH request tool
+    # This allows sending PATCH requests, typically used to update resources.
     "requests_patch": {
         "class": "langchain_community.tools.requests.tool.RequestsPatchTool",
         "args": {
@@ -67,7 +107,9 @@
             "allow_dangerous_requests": true
         }
     },
-    # This returns RequestsPutTool(requests_wrapper=TextRequestsWrapper(headers={}), allow_dangerous_requests=true)
+
+    # PUT request tool
+    # This allows sending PUT requests, which are used to replace resources.
     "requests_put": {
         "class": "langchain_community.tools.requests.tool.RequestsPutTool",
         "args": {
@@ -80,7 +122,9 @@
             "allow_dangerous_requests": true
         }
     },
-    # This returns RequestsDeleteTool(requests_wrapper=TextRequestsWrapper(headers={}), allow_dangerous_requests=true)
+
+    # DELETE request tool
+    # This enables HTTP DELETE requests to remove resources.
     "requests_delete": {
         "class": "langchain_community.tools.requests.tool.RequestsDeleteTool",
         "args": {

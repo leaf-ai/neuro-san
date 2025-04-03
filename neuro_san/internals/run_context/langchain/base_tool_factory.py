@@ -14,10 +14,12 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Type
+from typing import Union
 
 import os
 
 from langchain.tools import BaseTool
+from langchain_community.agent_toolkits.base import BaseToolkit
 
 from leaf_common.config.dictionary_overlay import DictionaryOverlay
 from leaf_common.config.resolver import Resolver
@@ -110,25 +112,59 @@ class BaseToolFactory:
         :param user_args: Arguments provided by the user, which override the config file.
         :return: The instantiated tool.
         """
-        tool_info: Dict = self.base_tool_infos.get(tool_name)
+        tool_info: Dict[str, Any] = self.base_tool_infos.get(tool_name)
         if not tool_info:
             raise ValueError(f"Tool '{tool_name}' is not defined in {self.base_tool_info_file}.")
 
         if not isinstance(tool_info, Dict):
             raise ValueError(f"The value for the {tool_name} key must be a dictionary.")
 
-        # Recursively resolve arguments (including dependencies)
-        resolved_args: Dict = self._resolve_args(tool_info.get("args", {}))
+        if "class" not in tool_info:
+            raise ValueError(
+                "Missing required key: 'class'.\n"
+                "Each tool configuration must include a 'class' key specifying the fully qualified class name.\n"
+                "Example: 'class': 'langchain_community.tools.bing_search.BingSearchResults'."
+            )
 
-        # Merge with user arguments where user_args get the priority
-        if user_args:
-            final_args: Dict = self.overlayer.overlay(resolved_args, user_args)
+        # Instance can be a BaseTool or a BaseToolkit
+        instance: Union[BaseTool, BaseToolkit] = None
+        # The combined arguments of user_args and class or method args
+        final_args: Dict[str, Any] = None
+
+        # If a method is specified (e.g., from_github_api_wrapper), use it instead of constructor
+        method_info: Dict[str, Any] = tool_info.get("method", {})
+        if method_info:
+            method_name: str = method_info["name"]
+
+            # Recursively resolve arguments (including wrapper dependencies)
+            # Return arguments of class method
+            method_args: Dict[str, Any] = self._resolve_args(method_info.get("args", {}))
+
+            # Merge user args where user_args get the priority
+            final_args = self.overlayer.overlay(method_args, user_args) if user_args else method_args
+
+            # Resolve the toolkit class
+            toolkit_class: Type[BaseToolkit] = self._resolve_class(tool_info["class"])
+
+            # Call the class method dynamically
+            if not hasattr(toolkit_class, method_name):
+                raise ValueError(f"Method '{method_name}' not found in '{toolkit_class.__name__}'.")
+
+            method = getattr(toolkit_class, method_name)
+            # Call the method
+            instance = method(**final_args)
         else:
-            final_args = resolved_args
+            # Regular instantiation case for BaseTool or BaseToolkit that use constructor
 
-        # Instantiate the main tool class
-        tool_class: Type[BaseTool] = self._resolve_class(tool_info["class"])
-        instance = tool_class(**final_args)
+            # Recursively resolve arguments (including wrapper dependencies)
+            resolved_args: Dict[str, Any] = self._resolve_args(tool_info.get("args", {}))
+
+            # Merge with user arguments where user_args get the priority
+            final_args = self.overlayer.overlay(resolved_args, user_args) if user_args else resolved_args
+
+            # Instantiate the main tool or toolkit class
+            tool_class: Type[Any] = self._resolve_class(tool_info["class"])
+            instance = tool_class(**final_args)
 
         # If the instantiated class has `get_tools()`, assume it's a toolkit and return its tools
         if hasattr(instance, "get_tools") and callable(instance.get_tools):
