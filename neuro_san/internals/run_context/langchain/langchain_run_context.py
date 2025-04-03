@@ -190,9 +190,12 @@ class LangChainRunContext(RunContext):
 
         if tool_names is not None:
             for tool_name in tool_names:
-                tool: BaseTool = await self._create_base_tool(tool_name)
+                tool: Union[BaseTool | List[BaseTool]] = await self._create_base_tool(tool_name)
                 if tool is not None:
-                    self.tools.append(tool)
+                    if isinstance(tool, List):
+                        self.tools.extend(tool)
+                    else:
+                        self.tools.append(tool)
 
         prompt_template: ChatPromptTemplate = await self._create_prompt_template(instructions, assignments)
 

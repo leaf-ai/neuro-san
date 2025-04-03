@@ -62,7 +62,7 @@ class BaseToolFactory:
     ### Extending the Class
 
         To integrate additional tools, add a tool configuration file in JSON or HOCON format
-        and set its path to the environment variable `BASE_TOOL_INFO_FILE`.
+        and set its path to the environment variable `AGENT_BASE_TOOL_INFO_FILE`.
 
         The configuration should follow this structure:
         - The tool name serves as a key.
@@ -95,7 +95,7 @@ class BaseToolFactory:
         self.base_tool_infos = restorer.restore()
 
         # Mix in user-specified base_tool info, if available.
-        base_tool_info_file: str = os.getenv("BASE_TOOL_INFO_FILE")
+        base_tool_info_file: str = os.getenv("AGENT_BASE_TOOL_INFO_FILE")
         if base_tool_info_file is not None and len(base_tool_info_file) > 0:
             extra_base_tool_infos: Dict[str, Any] = restorer.restore(file_reference=base_tool_info_file)
             self.base_tool_infos = self.overlayer.overlay(self.base_tool_infos, extra_base_tool_infos)
@@ -128,7 +128,13 @@ class BaseToolFactory:
 
         # Instantiate the main tool class
         tool_class: Type[BaseTool] = self._resolve_class(tool_info["class"])
-        return tool_class(**final_args)
+        instance = tool_class(**final_args)
+
+        # If the instantiated class has `get_tools()`, assume it's a toolkit and return its tools
+        if hasattr(instance, "get_tools") and callable(instance.get_tools):
+            return instance.get_tools()
+
+        return instance
 
     def _resolve_args(self, args: Dict[str, Any]) -> Dict[str, Any]:
         """
