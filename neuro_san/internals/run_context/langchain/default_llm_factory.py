@@ -79,7 +79,9 @@ class DefaultLlmFactory(ContextTypeLlmFactory, LangChainLlmFactory):
         if llm_info_file is not None and len(llm_info_file) > 0:
             extra_llm_infos: Dict[str, Any] = restorer.restore(file_reference=llm_info_file)
             self.llm_infos = self.overlayer.overlay(self.llm_infos, extra_llm_infos)
-            self.llm_infos = self.sanitize_keys(self.llm_infos)
+            
+        # sanitize the llm_infos keys
+        self.llm_infos = self.sanitize_keys(self.llm_infos)
 
         # Resolve any new llm factories
         extractor = DictionaryExtractor(self.llm_infos)
@@ -283,15 +285,9 @@ class DefaultLlmFactory(ContextTypeLlmFactory, LangChainLlmFactory):
 
     def strip_outer_quotes(self, s: str) -> str:
         """
-        Removes surrounding double quotes from a string if they exist.
-        This is useful for sanitizing keys or values that may have been parsed from
-        configuration files (e.g., HOCON) where keys like '"llama3.1"' are interpreted
-        as string literals including the quotes.
-        Args:
-            s (str): The input string to sanitize.
-        Returns:
-            str: The input string without surrounding double quotes, if they were present.
-                Otherwise, returns the string unchanged.
+        :param s: The input string to sanitize.
+        :return: The input string without surrounding double quotes, if they were present.
+        Otherwise, returns the string unchanged.
         """
         if (s.startswith('"') and s.endswith('"')) or (s.startswith("'") and s.endswith("'")):
             unquoted = s[1:-1]
@@ -306,9 +302,7 @@ class DefaultLlmFactory(ContextTypeLlmFactory, LangChainLlmFactory):
         This is typically used to clean up configuration dictionaries where key names may
         be quoted (e.g., '"llama3.1"' instead of "llama3.1") due to parsing artifacts.
         Only the top-level keys are sanitized; nested keys are left unchanged.
-        Args:
-            d (Dict[str, Any]): The input dictionary with potentially quoted keys.
-        Returns:
-            Dict[str, Any]: A new dictionary with the same values, but with sanitized keys.
+        :param d: The input dictionary with potentially quoted keys.
+        :return: A new dictionary with the same values, but with sanitized keys.
         """
         return {self.strip_outer_quotes(k): v for k, v in d.items()}
