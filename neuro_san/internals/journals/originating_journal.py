@@ -38,6 +38,7 @@ class OriginatingJournal(Journal):
         self.wrapped_journal: Journal = wrapped_journal
         self.origin: List[Dict[str, Any]] = origin
         self.chat_history: List[BaseMessage] = chat_history
+        self.pending: BaseMessage = None
 
     def get_origin(self) -> List[Dict[str, Any]]:
         """
@@ -65,6 +66,13 @@ class OriginatingJournal(Journal):
 
         if self.chat_history is not None and is_relevant_to_chat_history(message):
             self.chat_history.append(message)
+
+        if self.pending is not None:
+            # Avoid cases where two different kinds of message hold the same content.
+            if self.pending.content != message.content:
+                await self.wrapped_journal.write_message(self.pending, use_origin)
+            self.pending = None
+
         await self.wrapped_journal.write_message(message, use_origin)
 
     def get_chat_history(self) -> List[BaseMessage]:
@@ -72,3 +80,15 @@ class OriginatingJournal(Journal):
         :return: The chat history list of base messages associated with the instance.
         """
         return self.chat_history
+
+    async def write_message_if_next_not_dupe(self, message: BaseMessage):
+        """
+        Writes a BaseMessage entry into the wrapped_journal
+        and appends to the chat history as long as the next message does not have the same content.
+
+        :param message: The BaseMessage instance to write to the wrapped_journal
+        """
+        if self.pending is not None:
+            # Flush if anything is already waiting.
+            await self.write_message(self.pending)
+        self.pending = message
