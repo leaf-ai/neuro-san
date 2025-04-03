@@ -402,7 +402,7 @@ class LangChainRunContext(RunContext):
         }
 
         # Attempt to count tokens/costs while invoking the agent.
-        token_counter = LangChainTokenCounter(self)
+        token_counter = LangChainTokenCounter(self.llm, self.invocation_context, self.journal)
         await token_counter.count_tokens(self.ainvoke(agent_executor, inputs, invoke_config))
 
         return run
@@ -652,9 +652,3 @@ class LangChainRunContext(RunContext):
         :return: The Journal associated with the instance
         """
         return self.journal
-
-    def get_llm(self) -> BaseLanguageModel:
-        """
-        :return: The LLM associated with the instance
-        """
-        return self.llm
