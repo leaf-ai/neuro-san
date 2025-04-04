@@ -16,18 +16,19 @@ from typing import Dict
 
 class ContextTypeBaseToolFactory:
     """
-    Interface for Factory classes creating tool
+    Interface for factory classes that create tools or toolkits.
 
-    Most methods take a config dictionary which consists of the following keys:
+    Most methods accept a configuration dictionary, where each key is a tool name, and each value is
+    a dictionary containing the corresponding tool's setup information. The configuration dictionary
+    supports the following keys for each tool:
 
-        "tool_name"                 The name of the tool.
-                                    Raise ValueError if not specified.
+        - "class":   The class of the tool or toolkit.
+                    This key is required. A ValueError will be raised if not provided.
 
-        "args"                      A dict containing values of contructor arguments
-                                    For a tool or toolkit instantiate via a constructor
+        - "args":    A dictionary of constructor arguments used to instantiate the tool or toolkit
+                    directly via its constructor.
 
-        "method"                    A dict containing values of a class method arguements
-                                    For a toolkit instantiate via a class method
+        - "method":  A dictionary of arguments used when instantiating the toolkit via a class method.
     """
 
     def load(self):
