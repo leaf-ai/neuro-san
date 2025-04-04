@@ -19,23 +19,23 @@ class TestMusicNerdProClient(unittest.TestCase):
     agent = "music_nerd_pro"
 
     @staticmethod
-    def get_agent_cli_subprocess(agent, input_file, response_file):
+    def run_agent_cli_subprocess(agent, input_file, response_file):
         """
         :param agent: the name of the agent network to query
         :param input_file: file containing the prompt for the agent network
         :param response_file: file that accepts the response from the agent newtork
 
-        :return: a Popen object representing the running process
+        :return: a CompletedProcess object, which contains the return code and the output
         """
         # pylint: disable=consider-using-with
-        agent_cli_subprocess = subprocess.run(["python3", "-m", "neuro_san.client.agent_cli",
-                                               "--connection", "direct",
-                                               "--agent", agent,
-                                               "--first_prompt_file", input_file,
-                                               "--response_output_file", response_file,
-                                               "--one_shot"
-                                               ], capture_output=True, text=True, check=True, timeout=30)
-        return agent_cli_subprocess
+        result = subprocess.run(["python3", "-m", "neuro_san.client.agent_cli",
+                                 "--connection", "direct",
+                                 "--agent", agent,
+                                 "--first_prompt_file", input_file,
+                                 "--response_output_file", response_file,
+                                 "--one_shot"
+                                 ], capture_output=True, text=True, check=True, timeout=30)
+        return result
 
     def assert_response(self, response_file, response_keyword):
         """
@@ -61,10 +61,11 @@ class TestMusicNerdProClient(unittest.TestCase):
             response_keyword = "Beatles"
 
             try:
-                TestMusicNerdProClient.get_agent_cli_subprocess(TestMusicNerdProClient.agent,
-                                                                input_file, response_file.name)
+                result = TestMusicNerdProClient.run_agent_cli_subprocess(TestMusicNerdProClient.agent,
+                                                                         input_file, response_file.name)
+                if result.returncode == 0:
+                    self.assert_response(response_file, response_keyword)
 
-                self.assert_response(response_file, response_keyword)
             except subprocess.CalledProcessError as e:
                 print(f"Command failed with exit code {e.returncode}: {e.cmd}")
                 print(f"Error output: {e.stderr}")
