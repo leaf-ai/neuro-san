@@ -40,18 +40,12 @@ function run() {
     network=${NETWORK:="host"}
     echo "Network is ${network}"
 
-    # Assume the first port EXPOSEd in the Dockerfile is the input port
-    # SERVICE_PORT=$(grep EXPOSE < build_scripts/Dockerfile | head -1 | awk '{ print $2 }')
-
     # Run the docker container in interactive mode
     #   Mount the current user's aws credentials in the container
     #   Mount the 1st command line arg as the place where input files come from
     #   Mount the directory where the vault certs live. In production this would be
     #       set up to what kubernetes does natively.
     #   Slurp in the rest as environment variables, all of which are optional.
-    # XXX 11/17/23 There might be more env vars to add here for DB stuff to function properly.
-    #   It'd be ideal if we could have a single cmd line arg that referenced the deployment
-    #   we wanted (with a default of dev) and then all the DB information could come from Vault.
     docker run --rm -it -d \
         --name="${SERVICE_NAME}" \
         --network="${network}" \
