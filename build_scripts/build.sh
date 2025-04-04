@@ -109,7 +109,7 @@ function build_main() {
     # Build the docker image
     # DOCKER_BUILDKIT needed for secrets stuff
     # shellcheck disable=SC2086
-    DOCKER_BUILDKIT=1 podman build \
+    DOCKER_BUILDKIT=1 docker build \
         -t leaf/${SERVICE_TAG}:${SERVICE_VERSION} \
         --platform ${TARGET_PLATFORM} \
         --secret id=with_creds_requirements,src=${WITH_CREDS_REQUIREMENTS} \

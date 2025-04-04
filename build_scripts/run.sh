@@ -52,7 +52,7 @@ function run() {
     # XXX 11/17/23 There might be more env vars to add here for DB stuff to function properly.
     #   It'd be ideal if we could have a single cmd line arg that referenced the deployment
     #   we wanted (with a default of dev) and then all the DB information could come from Vault.
-    podman run --rm -it -d \
+    docker run --rm -it -d \
         --name="${SERVICE_NAME}" \
         --network="${network}" \
         -v "${HOME}"/.aws:/usr/local/leaf/.aws \
