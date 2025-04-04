@@ -24,10 +24,11 @@ from langchain_community.agent_toolkits.base import BaseToolkit
 from leaf_common.config.dictionary_overlay import DictionaryOverlay
 from leaf_common.config.resolver import Resolver
 
+from neuro_san.internals.interfaces.context_type_base_tool_factory import ContextTypeBaseToolFactory
 from neuro_san.internals.run_context.langchain.base_tool_info_restorer import BaseToolInfoRestorer
 
 
-class BaseToolFactory:
+class BaseToolFactory(ContextTypeBaseToolFactory):
     """
     A factory class for creating instances of various prebuilt tools.
 
@@ -104,7 +105,7 @@ class BaseToolFactory:
 
             self.base_tool_info_file = base_tool_info_file
 
-    def create_agent_tool(self, tool_name: str, user_args: Dict[str, Any] = None) -> BaseTool:
+    def create_agent_tool(self, tool_name: str, user_args: Dict[str, Any] = None) -> Union[BaseTool, List[BaseTool]]:
         """
         Resolves dependencies and instantiates the requested tool.
 

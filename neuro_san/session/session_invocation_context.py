@@ -19,12 +19,12 @@ from leaf_server_common.logging.logging_setup import setup_extra_logging_fields
 
 from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
+from neuro_san.internals.interfaces.context_type_base_tool_factory import ContextTypeBaseToolFactory
 from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.message_journal import MessageJournal
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.origination import Origination
-from neuro_san.internals.run_context.langchain.base_tool_factory import BaseToolFactory
 
 
 # pylint: disable=too-many-instance-attributes
@@ -37,7 +37,7 @@ class SessionInvocationContext(InvocationContext):
 
     def __init__(self, async_session_factory: AsyncAgentSessionFactory,
                  llm_factory: ContextTypeLlmFactory,
-                 base_tool_factory: BaseToolFactory = None,
+                 base_tool_factory: ContextTypeBaseToolFactory = None,
                  metadata: Dict[str, str] = None):
         """
         Constructor
@@ -59,7 +59,7 @@ class SessionInvocationContext(InvocationContext):
         self.metadata: Dict[str, str] = metadata
         self.request_reporting: Dict[str, Any] = {}
         self.llm_factory: ContextTypeLlmFactory = llm_factory
-        self.base_tool_factory: BaseToolFactory = base_tool_factory
+        self.base_tool_factory: ContextTypeBaseToolFactory = base_tool_factory
 
     def start(self):
         """
@@ -134,9 +134,9 @@ class SessionInvocationContext(InvocationContext):
         """
         return self.llm_factory
 
-    def get_base_tool_factory(self) -> BaseToolFactory:
+    def get_base_tool_factory(self) -> ContextTypeBaseToolFactory:
         """
-        :return: The BaseToolFactory instance for the session
+        :return: The ContextTypeBaseToolFactory instance for the session
         """
         return self.base_tool_factory
 

@@ -54,7 +54,7 @@
         # This configuration results in:
         # ToolClass(tool_wrapper=ToolAPIWrapper(wrapper_arg="test_wrapper_arg"), constructor_arg="test_constructor_arg")
         #
-        # 🔹 How Overrides Work:
+        #   How Overrides Work:
         # - If the agent HOCON file specifies `"args": {"constructor_arg": "new_value", "another_arg": "some_value"}`, then:
         #   The tool will be instantiated with `constructor_arg="new_value"`, replacing the default
         #   and `another_arg = "some_value"`.

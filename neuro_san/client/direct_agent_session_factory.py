@@ -12,11 +12,12 @@
 from typing import Dict
 
 from neuro_san.interfaces.agent_session import AgentSession
+from neuro_san.internals.interfaces.context_type_base_tool_factory import ContextTypeBaseToolFactory
 from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
+from neuro_san.internals.run_context.factory.master_base_tool_factory import MasterBaseToolFactory
 from neuro_san.internals.run_context.factory.master_llm_factory import MasterLlmFactory
 from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
-from neuro_san.internals.run_context.langchain.base_tool_factory import BaseToolFactory
 from neuro_san.session.direct_agent_session import DirectAgentSession
 from neuro_san.session.external_agent_session_factory import ExternalAgentSessionFactory
 from neuro_san.session.session_invocation_context import SessionInvocationContext
@@ -52,7 +53,7 @@ class DirectAgentSessionFactory:
         tool_registry: AgentToolRegistry = factory.get_tool_registry(agent_name, self.manifest_tool_registries)
 
         llm_factory: ContextTypeLlmFactory = MasterLlmFactory.create_llm_factory()
-        base_tool_factory: BaseToolFactory = BaseToolFactory()
+        base_tool_factory: ContextTypeBaseToolFactory = MasterBaseToolFactory.create_base_tool_factory()
         # Load once now that we know what tool registry to use.
         llm_factory.load()
         base_tool_factory.load()

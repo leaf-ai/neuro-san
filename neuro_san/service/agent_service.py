@@ -32,9 +32,10 @@ from leaf_server_common.server.request_logger import RequestLogger
 from neuro_san.api.grpc import agent_pb2 as service_messages
 from neuro_san.api.grpc import agent_pb2_grpc
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
+from neuro_san.internals.interfaces.context_type_base_tool_factory import ContextTypeBaseToolFactory
 from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
+from neuro_san.internals.run_context.factory.master_base_tool_factory import MasterBaseToolFactory
 from neuro_san.internals.run_context.factory.master_llm_factory import MasterLlmFactory
-from neuro_san.internals.run_context.langchain.base_tool_factory import BaseToolFactory
 from neuro_san.service.agent_server_logging import AgentServerLogging
 from neuro_san.session.direct_agent_session import DirectAgentSession
 from neuro_san.session.external_agent_session_factory import ExternalAgentSessionFactory
@@ -87,7 +88,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         self.request_counter = AtomicCounter()
 
         self.llm_factory: ContextTypeLlmFactory = MasterLlmFactory.create_llm_factory()
-        self.base_tool_factory: BaseToolFactory = BaseToolFactory()
+        self.base_tool_factory: ContextTypeBaseToolFactory = MasterBaseToolFactory.create_base_tool_factory()
         # Load once.
         self.llm_factory.load()
         self.base_tool_factory.load()
