@@ -20,11 +20,20 @@ syntax = "proto3";
 
 package dev.cognizant_ai.neuro_san.api.grpc.concierge;
 
-// The service
+import "google/api/annotations.proto";
+
+option go_package = "github.com/leaf-ai/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/concierge/v1;concierge";
+
+// The service provides system-wide information about resources available
+// in current instance of neuro-san.
 service ConciergeService {
 
     // Called when a client needs the information about available agents.
-    rpc List (ConciergeRequest) returns (ConciergeResponse) {}
+    rpc List (ConciergeRequest) returns (ConciergeResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/list"
+        };
+    }
 }
 
 // Request structure for List gRPC method
