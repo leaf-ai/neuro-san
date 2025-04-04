@@ -28,33 +28,14 @@ class TestMusicNerdProClient(unittest.TestCase):
         :return: a Popen object representing the running process
         """
         # pylint: disable=consider-using-with
-        agent_cli_subprocess = subprocess.run(["python3", "-m", "neuro_san.client.agent_cli"#,
-                                               #"--connection", "direct",
-                                               #"--agent", agent,
-                                               #"--first_prompt_file", input_file,
-                                               #"--response_output_file", response_file,
-                                               #"--one_shot"
-                                               ], #stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                              capture_output=True, text=True, check=True, timeout=30)
-        """
-        agent_cli_subprocess = subprocess.run(["python3", "-c", "print('Hello World!')"], #stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                              capture_output=True, text=True, check=True, timeout=30)
-        """
-        # Wait for the server to start
-        # Wait for the server to start
-        # time.sleep(40)
-
+        agent_cli_subprocess = subprocess.run(["python3", "-m", "neuro_san.client.agent_cli",
+                                               "--connection", "direct",
+                                               "--agent", agent,
+                                               "--first_prompt_file", input_file,
+                                               "--response_output_file", response_file,
+                                               "--one_shot"
+                                               ], capture_output=True, text=True, check=True, timeout=30)
         return agent_cli_subprocess
-
-    @staticmethod
-    def destruct_agent_cli_subprocess(agent_process):
-        """
-        :param agent_process: a Popen object representing the running process to be destructed
-        :return: None
-        """
-        if agent_process:
-            agent_process.terminate()
-            agent_process.wait()
 
     def assert_response(self, response_file, response_keyword):
         """
@@ -78,40 +59,16 @@ class TestMusicNerdProClient(unittest.TestCase):
         with tempfile.NamedTemporaryFile(dir=INPUT_FILE_DIR, prefix="tmp_", suffix=".txt") as response_file:
             input_file = os.path.join(INPUT_FILE_DIR, "beatles_prompt.txt")
             response_keyword = "Beatles"
-            # agent_process = None
-
-            with open(input_file, "r", encoding="utf-8") as fp:
-                input = fp.read()
-                print(f"input: {input}")
 
             try:
-                result = TestMusicNerdProClient.get_agent_cli_subprocess(TestMusicNerdProClient.agent,
-                                                                         input_file, response_file.name)
-                print(f"result.returncode {result.returncode}")
-                print(f"result.stderr: {result.stderr}")
-                print(f"result.stdout: {result.stdout}")
+                TestMusicNerdProClient.get_agent_cli_subprocess(TestMusicNerdProClient.agent,
+                                                                input_file, response_file.name)
 
-                self.assertEqual(result.stdout, "Hello World!\n")
-                """
-                for _ in range(100):
-                    line = agent_process.stdout.readline()
-                    if not line:
-                        continue
-                    print(f"aline: {line.rstrip()}", flush=True)
-                """
-                #time.sleep(40)
-
-                ##print(f"response_file.name: {response_file.name}")
-                ##print(f"response_file.name size: {os.stat(response_file.name).st_size}")
-
-                ##self.assert_response(response_file, response_keyword)
+                self.assert_response(response_file, response_keyword)
             except subprocess.CalledProcessError as e:
                 print(f"Command failed with exit code {e.returncode}: {e.cmd}")
                 print(f"Error output: {e.stderr}")
                 self.fail()
-            finally:
-                #TestMusicNerdProClient.destruct_agent_cli_subprocess(agent_process)
-                pass
 
 
 if __name__ == "__main__":
