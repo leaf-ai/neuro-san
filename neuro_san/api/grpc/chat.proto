@@ -122,4 +122,12 @@ message ChatMessage {
     // Optional list of Origin structures (see above) describing the origin of
     // a tool result.
     repeated Origin tool_result_origin = 7 [json_name="tool_result_origin"];
+
+    // This is an entirely optional map whose keys refer to data that is better
+    // left out of the LLM chat stream.  The keys themselves might appear in the
+    // chat stream, referring to the data, but the data itself does not.
+    // The intent is for the key references to be passed to tools,
+    // which then grab the values by programmatic means, but these tools
+    // might also have private data to send back to the client as well.
+    google.protobuf.Struct sly_data = 8 [json_name="sly_data"];
 }

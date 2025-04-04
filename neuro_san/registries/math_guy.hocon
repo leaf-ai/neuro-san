@@ -1,0 +1,75 @@
+
+# Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
+# All Rights Reserved.
+# Issued under the Academic Public License.
+#
+# You can be released from the terms, and requirements of the Academic Public
+# License by purchasing a commercial license.
+# Purchase of a commercial license is mandatory for any use of the
+# neuro-san SDK Software in commercial settings.
+#
+# END COPYRIGHT
+{
+    "llm_config": {
+        "model_name": "gpt-4o",
+    },
+    "tools": [
+        # These tool definitions do not have to be in any particular order
+        # How they are linked and call each other is defined within their
+        # own specs.  This could be a graph, potentially even with cycles.
+
+        # This first guy is the "Front Man".  He is identified as such because
+        # he is the only one with no parameters in his function definition,
+        # and therefore he needs to talk to the outside world to get things rolling.
+        {
+            "name": "math_guy",
+
+            # Note that there are no parameters defined for this guy's "function" key.
+            # This is the primary way to identify this tool as a front-man,
+            # distinguishing it from the rest of the tools.
+
+            "function": {
+
+                # When there are no function parameters to the front-man,
+                # its description acts as an initial prompt. 
+
+                "description": """
+I am a test agent network that can do math with values in sly_data.
+Just give me the name of an arithmetic operator and I will do the work
+on the secret numbers.
+"""
+            },
+
+            "instructions": """
+Always call the calculator tool to populate the return sly_data correctly.
+Return verbatim whatever it returns.
+""",
+            "allow": {
+                "to_upstream": {
+                    "sly_data": ["equals"]
+                }
+            },
+            "tools": ["calculator"]
+        },
+
+        # The calculator is a low-level CodedTool and does not call anyone else.
+        # He is called by the front-man.
+        {
+            "name": "calculator",
+            "function": {
+                "description": "Performs arithmetic on sly-data values x and y given the operator",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "operator": {
+                            "type": "string",
+                            "description": "The single-word name of the math operator to perform"
+                        }
+                    },
+                    "required": ["operator"]
+                }
+            },
+            "class": "calculator.Calculator"
+        }
+    ]
+}

@@ -44,6 +44,9 @@ COPYRIGHT_FILE="${TOP_LEVEL}/build_scripts/source_available_copyright.txt"
 # Where output files go.
 PYTHON_OUT=${TOP_LEVEL}
 
+# Configuration values for OpenAPI specification document
+SERVICE_TITLE=NeuroSan
+SERVICE_VERSION=0.0.1
 
 # Requirements:
 #   We need to be able to export .proto files from here so they can be
@@ -96,18 +99,22 @@ touch "${GENERATED_DIR}"/__init__.py
 ALL_PROTO_FILES=""
 ALL_PROTO_FILES="${ALL_PROTO_FILES} ${LOCAL_PROTO_FILES}"
 
-# Install google API related protobufs:
-GOOGLE_API_FILES="annotations.proto http.proto"
-GOOGLE_API_DIR="${TOP_LEVEL}"/"${GENERATED_DIR}"/google/api
-mkdir -p "${GOOGLE_API_DIR}"
-
-for PROTO_FILE in ${GOOGLE_API_FILES}
-do
-    curl --header "Accept: application/vnd.github.raw+json" \
-        --output "${GOOGLE_API_DIR}"/"${PROTO_FILE}" \
-    --location --show-error --silent --fail \
-    "https://api.github.com/repos/googleapis/googleapis/contents/google/api"/"${PROTO_FILE}"
-done
+# Google API proto files are not automatically updated,
+# but if this needs to be done, uncomment the lines below:
+## Install google API related protobufs:
+#GOOGLE_API_FILES="annotations.proto http.proto"
+#GOOGLE_API_DIR="${TOP_LEVEL}"/"${GENERATED_DIR}"/google/api
+#mkdir -p "${GOOGLE_API_DIR}"
+#
+#for PROTO_FILE in ${GOOGLE_API_FILES}
+#do
+#    curl --header "Accept: application/vnd.github.raw+json" \
+#        --output "${GOOGLE_API_DIR}"/"${PROTO_FILE}" \
+#    --location --show-error --silent --fail \
+#    "https://api.github.com/repos/googleapis/googleapis/contents/google/api"/"${PROTO_FILE}"
+#done
+# End of lines to uncomment if you need
+# to update Google API files with latest versions.
 
 # Generate the python files and make them happy w/rt Python 3
 for PROTO_FILE in ${ALL_PROTO_FILES}
@@ -139,7 +146,11 @@ done
 echo "generating OpenAPI specification for ${TOP_LEVEL}/${GENERATED_DIR}/agent.proto"
 # shellcheck disable=SC2086    # PROTO_PATH is compilation of cmd line args
 python -m grpc_tools.protoc ${PROTO_PATH} \
-    --openapi_out="${TOP_LEVEL}"/${GENERATED_DIR} "${TOP_LEVEL}"/${GENERATED_DIR}/agent.proto
+    --openapi_out="${TOP_LEVEL}"/${GENERATED_DIR} \
+    --openapi_opt title="${SERVICE_TITLE}" \
+    --openapi_opt version="${SERVICE_VERSION}" \
+    "${TOP_LEVEL}"/${GENERATED_DIR}/agent.proto \
+    "${TOP_LEVEL}"/${GENERATED_DIR}/concierge.proto
 
 # OpenAPI plug-in always generates openapi.yaml,
 # so we rename it and convert to json format

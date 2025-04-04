@@ -18,13 +18,13 @@ from typing import List
 from typing import Tuple
 
 import json
-import logging
 import os
 
 import grpc
 
 from tornado.web import RequestHandler
 
+from neuro_san.http_sidecar.logging.http_logger import HttpLogger
 from neuro_san.interfaces.async_agent_session import AsyncAgentSession
 from neuro_san.interfaces.concierge_session import ConciergeSession
 from neuro_san.session.async_grpc_service_agent_session import AsyncGrpcServiceAgentSession
@@ -48,20 +48,25 @@ class BaseRequestHandler(RequestHandler):
         grpc.StatusCode.DEADLINE_EXCEEDED: 504
     }
 
+    request_id: int = 0
+
     # pylint: disable=attribute-defined-outside-init
-    def initialize(self, agent_name, port, forwarded_request_metadata):
+    def initialize(self, agent_name, port,
+                   forwarded_request_metadata, openapi_service_spec_path):
         """
         This method is called by Tornado framework to allow
         injecting service-specific data into local handler context.
         :param agent_name: name of receiving neuro-san agent
         :param port: gRPC service port.
         :param forwarded_request_metadata: request metadata to forward.
+        :param openapi_service_spec_path: file path to OpenAPI service spec.
         """
-        #
+
         self.agent_name: str = agent_name
         self.port: int = port
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.openapi_service_spec_path: str = openapi_service_spec_path
+        self.logger = HttpLogger()
 
         if os.environ.get("AGENT_ALLOW_CORS_HEADERS") is not None:
             self.set_header("Access-Control-Allow-Origin", "*")
@@ -79,6 +84,12 @@ class BaseRequestHandler(RequestHandler):
         for item_name in self.forwarded_request_metadata:
             if item_name in headers.keys():
                 result[item_name] = headers[item_name]
+            elif item_name == "request_id":
+                # Generate unique id so we have some way to track this request:
+                result[item_name] = f"request-{BaseRequestHandler.request_id}"
+                BaseRequestHandler.request_id += 1
+            else:
+                result[item_name] = "None"
         return result
 
     def get_agent_grpc_session(self, metadata: Dict[str, Any]) -> AsyncAgentSession:
@@ -129,7 +140,7 @@ class BaseRequestHandler(RequestHandler):
             # Handle invalid JSON input
             self.set_status(400)
             self.write({"error": "Invalid JSON format"})
-            self.logger.error("error: Invalid JSON format")
+            self.logger.error({}, "error: Invalid JSON format")
             return
 
         if isinstance(exc, grpc.aio.AioRpcError):
@@ -138,13 +149,13 @@ class BaseRequestHandler(RequestHandler):
             self.set_status(http_status)
             err_msg: str = f"status: {http_status} grpc: {err_name} details: {err_details}"
             self.write({"error": err_msg})
-            self.logger.error("Http server error: %s", err_msg)
+            self.logger.error({}, "Http server error: %s", err_msg)
             return
 
         # General exception case:
         self.set_status(500)
         self.write({"error": "Internal server error"})
-        self.logger.error("Internal server error: %s", str(exc))
+        self.logger.error({}, "Internal server error: %s", str(exc))
 
     def data_received(self, chunk):
         """

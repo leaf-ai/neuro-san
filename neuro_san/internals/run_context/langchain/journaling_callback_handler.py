@@ -22,7 +22,7 @@ from langchain_core.documents import Document
 from langchain_core.outputs import LLMResult
 from langchain_core.outputs.chat_generation import ChatGeneration
 
-from neuro_san.internals.journals.journal import Journal
+from neuro_san.internals.journals.originating_journal import OriginatingJournal
 from neuro_san.internals.messages.agent_message import AgentMessage
 
 
@@ -46,19 +46,19 @@ class JournalingCallbackHandler(AsyncCallbackHandler):
     # Declarations of member variables here satisfy Pydantic style,
     # which is a type validator that langchain is based on which
     # is able to use JSON schema definitions to validate fields.
-    journal: Journal
+    journal: OriginatingJournal
 
     # This guy needs to be a pydantic class and in order to have
     # a non-pydantic Journal as a member, we need to do this.
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    def __init__(self, journal: Journal):
+    def __init__(self, journal: OriginatingJournal):
         """
         Constructor
 
         :param journal: The journal to write messages to
         """
-        self.journal: Journal = journal
+        self.journal: OriginatingJournal = journal
 
     async def on_llm_end(self, response: LLMResult,
                          **kwargs: Any) -> None:
@@ -73,7 +73,10 @@ class JournalingCallbackHandler(AsyncCallbackHandler):
             if content is not None and len(content) > 0:
                 # Package up the thinking content as an AgentMessage to stream
                 message = AgentMessage(content=content.strip())
-                await self.journal.write_message(message)
+                # Some AGENT messages that come from this source end up being dupes
+                # of AI messages that can come later.
+                # Use this method to put the message on hold for later comparison.
+                await self.journal.write_message_if_next_not_dupe(message)
 
     async def on_chain_end(self, outputs: Dict[str, Any],
                            **kwargs: Any) -> None:

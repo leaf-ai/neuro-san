@@ -28,6 +28,7 @@ class ChatContextMessageProcessor(MessageProcessor):
         Constructor
         """
         self.chat_context: Dict[str, Any] = {}
+        self.sly_data: Dict[str, Any] = None
         self.filter = ChatContextMessageFilter()
 
     def get_chat_context(self) -> Dict[str, Any]:
@@ -37,11 +38,18 @@ class ChatContextMessageProcessor(MessageProcessor):
         """
         return self.chat_context
 
+    def get_sly_data(self) -> Dict[str, Any]:
+        """
+        :return: The sly_data discovered from the agent session interaction
+        """
+        return self.sly_data
+
     def reset(self):
         """
         Resets any previously accumulated state
         """
         self.chat_context = {}
+        self.sly_data = None
 
     def process_message(self, chat_message_dict: Dict[str, Any], message_type: ChatMessageType):
         """
@@ -56,3 +64,4 @@ class ChatContextMessageProcessor(MessageProcessor):
         # Normally the very last message holds the chat_context.
         # Keep accumulating until it comes past, as long as there is something.
         self.chat_context = chat_message_dict.get("chat_context", self.chat_context)
+        self.sly_data = chat_message_dict.get("sly_data", self.sly_data)

@@ -12,35 +12,32 @@
 """
 See class comment for details
 """
+import json
 from typing import Any, Dict
 
 from neuro_san.http_sidecar.handlers.base_request_handler import BaseRequestHandler
-from neuro_san.interfaces.async_agent_session import AsyncAgentSession
 
 
-class FunctionHandler(BaseRequestHandler):
+class OpenApiPublishHandler(BaseRequestHandler):
     """
-    Handler class for neuro-san "function" API call.
+    Handler class for neuro-san OpenAPI service spec publishing"concierge" API call.
     """
 
-    async def get(self):
+    def get(self):
         """
-        Implementation of GET request handler for "function" API call.
+        Implementation of GET request handler
+        for "publish my OpenAPI specification document" call.
         """
-
         metadata: Dict[str, Any] = self.get_metadata()
-        self.logger.info(metadata, "Start GET %s/function", self.agent_name)
+        self.logger.info(metadata, "Start GET %s/docs", self.agent_name)
         try:
-            data: Dict[str, Any] = {}
-            grpc_session: AsyncAgentSession = self.get_agent_grpc_session(metadata)
-            result_dict: Dict[str, Any] = await grpc_session.function(data)
-
-            # Return gRPC response to the HTTP client
+            with open(self.openapi_service_spec_path, "r", encoding='utf-8') as f_out:
+                result_dict: Dict[str, Any] = json.load(f_out)
+            # Return json data to the HTTP client
             self.set_header("Content-Type", "application/json")
             self.write(result_dict)
-
         except Exception as exc:  # pylint: disable=broad-exception-caught
             self.process_exception(exc)
         finally:
-            await self.flush()
-            self.logger.info(metadata, "Finish GET %s/function", self.agent_name)
+            self.flush()
+            self.logger.info(metadata, "Finish GET %s/docs", self.agent_name)
