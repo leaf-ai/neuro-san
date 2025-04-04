@@ -102,7 +102,8 @@ function build_main() {
 
     if [ -z "${TARGET_PLATFORM}" ]
     then
-        TARGET_PLATFORM="linux/arm64"
+        # For MacOS, set this to "linux/arm64"
+        TARGET_PLATFORM="linux/amd64"
     fi
     echo "Target Platform for Docker image generation: ${TARGET_PLATFORM}"
 
@@ -113,13 +114,13 @@ function build_main() {
         -t leaf/${SERVICE_TAG}:${SERVICE_VERSION} \
         --platform ${TARGET_PLATFORM} \
         --secret id=with_creds_requirements,src=${WITH_CREDS_REQUIREMENTS} \
-        --build-arg="UNILEAF_VERSION=${USER}-$(date +'%Y-%m-%d-%H-%M')" \
+        --build-arg="NEURO_SAN_VERSION=${USER}-$(date +'%Y-%m-%d-%H-%M')" \
         -f ./build_scripts/Dockerfile \
         ${CACHE_OR_NO_CACHE} \
         .
 
     # Remove the temporary creds file created in create_git_creds_requirements() above
-    # rm ${WITH_CREDS_REQUIREMENTS}
+    rm ${WITH_CREDS_REQUIREMENTS}
 }
 
 
