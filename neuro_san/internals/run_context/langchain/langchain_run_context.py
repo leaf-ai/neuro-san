@@ -237,7 +237,6 @@ class LangChainRunContext(RunContext):
 
         # Check our own local factory. Most tools live in the neighborhood.
         agent_spec: Dict[str, Any] = factory.get_agent_tool_spec(name)
-        base_tool: str = agent_spec.get('base_tool')
         if agent_spec is None:
 
             # See if the agent name given could reference an external agent.

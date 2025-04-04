@@ -27,10 +27,10 @@ class ConnectivityHandler(BaseRequestHandler):
         """
         Implementation of GET request handler for "connectivity" API call.
         """
-
+        metadata: Dict[str, Any] = self.get_metadata()
+        self.logger.info(metadata, "Start GET %s/connectivity", self.agent_name)
         try:
             data: Dict[str, Any] = {}
-            metadata: Dict[str, Any] = self.get_metadata()
             grpc_session: AsyncAgentSession = self.get_agent_grpc_session(metadata)
             result_dict: Dict[str, Any] = await grpc_session.connectivity(data)
 
@@ -42,3 +42,4 @@ class ConnectivityHandler(BaseRequestHandler):
             self.process_exception(exc)
         finally:
             await self.flush()
+            self.logger.info(metadata, "Finish GET %s/connectivity request", self.agent_name)

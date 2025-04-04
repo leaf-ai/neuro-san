@@ -1,25 +1,16 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "AgentService API",
-    "description": "The service comprises all the exchanges to the backend in support of a single agent's\n services.  Routing is done by way of agent name on the grpc service hosting the agent,\n so as to keep info about which agents are hosted private (grpc gives the hand when a\n particular agent is unknown.",
+    "title": "NeuroSan",
     "version": "0.0.1"
   },
-  "servers": [
-    {
-      "url": "https://neuro-san.decisionai.ml" 
-    },
-    {
-      "url": "http://localhost:8081" 
-    }
-  ],
   "paths": {
     "/api/v1/list": {
       "get": {
         "tags": [
           "ConciergeService"
         ],
-        "description": "List the agents available on this server",
+        "description": "Called when a client needs the information about available agents.",
         "operationId": "ConciergeService_List",
         "responses": {
           "200": {
@@ -181,6 +172,20 @@
   },
   "components": {
     "schemas": {
+      "AgentInfo": {
+        "type": "object",
+        "properties": {
+          "agent_name": {
+            "type": "string",
+            "description": "Agent name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Outward-facing description of what the agent does."
+          }
+        },
+        "description": "Description of an agent's function"
+      },
       "ChatContext": {
         "type": "object",
         "properties": {
@@ -267,6 +272,10 @@
               "$ref": "#/components/schemas/Origin"
             },
             "description": "Optional list of Origin structures (see above) describing the origin of\n a tool result."
+          },
+          "sly_data": {
+            "type": "object",
+            "description": "This is an entirely optional map whose keys refer to data that is better\n left out of the LLM chat stream.  The keys themselves might appear in the\n chat stream, referring to the data, but the data itself does not.\n The intent is for the key references to be passed to tools,\n which then grab the values by programmatic means, but these tools\n might also have private data to send back to the client as well."
           }
         },
         "description": "Structure describing a single chat message.\n This could be a single response, or a list of these might comprise\n a chat history."
@@ -326,6 +335,19 @@
           }
         },
         "description": "Response structure for Chat gRPC method"
+      },
+      "ConciergeResponse": {
+        "type": "object",
+        "properties": {
+          "agents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AgentInfo"
+            },
+            "description": "List of agent descriptions"
+          }
+        },
+        "description": "Response structure for List gRPC method"
       },
       "ConnectivityInfo": {
         "type": "object",
@@ -445,36 +467,17 @@
           }
         },
         "description": "The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors)."
-      },
-      "ConciergeResponse": {
-        "type": "object",
-        "properties": {
-          "connectivity_info": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AgentInfo"
-            }
-          }
-        },
-        "description": "Response structure for List gRPC method"
-      },
-      "AgentInfo": {
-        "type": "object",
-        "properties": {
-          "agent_name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          }
-        },
-        "description": "Single listing structure for List gRPC method"
       }
     }
   },
   "tags": [
     {
-      "name": "AgentService"
+      "name": "AgentService",
+      "description": "The service comprises all the exchanges to the backend in support of a single agent's\n services.  Routing is done by way of agent name on the grpc service hosting the agent,\n so as to keep info about which agents are hosted private (grpc gives the hand when a\n particular agent is unknown."
+    },
+    {
+      "name": "ConciergeService",
+      "description": "The service provides system-wide information about resources available\n in current instance of neuro-san."
     }
   ]
 }

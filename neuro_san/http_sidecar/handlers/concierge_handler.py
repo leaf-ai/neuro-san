@@ -27,10 +27,10 @@ class ConciergeHandler(BaseRequestHandler):
         """
         Implementation of GET request handler for "concierge" API call.
         """
-
+        metadata: Dict[str, Any] = self.get_metadata()
+        self.logger.info(metadata, "Start GET %s/list", self.agent_name)
         try:
             data: Dict[str, Any] = {}
-            metadata: Dict[str, Any] = self.get_metadata()
             grpc_session: ConciergeSession = self.get_concierge_grpc_session(metadata)
             result_dict: Dict[str, Any] = grpc_session.list(data)
 
@@ -42,3 +42,4 @@ class ConciergeHandler(BaseRequestHandler):
             self.process_exception(exc)
         finally:
             self.flush()
+            self.logger.info(metadata, "Finish GET %s/list", self.agent_name)
