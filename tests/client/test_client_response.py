@@ -16,8 +16,6 @@ class TestClientResponse(unittest.TestCase):
     and get the response in another file. This helps with integration testing
     """
 
-    music_nerd_pro_agent = "music_nerd_pro"
-
     @staticmethod
     def run_agent_cli_subprocess(agent, input_file, response_file):
         """
