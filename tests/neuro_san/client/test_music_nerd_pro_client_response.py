@@ -18,22 +18,24 @@ class TestMusicNerdProClientResponse(unittest.TestCase):
     and get the response in another file. This helps with integration testing
     """
 
+    agent = "music_nerd_pro"
+
     @pytest.mark.integration
     def test_beatles(self):
         """
         Query an agent network and assert the response contains the expected value
         """
-        agent = "music_nerd_pro"
         input_file = "beatles_prompt.txt"
+        response_keyword = "Beatles"
 
         # To inspect the response_file (for debugging prupose), pass
         # "delete=False" argument to prevent temp file deletion
         with tempfile.NamedTemporaryFile(dir=INPUT_FILE_DIR, prefix="tmp_", suffix=".txt") as response_file:
             input_file = os.path.join(INPUT_FILE_DIR, input_file)
-            response_keyword = "Beatles"
 
             try:
-                result = ClientUtils.run_agent_cli_subprocess(agent, input_file, response_file.name)
+                result = ClientUtils.run_agent_cli_subprocess(TestMusicNerdProClientResponse.agent, input_file,
+                                                              response_file.name)
                 if result.returncode == 0:
                     flag, message = ClientUtils.evaluate_response_file(response_file.name, response_keyword)
                     if not flag:
