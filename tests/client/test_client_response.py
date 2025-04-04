@@ -10,13 +10,13 @@ FIXTURES_DIR = os.path.join(ROOT_DIR, "..", "fixtures")
 INPUT_FILE_DIR = os.path.join(FIXTURES_DIR, "client")
 
 
-class TestMusicNerdProClient(unittest.TestCase):
+class TestClientResponse(unittest.TestCase):
     """
     This class allows you to pass a prompt specified in a file to an agent network
     and get the response in another file. This helps with integration testing
     """
 
-    agent = "music_nerd_pro"
+    music_nerd_pro_agent = "music_nerd_pro"
 
     @staticmethod
     def run_agent_cli_subprocess(agent, input_file, response_file):
@@ -50,19 +50,21 @@ class TestMusicNerdProClient(unittest.TestCase):
                           f"response_keyword {response_keyword} not in response {response}")
 
     @pytest.mark.integration
-    def test_beatles(self):
+    def test_music_nerd_pro_beatles(self):
         """
         Query an agent network and assert the response contains the expected value
         """
+        agent = "music_nerd_pro"
+        input_file = "beatles_prompt.txt"
+
         # To inspect the response_file (for debugging prupose), pass
         # "delete=False" argument to prevent temp file deletion
         with tempfile.NamedTemporaryFile(dir=INPUT_FILE_DIR, prefix="tmp_", suffix=".txt") as response_file:
-            input_file = os.path.join(INPUT_FILE_DIR, "beatles_prompt.txt")
+            input_file = os.path.join(INPUT_FILE_DIR, input_file)
             response_keyword = "Beatles"
 
             try:
-                result = TestMusicNerdProClient.run_agent_cli_subprocess(TestMusicNerdProClient.agent,
-                                                                         input_file, response_file.name)
+                result = TestClientResponse.run_agent_cli_subprocess(agent, input_file, response_file.name)
                 if result.returncode == 0:
                     self.assert_response(response_file, response_keyword)
 
