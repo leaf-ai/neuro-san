@@ -12,6 +12,7 @@ FIXTURES_DIR = os.path.join(ROOT_DIR, "..", "..", "fixtures")
 INPUT_FILE_DIR = os.path.join(FIXTURES_DIR, "music_nerd_pro")
 
 
+@pytest.mark.integration
 class TestMusicNerdProClientResponse(unittest.TestCase):
     """
     This class allows you to pass a prompt specified in a file to an agent network
@@ -20,7 +21,6 @@ class TestMusicNerdProClientResponse(unittest.TestCase):
 
     agent = "music_nerd_pro"
 
-    @pytest.mark.integration
     def test_beatles(self):
         """
         Query an agent network and assert the response contains the expected value
