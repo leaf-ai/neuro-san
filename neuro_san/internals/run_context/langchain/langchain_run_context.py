@@ -264,7 +264,15 @@ class LangChainRunContext(RunContext):
             base_tool: str = agent_spec.get('base_tool')
             if base_tool:
                 base_tool_factory: BaseToolFactory = self.invocation_context.get_base_tool_factory()
-                return base_tool_factory.create_agent_tool(base_tool, agent_spec.get('args'))
+                try:
+                    return base_tool_factory.create_base_tool(base_tool, agent_spec.get('args'))
+                except ValueError as base_tool_creation_exception:
+                    # There are errors in BaseTool creation process
+                    message: str = f"Failed to create Agent/tool '{name}': {base_tool_creation_exception}"
+                    agent_message = AgentMessage(content=message)
+                    await self.journal.write_message(agent_message)
+                    self.logger.info(message)
+                    return None
 
             function_json = agent_spec.get("function")
 

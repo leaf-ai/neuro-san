@@ -38,7 +38,7 @@ class ContextTypeBaseToolFactory:
         """
         raise NotImplementedError
 
-    def create_agent_tool(self, tool_name: str, user_args: Dict[str, Any]) -> Any:
+    def create_base_tool(self, tool_name: str, user_args: Dict[str, Any]) -> Any:
         """
         Create a tool instance from the fully-specified tool config.
         :param tool_name: The name of the tool to instantiate.

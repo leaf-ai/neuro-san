@@ -45,10 +45,12 @@
             "tool_wrapper": {
                 "class": "langchain_community.utilities.ToolAPIWrapper",
                 "args": {
-                    "wrapper_arg": "test_wrapper_arg"  # Argument for ToolAPIWrapper
+                    # Argument for ToolAPIWrapper
+                    "wrapper_arg": "test_wrapper_arg"
                 }
             },
-            "constructor_arg": "test_constructor_arg"  # Direct argument for ToolClass
+            # Direct argument for ToolClass
+            "constructor_arg": "test_constructor_arg"
         }
 
         # This configuration results in:
