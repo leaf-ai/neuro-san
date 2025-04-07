@@ -15,7 +15,7 @@ class TestBaseToolFactory:
         """Fixture to provide a fresh instance of BaseToolFactory."""
         return BaseToolFactory()
 
-    def test_create_agent_tool_returns_single_tool(self, factory):
+    def test_create_base_tool_returns_single_tool(self, factory):
         """Test that the tool is resolved with correct arguments."""
 
         factory.base_tool_infos = {
@@ -38,7 +38,7 @@ class TestBaseToolFactory:
             mock_instance = MagicMock(spec=BaseTool)
             mock_tool_class.return_value = mock_instance
 
-            tool = factory.create_agent_tool("test_tool", user_args)
+            tool = factory.create_base_tool("test_tool", user_args)
 
             # Ensure the correct class was resolved
             mock_resolver.assert_called_once_with("TestTool", module_name="mock_module")
@@ -49,7 +49,7 @@ class TestBaseToolFactory:
             # Ensure the returned tool is an instance of the mocked class
             assert tool is mock_instance
 
-    def test_create_agent_tool_with_toolkit_constructor(self, factory):
+    def test_create_base_tool_with_toolkit_constructor(self, factory):
         """Test the toolkit instantiates with constructor."""
         factory.base_tool_infos = {
             "test_toolkit": {
@@ -73,7 +73,7 @@ class TestBaseToolFactory:
             mock_instance.get_tools.return_value = mock_tools
             mock_toolkit_class.return_value = mock_instance
 
-            tool = factory.create_agent_tool("test_toolkit", user_args)
+            tool = factory.create_base_tool("test_toolkit", user_args)
 
             # Ensure the correct class was resolved
             mock_resolver.assert_called_once_with("TestToolkit", module_name="mock_module")
@@ -84,7 +84,7 @@ class TestBaseToolFactory:
             assert tool == mock_tools
             mock_instance.get_tools.assert_called_once()
 
-    def test_create_agent_tool_with_toolkit_class_method(self, factory):
+    def test_create_base_tool_with_toolkit_class_method(self, factory):
         """Test the toolkit that instantiates with class method"""
         factory.base_tool_infos = {
             "method_toolkit": {
@@ -117,7 +117,7 @@ class TestBaseToolFactory:
             mock_toolkit_instance.get_tools.return_value = [mock_tool_1, mock_tool_2]
 
             # Call the factory method
-            tools = factory.create_agent_tool("method_toolkit", user_args)
+            tools = factory.create_base_tool("method_toolkit", user_args)
 
             # Ensure the correct method was called instead of the constructor
             mock_toolkit_class.from_tool_api_wrapper.assert_called_once_with(
