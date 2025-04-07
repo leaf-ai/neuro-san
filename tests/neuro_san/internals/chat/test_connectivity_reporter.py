@@ -38,7 +38,7 @@ class TestConnectivityReporter(TestCase):
         """
         :param hocon_file: A hocon file reference within this repo
         """
-        file_of_class = FileOfClass(__file__, "../../neuro_san/registries")
+        file_of_class = FileOfClass(__file__, "../../../../neuro_san/registries")
         file_reference = file_of_class.get_file_in_basis(hocon_file)
         restorer = AgentToolRegistryRestorer()
         agent_tool_registry: AgentToolRegistry = restorer.restore(file_reference=file_reference)
