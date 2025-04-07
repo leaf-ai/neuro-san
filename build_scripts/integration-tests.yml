@@ -60,11 +60,10 @@ steps:
 
             # Get the ephemeral token for public repos
             - EPHEMERAL_TOKEN=$(vault read -address=${{VAULT}} -field=token /github-secrets/token/repo-read)
-            - cf_export EPHEMERAL_LEAF_SOURCE_CREDENTIALS="x-access-token:${EPHEMERAL_TOKEN}"
+            - cf_export EPHEMERAL_LEAF_SOURCE_CREDENTIALS="x-access-token:${EPHEMERAL_TOKEN}" --mask
 
             # Get other keys from vault needed below
-            - export OPENAI_API_KEY=$(vault kv get -address=${{VAULT}} -field=key /secret/open-ai/api)
-            - cf_export OPENAI_API_KEY --mask
+            - cf_export OPENAI_API_KEY=$(vault kv get -address=${{VAULT}} -field=key /secret/open-ai/api) --mask
 
     create_req_files_with_git_creds:
         title: "Create credentialed requirements files for secret build steps"
