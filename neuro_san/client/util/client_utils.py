@@ -1,7 +1,10 @@
 import subprocess
 
 
-class ClientUtils():
+class ClientUtils:
+    """
+    Static utility class for calling agent_cli and evaluating results in unit/integration tests
+    """
 
     @staticmethod
     def run_agent_cli_subprocess(agent, input_file, response_file):
