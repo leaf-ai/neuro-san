@@ -169,6 +169,7 @@ steps:
                 commands:
                     - pip3 freeze
                     - pytest --version
+                    - pytest --markers
                     - >
                       pytest
                       --verbose
