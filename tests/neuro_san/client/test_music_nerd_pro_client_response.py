@@ -21,6 +21,7 @@ class TestMusicNerdProClientResponse(unittest.TestCase):
 
     agent = "music_nerd_pro"
 
+    @unittest.skip("Integration test")
     def test_beatles(self):
         """
         Query an agent network and assert the response contains the expected value
