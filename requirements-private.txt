@@ -8,7 +8,7 @@
 # Do the source-available stuff first to fast-fail if credentials are not right
 
 # Public repos
-git+https://${LEAF_SOURCE_CREDENTIALS}@github.com/leaf-ai/leaf-common.git@1.2.20
+git+https://github.com/leaf-ai/leaf-common.git@1.2.20
 
 # Private repos
-git+https://${LEAF_PRIVATE_SOURCE_CREDENTIALS}@github.com/leaf-ai/leaf-server-common.git@0.1.17
+git+https://github.com/leaf-ai/leaf-server-common.git@0.1.17
