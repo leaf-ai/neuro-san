@@ -193,11 +193,23 @@ class LangChainRunContext(RunContext):
 
         prompt_template: ChatPromptTemplate = await self._create_prompt_template(instructions, assignments)
 
+        self.agent = self.create_agent_with_fallbacks(prompt_template, callbacks)
+
+    def create_agent_with_fallbacks(self, prompt_template: ChatPromptTemplate,
+                                    callbacks: List[BaseCallbackHandler]) -> Agent:
+        """
+        Creates an agent with potential fallback llms to use.
+        :param prompt_template: The ChatPromptTemplate to use for the agent
+        :param callbacks: The list of callbacks to use when creating any LLM via the factory
+        :return: An Agent (Runnable)
+        """
         llm_factory: ContextTypeLlmFactory = self.invocation_context.get_llm_factory()
 
         fallbacks: List[Dict[str, Any]] = [self.llm_config]
         fallbacks = self.llm_config.get("fallbacks", fallbacks)
         chain_fallbacks: List[Runnable] = []
+
+        agent: Agent = None
 
         for index, fallback in enumerate(fallbacks):
             # Create the model we will use.
@@ -206,14 +218,22 @@ class LangChainRunContext(RunContext):
             if index == 0:
                 # For now. Could be problems with different providers w/ token counting.
                 self.llm = one_llm
-                self.agent = one_agent
+                agent = one_agent
             else:
                 chain_fallbacks.append(one_agent)
 
         if len(chain_fallbacks) > 0:
-            self.agent = self.agent.with_fallbacks(chain_fallbacks)
+            agent = agent.with_fallbacks(chain_fallbacks)
+
+        return agent
 
     def create_agent(self, prompt_template: ChatPromptTemplate, llm: BaseLanguageModel) -> Agent:
+        """
+        Creates an agent.
+        :param prompt_template: The ChatPromptTemplate to use for the agent
+        :param llm: The BaseLanguageModel to use for the agent
+        :return: An Agent (Runnable)
+        """
 
         agent: Agent = None
 
