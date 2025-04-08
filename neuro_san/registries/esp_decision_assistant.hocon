@@ -11,8 +11,22 @@
 # END COPYRIGHT
 {
     "llm_config": {
-        "model_name": "gpt-4o",
-        # "model_name": "gpt-4-turbo",
+        # Demonstration of the config for llm fallbacks.
+        # This is a list of llm configs where the order describes which LLM
+        # to use first and if that one fails for whatever reason (network problems,
+        # rate limits, etc.), then the next is tried.  Each entry in the list must
+        # be a dictionary and have at least the "model_name" spec-ed out, but other
+        # key/value pairs can further describe how the nth llm should be configured.
+        "fallbacks": [
+            {   
+                # This first preferred model is intended to fail with this agent network
+                # because the prompts are too big.  The next llm should kick in as a fallback.
+                "model_name": "gpt-4"
+            },
+            {
+                "model_name": "gpt-4o"
+            }
+        ]
     },
     "commondefs": {
         "replacement_values": {

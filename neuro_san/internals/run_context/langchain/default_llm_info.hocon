@@ -16,7 +16,7 @@
     # Model context and output tokens: https://platform.openai.com/docs/models
     # Model compatibility: https://platform.openai.com/docs/models#model-endpoint-compatibility
     "o3-mini": {
-        "use_model_name": "o3-mini-2025-01-31",
+        "use_model_name": "o3-mini-2025-01-31-17",
     },
     "o3-mini-2025-01-31-17": {
         "class": "openai",
@@ -612,7 +612,7 @@
                 "top_k": null,
                 "top_p": null,
                 "default_request_timeout": null,
-                "max_retires": 2,
+                "max_retries": 2,
                 "stop_sequences": null,
                 "anthropic_api_url": "https://api.anthropic.com",
                 "anthropic_api_key": null,
