@@ -38,11 +38,6 @@ dynamic = ["version", "dependencies"]
 # Specify the dependencies for the library from what is given in requirements.txt
 dependencies = {file = ["requirements.txt"]}
 
-# Note that the requirements.txt dependencies do not include private dependencies
-# on purpose.  We acknowledge them with the entry below, but that doesn't really
-# do anything for packaging.
-optional-dependencies = {dev = {file = ["requirements-private.txt"]}}
-
 [tool.setuptools.packages.find]
 # Standard setup has source existing under /src directory.
 # That's not what we tend to do.
