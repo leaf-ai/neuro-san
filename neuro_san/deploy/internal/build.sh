@@ -54,10 +54,10 @@ function build_main() {
     DOCKER_BUILDKIT=1 docker build \
         -t leaf/${SERVICE_TAG}:${SERVICE_VERSION} \
         --platform ${TARGET_PLATFORM} \
+        --build-arg="NEURO_SAN_VERSION=${USER}-$(date +'%Y-%m-%d-%H-%M')" \
         -f ./neuro_san/${SERVICE_DIR}/Dockerfile \
         ${CACHE_OR_NO_CACHE} \
         .
-        # --build-arg="UNILEAF_VERSION=${USER}-$(date +'%Y-%m-%d-%H-%M')" \
 }
 
 
