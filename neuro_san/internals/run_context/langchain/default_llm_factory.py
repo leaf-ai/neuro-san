@@ -173,6 +173,8 @@ class DefaultLlmFactory(ContextTypeLlmFactory, LangChainLlmFactory):
         if len(llm_entry.keys()) <= 2 and use_model_name is not None:
             # We effectively have an alias. Switch out the llm entry.
             llm_entry = self.llm_infos.get(use_model_name)
+            if llm_entry is None:
+                raise ValueError(f"No llm entry for use_model_name {use_model_name} in {model_name}")
 
         # Take a look at the chat classes.
         chat_class_name: str = llm_entry.get("class")

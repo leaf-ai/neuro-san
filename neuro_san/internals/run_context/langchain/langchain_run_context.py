@@ -37,6 +37,7 @@ from langchain_core.messages.base import BaseMessage
 from langchain_core.messages.human import HumanMessage
 from langchain_core.messages.system import SystemMessage
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
 
 from neuro_san.internals.errors.error_detector import ErrorDetector
@@ -178,10 +179,6 @@ class LangChainRunContext(RunContext):
             # to the logs.  Add this because some people are interested in it.
             callbacks.append(LoggingCallbackHandler(self.logger))
 
-        # Create the model we will use.
-        llm_factory: ContextTypeLlmFactory = self.invocation_context.get_llm_factory()
-        self.llm = llm_factory.create_llm(self.llm_config, callbacks=callbacks)
-
         # Now that we have a name, we can create an ErrorDetector for the output.
         self.error_detector = ErrorDetector(full_name,
                                             error_formatter_name=agent_spec.get("error_formatter"),
@@ -196,8 +193,32 @@ class LangChainRunContext(RunContext):
 
         prompt_template: ChatPromptTemplate = await self._create_prompt_template(instructions, assignments)
 
+        llm_factory: ContextTypeLlmFactory = self.invocation_context.get_llm_factory()
+
+        fallbacks: List[Dict[str, Any]] = [self.llm_config]
+        fallbacks = self.llm_config.get("fallbacks", fallbacks)
+        chain_fallbacks: List[Runnable] = []
+
+        for index, fallback in enumerate(fallbacks):
+            # Create the model we will use.
+            one_llm: BaseLanguageModel = llm_factory.create_llm(fallback, callbacks=callbacks)
+            one_agent: Agent = self.create_agent(prompt_template, one_llm)
+            if index == 0:
+                # For now. Could be problems with different providers w/ token counting.
+                self.llm = one_llm
+                self.agent = one_agent
+            else:
+                chain_fallbacks.append(one_agent)
+
+        if len(chain_fallbacks) > 0:
+            self.agent = self.agent.with_fallbacks(chain_fallbacks)
+
+    def create_agent(self, prompt_template: ChatPromptTemplate, llm: BaseLanguageModel) -> Agent:
+
+        agent: Agent = None
+
         if len(self.tools) > 0:
-            self.agent = create_tool_calling_agent(self.llm, self.tools, prompt_template)
+            agent = create_tool_calling_agent(llm, self.tools, prompt_template)
 
             # The above call creates a chain in this order:
             #   first:  RunnablePassthrough
@@ -209,7 +230,7 @@ class LangChainRunContext(RunContext):
 
             # Replace the output parser from the call above.
             # Per empirical experience, this is "last".
-            self.agent.last = JournalingToolsAgentOutputParser(self.journal)
+            agent.last = JournalingToolsAgentOutputParser(self.journal)
         else:
             # This uses LangChain Expression Language (LCEL), which enables a functional, pipeline-style composition
             # using "|". Here, we pass `agent_scratchpad` in the input message, but since we don't explicitly assign it
@@ -221,7 +242,9 @@ class LangChainRunContext(RunContext):
             #
             # By skipping this step, our agent functions as a pure LLM-driven system with a defined role,
             # without tool invocation logic influencing its decision-making.
-            self.agent = prompt_template | self.llm | JournalingToolsAgentOutputParser(self.journal)
+            agent = prompt_template | llm | JournalingToolsAgentOutputParser(self.journal)
+
+        return agent
 
     async def _create_base_tool(self, name: str) -> BaseTool:
         """
