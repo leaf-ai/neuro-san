@@ -84,7 +84,7 @@ class DirectAgentSession(AgentSession):
         tool_registry: AgentToolRegistry =\
             self.tool_registry_provider.get_agent_tool_factory()
         if not tool_registry:
-            raise ValueError("Function: Agent not found!")
+            raise ValueError("Function: Agent tool registry not found!")
 
         front_man: FrontMan = tool_registry.create_front_man()
         if front_man is not None:
@@ -115,7 +115,7 @@ class DirectAgentSession(AgentSession):
         tool_registry: AgentToolRegistry = \
             self.tool_registry_provider.get_agent_tool_factory()
         if not tool_registry:
-            raise ValueError("Connectivity: Agent not found!")
+            raise ValueError("Connectivity: Agent tool registry not found!")
 
         reporter = ConnectivityReporter(tool_registry)
         connectivity_info: List[Dict[str, Any]] = reporter.report_network_connectivity()
@@ -150,7 +150,7 @@ class DirectAgentSession(AgentSession):
         tool_registry: AgentToolRegistry = \
             self.tool_registry_provider.get_agent_tool_factory()
         if not tool_registry:
-            raise ValueError("StreamingChat: Agent not found!")
+            raise ValueError("StreamingChat: Agent tool registry not found!")
 
         chat_session = DataDrivenChatSession(registry=tool_registry)
 
