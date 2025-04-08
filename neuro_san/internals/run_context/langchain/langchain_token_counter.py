@@ -39,7 +39,6 @@ from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.originating_journal import OriginatingJournal
 from neuro_san.internals.messages.agent_message import AgentMessage
 from neuro_san.internals.messages.origination import Origination
-from neuro_san.internals.run_context.interfaces.run_context import RunContext
 
 
 # Keep a ContextVar for the origin info.  We do this because the
@@ -58,15 +57,20 @@ class LangChainTokenCounter:
     are in get_callback_for_llm()
     """
 
-    def __init__(self, run_context: RunContext):
+    def __init__(self, llm: BaseLanguageModel,
+                 invocation_context: InvocationContext,
+                 journal: OriginatingJournal):
         """
         Constructor
 
-        :param run_context: The RunContext whose policy we want to use.
+        :param llm: The Llm to monitor for tokens
+        :param invocation_context: The InvocationContext
+        :param journal: The OriginatingJournal which through which this
+                    will send token count AGENT messages
         """
-        self.llm: BaseLanguageModel = run_context.get_llm()
-        self.invocation_context: InvocationContext = run_context.get_invocation_context()
-        self.journal: OriginatingJournal = run_context.get_journal()
+        self.llm: BaseLanguageModel = llm
+        self.invocation_context: InvocationContext = invocation_context
+        self.journal: OriginatingJournal = journal
         self.debug: bool = False
 
     async def count_tokens(self, awaitable: Awaitable) -> Any:
