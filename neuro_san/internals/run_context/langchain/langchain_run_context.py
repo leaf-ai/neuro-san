@@ -203,26 +203,38 @@ class LangChainRunContext(RunContext):
         :param callbacks: The list of callbacks to use when creating any LLM via the factory
         :return: An Agent (Runnable)
         """
-        llm_factory: ContextTypeLlmFactory = self.invocation_context.get_llm_factory()
-
-        fallbacks: List[Dict[str, Any]] = [self.llm_config]
-        fallbacks = self.llm_config.get("fallbacks", fallbacks)
-        chain_fallbacks: List[Runnable] = []
-
+        # Initialize our return value
         agent: Agent = None
 
+        # Get the factory we will use
+        llm_factory: ContextTypeLlmFactory = self.invocation_context.get_llm_factory()
+
+        # Prepare a list of fallbacks.  By default the llm_config itself is a single-entry fallback list.
+        fallbacks: List[Dict[str, Any]] = [self.llm_config]
+        fallbacks = self.llm_config.get("fallbacks", fallbacks)
+
+        # Initialize a list of chain fallbacks. This may or may not get filled.
+        chain_fallbacks: List[Runnable] = []
+
+        # Go through the list of fallbacks in the config.
         for index, fallback in enumerate(fallbacks):
-            # Create the model we will use.
+
+            # Create a model we might use.
             one_llm: BaseLanguageModel = llm_factory.create_llm(fallback, callbacks=callbacks)
             one_agent: Agent = self.create_agent(prompt_template, one_llm)
+
             if index == 0:
+                # The first agent is the one we want to be our main guy.
+                agent = one_agent
                 # For now. Could be problems with different providers w/ token counting.
                 self.llm = one_llm
-                agent = one_agent
             else:
+                # Anything later than the first guy is considered a fallback. Add it to the list.
                 chain_fallbacks.append(one_agent)
 
         if len(chain_fallbacks) > 0:
+            # Set up fallbacks.
+            # See https://python.langchain.com/docs/how_to/tools_error/#tryexcept-tool-call
             agent = agent.with_fallbacks(chain_fallbacks)
 
         return agent
@@ -234,7 +246,7 @@ class LangChainRunContext(RunContext):
         :param llm: The BaseLanguageModel to use for the agent
         :return: An Agent (Runnable)
         """
-
+        # Initialize our return value
         agent: Agent = None
 
         if len(self.tools) > 0:
