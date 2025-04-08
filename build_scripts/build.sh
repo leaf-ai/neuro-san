@@ -49,9 +49,6 @@ function build_main() {
         -f ./build_scripts/Dockerfile \
         ${CACHE_OR_NO_CACHE} \
         .
-
-    # Remove the temporary creds file created in create_git_creds_requirements() above
-    rm ${WITH_CREDS_REQUIREMENTS}
 }
 
 
