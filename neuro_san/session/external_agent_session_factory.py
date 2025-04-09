@@ -16,10 +16,10 @@ from os import environ
 import logging
 
 from neuro_san.interfaces.async_agent_session import AsyncAgentSession
-from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
 from neuro_san.internals.tool_factories.service_tool_factory_provider import ServiceToolFactoryProvider
+from neuro_san.internals.interfaces.agent_tool_factory_provider import AgentToolFactoryProvider
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 from neuro_san.session.async_direct_agent_session import AsyncDirectAgentSession
@@ -82,7 +82,8 @@ class ExternalAgentSessionFactory(AsyncAgentSessionFactory):
             # Optimization: We want to create a different kind of session to minimize socket usage
             # and potentially relieve the direct user of the burden of having to start a server
 
-            tool_factory: ServiceToolFactoryProvider.get_instance()
+            tool_factory: ServiceToolFactoryProvider =\
+                    ServiceToolFactoryProvider.get_instance()
             tool_registry_provider: AgentToolFactoryProvider = \
                 tool_factory.get_agent_tool_factory_provider(agent_name)
             session = AsyncDirectAgentSession(tool_registry_provider, invocation_context, metadata=metadata)

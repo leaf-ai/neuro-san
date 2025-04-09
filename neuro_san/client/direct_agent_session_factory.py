@@ -14,8 +14,6 @@ from typing import Dict
 from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
 from neuro_san.internals.run_context.factory.master_llm_factory import MasterLlmFactory
-from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
-from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.interfaces.agent_tool_factory_provider import AgentToolFactoryProvider
 from neuro_san.internals.tool_factories.service_tool_factory_provider import ServiceToolFactoryProvider
 from neuro_san.session.direct_agent_session import DirectAgentSession
@@ -43,7 +41,8 @@ class DirectAgentSessionFactory:
         """
 
         factory = ExternalAgentSessionFactory(use_direct=use_direct)
-        tool_factory: ServiceToolFactoryProvider.get_instance()
+        tool_factory: ServiceToolFactoryProvider =\
+            ServiceToolFactoryProvider.get_instance()
         tool_registry_provider: AgentToolFactoryProvider =\
             tool_factory.get_agent_tool_factory_provider(agent_name)
 

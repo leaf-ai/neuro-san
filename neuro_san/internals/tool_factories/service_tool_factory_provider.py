@@ -19,6 +19,7 @@ from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentT
 from neuro_san.internals.tool_factories.single_agent_tool_factory_provider import SingleAgentToolFactoryProvider
 from neuro_san.internals.graph.persistence.agent_tool_registry_restorer import AgentToolRegistryRestorer
 
+
 class ServiceToolFactoryProvider(ToolFactoryProvider):
     """
     Service-wide provider of agents tools factories.
@@ -37,6 +38,9 @@ class ServiceToolFactoryProvider(ToolFactoryProvider):
 
     @classmethod
     def get_instance(cls):
+        """
+        Get a singleton instance of this class
+        """
         if not ServiceToolFactoryProvider.instance:
             ServiceToolFactoryProvider.instance = ServiceToolFactoryProvider()
         return ServiceToolFactoryProvider.instance

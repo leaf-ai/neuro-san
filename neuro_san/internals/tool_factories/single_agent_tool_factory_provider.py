@@ -9,11 +9,11 @@
 #
 # END COPYRIGHT
 
-import logging
 from typing import Dict
 
 from neuro_san.internals.interfaces.agent_tool_factory_provider import AgentToolFactoryProvider
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
+
 
 class SingleAgentToolFactoryProvider(AgentToolFactoryProvider):
     """
@@ -25,4 +25,7 @@ class SingleAgentToolFactoryProvider(AgentToolFactoryProvider):
         self.agents_table: Dict[str, AgentToolFactory] = agents_table
 
     def get_agent_tool_factory(self) -> AgentToolFactory:
+        """
+        Return current Agent tool factory instance for specific agent name.
+        """
         return self.agents_table.get(self.agent_name, None)
