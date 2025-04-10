@@ -55,6 +55,9 @@ RUN /bin/bash -c "pip3 install -r ${APP_SOURCE}/requirements-build.txt"
 COPY --chown=${USERNAME}:${USERNAME} ${EXTERNAL_BUILD_ROOT}/requirements.txt ${APP_SOURCE}
 RUN /bin/bash -c "pip3 install -r ${APP_SOURCE}/requirements.txt"
 
+COPY --chown=${USERNAME}:${USERNAME} ${EXTERNAL_BUILD_ROOT}/requirements-private.txt ${APP_SOURCE}
+RUN /bin/bash -c "pip3 install -r ${APP_SOURCE}/requirements-private.txt"
+
 # Now we copy the full source tree into the container, which will almost always
 # in practice break the cache since we build when code changes.
 # We do this after all the requirements are installed as code changes more often than requirements

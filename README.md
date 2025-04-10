@@ -20,6 +20,7 @@ Create and activate a new virtual environment:
 Install packages specified in the following requirments files:
 
     pip install -r requirements.txt
+    pip install -r requirements-private.txt
     pip install -r requirements-build.txt
 
 #### Set necessary environment variables

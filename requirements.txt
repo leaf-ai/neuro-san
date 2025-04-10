@@ -3,10 +3,6 @@
 # neuro_san/service container.
 #
 
-# Do the source-available stuff first to fast-fail if credentials are not right
-git+https://github.com/leaf-ai/leaf-common.git@1.2.20
-git+https://github.com/leaf-ai/leaf-server-common.git@0.1.17
-
 # These are needed for generating code from .proto files
 grpcio>=1.62.0
 grpcio-health-checking>=1.62.0
