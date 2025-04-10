@@ -15,7 +15,7 @@ Synchronous connection:
 It also uses the DirectAgentSession to call the neuro-san infrastructure as a library.
 There are async version of all of the above as well.
 
-## Other clients.
+## Other clients
 
 A neuro-san server uses gRPC under the hood. You can check out the protobufs definition of the
 API under neuro_san/api/grpc.  The place to start is agent.proto for the service definitions.
