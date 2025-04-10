@@ -2,6 +2,9 @@
 # These requirements are for the Python that is run in the
 # neuro_san/service container.
 #
+# Public github source dependencies are listed in requirements-private.txt
+# Requirements for tests, code style and other build stuff reside in
+# requirements-build.txt
 
 # These are needed for generating code from .proto files
 grpcio>=1.62.0
