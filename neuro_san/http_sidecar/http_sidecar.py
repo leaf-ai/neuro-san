@@ -62,7 +62,7 @@ class HttpSidecar:
         Method to be called by a process running tornado HTTP server
         to actually start serving requests.
         """
-        self.logger = HttpLogger()
+        self.logger = HttpLogger(self.forwarded_request_metadata)
 
         app = self.make_app()
         app.listen(self.http_port)
