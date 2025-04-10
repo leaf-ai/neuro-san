@@ -75,10 +75,6 @@ RUN \
     && chown -R ${USERNAME}: /usr/local/ \
     && chown -R ${USERNAME}: /var/log
 
-# Set up a place for the mount of secrets to happen
-RUN mkdir -p ${APP_HOME}/certs/aws \
-    && ln -s ${APP_HOME}/certs/aws ${APP_HOME}/.aws
-
 # This is the port the service will accept grpc requests on.
 # This should be consistent with the main port for the service as described
 # in the <service>.yaml file for any kubernetes deployment.
