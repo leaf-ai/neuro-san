@@ -107,7 +107,7 @@ class StreamingInputProcessor:
         :param user_input: The string to send
         :param sly_data: The sly_data dictionary to send
         :param chat_context: The chat context dictionary that allows the context of a
-                    conitinuing conversation to be reconstructed on another server.
+                    continuing conversation to be reconstructed on another server.
         :param chat_filter: The ChatFilter to apply to the request.
         :return: A dictionary representing the chat request to send
         """
@@ -134,7 +134,7 @@ class StreamingInputProcessor:
         """
         Reset for a new exchange
         """
-        # Reset the message processor to recieve a new answer
+        # Reset the message processor to receive a new answer
         self.processor.reset()
 
         if isinstance(self.session, DirectAgentSession):
