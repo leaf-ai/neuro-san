@@ -59,6 +59,3 @@ timedinput>=0.1.1
 # to work out-of-the-box.
 # This is not used in any part of neuro-san core operations.
 duckduckgo_search>=7.3.0
-
-git+https://github.com/leaf-ai/leaf-common.git@1.2.20
-git+https://github.com/leaf-ai/leaf-server-common.git@0.1.17

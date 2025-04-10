@@ -67,7 +67,7 @@ string of a JSON dictionary. For example:
 
 ## Running Python unit/integration tests
 
-To run Python unit/integration tests, follow the instructions [here](./tests/README.md)
+To run Python unit/integration tests, follow the instructions [here](./README_tests.md)
 
 ## Creating a new agent network
 
