@@ -82,11 +82,6 @@
         "args": {
             "requests_wrapper": {
                 "class": "langchain_community.utilities.requests.TextRequestsWrapper",
-                # Argument for the wrapper
-                "args": {
-                    # Empty headers dictionary (can be customized)
-                    "headers": {}
-                }
             },
             "allow_dangerous_requests": true
         }
@@ -109,10 +104,6 @@
         "args": {
             "requests_wrapper": {
                 "class": "langchain_community.utilities.requests.TextRequestsWrapper",
-                # Argument for the wrapper
-                "args": {
-                    "headers": {}
-                }
             },
             "allow_dangerous_requests": true
         }
@@ -131,10 +122,6 @@
         "args": {
             "requests_wrapper": {
                 "class": "langchain_community.utilities.requests.TextRequestsWrapper",
-                # Argument for the wrapper
-                "args": {
-                    "headers": {}
-                }
             },
             "allow_dangerous_requests": true
         }
@@ -152,10 +139,6 @@
         "args": {
             "requests_wrapper": {
                 "class": "langchain_community.utilities.requests.TextRequestsWrapper",
-                # Argument for the wrapper
-                "args": {
-                    "headers": {}
-                }
             },
             "allow_dangerous_requests": true
         }
@@ -173,10 +156,6 @@
         "args": {
             "requests_wrapper": {
                 "class": "langchain_community.utilities.requests.TextRequestsWrapper",
-                # Argument for the wrapper
-                "args": {
-                    "headers": {}
-                }
             },
             "allow_dangerous_requests": true
         }
@@ -194,10 +173,6 @@
         "args": {
             "requests_wrapper": {
                 "class": "langchain_community.utilities.requests.TextRequestsWrapper",
-                # Argument for the wrapper
-                "args": {
-                    "headers": {}
-                }
             },
             "allow_dangerous_requests": true
         }
