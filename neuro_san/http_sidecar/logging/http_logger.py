@@ -12,9 +12,10 @@
 """
 See class comment for details
 """
+import copy
 import logging
 import pathlib
-from typing import Any, Dict
+from typing import Any, Dict, Sequence
 
 from leaf_server_common.logging.logging_setup import setup_logging
 
@@ -28,7 +29,7 @@ class HttpLogger:
 
     HTTP_LOGGER_NAME: str = "HttpServer"
 
-    def __init__(self):
+    def __init__(self, forwarded_metadata: Sequence[str]):
         """
         Constructor
         """
@@ -39,6 +40,12 @@ class HttpLogger:
         # can only be extracted and used on per-request basis.
         # Async Http server is single-threaded.
         self.logger = logging.getLogger(HttpLogger.HTTP_LOGGER_NAME)
+        # Initialize minimal metadata dictionary to contain some value
+        # for each metadata key we expect to be used.
+        self.base_metadata: Dict[str, Any] = {}
+        for key in forwarded_metadata:
+            self.base_metadata[key] = "None"
+        self.base_metadata["source"] = HttpLogger.HTTP_LOGGER_NAME
 
     def info(self, metadata: Dict[str, Any], msg: str, *args):
         """
@@ -92,5 +99,6 @@ class HttpLogger:
         """
         Prepare logging filter using request metadata,
         """
-        metadata["source"] = HttpLogger.HTTP_LOGGER_NAME
-        LogContextFilter.log_context.set(metadata)
+        use_metadata: Dict[str, Any] = copy.copy(self.base_metadata)
+        use_metadata.update(metadata)
+        LogContextFilter.log_context.set(use_metadata)

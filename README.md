@@ -96,25 +96,17 @@ In some order of complexity, they are:
     calls one or more predictors in order to help make the decision
     in an LLM-based ESP manner.
 
-*   six_thinking_hats
-
-    This is Hormoz's example of the six colored thinking hats
-    approach to solving a problem.
-
-*   intranet_agents
-
-    This is Babak's "18-wheeler". A complex and abstract agent network
-    that mimics a corporate help network, with divisional hierarchy
-    encapsulated in one layer of agents, and specialized departments
-    within those divisions attempt to answer basic corporate questions
-    by means of delegation.
-
 When coming up with new hocon files in that same directory, also add an entry for it
 in the manifest.hocon file.
 
 build.sh / run.sh the service like you did above to re-load the server,
 and interact with it via the agent_cli.py chat client, making sure
 you specify your agent correctly (per the hocon file stem).
+
+### More agent example files
+
+For more examples of agent networks, documentation and tutorials,
+see this repo: https://github.com/leaf-ai/neuro-san-demos
 
 ### Manifest file
 

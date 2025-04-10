@@ -66,7 +66,7 @@ class BaseRequestHandler(RequestHandler):
         self.port: int = port
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata
         self.openapi_service_spec_path: str = openapi_service_spec_path
-        self.logger = HttpLogger()
+        self.logger = HttpLogger(forwarded_request_metadata)
 
         if os.environ.get("AGENT_ALLOW_CORS_HEADERS") is not None:
             self.set_header("Access-Control-Allow-Origin", "*")
