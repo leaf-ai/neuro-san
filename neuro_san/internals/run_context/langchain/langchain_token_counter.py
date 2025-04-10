@@ -259,7 +259,6 @@ class LangChainTokenCounter:
                 "total_cost": callback.total_cost,
                 "time_taken_in_seconds": time_taken_in_seconds,
                 "caveats": [
-                    "Only doing token accounting for OpenAI, AzureOpenAI and Anthropic models for now.",
                     "Each LLM Branch Node also includes accounting for each of its callees.",
                 ]
             }
