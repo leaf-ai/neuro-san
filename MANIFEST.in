@@ -18,3 +18,4 @@ include README.md
 include README_setup.md
 include README_client.md
 include README_tests.md
+include requirements-private.txt
