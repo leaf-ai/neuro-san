@@ -14,8 +14,3 @@ include neuro_san/deploy/entrypoint.sh
 include neuro_san/deploy/logging.json
 include neuro_san/deploy/run.sh
 include neuro_san/internals/run_context/langchain/default_llm_info.hocon
-include README.md
-include README_setup.md
-include README_client.md
-include README_tests.md
-include requirements-private.txt
