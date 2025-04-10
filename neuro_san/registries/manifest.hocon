@@ -16,12 +16,6 @@
     "esp_decision_assistant.hocon": true,
     "hello_world.hocon": true,
     "intranet_agents.hocon": true,
-    "telco_network_support.hocon": true,
-    "six_thinking_hats.hocon": true,
-    "insurance_agents.hocon": true,
-    "retail_ops_and_customer_service.hocon": true,
-    "banking_ops.hocon": true,
-    "cpg_agents.hocon": true,
     "math_guy.hocon": true,
     "music_nerd.hocon": true,
     "music_nerd_pro.hocon": true,
@@ -58,4 +52,6 @@
     #
     # Use the AGENT_MANIFEST_FILE and AGENT_TOOL_PATH env vars to direct a generic neuro-san
     # server to your own repo's agents and CodedTools, respectively.
+    #
+    # See https://github.com/leaf-ai/neuro-san-demos for an example of how to do this.
 }
