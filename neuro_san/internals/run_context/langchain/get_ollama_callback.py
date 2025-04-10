@@ -27,7 +27,7 @@ register_configure_hook(ollama_callback_var, inheritable=True)
 
 
 @contextmanager
-def get_usage_metadata_callback() -> Generator[OllamaCallbackHandler, None, None]:
+def get_ollama_callback() -> Generator[OllamaCallbackHandler, None, None]:
     """Get ollama callback.
 
     Get context manager for tracking usage metadata across chat model calls using

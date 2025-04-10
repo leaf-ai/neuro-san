@@ -39,6 +39,9 @@ from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.originating_journal import OriginatingJournal
 from neuro_san.internals.messages.agent_message import AgentMessage
 from neuro_san.internals.messages.origination import Origination
+from neuro_san.internals.run_context.langchain.get_ollama_callback import get_ollama_callback
+from neuro_san.internals.run_context.langchain.get_ollama_callback import ollama_callback_var
+from neuro_san.internals.run_context.langchain.ollama_callback_handler import OllamaCallbackHandler
 
 
 # Keep a ContextVar for the origin info.  We do this because the
@@ -209,7 +212,7 @@ class LangChainTokenCounter:
             #     Per class docs this is on by default.
             return get_bedrock_anthropic_callback
 
-        return None
+        return get_ollama_callback
 
     @staticmethod
     def get_context_var_for_llm(llm: BaseLanguageModel) -> ContextVar:
@@ -226,7 +229,7 @@ class LangChainTokenCounter:
         if isinstance(llm, ChatAnthropic):
             return bedrock_anthropic_callback_var
 
-        return None
+        return ollama_callback_var
 
     @staticmethod
     def normalize_token_count(callback: BaseCallbackHandler, time_taken_in_seconds: float) -> Dict[str, Any]:
@@ -243,7 +246,10 @@ class LangChainTokenCounter:
         if callback is None:
             return token_dict
 
-        if isinstance(callback, (OpenAICallbackHandler, BedrockAnthropicTokenUsageCallbackHandler)):
+        if isinstance(
+            callback,
+            (OpenAICallbackHandler, BedrockAnthropicTokenUsageCallbackHandler, OllamaCallbackHandler)
+        ):
             # So far these two instances share the same reporting structure
             token_dict = {
                 "total_tokens": callback.total_tokens,
