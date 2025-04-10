@@ -59,7 +59,7 @@ ENV APP_SOURCE ${APP_HOME}/myapp
 ENV PIP3_VERSION 25.0.1
 
 # Explicitly get the desired pip version
-RUN pip3 install --upgrade pip==${PIP3_VERSION} --no-cache-dir
+RUN pip3 install --upgrade pip==${PIP3_VERSION} --no-cache-dir ; mkdir -p ${APP_SOURCE}
 
 COPY ./requirements.txt ${APP_SOURCE}
 RUN pip install --prefix=/install --no-cache-dir -r ${APP_SOURCE}/requirements.txt
