@@ -31,7 +31,11 @@ def get_ollama_callback() -> Generator[OllamaCallbackHandler, None, None]:
     """Get ollama callback.
 
     Get context manager for tracking usage metadata across chat model calls using
-    ``AIMessage.usage_metadata``.
+    "AIMessage.usage_metadata".
+
+    This class is a modification of LangChain’s "UsageMetadataCallbackHandler":
+    - https://python.langchain.com/api_reference/_modules/langchain_core/callbacks/usage.html
+    #get_usage_metadata_callback
     """
     cb = OllamaCallbackHandler()
     ollama_callback_var.set(cb)
