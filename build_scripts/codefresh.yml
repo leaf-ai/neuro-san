@@ -42,48 +42,6 @@ steps:
             # the repo name, but with underscores instead of dashes
             - cf_export PACKAGE_NAME=`echo ${{CF_REPO_NAME}} | sed s/-/_/g`
 
-    create-temp-git-creds-from-vault:
-        title: "Get ephemeral GitHub creds"
-        description: "Get temporary git credentials from vault server.
-                      Create credential for use in docker secret with_creds_requirements"
-        type: "freestyle"
-        image: "vault:1.12.0"
-        working_directory: ${{CF_VOLUME_PATH}}/${{CF_REPO_NAME}}
-
-        # Disable all caching for this step to ensure the requirements file
-        # is always up to date. This step is very quick so the time hit
-        # is minimal.
-        # disable docker local cache
-        no_cache: true
-        # disable codefresh additional caching mechanisms
-        no_cf_cache: true
-
-        commands:
-            # Specifically use the temp directory outside the container we want to build
-            # so as not to accidentally copy sensitive credentials inside of it.
-            - export WITH_CREDS_REQUIREMENTS=${{TEMP_DIR_OUTSIDE_CONTAINER}}/with_creds_requirements.txt
-            - cp requirements-private.txt ${WITH_CREDS_REQUIREMENTS}
-            - cf_export WITH_CREDS_REQUIREMENTS
-
-            # Login into Vault only once
-            - >-
-                vault login -address=${{VAULT}} -method=github token=${{VAULT_LOGIN}}
-                | grep -Ev "(token |token_accessor)"
-
-            # Get the ephemeral token for public repos
-            - EPHEMERAL_TOKEN=$(vault read -address=${{VAULT}} -field=token /github-secrets/token/repo-read)
-            - EPHEMERAL_LEAF_SOURCE_CREDENTIALS="x-access-token:${EPHEMERAL_TOKEN}"
-            - >-
-                sed -i "s/\${LEAF_SOURCE_CREDENTIALS}/${EPHEMERAL_LEAF_SOURCE_CREDENTIALS}/g"
-                ${WITH_CREDS_REQUIREMENTS}
-
-            # Get the ephemeral token for private repos
-            - EPHEMERAL_TOKEN=$(vault read -address=${{VAULT}} -field=token /github-private-secrets/token/repo-read)
-            - EPHEMERAL_LEAF_PRIVATE_SOURCE_CREDENTIALS="x-access-token:${EPHEMERAL_TOKEN}"
-            - >-
-                sed -i "s/\${LEAF_PRIVATE_SOURCE_CREDENTIALS}/${EPHEMERAL_LEAF_PRIVATE_SOURCE_CREDENTIALS}/g"
-                ${WITH_CREDS_REQUIREMENTS}
-
     repo_build:
         title: "Building Docker image for ${{CF_REPO_NAME}}"
         type: "build"
@@ -96,11 +54,6 @@ steps:
         # Docker BuildKit has different output. This progress plain allows
         # us to see the "old" style output which is useful.
         progress: "plain"
-        # The src refers to our secret file on the host system. Within the
-        # dockerfile we refer to the secret by id. By not providing a dst
-        # the file ends up at the docker default of /run/secrets/<id>
-        secrets:
-            - id=with_creds_requirements,src=${{WITH_CREDS_REQUIREMENTS}}
         build_arguments:
             - REPO=${{CF_REPO_NAME}}
             - USERNAME=${{CF_REPO_OWNER}}

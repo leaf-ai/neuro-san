@@ -59,31 +59,12 @@ ENV APP_SOURCE ${APP_HOME}/myapp
 ENV PIP3_VERSION 25.0.1
 
 # Explicitly get the desired pip version
-RUN pip3 install --upgrade pip==${PIP3_VERSION} --no-cache-dir
+RUN pip3 install --upgrade pip==${PIP3_VERSION} --no-cache-dir ; mkdir -p ${APP_SOURCE}
 
-COPY ./requirements.txt ${APP_SOURCE}/requirements.txt
+COPY ./requirements.txt ${APP_SOURCE}
 RUN pip install --prefix=/install --no-cache-dir -r ${APP_SOURCE}/requirements.txt
-
-# The id with_creds_requirements refers to our requirements.txt file re-written with
-# the necessary credential. That file is mounted in the codefresh docker build
-# step. By not supplying a dst, we use dockers default secret location
-# of /runs/secrets/<id>
-#
-# This Dockerfile for the Data Profiling service does not need:
-#   kserve
-#   tensorflow
-# ... which drags in a lot of extra unnecessary stuff for the Data Profiling
-# service and as of 3/01/2022 also drags in some dependency conflicts which are
-# resolved differently for services that require kserve. Among these conflicts:
-#   numpy
-
-# We use a modified requirements file as a Docker secret,
-# but we must break the docker cache in the event the
-# requirements change. So copy in the unmodified file
-# before using the secret.
-COPY ./requirements-private.txt ${APP_SOURCE}/requirements-private.txt
-RUN --mount=type=secret,id=with_creds_requirements \
-    pip install --prefix=/install --no-cache-dir -r /run/secrets/with_creds_requirements
+COPY ./requirements-private.txt ${APP_SOURCE}
+RUN pip install --prefix=/install --no-cache-dir -r ${APP_SOURCE}/requirements-private.txt
 
 # Stage 2: Final Stage - Use a slim Python image
 FROM python:3.12-slim AS final
@@ -104,10 +85,6 @@ RUN \
     && chown -R ${USERNAME}: ${APP_HOME} \
     && chown -R ${USERNAME}: /usr/local/ \
     && chown -R ${USERNAME}: /var/log
-
-# Set up a place for the mount of secrets to happen
-RUN mkdir -p ${APP_HOME}/certs/aws \
-    && ln -s ${APP_HOME}/certs/aws ${APP_HOME}/.aws
 
 # This is the port the service will accept grpc requests on.
 # This should be consistent with the main port for the service as described

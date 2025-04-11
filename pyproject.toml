@@ -12,7 +12,6 @@ authors = [
 ]
 description = "NeuroAI data-driven System for multi-Agent Networks"
 keywords = ["LLM", "langchain", "agent", "multi-agent"]
-readme = "README.md"
 license = {file = "LICENSE.txt"}
 requires-python = ">=3.10"
 classifiers = [
@@ -32,16 +31,18 @@ classifiers = [
 ]
 # "dynamic" says we are going to get these project properties by dynamic means.
 # More on each below
-dynamic = ["version", "dependencies"]
+dynamic = ["version", "dependencies", "readme"]
 
 [tool.setuptools.dynamic]
 # Specify the dependencies for the library from what is given in requirements.txt
 dependencies = {file = ["requirements.txt"]}
 
-# Note that the requirements.txt dependencies do not include private dependencies
+# Note that the requirements.txt dependencies do not include github dependencies
 # on purpose.  We acknowledge them with the entry below, but that doesn't really
 # do anything for packaging.
 optional-dependencies = {dev = {file = ["requirements-private.txt"]}}
+
+readme = {file = ["README.md", "README_clients.md", "README_setup.md", "README_tests.md"]}
 
 [tool.setuptools.packages.find]
 # Standard setup has source existing under /src directory.

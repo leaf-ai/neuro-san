@@ -16,23 +16,8 @@ Create and activate a new virtual environment:
 Install packages specified in the following requirements files:
 
     pip install -r requirements.txt
-    pip install -r requirements-build.txt
-
-
-Most common:
-If the dependency wheel files are available, install the wheel files for leaf-common
-and leaf-server-common:
-
-    pip install leaf_common-1.2.20-py3-none-any.whl
-    pip install leaf_server_common-0.1.17-py3-none-any.whl
-
-Less common:
-If they are directly available via git, install the semi-private libraries
-(like leaf-common and leaf-server-common):
-
-    export LEAF_SOURCE_CREDENTIALS=<Your GitHub Personal Access Token>
-    export LEAF_PRIVATE_SOURCE_CREDENTIALS=<Your GitHub Personal Access Token>
     pip install -r requirements-private.txt
+    pip install -r requirements-build.txt
 
 ## Set necessary environment variables
 
