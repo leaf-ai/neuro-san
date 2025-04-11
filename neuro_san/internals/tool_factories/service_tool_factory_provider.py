@@ -13,6 +13,7 @@ import logging
 import threading
 from typing import Any
 from typing import Dict
+from typing import List
 
 from neuro_san.internals.interfaces.tool_factory_provider import ToolFactoryProvider
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
@@ -71,3 +72,11 @@ class ServiceToolFactoryProvider(ToolFactoryProvider):
         :param agent_name: name of an agent
         """
         return SingleAgentToolFactoryProvider(agent_name, self.agents_table)
+
+    def get_agent_names(self) -> List[str]:
+        """
+        Return static list of agent names.
+        """
+        with self.lock:
+            # Create static snapshot of agents names collection
+            return list(self.agents_table.keys())

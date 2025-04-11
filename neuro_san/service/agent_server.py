@@ -131,7 +131,8 @@ class AgentServer:
         tool_factory_provider: ServiceToolFactoryProvider = \
             ServiceToolFactoryProvider.get_instance()
 
-        for agent_name in self.tool_registries.keys():
+        agent_names: List[str] = tool_factory_provider.get_agent_names()
+        for agent_name in agent_names:
             service = AgentService(server_lifetime, security_cfg,
                                    agent_name,
                                    tool_factory_provider.get_agent_tool_factory_provider(agent_name),

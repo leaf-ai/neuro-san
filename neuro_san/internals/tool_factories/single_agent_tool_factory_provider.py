@@ -21,6 +21,13 @@ class SingleAgentToolFactoryProvider(AgentToolFactoryProvider):
     in the service scope.
     """
     def __init__(self, agent_name: str, agents_table: Dict[str, AgentToolFactory]):
+        """
+        Constructor.
+        :param agent_name: name of an agent to provide AgentToolFactory instances for;
+        :param agents_table: service-wide table mapping agent names to their
+            currently active AgentToolFactory instances.
+            This table is assumed to be dynamically modified outside a single agent scope.
+        """
         self.agent_name = agent_name
         self.agents_table: Dict[str, AgentToolFactory] = agents_table
 
