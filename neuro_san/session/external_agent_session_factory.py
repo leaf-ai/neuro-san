@@ -86,7 +86,8 @@ class ExternalAgentSessionFactory(AsyncAgentSessionFactory):
                     ServiceToolFactoryProvider.get_instance()
             tool_registry_provider: AgentToolFactoryProvider = \
                 tool_factory.get_agent_tool_factory_provider(agent_name)
-            session = AsyncDirectAgentSession(tool_registry_provider, invocation_context, metadata=metadata)
+            tool_registry: AgentToolRegistry = tool_registry_provider.get_agent_tool_factory()
+            session = AsyncDirectAgentSession(tool_registry, invocation_context, metadata=metadata)
 
         if session is None:
             session = AsyncGrpcServiceAgentSession(host, port, agent_name=agent_name,

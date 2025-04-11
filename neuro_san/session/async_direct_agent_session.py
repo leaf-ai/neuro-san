@@ -27,7 +27,6 @@ from neuro_san.internals.chat.data_driven_chat_session import DataDrivenChatSess
 from neuro_san.internals.filters.message_filter import MessageFilter
 from neuro_san.internals.filters.message_filter_factory import MessageFilterFactory
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
-from neuro_san.internals.interfaces.agent_tool_factory_provider import AgentToolFactoryProvider
 from neuro_san.internals.graph.tools.front_man import FrontMan
 from neuro_san.session.session_invocation_context import SessionInvocationContext
 
@@ -39,14 +38,14 @@ class AsyncDirectAgentSession(AsyncAgentSession):
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self,
-                 tool_registry_provider: AgentToolFactoryProvider,
+                 tool_registry: AgentToolRegistry,
                  invocation_context: SessionInvocationContext,
                  metadata: Dict[str, Any] = None,
                  security_cfg: Dict[str, Any] = None):
         """
         Constructor
 
-        :param tool_registry_provider: The AgentToolFactoryProvider to use for the session.
+        :param tool_registry: The agent tool registry to use for the session.
         :param invocation_context: The SessionInvocationContext to use to consult
                         for policy objects scoped at the invocation level.
         :param metadata: A dictionary of request metadata to be forwarded
@@ -61,7 +60,7 @@ class AsyncDirectAgentSession(AsyncAgentSession):
         self._security_cfg: Dict[str, Any] = security_cfg
 
         self.invocation_context: SessionInvocationContext = invocation_context
-        self.tool_registry_provider: AgentToolFactoryProvider = tool_registry_provider
+        self.tool_registry: AgentToolRegistry = tool_registry
         self.request_id: str = None
         if metadata is not None:
             self.request_id = metadata.get("request_id")
@@ -79,11 +78,7 @@ class AsyncDirectAgentSession(AsyncAgentSession):
         response_dict: Dict[str, Any] = {
         }
 
-        tool_registry: AgentToolRegistry = \
-            self.tool_registry_provider.get_agent_tool_factory()
-        if not tool_registry:
-            raise ValueError("Function: Agent tool registry not found!")
-        front_man: FrontMan = tool_registry.create_front_man()
+        front_man: FrontMan = self.tool_registry.create_front_man()
         if front_man is not None:
             spec: Dict[str, Any] = front_man.get_agent_tool_spec()
             empty: Dict[str, Any] = {}
@@ -109,11 +104,7 @@ class AsyncDirectAgentSession(AsyncAgentSession):
         response_dict: Dict[str, Any] = {
         }
 
-        tool_registry: AgentToolRegistry = \
-            self.tool_registry_provider.get_agent_tool_factory()
-        if not tool_registry:
-            raise ValueError("Connectivity: Agent tool registry not found!")
-        reporter = ConnectivityReporter(tool_registry)
+        reporter = ConnectivityReporter(self.tool_registry)
         connectivity_info: List[Dict[str, Any]] = reporter.report_network_connectivity()
         response_dict = {
             "connectivity_info": connectivity_info,
@@ -142,11 +133,7 @@ class AsyncDirectAgentSession(AsyncAgentSession):
         user_input = extractor.get("user_message.text")
 
         # Create the gateway to the internals.
-        tool_registry: AgentToolRegistry = \
-            self.tool_registry_provider.get_agent_tool_factory()
-        if not tool_registry:
-            raise ValueError("StreamingChat: Agent tool registry not found!")
-        chat_session = DataDrivenChatSession(registry=tool_registry)
+        chat_session = DataDrivenChatSession(registry=self.tool_registry)
 
         # Prepare the response dictionary
         template_response_dict = {

@@ -12,6 +12,7 @@
 from typing import Dict
 
 from neuro_san.interfaces.agent_session import AgentSession
+from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
 from neuro_san.internals.run_context.factory.master_llm_factory import MasterLlmFactory
 from neuro_san.internals.interfaces.agent_tool_factory_provider import AgentToolFactoryProvider
@@ -45,6 +46,7 @@ class DirectAgentSessionFactory:
             ServiceToolFactoryProvider.get_instance()
         tool_registry_provider: AgentToolFactoryProvider =\
             tool_factory.get_agent_tool_factory_provider(agent_name)
+        tool_registry: AgentToolRegistry = tool_registry_provider.get_agent_tool_factory()
 
         llm_factory: ContextTypeLlmFactory = MasterLlmFactory.create_llm_factory()
         # Load once now that we know what tool registry to use.
@@ -52,7 +54,7 @@ class DirectAgentSessionFactory:
 
         invocation_context = SessionInvocationContext(factory, llm_factory, metadata)
         invocation_context.start()
-        session: DirectAgentSession = DirectAgentSession(tool_registry_provider=tool_registry_provider,
+        session: DirectAgentSession = DirectAgentSession(tool_registry=tool_registry,
                                                          invocation_context=invocation_context,
                                                          metadata=metadata)
         return session

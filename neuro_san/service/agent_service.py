@@ -32,6 +32,7 @@ from leaf_server_common.server.request_logger import RequestLogger
 from neuro_san.api.grpc import agent_pb2 as service_messages
 from neuro_san.api.grpc import agent_pb2_grpc
 from neuro_san.internals.interfaces.agent_tool_factory_provider import AgentToolFactoryProvider
+from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
 from neuro_san.internals.run_context.factory.master_llm_factory import MasterLlmFactory
 from neuro_san.service.agent_server_logging import AgentServerLogging
@@ -126,7 +127,8 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         request_dict: Dict[str, Any] = MessageToDict(request)
 
         # Delegate to Direct*Session
-        session = DirectAgentSession(tool_registry_provider=self.tool_registry_provider,
+        tool_registry: AgentToolRegistry = self.tool_registry_provider.get_agent_tool_factory()
+        session = DirectAgentSession(tool_registry=tool_registry,
                                      invocation_context=None,
                                      metadata=metadata,
                                      security_cfg=self.security_cfg)
@@ -174,7 +176,8 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         request_dict: Dict[str, Any] = MessageToDict(request)
 
         # Delegate to Direct*Session
-        session = DirectAgentSession(tool_registry_provider=self.tool_registry_provider,
+        tool_registry: AgentToolRegistry = self.tool_registry_provider.get_agent_tool_factory()
+        session = DirectAgentSession(tool_registry=tool_registry,
                                      invocation_context=None,
                                      metadata=metadata,
                                      security_cfg=self.security_cfg)
@@ -231,7 +234,8 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         _ = executor.submit(None, self.server_logging.setup_logging, metadata, metadata.get("request_id"))
 
         # Delegate to Direct*Session
-        session = DirectAgentSession(tool_registry_provider=self.tool_registry_provider,
+        tool_registry: AgentToolRegistry = self.tool_registry_provider.get_agent_tool_factory()
+        session = DirectAgentSession(tool_registry=tool_registry,
                                      invocation_context=invocation_context,
                                      metadata=metadata,
                                      security_cfg=self.security_cfg)
