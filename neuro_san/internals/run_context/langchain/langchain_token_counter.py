@@ -13,6 +13,7 @@ from typing import Any
 from typing import Awaitable
 from typing import Dict
 from typing import List
+from typing import Union
 
 from asyncio import Task
 from contextvars import Context
@@ -28,6 +29,7 @@ from langchain_community.callbacks.manager import bedrock_anthropic_callback_var
 from langchain_community.callbacks.manager import get_openai_callback
 from langchain_community.callbacks.manager import get_bedrock_anthropic_callback
 from langchain_community.callbacks.manager import openai_callback_var
+from langchain_core.callbacks import AsyncCallbackHandler
 from langchain_core.callbacks.base import BaseCallbackHandler
 from langchain_core.language_models.base import BaseLanguageModel
 from langchain_openai.chat_models.azure import AzureChatOpenAI
@@ -39,6 +41,9 @@ from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.originating_journal import OriginatingJournal
 from neuro_san.internals.messages.agent_message import AgentMessage
 from neuro_san.internals.messages.origination import Origination
+from neuro_san.internals.run_context.langchain.get_llm_token_callback import get_llm_token_callback
+from neuro_san.internals.run_context.langchain.get_llm_token_callback import llm_token_callback_var
+from neuro_san.internals.run_context.langchain.llm_token_callback_handler import LlmTokenCallbackHandler
 
 
 # Keep a ContextVar for the origin info.  We do this because the
@@ -97,7 +102,7 @@ class LangChainTokenCounter:
         # Attempt to count tokens/costs while invoking the agent.
         # The means by which this happens is on a per-LLM basis, so get the right hook
         # given the LLM we've got.
-        callback: BaseCallbackHandler = None
+        callback: Union[AsyncCallbackHandler, BaseCallbackHandler] = None
         token_counter_context_manager = self.get_callback_for_llm(self.llm)
 
         if token_counter_context_manager is not None:
@@ -108,7 +113,7 @@ class LangChainTokenCounter:
             origin_str: str = Origination.get_full_name_from_origin(origin)
             ORIGIN_INFO.set(origin_str)
 
-            old_callback: BaseCallbackHandler = None
+            old_callback: Union[AsyncCallbackHandler, BaseCallbackHandler] = None
             callback_var: ContextVar = self.get_context_var_for_llm(self.llm)
             if callback_var is not None:
                 old_callback = callback_var.get()
@@ -159,11 +164,11 @@ class LangChainTokenCounter:
 
         return task
 
-    async def report(self, callback: BaseCallbackHandler, time_taken_in_seconds: float):
+    async def report(self, callback: Union[AsyncCallbackHandler, BaseCallbackHandler], time_taken_in_seconds: float):
         """
         Report on the token accounting results of the callback
 
-        :param callback: A BaseCallbackHandler instance that contains token counting information
+        :param callback: An AsyncCallbackHandler or BaseCallbackHandle instance that contains token counting information
         :param time_taken_in_seconds: The amount of time the awaitable took in count_tokens()
         """
         # Token counting results are collected in the callback, if there are any.
@@ -192,7 +197,9 @@ class LangChainTokenCounter:
         :param llm: A BaseLanguageModel returned from an LlmFactory.
         :return: A handle to a no-args function, that when called will
                 open up a context manager for token counting.
-                Can be None if no such entity exists for the llm type
+                If not an OpenAI or Anthropic model, use context manager
+                for LlmTokenCallbackHandler, which also gets token usage
+                from "usage_metadata" but give "total_cost" = 0.
         """
 
         if isinstance(llm, (ChatOpenAI, AzureChatOpenAI)):
@@ -209,7 +216,9 @@ class LangChainTokenCounter:
             #     Per class docs this is on by default.
             return get_bedrock_anthropic_callback
 
-        return None
+        # Open up a context manager for LlmTokenCallbackHandler, which also gets token usage
+        # from "usage_metadata" but give "total_cost" = 0.
+        return get_llm_token_callback
 
     @staticmethod
     def get_context_var_for_llm(llm: BaseLanguageModel) -> ContextVar:
@@ -217,7 +226,7 @@ class LangChainTokenCounter:
         :param llm: A BaseLanguageModel returned from an LlmFactory.
         :return: A ContextVar that corresponds to where token counting callback
                 information is going.
-                Can be None if no such entity exists for the llm type
+                If not an OpenAI or Anthropic model, use llm_token_callback_var.
         """
 
         if isinstance(llm, (ChatOpenAI, AzureChatOpenAI)):
@@ -226,14 +235,18 @@ class LangChainTokenCounter:
         if isinstance(llm, ChatAnthropic):
             return bedrock_anthropic_callback_var
 
-        return None
+        # Collect tokens for models other than OpenAI and Anthropic.
+        return llm_token_callback_var
 
     @staticmethod
-    def normalize_token_count(callback: BaseCallbackHandler, time_taken_in_seconds: float) -> Dict[str, Any]:
+    def normalize_token_count(callback: Union[AsyncCallbackHandler, BaseCallbackHandler],
+                              time_taken_in_seconds: float
+                              ) -> Dict[str, Any]:
         """
         Normalizes the values in the token counting callback into a standard dictionary
 
-        :param callback: A BaseCallbackHandler instance that contains token counting information
+        :param callback: An AsyncCallbackHandler or BaseCallbackHandler instance that contains
+                            token counting information
         :param time_taken_in_seconds: The amount of time the awaitable took in count_tokens()
         """
 
@@ -243,7 +256,10 @@ class LangChainTokenCounter:
         if callback is None:
             return token_dict
 
-        if isinstance(callback, (OpenAICallbackHandler, BedrockAnthropicTokenUsageCallbackHandler)):
+        if isinstance(
+            callback,
+            (OpenAICallbackHandler, BedrockAnthropicTokenUsageCallbackHandler, LlmTokenCallbackHandler)
+        ):
             # So far these two instances share the same reporting structure
             token_dict = {
                 "total_tokens": callback.total_tokens,
@@ -253,7 +269,6 @@ class LangChainTokenCounter:
                 "total_cost": callback.total_cost,
                 "time_taken_in_seconds": time_taken_in_seconds,
                 "caveats": [
-                    "Only doing token accounting for OpenAI, AzureOpenAI and Anthropic models for now.",
                     "Each LLM Branch Node also includes accounting for each of its callees.",
                 ]
             }
