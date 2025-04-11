@@ -33,6 +33,12 @@ class HttpLogger:
         """
         Constructor
         """
+        # Initialize minimal metadata dictionary to contain some value
+        # for each metadata key we expect to be used.
+        self.base_metadata: Dict[str, Any] = {}
+        for key in forwarded_metadata:
+            self.base_metadata[key] = "None"
+        self.base_metadata["source"] = HttpLogger.HTTP_LOGGER_NAME
         LogContextFilter.set_log_context()
         self.setup_logging()
         # For our Http server, we have separate logging setup,
@@ -40,12 +46,6 @@ class HttpLogger:
         # can only be extracted and used on per-request basis.
         # Async Http server is single-threaded.
         self.logger = logging.getLogger(HttpLogger.HTTP_LOGGER_NAME)
-        # Initialize minimal metadata dictionary to contain some value
-        # for each metadata key we expect to be used.
-        self.base_metadata: Dict[str, Any] = {}
-        for key in forwarded_metadata:
-            self.base_metadata[key] = "None"
-        self.base_metadata["source"] = HttpLogger.HTTP_LOGGER_NAME
 
     def info(self, metadata: Dict[str, Any], msg: str, *args):
         """
@@ -87,10 +87,13 @@ class HttpLogger:
         """
         Setup logging from configuration file.
         """
+        # Need to initialize the forwarded metadata default values before our first
+        # call to a logger.
         current_dir: str = pathlib.Path(__file__).parent.parent.resolve()
         setup_logging(HttpLogger.HTTP_LOGGER_NAME, current_dir,
                       'AGENT_SERVICE_LOG_JSON',
-                      'AGENT_SERVICE_LOG_LEVEL')
+                      'AGENT_SERVICE_LOG_LEVEL',
+                      self.base_metadata)
 
         # This module within openai library can be quite chatty w/rt http requests
         logging.getLogger("httpx").setLevel(logging.WARNING)
