@@ -212,7 +212,9 @@ class DataDrivenChatSession:
                 the conversation such that it could be taken up on a different
                 server instance
         """
-        processor: MessageProcessor = ChatHistoryMessageProcessor()
+        # OK if this is None
+        max_message_history: int = self.front_man.get_agent_tool_spec().get("max_message_history")
+        processor: MessageProcessor = ChatHistoryMessageProcessor(max_message_history)
         processor.process_messages(chat_message_history)
 
         chat_history: Dict[str, Any] = {
