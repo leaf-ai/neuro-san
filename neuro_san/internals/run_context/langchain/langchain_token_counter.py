@@ -39,9 +39,9 @@ from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.originating_journal import OriginatingJournal
 from neuro_san.internals.messages.agent_message import AgentMessage
 from neuro_san.internals.messages.origination import Origination
-from neuro_san.internals.run_context.langchain.get_ollama_callback import get_ollama_callback
-from neuro_san.internals.run_context.langchain.get_ollama_callback import ollama_callback_var
-from neuro_san.internals.run_context.langchain.ollama_callback_handler import OllamaCallbackHandler
+from neuro_san.internals.run_context.langchain.get_llm_token_callback import get_llm_token_callback
+from neuro_san.internals.run_context.langchain.get_llm_token_callback import llm_token_callback_var
+from neuro_san.internals.run_context.langchain.llm_token_callback_handler import LlmTokenCallbackHandler
 
 
 # Keep a ContextVar for the origin info.  We do this because the
@@ -195,7 +195,9 @@ class LangChainTokenCounter:
         :param llm: A BaseLanguageModel returned from an LlmFactory.
         :return: A handle to a no-args function, that when called will
                 open up a context manager for token counting.
-                Can be None if no such entity exists for the llm type
+                If not an OpenAI or Anthropic model, use context manager
+                for LlmTokenCallbackHandler, which also gets token usage
+                from "usage_metadata" but give "total_cost" = 0.
         """
 
         if isinstance(llm, (ChatOpenAI, AzureChatOpenAI)):
@@ -212,7 +214,9 @@ class LangChainTokenCounter:
             #     Per class docs this is on by default.
             return get_bedrock_anthropic_callback
 
-        return get_ollama_callback
+        # Open up a context manager for LlmTokenCallbackHandler, which also gets token usage
+        # from "usage_metadata" but give "total_cost" = 0.
+        return get_llm_token_callback
 
     @staticmethod
     def get_context_var_for_llm(llm: BaseLanguageModel) -> ContextVar:
@@ -220,7 +224,7 @@ class LangChainTokenCounter:
         :param llm: A BaseLanguageModel returned from an LlmFactory.
         :return: A ContextVar that corresponds to where token counting callback
                 information is going.
-                Can be None if no such entity exists for the llm type
+                If not an OpenAI or Anthropic model, use llm_token_callback_var.
         """
 
         if isinstance(llm, (ChatOpenAI, AzureChatOpenAI)):
@@ -229,7 +233,8 @@ class LangChainTokenCounter:
         if isinstance(llm, ChatAnthropic):
             return bedrock_anthropic_callback_var
 
-        return ollama_callback_var
+        # Collect tokens for models other than OpenAI and Anthropic.
+        return llm_token_callback_var
 
     @staticmethod
     def normalize_token_count(callback: BaseCallbackHandler, time_taken_in_seconds: float) -> Dict[str, Any]:
@@ -248,7 +253,7 @@ class LangChainTokenCounter:
 
         if isinstance(
             callback,
-            (OpenAICallbackHandler, BedrockAnthropicTokenUsageCallbackHandler, OllamaCallbackHandler)
+            (OpenAICallbackHandler, BedrockAnthropicTokenUsageCallbackHandler, LlmTokenCallbackHandler)
         ):
             # So far these two instances share the same reporting structure
             token_dict = {

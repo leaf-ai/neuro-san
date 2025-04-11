@@ -10,17 +10,18 @@
 #
 # END COPYRIGHT
 
-import threading
+import asyncio
 from typing import Any
 from typing_extensions import override
 
-from langchain_core.callbacks import BaseCallbackHandler
+from langchain_core.callbacks import AsyncCallbackHandler
 from langchain_core.messages import AIMessage
 from langchain_core.messages.ai import UsageMetadata
 from langchain_core.outputs import ChatGeneration, LLMResult
 
 
-class OllamaCallbackHandler(BaseCallbackHandler):
+# pylint: disable=too-many-ancestors
+class LlmTokenCallbackHandler(AsyncCallbackHandler):
     """
     Callback handler that tracks token usage via "AIMessage.usage_metadata".
 
@@ -61,8 +62,11 @@ class OllamaCallbackHandler(BaseCallbackHandler):
             }
         }
 
-    Note: Ollama models currently have no associated cost, so "total_cost" is always set to 0.0 for compatibility with
-    reporting templates.
+    Note:
+    This class is intended for use with Ollama models, as OpenAICallbackHandler and
+    BedrockAnthropicTokenUsageCallbackHandler already handle OpenAI and Anthropic models, respectively.
+    Ollama models currently have no associated cost, so total_cost is always set to 0.0 to maintain compatibility
+    with reporting templates.
     """
 
     total_tokens: int = 0
@@ -75,7 +79,7 @@ class OllamaCallbackHandler(BaseCallbackHandler):
     def __init__(self) -> None:
         """Initialize the CallbackHandler."""
         super().__init__()
-        self._lock = threading.Lock()
+        self._lock = asyncio.Lock()
 
     @override
     def __repr__(self) -> str:
@@ -88,7 +92,7 @@ class OllamaCallbackHandler(BaseCallbackHandler):
         )
 
     @override
-    def on_llm_end(self, response: LLMResult, **kwargs: Any) -> None:
+    async def on_llm_end(self, response: LLMResult, **kwargs: Any) -> None:
         """
         Collect token usage when llm ends.
         :param response: Output from chat model
@@ -115,7 +119,7 @@ class OllamaCallbackHandler(BaseCallbackHandler):
             prompt_tokens: int = usage_metadata.get("input_tokens", 0)
 
             # update shared state behind lock
-            with self._lock:
+            async with self._lock:
                 self.total_tokens += total_tokens
                 self.prompt_tokens += prompt_tokens
                 self.completion_tokens += completion_tokens

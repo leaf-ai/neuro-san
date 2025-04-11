@@ -17,18 +17,18 @@ from typing import Optional
 
 from langchain_core.tracers.context import register_configure_hook
 
-from neuro_san.internals.run_context.langchain.ollama_callback_handler import OllamaCallbackHandler
+from neuro_san.internals.run_context.langchain.llm_token_callback_handler import LlmTokenCallbackHandler
 
 
-ollama_callback_var: ContextVar[Optional[OllamaCallbackHandler]] = (
-        ContextVar("ollama_callback", default=None)
+llm_token_callback_var: ContextVar[Optional[LlmTokenCallbackHandler]] = (
+        ContextVar("llm_token_callback", default=None)
     )
-register_configure_hook(ollama_callback_var, inheritable=True)
+register_configure_hook(llm_token_callback_var, inheritable=True)
 
 
 @contextmanager
-def get_ollama_callback() -> Generator[OllamaCallbackHandler, None, None]:
-    """Get ollama callback.
+def get_llm_token_callback() -> Generator[LlmTokenCallbackHandler, None, None]:
+    """Get llm token callback.
 
     Get context manager for tracking usage metadata across chat model calls using
     "AIMessage.usage_metadata".
@@ -37,7 +37,7 @@ def get_ollama_callback() -> Generator[OllamaCallbackHandler, None, None]:
     - https://python.langchain.com/api_reference/_modules/langchain_core/callbacks/usage.html
     #get_usage_metadata_callback
     """
-    cb = OllamaCallbackHandler()
-    ollama_callback_var.set(cb)
+    cb = LlmTokenCallbackHandler()
+    llm_token_callback_var.set(cb)
     yield cb
-    ollama_callback_var.set(None)
+    llm_token_callback_var.set(None)
