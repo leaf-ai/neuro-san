@@ -13,6 +13,7 @@ from typing import Any
 from typing import Awaitable
 from typing import Dict
 from typing import List
+from typing import Union
 
 from asyncio import Task
 from contextvars import Context
@@ -28,6 +29,7 @@ from langchain_community.callbacks.manager import bedrock_anthropic_callback_var
 from langchain_community.callbacks.manager import get_openai_callback
 from langchain_community.callbacks.manager import get_bedrock_anthropic_callback
 from langchain_community.callbacks.manager import openai_callback_var
+from langchain_core.callbacks import AsyncCallbackHandler
 from langchain_core.callbacks.base import BaseCallbackHandler
 from langchain_core.language_models.base import BaseLanguageModel
 from langchain_openai.chat_models.azure import AzureChatOpenAI
@@ -100,7 +102,7 @@ class LangChainTokenCounter:
         # Attempt to count tokens/costs while invoking the agent.
         # The means by which this happens is on a per-LLM basis, so get the right hook
         # given the LLM we've got.
-        callback: BaseCallbackHandler = None
+        callback: Union[AsyncCallbackHandler, BaseCallbackHandler] = None
         token_counter_context_manager = self.get_callback_for_llm(self.llm)
 
         if token_counter_context_manager is not None:
@@ -111,7 +113,7 @@ class LangChainTokenCounter:
             origin_str: str = Origination.get_full_name_from_origin(origin)
             ORIGIN_INFO.set(origin_str)
 
-            old_callback: BaseCallbackHandler = None
+            old_callback: Union[AsyncCallbackHandler, BaseCallbackHandler] = None
             callback_var: ContextVar = self.get_context_var_for_llm(self.llm)
             if callback_var is not None:
                 old_callback = callback_var.get()
@@ -162,11 +164,11 @@ class LangChainTokenCounter:
 
         return task
 
-    async def report(self, callback: BaseCallbackHandler, time_taken_in_seconds: float):
+    async def report(self, callback: Union[AsyncCallbackHandler, BaseCallbackHandler], time_taken_in_seconds: float):
         """
         Report on the token accounting results of the callback
 
-        :param callback: A BaseCallbackHandler instance that contains token counting information
+        :param callback: An AsyncCallbackHandler or BaseCallbackHandle instance that contains token counting information
         :param time_taken_in_seconds: The amount of time the awaitable took in count_tokens()
         """
         # Token counting results are collected in the callback, if there are any.
@@ -237,11 +239,14 @@ class LangChainTokenCounter:
         return llm_token_callback_var
 
     @staticmethod
-    def normalize_token_count(callback: BaseCallbackHandler, time_taken_in_seconds: float) -> Dict[str, Any]:
+    def normalize_token_count(callback: Union[AsyncCallbackHandler, BaseCallbackHandler],
+                              time_taken_in_seconds: float
+                              ) -> Dict[str, Any]:
         """
         Normalizes the values in the token counting callback into a standard dictionary
 
-        :param callback: A BaseCallbackHandler instance that contains token counting information
+        :param callback: An AsyncCallbackHandler or BaseCallbackHandler instance that contains
+                            token counting information
         :param time_taken_in_seconds: The amount of time the awaitable took in count_tokens()
         """
 
