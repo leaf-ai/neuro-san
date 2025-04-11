@@ -9,6 +9,7 @@
 # neuro-san SDK Software in commercial settings.
 #
 # END COPYRIGHT
+from numbers import Number
 from typing import Any
 from typing import Dict
 from typing import List
@@ -25,10 +26,24 @@ class ChatHistoryMessageProcessor(MessageProcessor):
     in a chat history.
     """
 
-    def __init__(self):
+    def __init__(self, max_message_history: int = None):
         """
         Constructor
+
+        :param max_message_history: The maximum number of messages to preserve
+                in the message history, not including the instructions.
+                The default value of None implies there is no maximum.
+                Non-positive numbers revert to no-maximum behavior.
         """
+        self.max_message_history: int = max_message_history
+        if self.max_message_history is not None:
+            if not isinstance(self.max_message_history, Number):
+                # If we don't have a number we don't have a max.
+                self.max_message_history = None
+            else:
+                # Be sure we are dealing with an integer
+                self.max_message_history = int(self.max_message_history)
+
         self.message_history: List[Dict[str, Any]] = []
         self.saw_first_system: bool = False
 
@@ -37,6 +52,27 @@ class ChatHistoryMessageProcessor(MessageProcessor):
         :return: The filtered message history
         """
         return self.message_history
+
+    def process_messages(self, chat_message_dicts: List[Dict[str, Any]]):
+        """
+        Convenience method for processing lists of messages.
+        :param chat_message_dicts: The messages to process.
+        """
+        super().process_messages(chat_message_dicts)
+
+        # See if we need to curtail chat history at all.
+        if self.max_message_history is None or self.max_message_history <= 1:
+            # Nothing to do.
+            return
+
+        # Save the first item in the list. This is the redacted placeholder for instructions
+        instructions: Dict[str, Any] = self.message_history.pop(0)
+
+        # Preserve the most recent n elements in the message history
+        self.message_history = self.message_history[-self.max_message_history:]
+
+        # Prepend the instructions to the list
+        self.message_history.insert(0, instructions)
 
     def process_message(self, chat_message_dict: Dict[str, Any], message_type: ChatMessageType):
         """
