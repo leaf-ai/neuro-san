@@ -82,6 +82,23 @@ syntactically incorrect in that file.
 """
             raise ParseException(message) from exception
 
+        # Now create the AgentToolRegistry
+        # Inside here is incorrectly flagged as destination of Path Traversal 7
+        #   Reason: The lines above ensure that the path of registry_dir is within
+        #           this source base. CheckMarx does not recognize
+        #           the calls to Pathlib/__file__ as a valid means to resolve
+        #           these kinds of issues.
+        name = Path(use_file).stem
+        tool_registry = self.restore_from_config(name, config)
+        return tool_registry
+
+    def restore_from_config(self, agent_name: str, config: Dict[str, Any]) -> AgentToolRegistry:
+        """
+        :param agent_name: name of an agent;
+        :param config: agent configuration dictionary,
+            built or parsed from external sources;
+        :return: AgentToolRegistry instance for an agent.
+        """
         # Perform a filter chain on the config that was read in
         filter_chain = ConfigFilterChain()
         filter_chain.register(DictionaryCommonDefsConfigFilter())
@@ -91,12 +108,6 @@ syntactically incorrect in that file.
         config = filter_chain.filter_config(config)
 
         # Now create the AgentToolRegistry
-        # Inside here is incorrectly flagged as destination of Path Traversal 7
-        #   Reason: The lines above ensure that the path of registry_dir is within
-        #           this source base. CheckMarx does not recognize
-        #           the calls to Pathlib/__file__ as a valid means to resolve
-        #           these kinds of issues.
-        name = Path(use_file).stem
-        tool_registry = AgentToolRegistry(config, name)
+        tool_registry = AgentToolRegistry(config, agent_name)
 
         return tool_registry
