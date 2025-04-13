@@ -51,7 +51,7 @@ class BaseRequestHandler(RequestHandler):
     request_id: int = 0
 
     # pylint: disable=attribute-defined-outside-init
-    def initialize(self, agent_name, port,
+    def initialize(self, agent_policy, port,
                    forwarded_request_metadata, openapi_service_spec_path):
         """
         This method is called by Tornado framework to allow
@@ -62,7 +62,7 @@ class BaseRequestHandler(RequestHandler):
         :param openapi_service_spec_path: file path to OpenAPI service spec.
         """
 
-        self.agent_name: str = agent_name
+        self.agent_policy = agent_policy
         self.port: int = port
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata
         self.openapi_service_spec_path: str = openapi_service_spec_path
@@ -92,7 +92,9 @@ class BaseRequestHandler(RequestHandler):
                 result[item_name] = "None"
         return result
 
-    def get_agent_grpc_session(self, metadata: Dict[str, Any]) -> AsyncAgentSession:
+    def get_agent_grpc_session(self,
+                               metadata: Dict[str, Any],
+                               agent_name: str) -> AsyncAgentSession:
         """
         Build gRPC session to talk to "main" service
         :return: AgentSession to use
@@ -102,7 +104,7 @@ class BaseRequestHandler(RequestHandler):
                 host="localhost",
                 port=self.port,
                 metadata=metadata,
-                agent_name=self.agent_name)
+                agent_name=agent_name)
         return grpc_session
 
     def get_concierge_grpc_session(self, metadata: Dict[str, Any]) -> ConciergeSession:
