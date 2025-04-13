@@ -13,6 +13,7 @@ from numbers import Number
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Union
 
 from copy import copy
 
@@ -113,7 +114,13 @@ class ChatHistoryMessageProcessor(MessageProcessor):
         This means properly escaping any text that is sent.
         """
         transformed: Dict[str, Any] = copy(chat_message_dict)
-        text: str = transformed.get("text")
+        text: Union[str, List] = transformed.get("text")
+        # For OpenAI and Ollama, content of AI message is a string but content from
+        # Anthropic AI message can either be a single string or a list of content blocks.
+        # If it is a list, "text" is a key of a dictionary which is the first element of
+        # the list. For more details: https://python.langchain.com/docs/integrations/chat/anthropic/#content-blocks
+        if isinstance(text, list):
+            text = text[0].get("text")
 
         # Braces are a problem for chat history being read back into the system
         # if they are not properly escaped.
