@@ -35,6 +35,7 @@
     # It initializes a BingSearchResults instance with:
     # - api_wrapper: An instance of BingSearchAPIWrapper
     # - num_results: Specifies that the search should return 3 results
+    # BingSearchResults(api_wrapper=BingSearchAPIWrapper(), num_results=3)
     "bing_search": {
         # This is the class of the tool to use
         "class": "langchain_community.tools.bing_search.BingSearchResults",
@@ -54,6 +55,7 @@
     # This configuration sets up the Tavily Search tool.
     # It initializes a TavilySearchResults instance with:
     # - max_results: Specifies that the search should return 5 results
+    # TavilySearchResults(max_results=5)
     "tavily_search": {
         # This is the class of the tool to use
         "class": "langchain_community.tools.tavily_search.TavilySearchResults",
@@ -72,6 +74,7 @@
     # - requests_wrapper: An instance of TextRequestsWrapper (used to manage headers)
     # - allow_dangerous_requests: Enables execution of potentially unsafe requests
     # The `.get_tools()` method is called, meaning this toolkit returns multiple tools.
+    # RequestsToolkit(requests_wrapper=TextRequestsWrapper(), allow_dangerous_requests=True).get_tools()
     "requests_toolkit": {
         # This is the class of the tool to use
         "class": "langchain_community.agent_toolkits.openapi.toolkit.RequestsToolkit",
@@ -94,6 +97,7 @@
     # It initializes RequestsGetTool with:
     # - requests_wrapper: Manages request headers
     # - allow_dangerous_requests: Enables potentially unsafe requests
+    # RequestsGetTool(requests_wrapper=TextRequestsWrapper(), allow_dangerous_requests=True)
     "requests_get": {
         # This is the class of the tool to use
         "class": "langchain_community.tools.requests.tool.RequestsGetTool",
@@ -112,6 +116,7 @@
     # POST request tool
     # This configures an HTTP POST request tool.
     # It is similar to the GET tool but allows sending data in the request body.
+    # RequestsPostTool(requests_wrapper=TextRequestsWrapper(), allow_dangerous_requests=True)
     "requests_post": {
         # This is the class of the tool to use
         "class": "langchain_community.tools.requests.tool.RequestsPostTool",
@@ -129,6 +134,7 @@
 
     # PATCH request tool
     # This allows sending PATCH requests, typically used to update resources.
+    # RequestsPatchTool(requests_wrapper=TextRequestsWrapper(), allow_dangerous_requests=True)
     "requests_patch": {
         # This is the class of the tool to use
         "class": "langchain_community.tools.requests.tool.RequestsPatchTool",
@@ -146,6 +152,7 @@
 
     # PUT request tool
     # This allows sending PUT requests, which are used to replace resources.
+    # RequestsPutTool(requests_wrapper=TextRequestsWrapper(), allow_dangerous_requests=True)
     "requests_put": {
         # This is the class of the tool to use
         "class": "langchain_community.tools.requests.tool.RequestsPutTool",
@@ -163,6 +170,7 @@
 
     # DELETE request tool
     # This enables HTTP DELETE requests to remove resources.
+    # RequestsDeleteTool(requests_wrapper=TextRequestsWrapper(), allow_dangerous_requests=True)
     "requests_delete": {
         # This is the class of the tool to use
         "class": "langchain_community.tools.requests.tool.RequestsDeleteTool",
