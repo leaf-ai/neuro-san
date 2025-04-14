@@ -83,6 +83,9 @@ Assist caller with searching an url on the web by using your tool.
                     "properties": {
                         "urls": {
                             "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
                             "description": "List of url to retrieve info from"
                         },
                         "query": {
