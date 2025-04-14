@@ -71,6 +71,7 @@ class HttpSidecar(AgentAuthorizer):
         self.logger.info({}, "HTTP server is running on port %d", self.http_port)
         self.logger.debug({}, "Serving agents: %s", repr(self.agents.keys()))
         # Put agent names into "allowed" list:
+        self.allowed_agents = {}
         for agent_name, _ in self.agents.items():
             self.allowed_agents[agent_name] = True
         IOLoop.current().start()
