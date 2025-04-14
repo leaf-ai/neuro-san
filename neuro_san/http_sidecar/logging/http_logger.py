@@ -12,9 +12,10 @@
 """
 See class comment for details
 """
+import copy
 import logging
 import pathlib
-from typing import Any, Dict
+from typing import Any, Dict, Sequence
 
 from leaf_server_common.logging.logging_setup import setup_logging
 
@@ -28,10 +29,16 @@ class HttpLogger:
 
     HTTP_LOGGER_NAME: str = "HttpServer"
 
-    def __init__(self):
+    def __init__(self, forwarded_metadata: Sequence[str]):
         """
         Constructor
         """
+        # Initialize minimal metadata dictionary to contain some value
+        # for each metadata key we expect to be used.
+        self.base_metadata: Dict[str, Any] = {}
+        for key in forwarded_metadata:
+            self.base_metadata[key] = "None"
+        self.base_metadata["source"] = HttpLogger.HTTP_LOGGER_NAME
         LogContextFilter.set_log_context()
         self.setup_logging()
         # For our Http server, we have separate logging setup,
@@ -80,10 +87,13 @@ class HttpLogger:
         """
         Setup logging from configuration file.
         """
+        # Need to initialize the forwarded metadata default values before our first
+        # call to a logger.
         current_dir: str = pathlib.Path(__file__).parent.parent.resolve()
         setup_logging(HttpLogger.HTTP_LOGGER_NAME, current_dir,
                       'AGENT_SERVICE_LOG_JSON',
-                      'AGENT_SERVICE_LOG_LEVEL')
+                      'AGENT_SERVICE_LOG_LEVEL',
+                      self.base_metadata)
 
         # This module within openai library can be quite chatty w/rt http requests
         logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -92,5 +102,6 @@ class HttpLogger:
         """
         Prepare logging filter using request metadata,
         """
-        metadata["source"] = HttpLogger.HTTP_LOGGER_NAME
-        LogContextFilter.log_context.set(metadata)
+        use_metadata: Dict[str, Any] = copy.copy(self.base_metadata)
+        use_metadata.update(metadata)
+        LogContextFilter.log_context.set(use_metadata)
