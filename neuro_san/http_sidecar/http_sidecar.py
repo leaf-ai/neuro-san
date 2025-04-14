@@ -37,6 +37,7 @@ class HttpSidecar(AgentAuthorizer):
     working as a client to neuro-san gRPC service.
     """
     # pylint: disable=too-many-arguments, too-many-positional-arguments
+    # pylint: disable=too-many-instance-attributes
     def __init__(self, port: int, http_port: int,
                  agents: Dict[str, Any],
                  openapi_service_spec_path: str,

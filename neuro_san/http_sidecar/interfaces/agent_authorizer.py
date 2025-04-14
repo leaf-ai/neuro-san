@@ -13,6 +13,7 @@
 See class comment for details
 """
 
+
 class AgentAuthorizer:
     """
     Abstract interface implementing some policy
