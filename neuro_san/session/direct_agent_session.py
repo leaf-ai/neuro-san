@@ -47,7 +47,7 @@ class DirectAgentSession(AgentSession):
         """
         Constructor
 
-        :param tool_registry: The AgentToolRegistry to use for the session.
+        :param tool_registry: The agent tool registry to use for the session.
         :param invocation_context: The SessionInvocationContext to use to consult
                         for policy objects scoped at the invocation level.
         :param metadata: A dictionary of request metadata to be forwarded

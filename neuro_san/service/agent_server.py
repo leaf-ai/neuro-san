@@ -22,6 +22,7 @@ from neuro_san.api.grpc import agent_pb2
 from neuro_san.api.grpc import concierge_pb2_grpc
 
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
+from neuro_san.internals.tool_factories.service_tool_factory_provider import ServiceToolFactoryProvider
 from neuro_san.service.agent_server_logging import AgentServerLogging
 from neuro_san.service.agent_servicer_to_server import AgentServicerToServer
 from neuro_san.service.agent_service import AgentService
@@ -95,6 +96,16 @@ class AgentServer:
         """
         return self.services
 
+    def setup_tool_factory_provider(self):
+        """
+        Initialize service tool factory provider with agents registries
+        we have parsed in server manifest file.
+        """
+        tool_factory_provider: ServiceToolFactoryProvider =\
+            ServiceToolFactoryProvider.get_instance()
+        for agent_name, tool_registry in self.tool_registries.items():
+            tool_factory_provider.add_agent_tool_registry(agent_name, tool_registry)
+
     def serve(self):
         """
         Start serving gRPC requests
@@ -116,11 +127,15 @@ class AgentServer:
         # New-style service
         security_cfg = None     # ... yet
 
-        for agent_name, tool_registry in self.tool_registries.items():
+        self.setup_tool_factory_provider()
+        tool_factory_provider: ServiceToolFactoryProvider = \
+            ServiceToolFactoryProvider.get_instance()
 
+        agent_names: List[str] = tool_factory_provider.get_agent_names()
+        for agent_name in agent_names:
             service = AgentService(server_lifetime, security_cfg,
                                    agent_name,
-                                   tool_registry,
+                                   tool_factory_provider.get_agent_tool_factory_provider(agent_name),
                                    self.server_logging)
             self.services.append(service)
 
