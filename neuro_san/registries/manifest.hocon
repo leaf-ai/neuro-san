@@ -24,6 +24,7 @@
     # They are the only reason we have duckduckgo_search listed in the dependencies.
     "website_search.hocon": true,
     "website_search_usage_example.hocon": true,
+    "rag_website_search.hocon": true,
 
     # The next one is an example of agents calling prebuilt tools
     "prebuilt_search_tool.hocon": true,
