@@ -12,10 +12,11 @@
 from typing import Dict
 
 from neuro_san.interfaces.agent_session import AgentSession
+from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
 from neuro_san.internals.run_context.factory.master_llm_factory import MasterLlmFactory
-from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
-from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
+from neuro_san.internals.interfaces.agent_tool_factory_provider import AgentToolFactoryProvider
+from neuro_san.internals.tool_factories.service_tool_factory_provider import ServiceToolFactoryProvider
 from neuro_san.session.direct_agent_session import DirectAgentSession
 from neuro_san.session.external_agent_session_factory import ExternalAgentSessionFactory
 from neuro_san.session.session_invocation_context import SessionInvocationContext
@@ -29,13 +30,6 @@ class DirectAgentSessionFactory:
         * Initializing an LlmFactory
     """
 
-    def __init__(self):
-        """
-        Constructor
-        """
-        manifest_restorer = RegistryManifestRestorer()
-        self.manifest_tool_registries: Dict[str, AgentToolRegistry] = manifest_restorer.restore()
-
     def create_session(self, agent_name: str, use_direct: bool = False,
                        metadata: Dict[str, str] = None) -> AgentSession:
         """
@@ -48,7 +42,11 @@ class DirectAgentSessionFactory:
         """
 
         factory = ExternalAgentSessionFactory(use_direct=use_direct)
-        tool_registry: AgentToolRegistry = factory.get_tool_registry(agent_name, self.manifest_tool_registries)
+        tool_factory: ServiceToolFactoryProvider =\
+            ServiceToolFactoryProvider.get_instance()
+        tool_registry_provider: AgentToolFactoryProvider =\
+            tool_factory.get_agent_tool_factory_provider(agent_name)
+        tool_registry: AgentToolRegistry = tool_registry_provider.get_agent_tool_factory()
 
         llm_factory: ContextTypeLlmFactory = MasterLlmFactory.create_llm_factory()
         # Load once now that we know what tool registry to use.
