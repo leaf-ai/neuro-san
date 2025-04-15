@@ -88,6 +88,7 @@ class HttpSidecar(AgentAuthorizer):
         handlers.append(("/api/v1/docs", OpenApiPublishHandler, request_data))
 
         # Register templated request paths for agent API methods:
+        # regexp format used here is that of Python Re standard library.
         handlers.append((r"/api/v1/([^/]+)/function", FunctionHandler, request_data))
         handlers.append((r"/api/v1/([^/]+)/connectivity", ConnectivityHandler, request_data))
         handlers.append((r"/api/v1/([^/]+)/streaming_chat", StreamingChatHandler, request_data))
@@ -100,7 +101,6 @@ class HttpSidecar(AgentAuthorizer):
     def build_request_data(self) -> Dict[str, Any]:
         """
         Build request data for Http handlers.
-        :param agent_name: name of an agent this request data is for.
         :return: a dictionary with request data to be passed to a http handler.
         """
         return {

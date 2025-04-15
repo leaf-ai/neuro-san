@@ -25,6 +25,7 @@ import grpc
 from tornado.web import RequestHandler
 
 from neuro_san.http_sidecar.logging.http_logger import HttpLogger
+from neuro_san.http_sidecar.interfaces.agent_authorizer import AgentAuthorizer
 from neuro_san.interfaces.async_agent_session import AsyncAgentSession
 from neuro_san.interfaces.concierge_session import ConciergeSession
 from neuro_san.session.async_grpc_service_agent_session import AsyncGrpcServiceAgentSession
@@ -51,12 +52,15 @@ class BaseRequestHandler(RequestHandler):
     request_id: int = 0
 
     # pylint: disable=attribute-defined-outside-init
-    def initialize(self, agent_policy, port,
-                   forwarded_request_metadata, openapi_service_spec_path):
+    def initialize(self,
+                   agent_policy: AgentAuthorizer,
+                   port: int,
+                   forwarded_request_metadata: List[str],
+                   openapi_service_spec_path: str):
         """
         This method is called by Tornado framework to allow
         injecting service-specific data into local handler context.
-        :param agent_name: name of receiving neuro-san agent
+        :param agent_policy: abstract policy for agent requests
         :param port: gRPC service port.
         :param forwarded_request_metadata: request metadata to forward.
         :param openapi_service_spec_path: file path to OpenAPI service spec.

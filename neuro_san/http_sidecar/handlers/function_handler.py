@@ -23,7 +23,7 @@ class FunctionHandler(BaseRequestHandler):
     Handler class for neuro-san "function" API call.
     """
 
-    async def get(self, agent_name):
+    async def get(self, agent_name: str):
         """
         Implementation of GET request handler for "function" API call.
         """

@@ -55,7 +55,7 @@ class StreamingChatHandler(BaseRequestHandler):
                 sent_out += 1
         return sent_out
 
-    async def post(self, agent_name):
+    async def post(self, agent_name: str):
         """
         Implementation of POST request handler for streaming chat API call.
         """

@@ -23,7 +23,7 @@ class ConnectivityHandler(BaseRequestHandler):
     Handler class for neuro-san "connectivity" API call.
     """
 
-    async def get(self, agent_name):
+    async def get(self, agent_name: str):
         """
         Implementation of GET request handler for "connectivity" API call.
         """
