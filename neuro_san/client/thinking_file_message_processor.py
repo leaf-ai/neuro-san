@@ -13,7 +13,6 @@
 from typing import Any
 from typing import Dict
 from typing import List
-from typing import Union
 
 import json
 import os
@@ -69,13 +68,7 @@ class ThinkingFileMessageProcessor(MessageProcessor):
         message_type: ChatMessageType = ChatMessageType.from_response_type(response_type)
         message_type_str: str = ChatMessageType.to_string(message_type)
 
-        text: Union[str, List] = response.get("text")
-        # For OpenAI and Ollama, content of AI message is a string but content from
-        # Anthropic AI message can either be a single string or a list of content blocks.
-        # If it is a list, "text" is a key of a dictionary which is the first element of
-        # the list. For more details: https://python.langchain.com/docs/integrations/chat/anthropic/#content-blocks
-        if isinstance(text, list):
-            text = text[0].get("text")
+        text: str = response.get("text")
         structure: Dict[str, Any] = response.get("structure")
 
         if structure is not None:
