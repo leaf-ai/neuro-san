@@ -23,16 +23,22 @@ class FunctionHandler(BaseRequestHandler):
     Handler class for neuro-san "function" API call.
     """
 
-    async def get(self):
+    async def get(self, agent_name: str):
         """
         Implementation of GET request handler for "function" API call.
         """
+        if not self.agent_policy.allow(agent_name):
+            self.set_status(404)
+            self.logger.error({}, "error: Invalid request path %s", self.request.path)
+            await self.flush()
+            return
 
         metadata: Dict[str, Any] = self.get_metadata()
-        self.logger.info(metadata, "Start GET %s/function", self.agent_name)
+        self.logger.info(metadata, "Start GET %s/function", agent_name)
         try:
             data: Dict[str, Any] = {}
-            grpc_session: AsyncAgentSession = self.get_agent_grpc_session(metadata)
+            grpc_session: AsyncAgentSession =\
+                self.get_agent_grpc_session(metadata, agent_name)
             result_dict: Dict[str, Any] = await grpc_session.function(data)
 
             # Return gRPC response to the HTTP client
@@ -43,4 +49,4 @@ class FunctionHandler(BaseRequestHandler):
             self.process_exception(exc)
         finally:
             await self.flush()
-            self.logger.info(metadata, "Finish GET %s/function", self.agent_name)
+            self.logger.info(metadata, "Finish GET %s/function", agent_name)
