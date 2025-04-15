@@ -23,8 +23,10 @@ from neuro_san.api.grpc import concierge_pb2_grpc
 
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.tool_factories.service_tool_factory_provider import ServiceToolFactoryProvider
+from neuro_san.session.agent_service_stub import AgentServiceStub
 from neuro_san.service.agent_server_logging import AgentServerLogging
 from neuro_san.service.agent_servicer_to_server import AgentServicerToServer
+from neuro_san.service.dynamic_agent_router import DynamicAgentRouter
 from neuro_san.service.agent_service import AgentService
 from neuro_san.service.concierge_service import ConciergeService
 
@@ -127,6 +129,8 @@ class AgentServer:
         # New-style service
         security_cfg = None     # ... yet
 
+        service_router: DynamicAgentRouter = DynamicAgentRouter().get_instance()
+
         self.setup_tool_factory_provider()
         tool_factory_provider: ServiceToolFactoryProvider = \
             ServiceToolFactoryProvider.get_instance()
@@ -139,8 +143,13 @@ class AgentServer:
                                    self.server_logging)
             self.services.append(service)
 
-            servicer_to_server = AgentServicerToServer(service, agent_name=agent_name)
-            servicer_to_server.add_rpc_handlers(server)
+            servicer_to_server = AgentServicerToServer(service)
+            agent_rpc_handlers = servicer_to_server.build_rpc_handlers()
+            agent_service_name: str = AgentServiceStub.prepare_service_name(agent_name)
+            service_router.add_service(agent_service_name, agent_rpc_handlers)
+
+        # Add DynamicAgentRouter instance as a generic RPC handler for our server:
+        server.add_generic_rpc_handlers((service_router,))
 
         concierge_service: ConciergeService = \
             ConciergeService(server_lifetime,
