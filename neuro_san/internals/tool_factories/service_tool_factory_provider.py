@@ -16,6 +16,7 @@ from typing import Dict
 from typing import List
 
 from neuro_san.internals.interfaces.tool_factory_provider import ToolFactoryProvider
+from neuro_san.internals.interfaces.agent_state_listener import AgentStateListener
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.tool_factories.single_agent_tool_factory_provider import SingleAgentToolFactoryProvider
 from neuro_san.internals.graph.persistence.agent_tool_registry_restorer import AgentToolRegistryRestorer
@@ -36,6 +37,7 @@ class ServiceToolFactoryProvider(ToolFactoryProvider):
         self.agents_table: Dict[str, AgentToolFactory] = {}
         self.logger = logging.getLogger(self.__class__.__name__)
         self.lock = threading.Lock()
+        self.listeners: List[AgentStateListener] = []
 
     @classmethod
     def get_instance(cls):
@@ -45,6 +47,12 @@ class ServiceToolFactoryProvider(ToolFactoryProvider):
         if not ServiceToolFactoryProvider.instance:
             ServiceToolFactoryProvider.instance = ServiceToolFactoryProvider()
         return ServiceToolFactoryProvider.instance
+
+    def add_state_listener(self, listener: AgentStateListener):
+        """
+        Add a state listener to be notified when status of service agents changes.
+        """
+        self.listeners.append(listener)
 
     def build_agent_tool_registry(self, agent_name: str, config: Dict[str, Any]):
         """
@@ -65,6 +73,14 @@ class ServiceToolFactoryProvider(ToolFactoryProvider):
                 self.logger.info("BUILT tool registry for agent %s", agent_name)
             else:
                 self.logger.info("REPLACED tool registry for agent %s", agent_name)
+
+    def remove_agent_tool_registry(self, agent_name: str):
+        """
+        Remove agent tool registry from the table
+        """
+        with self.lock:
+            self.agents_table.pop(agent_name, None)
+            self.logger.info("REMOVED tool registry for agent %s", agent_name)
 
     def get_agent_tool_factory_provider(self, agent_name: str) -> ToolFactoryProvider:
         """
