@@ -15,6 +15,7 @@ from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
 from neuro_san.internals.run_context.factory.master_llm_factory import MasterLlmFactory
+from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
 from neuro_san.internals.interfaces.agent_tool_factory_provider import AgentToolFactoryProvider
 from neuro_san.internals.tool_factories.service_tool_factory_provider import ServiceToolFactoryProvider
 from neuro_san.session.direct_agent_session import DirectAgentSession
@@ -27,8 +28,21 @@ class DirectAgentSessionFactory:
     Sets up everything needed to use a DirectAgentSession more as a library.
     This includes:
         * Some reading of AgentToolRegistries
+        * Setting up ServiceToolFactoryProvider with agent registries
+          which were read in
         * Initializing an LlmFactory
     """
+
+    def __init__(self):
+        """
+        Constructor
+        """
+        manifest_restorer = RegistryManifestRestorer()
+        self.manifest_tool_registries: Dict[str, AgentToolRegistry] = manifest_restorer.restore()
+        tool_factory: ServiceToolFactoryProvider =\
+            ServiceToolFactoryProvider.get_instance()
+        for agent_name, tool_registry in self.manifest_tool_registries.items():
+            tool_factory.add_agent_tool_registry(agent_name, tool_registry)
 
     def create_session(self, agent_name: str, use_direct: bool = False,
                        metadata: Dict[str, str] = None) -> AgentSession:
