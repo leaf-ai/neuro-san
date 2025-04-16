@@ -129,15 +129,19 @@ class ClassTool(AbstractCallableTool):
     in the agent network "{agent_network}".
 
     Check these things:
-    1.  Is there a typo in your AGENT_TOOL_PATH?
-    2.  CodedTools for the agent network are expected to be found in a module
-        under the path: <AGENT_TOOL_PATH>/<agent_network>/<coded_tool_name>.py
+    1.  Is there a typo in your AGENT_TOOL_PATH? Your current AGENT_TOOL_PATH is {parent_path}.
+    2.  Expected to find a specific CodedTool for the given agent network in:
+        <AGENT_TOOL_PATH>/<agent_network>/<coded_tool_name>.py
+        Global CodedTools (shared across networks) should be located at:
+        <AGENT_TOOL_PATH>/<coded_tool_name>.py
         a)  Does your AGENT_TOOL_PATH point to the correct directory?
         b)  Does your CodedTool actually live in a module appropriately
             named for your agent network?
         c)  Does the module in the "class" designation for the agent {agent_name}
             match what is in the filesystem?
         d)  Does the specified class name match what is actually implemented in the file?
+        e)  If an agent network contains both specific and global CodedTools,
+            the global module must not have the same name as the agent network.
     """
                 raise ValueError(message) from second_exception
 
