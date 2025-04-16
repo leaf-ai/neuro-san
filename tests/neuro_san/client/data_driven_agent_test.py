@@ -25,6 +25,7 @@ from neuro_san.client.streaming_input_processor import StreamingInputProcessor
 from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.utils.file_of_class import FileOfClass
 from neuro_san.message_processing.basic_message_processor import BasicMessageProcessor
+from neuro_san.session.direct_agent_session import DirectAgentSession
 
 from tests.neuro_san.client.agent_evaluator import AgentEvaluator
 from tests.neuro_san.client.agent_evaluator_factory import AgentEvaluatorFactory
@@ -78,6 +79,8 @@ class DataDrivenAgentTest(TestCase):
                                                                          metadata=metadata)
             chat_context: Dict[str, Any] = None
             for interaction in interactions:
+                if isinstance(session, DirectAgentSession):
+                    session.reset()
                 chat_context = self.interact(agent, session, interaction, chat_context)
 
     def parse_hocon_test_case(self, hocon_file: str) -> Dict[str, Any]:
