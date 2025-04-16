@@ -49,6 +49,11 @@ Use your tool to respond to the inquiry.
 """,
             "tools": ["website_search", "rag_retriever"]
         },
+
+        # "website_search" with class "website_search_global.WebsiteSearch" and
+        # "rag_retriever" with class "rag_global.RAG" are global CodedTools and
+        # can be used in any agent networks.
+
         {
             "name": "website_search",
             "function": {
