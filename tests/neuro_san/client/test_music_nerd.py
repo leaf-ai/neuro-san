@@ -20,11 +20,18 @@ class TestMusicNerd(TestCase):
     Tests basic functionality via the music_nerd agent.
     """
 
-    def setup(self):
+    def __init__(self, methodName="runTest"):
+        """
+        Constructor
+        """
+        super().__init__(methodName=methodName)
+        self.asserts: UnitTestAssertForwarder = None
+        self.agent_test: DataDrivenAgentTest = None
+
+    def setUp(self):
         """
         Set up for all tests
         """
-        # pylint: disable=attribute-defined-outside-init
         self.asserts = UnitTestAssertForwarder(self)
         self.agent_test = DataDrivenAgentTest(self.asserts)
 

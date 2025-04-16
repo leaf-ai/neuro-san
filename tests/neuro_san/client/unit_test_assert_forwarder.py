@@ -123,3 +123,25 @@ class UnitTestAssertForwarder(AssertForwarder):
         :param msg: optional string message
         """
         self.test_case.assertNotIn(member, container, msg=msg)
+
+    # pylint: disable=invalid-name
+    def assertIsInstance(self, obj: Any, cls: Any, msg: str = None):
+        """
+        Assert that the obj is an instance of the cls
+
+        :param obj: object instance comparison element
+        :param cls: Class comparison element
+        :param msg: optional string message
+        """
+        self.test_case.assertIsInstance(obj, cls, msg=msg)
+
+    # pylint: disable=invalid-name
+    def assertNotIsInstance(self, obj: Any, cls: Any, msg: str = None):
+        """
+        Assert that the obj is not an instance of the cls
+
+        :param obj: object instance comparison element
+        :param cls: Class comparison element
+        :param msg: optional string message
+        """
+        self.test_case.assertNotIsInstance(obj, cls, msg=msg)
