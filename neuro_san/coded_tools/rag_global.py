@@ -5,6 +5,8 @@ from typing import Union
 
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_community.vectorstores import InMemoryVectorStore
+from langchain_core.documents import Document
+from langchain_core.vectorstores.base import VectorStoreRetriever
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
@@ -23,7 +25,8 @@ class RAG(CodedTool):
                 by the calling agent.  This dictionary is to be treated as read-only.
 
                 The argument dictionary expects the following keys:
-                    "app_name" the name of the One Cognizant app for which the URL is needed.
+                    "urls" the list of URLs to do embedding and put in vectorstore.
+                    "query" the question for RAG.
 
         :param sly_data: A dictionary whose keys are defined by the agent hierarchy,
                 but whose values are meant to be kept out of the chat stream.
@@ -40,7 +43,7 @@ class RAG(CodedTool):
 
         :return:
             In case of successful execution:
-                The URL to the app as a string.
+                The output string from RAG.
             otherwise:
                 a text string an error message in the format:
                 "Error: <error message>"
@@ -48,13 +51,19 @@ class RAG(CodedTool):
         urls: List[str] = args.get("urls")
         query: str = args.get("query", "")
 
-        docs = [WebBaseLoader(url).load() for url in urls]
-        docs_list = [item for sublist in docs for item in sublist]
+        if not urls:
+            return "Error: No URLs provided."
+
+        if query == "":
+            return "Error: No query provided."
+
+        docs: List[List[Document]] = [WebBaseLoader(url).load() for url in urls]
+        docs_list: List[Document] = [item for sublist in docs for item in sublist]
 
         text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
             chunk_size=100, chunk_overlap=50
         )
-        doc_splits = text_splitter.split_documents(docs_list)
+        doc_splits: List[Document] = text_splitter.split_documents(docs_list)
 
         # Add to vectorDB
         vectorstore = InMemoryVectorStore.from_documents(
@@ -62,10 +71,10 @@ class RAG(CodedTool):
             collection_name="rag-in-memory",
             embedding=OpenAIEmbeddings(),
         )
-        retriever = vectorstore.as_retriever()
-        page_contents = retriever.invoke(query)
+        retriever: VectorStoreRetriever = vectorstore.as_retriever()
+        page_contents: List[Document] = retriever.invoke(query)
 
-        rag_str = ""
+        rag_str: str = ""
         for content in page_contents:
             rag_str += content.page_content + "\n\n"
 

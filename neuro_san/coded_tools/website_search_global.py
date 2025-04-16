@@ -24,7 +24,7 @@ class WebsiteSearch(CodedTool):
                 by the calling agent.  This dictionary is to be treated as read-only.
 
                 The argument dictionary expects the following keys:
-                    "app_name" the name of the One Cognizant app for which the URL is needed.
+                    "search_terms" the query to search for.
 
         :param sly_data: A dictionary whose keys are defined by the agent hierarchy,
                 but whose values are meant to be kept out of the chat stream.
@@ -46,13 +46,10 @@ class WebsiteSearch(CodedTool):
                 a text string an error message in the format:
                 "Error: <error message>"
         """
-        the_url: str = args.get("url", "")
-        if the_url == "":
-            return "Error: No URL provided."
+
         search_terms: str = args.get("search_terms", "")
         if search_terms == "":
             return "Error: No search terms provided."
-        search_terms = the_url + " " + search_terms
 
         logger = logging.getLogger(self.__class__.__name__)
         logger.info(">>>>>>>>>>>>>>>>>>>WebsiteSearch>>>>>>>>>>>>>>>>>>")

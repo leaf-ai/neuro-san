@@ -59,16 +59,12 @@ Assist caller with searching an url on the web by using your tool.
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "url": {
-                            "type": "string",
-                            "description": "The url to search in."
-                        },
                         "search_terms": {
                             "type": "string",
                             "description": "Search terms to return options."
                         },
                     },
-                    "required": ["url", "search_terms"]
+                    "required": ["search_terms"]
                 }
             },
             "class": "website_search_global.WebsiteSearch",
