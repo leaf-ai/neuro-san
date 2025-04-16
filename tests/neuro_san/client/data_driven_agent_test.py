@@ -94,6 +94,7 @@ class DataDrivenAgentTest(TestCase):
         test_case: Dict[str, Any] = hocon.restore(file_reference=test_path)
         return test_case
 
+    # pylint: disable=too-many-locals
     def interact(self, agent: str, session: AgentSession, interaction: Dict[str, Any],
                  chat_context: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -102,6 +103,9 @@ class DataDrivenAgentTest(TestCase):
         :param session: The AgentSession to work with
         :param interaction: The interaction dictionary to base evalaution off of.
         """
+        _ = agent       # For now
+        empty: Dict[str, Any] = {}
+
         # Prepare the processor
         now = datetime.now()
         datestr: str = now.strftime("%Y-%m-%d-%H:%M:%S")
@@ -118,7 +122,6 @@ class DataDrivenAgentTest(TestCase):
         request: Dict[str, Any] = input_processor.formulate_chat_request(text, sly_data, chat_context, chat_filter)
 
         # Call streaming_chat()
-        empty: Dict[str, Any] = {}
         chat_responses: Generator[Dict[str, Any], None, None] = session.streaming_chat(request)
         for chat_response in chat_responses:
             message = chat_response.get("response", empty)
@@ -132,7 +135,7 @@ class DataDrivenAgentTest(TestCase):
             response_section: Dict[str, Any] = response.get(test_key, empty)
             for one_evaluation, verify_for in response_section.items():
                 # Evaluate each item in the test block
-                evaluator: AgentEvaluator = AgentEvaluatorFactory.create_evaluator(one_evaluation, test_key)
+                evaluator: AgentEvaluator = AgentEvaluatorFactory.create_evaluator(self, one_evaluation, test_key)
                 evaluator.evaluate(processor, verify_for)
 
         # See how we should continue the conversation

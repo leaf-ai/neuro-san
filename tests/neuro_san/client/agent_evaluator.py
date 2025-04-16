@@ -11,12 +11,10 @@
 
 from typing import Any
 
-from unittest import TestCase
-
 from neuro_san.message_processing.basic_message_processor import BasicMessageProcessor
 
 
-class AgentEvaluator(TestCase):
+class AgentEvaluator:
     """
     Interface definition for evaluating part of an agent's response
     """

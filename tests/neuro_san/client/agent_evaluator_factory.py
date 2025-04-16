@@ -9,6 +9,8 @@
 #
 # END COPYRIGHT
 
+from unittest import TestCase
+
 from tests.neuro_san.client.agent_evaluator import AgentEvaluator
 from tests.neuro_san.client.keywords_agent_evaluator import KeywordsAgentEvaluator
 
@@ -19,7 +21,7 @@ class AgentEvaluatorFactory:
     """
 
     @staticmethod
-    def create_evaluator(evaluation_type: str, test_key: str) -> AgentEvaluator:
+    def create_evaluator(test_case: TestCase, evaluation_type: str, test_key: str) -> AgentEvaluator:
         """
         Creates AgentEvaluators
 
@@ -29,6 +31,6 @@ class AgentEvaluatorFactory:
         evaluator: AgentEvaluator = None
 
         if evaluation_type == "keywords":
-            evaluator = KeywordsAgentEvaluator(test_key)
+            evaluator = KeywordsAgentEvaluator(test_case, test_key)
 
         return evaluator

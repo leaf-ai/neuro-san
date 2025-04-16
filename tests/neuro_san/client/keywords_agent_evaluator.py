@@ -12,6 +12,8 @@
 from typing import Any
 from typing import List
 
+from unittest import TestCase
+
 from neuro_san.message_processing.basic_message_processor import BasicMessageProcessor
 
 from tests.neuro_san.client.agent_evaluator import AgentEvaluator
@@ -22,11 +24,12 @@ class KeywordsAgentEvaluator(AgentEvaluator):
     AgentEvaluator implementation that looks for specific keywords in output.
     """
 
-    def __init__(self, test_key: str):
+    def __init__(self, test_case: TestCase, test_key: str):
         """
         Constructor
         :param test_key: The chat message key to look for output
         """
+        self.test_case: TestCase = test_case
         self.test_key: str = test_key
 
     def evaluate(self, processor: BasicMessageProcessor, verify_for: Any):
@@ -44,12 +47,12 @@ class KeywordsAgentEvaluator(AgentEvaluator):
             # Not yet
             return
 
-        self.assertIsNotNone(test_me)
+        self.test_case.assertIsNotNone(test_me)
 
         verify_all: List[str] = verify_for
         if isinstance(verify_for, str):
             verify_all = [verify_for]
-        self.assertIsInstance(verify_all, List)
+        self.test_case.assertIsInstance(verify_all, List)
 
         for verify_one in verify_all:
-            self.assertIn(verify_one, test_me)
+            self.test_case.assertIn(verify_one, test_me)
