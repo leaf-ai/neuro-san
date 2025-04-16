@@ -20,23 +20,10 @@ class TestMusicNerd(TestCase):
     Tests basic functionality via the music_nerd agent.
     """
 
-    def __init__(self, methodName="runTest"):
-        """
-        Constructor
-        """
-        super().__init__(methodName=methodName)
-        self.asserts: UnitTestAssertForwarder = None
-        self.agent_test: DataDrivenAgentTest = None
-
-    def setUp(self):
-        """
-        Set up for all tests
-        """
-        self.asserts = UnitTestAssertForwarder(self)
-        self.agent_test = DataDrivenAgentTest(self.asserts)
-
     def test_conversation_history(self):
         """
         Tests a basic conversation to see if chat context is being carried over correctly.
         """
-        self.agent_test.one_test("music_nerd/beatles_with_history.hocon")
+        asserts = UnitTestAssertForwarder(self)
+        agent_test = DataDrivenAgentTest(asserts)
+        agent_test.one_test("music_nerd/beatles_with_history.hocon")
