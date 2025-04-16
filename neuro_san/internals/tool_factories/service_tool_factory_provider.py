@@ -48,11 +48,18 @@ class ServiceToolFactoryProvider(ToolFactoryProvider):
             ServiceToolFactoryProvider.instance = ServiceToolFactoryProvider()
         return ServiceToolFactoryProvider.instance
 
-    def add_state_listener(self, listener: AgentStateListener):
+    def add_listener(self, listener: AgentStateListener):
         """
         Add a state listener to be notified when status of service agents changes.
         """
         self.listeners.append(listener)
+
+    def remove_listener(self, listener: AgentStateListener):
+        """
+        Remove a state listener from registered set.
+        """
+        if listener in self.listeners:
+            self.listeners.remove(listener)
 
     def build_agent_tool_registry(self, agent_name: str, config: Dict[str, Any]):
         """
@@ -66,13 +73,18 @@ class ServiceToolFactoryProvider(ToolFactoryProvider):
         """
         Register existing agent tool registry
         """
+        is_new: bool = False
         with self.lock:
-            is_new: bool = self.agents_table.get(agent_name, None) is None
+            is_new = self.agents_table.get(agent_name, None) is None
             self.agents_table[agent_name] = registry
-            if is_new:
-                self.logger.info("BUILT tool registry for agent %s", agent_name)
-            else:
-                self.logger.info("REPLACED tool registry for agent %s", agent_name)
+        # Notify listeners about this state change:
+        # do it outside of internal lock
+        for listener in self.listeners:
+            listener.agent_added(agent_name)
+        if is_new:
+            self.logger.info("ADDED tool registry for agent %s", agent_name)
+        else:
+            self.logger.info("REPLACED tool registry for agent %s", agent_name)
 
     def remove_agent_tool_registry(self, agent_name: str):
         """
@@ -80,7 +92,11 @@ class ServiceToolFactoryProvider(ToolFactoryProvider):
         """
         with self.lock:
             self.agents_table.pop(agent_name, None)
-            self.logger.info("REMOVED tool registry for agent %s", agent_name)
+        # Notify listeners about this state change:
+        # do it outside of internal lock
+        for listener in self.listeners:
+            listener.agent_removed(agent_name)
+        self.logger.info("REMOVED tool registry for agent %s", agent_name)
 
     def get_agent_tool_factory_provider(self, agent_name: str) -> ToolFactoryProvider:
         """

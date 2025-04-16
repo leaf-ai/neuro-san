@@ -10,9 +10,6 @@
 #
 # END COPYRIGHT
 
-from neuro_san.internals.interfaces.agent_tool_factory_provider import AgentToolFactoryProvider
-
-
 class AgentStateListener:
     """
     Abstract interface for publishing agent state changes -
