@@ -31,6 +31,7 @@ from langchain.agents import AgentExecutor
 from langchain.agents.tool_calling_agent.base import create_tool_calling_agent
 from langchain.base_language import BaseLanguageModel
 from langchain.callbacks.tracers.logging import LoggingCallbackHandler
+from langchain_anthropic.chat_models import ChatAnthropic
 from langchain_core.callbacks.base import BaseCallbackHandler
 from langchain_core.messages.ai import AIMessage
 from langchain_core.messages.base import BaseMessage
@@ -601,8 +602,16 @@ class LangChainRunContext(RunContext):
         # kind of conversion at this point runs into problems with OpenAI models
         # that process them.  So, to make things continue to work, report the
         # content as an AI message - as if the bot came up with the answer itself.
-        tool_message = AgentToolResultMessage(content=tool_result_dict.get("content"),
-                                              tool_result_origin=tool_output.get("origin"))
+
+        # Anthropic models check message type with message.type and only allow
+        # human and ai messages, thus we have to parse tool output to AIMessage.
+        if isinstance(self.llm, ChatAnthropic):
+            tool_message = AIMessage(content=tool_result_dict.get("content"))
+        else:
+            # OpenAi and Ollama models do not check message type with message.type
+            # but check attribute of the message so we can use AgentToolResultMessage.
+            tool_message = AgentToolResultMessage(content=tool_result_dict.get("content"),
+                                                  tool_result_origin=tool_output.get("origin"))
 
         return_messages: List[BaseMessage] = [tool_message]
         return return_messages
