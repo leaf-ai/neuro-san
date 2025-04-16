@@ -55,5 +55,5 @@ fallback_version = "0.0.1"
 Homepage = "https://github.com/leaf-ai/neuro-san"
 Repository = "https://github.com/leaf-ai/neuro-san"
 Documentation = "https://github.com/leaf-ai/neuro-san#readme"
-# If we move issue tracking to github
+# If we move issue tracking to github 
 # Issues = "https://github.com/leaf-ai/neuro-san/issues"
