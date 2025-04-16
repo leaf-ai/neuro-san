@@ -9,16 +9,27 @@
 #
 # END COPYRIGHT
 
+from unittest import TestCase
+
 from tests.neuro_san.client.data_driven_agent_test import DataDrivenAgentTest
+from tests.neuro_san.client.unit_test_assert_forwarder import UnitTestAssertForwarder
 
 
-class TestMusicNerd(DataDrivenAgentTest):
+class TestMusicNerd(TestCase):
     """
     Tests basic functionality via the music_nerd agent.
     """
+
+    def setup(self):
+        """
+        Set up for all tests
+        """
+        # pylint: disable=attribute-defined-outside-init
+        self.asserts = UnitTestAssertForwarder(self)
+        self.agent_test = DataDrivenAgentTest(self.asserts)
 
     def test_conversation_history(self):
         """
         Tests a basic conversation to see if chat context is being carried over correctly.
         """
-        self.one_test("music_nerd/beatles_with_history.hocon")
+        self.agent_test.one_test("music_nerd/beatles_with_history.hocon")

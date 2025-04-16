@@ -9,9 +9,8 @@
 #
 # END COPYRIGHT
 
-from unittest import TestCase
-
 from tests.neuro_san.client.agent_evaluator import AgentEvaluator
+from tests.neuro_san.client.assert_forwarder import AssertForwarder
 from tests.neuro_san.client.keywords_agent_evaluator import KeywordsAgentEvaluator
 
 
@@ -21,16 +20,17 @@ class AgentEvaluatorFactory:
     """
 
     @staticmethod
-    def create_evaluator(test_case: TestCase, evaluation_type: str, test_key: str) -> AgentEvaluator:
+    def create_evaluator(asserts: AssertForwarder, evaluation_type: str, test_key: str) -> AgentEvaluator:
         """
         Creates AgentEvaluators
 
+        :param asserts: The AssertForwarder instance to handle failures
         :param evaluation_type: A string key describing how the evaluation will take place
         :param test_key: The test key describing the portion of the ChatMessage contents to evaluate
         """
         evaluator: AgentEvaluator = None
 
         if evaluation_type == "keywords":
-            evaluator = KeywordsAgentEvaluator(test_case, test_key)
+            evaluator = KeywordsAgentEvaluator(asserts, test_key)
 
         return evaluator

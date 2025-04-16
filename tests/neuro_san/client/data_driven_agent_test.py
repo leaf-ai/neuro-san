@@ -16,7 +16,6 @@ from typing import List
 from typing import Union
 
 from datetime import datetime
-from unittest import TestCase
 
 from leaf_common.persistence.easy.easy_hocon_persistence import EasyHoconPersistence
 
@@ -29,15 +28,27 @@ from neuro_san.session.direct_agent_session import DirectAgentSession
 
 from tests.neuro_san.client.agent_evaluator import AgentEvaluator
 from tests.neuro_san.client.agent_evaluator_factory import AgentEvaluatorFactory
+from tests.neuro_san.client.assert_forwarder import AssertForwarder
 
 
-class DataDrivenAgentTest(TestCase):
+class DataDrivenAgentTest:
     """
     Abstract test class whose subclasses define hocon file to parse as test cases.
     """
 
-    FIXTURES = FileOfClass(__file__, path_to_basis="../../fixtures")
     TEST_KEYS: List[str] = ["text", "sly_data"]
+
+    def __init__(self, asserts: AssertForwarder, fixtures: FileOfClass = None):
+        """
+        Constructor
+        :param asserts: The AssertForwarder instance to use to integrate failures
+                        back into the test system.
+        :param fixtures: Optional path to the fixtures root.
+        """
+        self.asserts: AssertForwarder = asserts
+        self.fixtures: FileOfClass = fixtures
+        if self.fixtures is None:
+            self.fixtures = FileOfClass(__file__, path_to_basis="../../fixtures")
 
     def one_test(self, hocon_file: str):
         """
@@ -49,7 +60,7 @@ class DataDrivenAgentTest(TestCase):
 
         # Get the agent to use
         agent: str = test_case.get("agent")
-        self.assertIsNotNone(agent)
+        self.asserts.assertIsNotNone(agent)
 
         # Get the connection type
         connections: Union[List[str], str] = test_case.get("connections")
@@ -59,13 +70,13 @@ class DataDrivenAgentTest(TestCase):
         elif isinstance(connections, str):
             # Make single strings into a list for consistent parsing
             connections = [connections]
-        self.assertIsInstance(connections, List)
-        self.assertTrue(len(connections) > 0)
+        self.asserts.assertIsInstance(connections, List)
+        self.asserts.assertTrue(len(connections) > 0)
 
         # Collect the interations to test for
         empty: List[Any] = []
         interactions: List[Dict[str, Any]] = test_case.get("interactions", empty)
-        self.assertTrue(len(interactions) > 0)
+        self.asserts.assertTrue(len(interactions) > 0)
 
         # Collect other session information
         use_direct: bool = test_case.get("use_direct", False)
@@ -89,7 +100,7 @@ class DataDrivenAgentTest(TestCase):
 
         :param hocon_file: The name of the hocon from the fixtures directory.
         """
-        test_path: str = self.FIXTURES.get_file_in_basis(hocon_file)
+        test_path: str = self.fixtures.get_file_in_basis(hocon_file)
         hocon = EasyHoconPersistence()
         test_case: Dict[str, Any] = hocon.restore(file_reference=test_path)
         return test_case
@@ -135,7 +146,9 @@ class DataDrivenAgentTest(TestCase):
             response_section: Dict[str, Any] = response.get(test_key, empty)
             for one_evaluation, verify_for in response_section.items():
                 # Evaluate each item in the test block
-                evaluator: AgentEvaluator = AgentEvaluatorFactory.create_evaluator(self, one_evaluation, test_key)
+                evaluator: AgentEvaluator = AgentEvaluatorFactory.create_evaluator(self.asserts,
+                                                                                   one_evaluation,
+                                                                                   test_key)
                 evaluator.evaluate(processor, verify_for)
 
         # See how we should continue the conversation
