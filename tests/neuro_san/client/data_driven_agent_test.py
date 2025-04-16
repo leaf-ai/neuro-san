@@ -102,7 +102,7 @@ class DataDrivenAgentTest(TestCase):
         # Prepare the processor
         now = datetime.now()
         datestr: str = now.strftime("%Y-%m-%d-%H:%M:%S")
-        thinking_dir: str = f"/tmp/{agent}_{datestr}"
+        thinking_dir: str = f"/tmp/agent_test/{datestr}_agent"
         input_processor = StreamingInputProcessor("", None, session, thinking_dir)
         processor: BasicMessageProcessor = input_processor.processor
 
@@ -115,11 +115,13 @@ class DataDrivenAgentTest(TestCase):
         request: Dict[str, Any] = input_processor.formulate_chat_request(text, sly_data, chat_context, chat_filter)
 
         # Call streaming_chat()
+        empty: Dict[str, Any] = {}
         chat_responses: Generator[Dict[str, Any], None, None] = session.streaming_chat(request)
-        processor.process_messages(chat_responses)
+        for chat_response in chat_responses:
+            message = chat_response.get("response", empty)
+            processor.process_message(message, chat_response.get("type"))
 
         # Evaluate response
-        empty: Dict[str, Any] = {}
         response: Dict[str, Any] = interaction.get("response", empty)
 
         # Look for a block for each ChatMessage section key to test

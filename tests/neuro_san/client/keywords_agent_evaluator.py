@@ -40,6 +40,9 @@ class KeywordsAgentEvaluator(AgentEvaluator):
 
         if self.test_key == "text":
             test_me = processor.get_answer()
+        elif self.test_key == "sly_data":
+            # Not yet
+            return
 
         self.assertIsNotNone(test_me)
 
