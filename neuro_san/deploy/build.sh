@@ -17,9 +17,6 @@
 #
 # The script must be run from the top-level directory of where your
 # registries and code lives so as to properly import them into the Dockerfile.
-#
-# Furthermore, you should have all neuro-san wheel files installed in your
-# virtual environment
 
 export SERVICE_TAG=${SERVICE_TAG:-neuro-san}
 export SERVICE_VERSION=${SERVICE_VERSION:-0.0.1}
@@ -32,37 +29,6 @@ function check_directory() {
         # Change directories so that the rest of the script will work OK.
         cd neuro_san || exit 1
     fi
-}
-
-function gather_wheels() {
-
-    # 1. Look through the output of pip freeze
-    # 2. Look for entries where wheel files were installed locally (file:)
-    # 3. Only use the local file location of the wheel file from the pip output (print $3)
-    # 4. Strip off the file:// beginning to get a local path
-    # 5. Strip off the end #<sha> information
-    # 6. Replace any %2B occurrence with + - this allows for local builds of neuro-san wheels for testing
-    # This should give us the local file where the wheel was installed from.
-    local_wheels=$(pip freeze | \
-                    grep file: | \
-                    awk '{ print $3 }' | \
-                    sed "s/file:\/\///g" | \
-                    awk 'BEGIN { FS = "#" } ; { print $1 }' | \
-                    sed "s/%2B/+/g") 
-
-    # If you change this, the Dockerfile needs to match
-    export INSTALL_WHEELS="./.requirements-wheels"
-
-    # Get rid of any cruft from previous runs
-    rm -rf ${INSTALL_WHEELS}
-    mkdir -p ${INSTALL_WHEELS}
-
-    echo "Copying local installed wheels to ${INSTALL_WHEELS}"
-    for wheel_file in ${local_wheels}
-    do
-        dest_file=$(basename "${wheel_file}")
-        cp "${wheel_file}" "${INSTALL_WHEELS}/${dest_file}"
-    done
 }
 
 
@@ -83,8 +49,6 @@ function build_main() {
         TARGET_PLATFORM="linux/amd64"
     fi
     echo "Target Platform for Docker image generation: ${TARGET_PLATFORM}"
-
-    gather_wheels
 
     DOCKERFILE=$(find . -name Dockerfile | sort | head -1)
 
