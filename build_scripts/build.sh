@@ -5,7 +5,6 @@
 export SERVICE_DIR=neuro-san
 export SERVICE_TAG=neuro-san
 export SERVICE_VERSION=0.0.1
-export SERVICE_REQUIREMENTS_TXT=requirements-private.txt
 
 
 function check_run_directory() {

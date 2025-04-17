@@ -63,8 +63,6 @@ RUN pip3 install --upgrade pip==${PIP3_VERSION} --no-cache-dir ; mkdir -p ${APP_
 
 COPY ./requirements.txt ${APP_SOURCE}
 RUN pip install --prefix=/install --no-cache-dir -r ${APP_SOURCE}/requirements.txt
-COPY ./requirements-private.txt ${APP_SOURCE}
-RUN pip install --prefix=/install --no-cache-dir -r ${APP_SOURCE}/requirements-private.txt
 
 # Stage 2: Final Stage - Use a slim Python image
 FROM python:3.12-slim AS final
