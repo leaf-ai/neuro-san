@@ -47,6 +47,9 @@ class WebsiteSearch(CodedTool):
                 "Error: <error message>"
         """
 
+        # Currently duckduckgo_search does not support async operations
+        # Thus, we can only implement it in "invoke".
+
         search_terms: str = args.get("search_terms", "")
         if search_terms == "":
             return "Error: No search terms provided."
