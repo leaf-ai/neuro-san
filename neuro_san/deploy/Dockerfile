@@ -27,6 +27,10 @@
 # To find server-oriented environment variables to help you configure things
 # how you want, search for "ENV AGENT_" in this file.
 
+# Build arguments
+ARG NEURO_SAN_VERSION="Unspecified"
+ARG PACKAGE_INSTALL=/usr/local/lib/python3.12/site-packages
+
 # Stage 1: Builder Stage - Use our python base image for installations
 # Set python image as base image
 FROM python:3.12-slim as builder
@@ -54,9 +58,6 @@ FROM python:3.12-slim AS final
 
 # Set the shell and options in each FROM section per hadolint recommendations
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
-# Build arguments
-ARG NEURO_SAN_VERSION="Unspecified"
 
 # Set up user for app running in container
 ENV USERNAME neuro-san
@@ -94,11 +95,11 @@ COPY --from=builder /install /usr/local
 # Copy application code and necessary files
 # Note: The registries directory where agent definitions live is mandatory
 #       The coded_tools directory where agent code lives is optional
-COPY ./[neuro_san/]registries ${APP_SOURCE}/registries
-COPY ./[neuro_san/]coded_tools ${APP_SOURCE}/coded_tools
+COPY ./neuro_san/registries ${APP_SOURCE}/registries
+COPY ./neuro_san/coded_tools ${APP_SOURCE}/coded_tools
 
 # Copy application code and necessary files if we are running within the neuro-san repo
-COPY ./neuro_[san] ${APP_SOURCE}/neuro_san
+COPY ./neuro_san ${APP_SOURCE}/neuro_san
 RUN chmod -R a+r ${APP_SOURCE}
 
 # Set up the entry point for when the container is run
@@ -109,9 +110,12 @@ WORKDIR ${APP_SOURCE}
 # This value below comes from the above RUN command.
 # Cannot set ENV vars in Dockerfiles based on shell output within in-progress container build,
 # only from build args.
-ARG PACKAGE_INSTALL=/usr/local/lib/python3.12/site-packages
+ARG PACKAGE_INSTALL
+ENV PACKAGE_INSTALL ${PACKAGE_INSTALL}
 ENV PACKAGE_DEPLOY ${PACKAGE_INSTALL}/neuro_san/deploy
 ENV APP_ENTRYPOINT ${PACKAGE_DEPLOY}/entrypoint.sh
+
+ARG NEURO_SAN_VERSION
 
 #
 # Server configuration

@@ -40,11 +40,12 @@ function build_main() {
     DOCKERFILE=$(find . -name Dockerfile | sort | tail -1)
 
     # See if we are building from within neuro-san repo to optionally set a build arg.
-    PACKAGE_INSTALL=""
+    PACKAGE_INSTALL="DUMMY=dummy"
     if [ $(ls -p | grep neuro_san) == "neuro_san/" ]
     then
-        PACKAGE_INSTALL='--build-arg="/usr/local/neuro-san/myapp"'
+        PACKAGE_INSTALL="PACKAGE_INSTALL=/usr/local/neuro-san/myapp"
     fi
+    echo "PACKAGE_INSTALL is ${PACKAGE_INSTALL}"
 
     # Build the docker image
     # DOCKER_BUILDKIT needed for secrets
@@ -52,9 +53,8 @@ function build_main() {
     DOCKER_BUILDKIT=1 docker build \
         -t neuro-san/${SERVICE_TAG}:${SERVICE_VERSION} \
         --platform ${TARGET_PLATFORM} \
-        --build-arg="NEURO_SAN_VERSION=${USER}-$(date +'%Y-%m-%d-%H-%M')" \
-        --build-arg="FROM_NEURO_SAN_REPO=${FROM_NEURO_SAN_REPO}" \
-        ${PACKAGE_INSTALL} \
+        --build-arg NEURO_SAN_VERSION="${USER}-$(date +'%Y-%m-%d-%H-%M')" \
+        --build-arg "${PACKAGE_INSTALL}" \
         -f "${DOCKERFILE}" \
         ${CACHE_OR_NO_CACHE} \
         .
