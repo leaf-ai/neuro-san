@@ -2,9 +2,12 @@
 # These requirements are for the Python that is run in the
 # neuro_san/service container.
 #
-# Private source dependencies are listed in requirements-private.txt
 # Requirements for tests, code style and other build stuff reside in
 # requirements-build.txt
+
+# In-house dependencies
+leaf-common==1.2.21
+leaf-server-common==0.1.18
 
 # These are needed for generating code from .proto files
 grpcio>=1.62.0
