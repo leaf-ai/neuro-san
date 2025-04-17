@@ -1,6 +1,5 @@
 # These bits are assembled from (largely) following the guidance here:
 # https://packaging.python.org/en/latest/overview/
-
 [build-system]
 requires = ["setuptools>=61.0", "wheel","setuptools-scm==8.1.0"]
 build-backend = "setuptools.build_meta"
@@ -12,7 +11,11 @@ authors = [
 ]
 description = "NeuroAI data-driven System for multi-Agent Networks"
 keywords = ["LLM", "langchain", "agent", "multi-agent"]
-license = {file = "LICENSE.txt"}
+
+# This license name comes from doc recommendation here
+# https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license
+license = "LicenseRef-CognizantAcademicSource"
+license-files = ["LICENSE.txt"]
 requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -25,9 +28,6 @@ classifiers = [
     "Development Status :: 3 - Alpha",
 
     "Intended Audience :: Developers",
-
-    # We still need to classify our academic license
-    # "License :: XXX :: XXX"
 ]
 # "dynamic" says we are going to get these project properties by dynamic means.
 # More on each below
@@ -36,11 +36,6 @@ dynamic = ["version", "dependencies", "readme"]
 [tool.setuptools.dynamic]
 # Specify the dependencies for the library from what is given in requirements.txt
 dependencies = {file = ["requirements.txt"]}
-
-# Note that the requirements.txt dependencies do not include github dependencies
-# on purpose.  We acknowledge them with the entry below, but that doesn't really
-# do anything for packaging.
-optional-dependencies = {dev = {file = ["requirements-private.txt"]}}
 
 readme = {file = ["README.md", "README_clients.md", "README_setup.md", "README_tests.md"]}
 
@@ -60,3 +55,6 @@ fallback_version = "0.0.1"
 [project.urls]
 Homepage = "https://github.com/leaf-ai/neuro-san"
 Repository = "https://github.com/leaf-ai/neuro-san"
+Documentation = "https://github.com/leaf-ai/neuro-san#readme"
+# If we move issue tracking to github 
+# Issues = "https://github.com/leaf-ai/neuro-san/issues"

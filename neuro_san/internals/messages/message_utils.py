@@ -14,6 +14,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Tuple
+from typing import Union
 
 import json
 
@@ -119,7 +120,14 @@ def get_content(message: Any) -> str:
     """
 
     if isinstance(message, BaseMessage):
-        return message.content
+        # For OpenAI and Ollama, content of AI message is a string but content from
+        # Anthropic AI message can either be a single string or a list of content blocks.
+        # If it is a list, "text" is a key of a dictionary which is the first element of
+        # the list. For more details: https://python.langchain.com/docs/integrations/chat/anthropic/#content-blocks
+        content: Union[str, List] = message.content
+        if isinstance(content, list):
+            content = content[0].get("text", "")
+        return content
 
     if hasattr(message, "content"):
         if not any(message.content):
@@ -171,6 +179,13 @@ def convert_to_chat_message(message: BaseMessage, origin: List[Dict[str, Any]] =
             # Not all BaseMessage subclasses have every field we are looking
             # for, and that is ok.
             value = None
+
+        # For OpenAI and Ollama, content of AI message is a string but content from
+        # Anthropic AI message can either be a single string or a list of content blocks.
+        # If it is a list, "text" is a key of a dictionary which is the first element of
+        # the list. For more details: https://python.langchain.com/docs/integrations/chat/anthropic/#content-blocks
+        if src == "content" and isinstance(value, list):
+            value = value[0].get("text", "")
 
         if value is not None:
             chat_message[dest] = value

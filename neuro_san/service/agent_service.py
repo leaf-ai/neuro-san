@@ -31,6 +31,7 @@ from leaf_server_common.server.request_logger import RequestLogger
 
 from neuro_san.api.grpc import agent_pb2 as service_messages
 from neuro_san.api.grpc import agent_pb2_grpc
+from neuro_san.internals.interfaces.agent_tool_factory_provider import AgentToolFactoryProvider
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
 from neuro_san.internals.run_context.factory.master_llm_factory import MasterLlmFactory
@@ -56,7 +57,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
                  request_logger: RequestLogger,
                  security_cfg: Dict[str, Any],
                  agent_name: str,
-                 tool_registry: AgentToolRegistry,
+                 tool_registry_provider: AgentToolFactoryProvider,
                  server_logging: AgentServerLogging):
         """
         Set the gRPC interface up for health checking so that the service
@@ -70,7 +71,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
                         connection.  Supplying this implies use of a secure
                         GRPC Channel.  If None, uses insecure channel.
         :param agent_name: The agent name for the service
-        :param tool_registry: The AgentToolRegistry to use for the service.
+        :param tool_registry_provider: The AgentToolFactoryProvider to use for the session.
         :param server_logging: An AgentServerLogging instance initialized so that
                         spawned asyncrhonous threads can also properly initialize
                         their logging.
@@ -81,7 +82,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         self.server_logging: AgentServerLogging = server_logging
         self.forwarder: GrpcMetadataForwarder = self.server_logging.get_forwarder()
 
-        self.tool_registry: AgentToolRegistry = tool_registry
+        self.tool_registry_provider: AgentToolFactoryProvider = tool_registry_provider
         self.agent_name: str = agent_name
         self.request_counter = AtomicCounter()
 
@@ -126,7 +127,8 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         request_dict: Dict[str, Any] = MessageToDict(request)
 
         # Delegate to Direct*Session
-        session = DirectAgentSession(tool_registry=self.tool_registry,
+        tool_registry: AgentToolRegistry = self.tool_registry_provider.get_agent_tool_factory()
+        session = DirectAgentSession(tool_registry=tool_registry,
                                      invocation_context=None,
                                      metadata=metadata,
                                      security_cfg=self.security_cfg)
@@ -174,7 +176,8 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         request_dict: Dict[str, Any] = MessageToDict(request)
 
         # Delegate to Direct*Session
-        session = DirectAgentSession(tool_registry=self.tool_registry,
+        tool_registry: AgentToolRegistry = self.tool_registry_provider.get_agent_tool_factory()
+        session = DirectAgentSession(tool_registry=tool_registry,
                                      invocation_context=None,
                                      metadata=metadata,
                                      security_cfg=self.security_cfg)
@@ -231,7 +234,8 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         _ = executor.submit(None, self.server_logging.setup_logging, metadata, metadata.get("request_id"))
 
         # Delegate to Direct*Session
-        session = DirectAgentSession(tool_registry=self.tool_registry,
+        tool_registry: AgentToolRegistry = self.tool_registry_provider.get_agent_tool_factory()
+        session = DirectAgentSession(tool_registry=tool_registry,
                                      invocation_context=invocation_context,
                                      metadata=metadata,
                                      security_cfg=self.security_cfg)

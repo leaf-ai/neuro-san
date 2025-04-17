@@ -22,6 +22,7 @@ from tornado.web import Application
 from neuro_san.http_sidecar.logging.http_logger import HttpLogger
 from neuro_san.service.agent_server import DEFAULT_FORWARDED_REQUEST_METADATA
 
+from neuro_san.http_sidecar.interfaces.agent_authorizer import AgentAuthorizer
 from neuro_san.http_sidecar.handlers.health_check_handler import HealthCheckHandler
 from neuro_san.http_sidecar.handlers.connectivity_handler import ConnectivityHandler
 from neuro_san.http_sidecar.handlers.function_handler import FunctionHandler
@@ -30,12 +31,13 @@ from neuro_san.http_sidecar.handlers.concierge_handler import ConciergeHandler
 from neuro_san.http_sidecar.handlers.openapi_publish_handler import OpenApiPublishHandler
 
 
-class HttpSidecar:
+class HttpSidecar(AgentAuthorizer):
     """
     Class provides simple http endpoint for neuro-san API,
     working as a client to neuro-san gRPC service.
     """
     # pylint: disable=too-many-arguments, too-many-positional-arguments
+    # pylint: disable=too-many-instance-attributes
     def __init__(self, port: int, http_port: int,
                  agents: Dict[str, Any],
                  openapi_service_spec_path: str,
@@ -56,6 +58,7 @@ class HttpSidecar:
         self.logger = None
         self.openapi_service_spec_path: str = openapi_service_spec_path
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata.split(" ")
+        self.allowed_agents: Dict[str, bool] = {}
 
     def __call__(self):
         """
@@ -68,46 +71,40 @@ class HttpSidecar:
         app.listen(self.http_port)
         self.logger.info({}, "HTTP server is running on port %d", self.http_port)
         self.logger.debug({}, "Serving agents: %s", repr(self.agents.keys()))
+        # Put agent names into "allowed" list:
+        self.allowed_agents = {}
+        for agent_name, _ in self.agents.items():
+            self.allowed_agents[agent_name] = True
         IOLoop.current().start()
 
     def make_app(self):
         """
         Construct tornado HTTP "application" to run.
         """
+        request_data: Dict[str, Any] = self.build_request_data()
         handlers = []
         handlers.append(("/", HealthCheckHandler))
-        concierge_data: Dict[str, Any] = self.build_request_data("concierge")
-        handlers.append(("/api/v1/list", ConciergeHandler, concierge_data))
-        openapi_spec_data: Dict[str, Any] = self.build_request_data("openapi")
-        handlers.append(("/api/v1/docs", OpenApiPublishHandler, openapi_spec_data))
+        handlers.append(("/api/v1/list", ConciergeHandler, request_data))
+        handlers.append(("/api/v1/docs", OpenApiPublishHandler, request_data))
 
-        for agent_name in self.agents.keys():
-            # For each of registered agents, we define 3 request paths -
-            # one for each of neuro-san service API methods.
-            # For each request http path, we build corresponding request handler
-            # and put it in "handlers" list,
-            # which is used to construct tornado "application".
-            request_data: Dict[str, Any] = self.build_request_data(agent_name)
-            route: str = f"/api/v1/{agent_name}/connectivity"
-            handlers.append((route, ConnectivityHandler, request_data))
-            self.logger.info({}, "Registering URL path: %s", route)
-            route: str = f"/api/v1/{agent_name}/function"
-            handlers.append((route, FunctionHandler, request_data))
-            self.logger.info({}, "Registering URL path: %s", route)
-            route: str = f"/api/v1/{agent_name}/streaming_chat"
-            handlers.append((route, StreamingChatHandler, request_data))
-            self.logger.info({}, "Registering URL path: %s", route)
+        # Register templated request paths for agent API methods:
+        # regexp format used here is that of Python Re standard library.
+        handlers.append((r"/api/v1/([^/]+)/function", FunctionHandler, request_data))
+        handlers.append((r"/api/v1/([^/]+)/connectivity", ConnectivityHandler, request_data))
+        handlers.append((r"/api/v1/([^/]+)/streaming_chat", StreamingChatHandler, request_data))
 
         return Application(handlers)
 
-    def build_request_data(self, agent_name: str) -> Dict[str, Any]:
+    def allow(self, agent_name) -> bool:
+        return self.allowed_agents.get(agent_name, False)
+
+    def build_request_data(self) -> Dict[str, Any]:
         """
         Build request data for Http handlers.
-        :param agent_name: name of an agent this request data is for.
         :return: a dictionary with request data to be passed to a http handler.
         """
         return {
-            "agent_name": agent_name,
+            "agent_policy": self,
             "port": self.port,
             "forwarded_request_metadata": self.forwarded_request_metadata,
             "openapi_service_spec_path": self.openapi_service_spec_path
