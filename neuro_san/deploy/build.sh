@@ -37,7 +37,7 @@ function build_main() {
     fi
     echo "Target Platform for Docker image generation: ${TARGET_PLATFORM}"
 
-    DOCKERFILE=$(find . -name Dockerfile | sort | head -1)
+    DOCKERFILE=$(find . -name Dockerfile | sort | tail -1)
 
     # See if we are building from within neuro-san repo to optionally set a build arg.
     PACKAGE_INSTALL=""
