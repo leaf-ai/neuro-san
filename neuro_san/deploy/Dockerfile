@@ -55,12 +55,11 @@ FROM python:3.12-slim AS final
 # Set the shell and options in each FROM section per hadolint recommendations
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# App-specific constants
+# Set up user for app running in container
 ENV USERNAME neuro-san
 ENV APP_HOME /usr/local/${USERNAME}
 ENV APP_SOURCE ${APP_HOME}/myapp
 
-# Set up user for app running in container
 RUN \
     useradd -ms /bin/bash -d ${APP_HOME} -u 1001 ${USERNAME} \
     && echo ${USERNAME}:pw | chpasswd \
@@ -88,6 +87,7 @@ EXPOSE 8080
 # Copy installed dependencies from the builder stage
 COPY --from=builder /install /usr/local
 
+# Copy application code and necessary files
 # Note: The registries directory where agent definitions live is mandatory
 #       The coded_tools directory where agent code lives is optional
 COPY ./registries ${APP_SOURCE}/registries
@@ -159,7 +159,7 @@ ENV AGENT_PORT=30011
 ENV AGENT_HTTP_PORT=8080
 
 # Maximm number of requests that can be served at the same time
-ENV AGENT_MAX_CONCURRENT_REQUESTS 10
+ENV AGENT_MAX_CONCURRENT_REQUESTS 50
 
 # Number of requests served before the server shuts down in an orderly fashion.
 # This is useful for testing response handling in clusters with duplicated pods.
