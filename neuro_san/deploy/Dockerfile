@@ -20,8 +20,8 @@
 # own projects.  Your own requirements.txt file for your project will
 # need to include neuro-san as a dependency.
 #
-# Use ./neuro_san/deploy/build.sh to build this container.
-# After a successful build of the container, you can use
+# Use ./neuro_san/deploy/build.sh to build this container from within the
+# neuro-san repo. After a successful build of the container, you can use
 # ./neuro_san/deploy/run.sh to run the built container locally.
 #
 # To find server-oriented environment variables to help you configure things
@@ -95,11 +95,13 @@ COPY --from=builder /install /usr/local
 # Copy application code and necessary files
 # Note: The registries directory where agent definitions live is mandatory
 #       The coded_tools directory where agent code lives is optional
-COPY ./neuro_san/registries ${APP_SOURCE}/registries
-COPY ./neuro_san/coded_tools ${APP_SOURCE}/coded_tools
+#       [s] allows for registries/coded_tools from within client repo or neuro-san repo
+COPY ./neuro_san/registrie[s] ./registrie[s] ${APP_SOURCE}/registries
+COPY ./neuro_san/coded_tool[s] ./coded_tool[s] ${APP_SOURCE}/coded_tools
 
 # Copy application code and necessary files if we are running within the neuro-san repo
-COPY ./neuro_san ${APP_SOURCE}/neuro_san
+# [n] allows this to not have to be there for client repo builds.
+COPY ./neuro_sa[n] ${APP_SOURCE}/neuro_san
 RUN chmod -R a+r ${APP_SOURCE}
 
 # Set up the entry point for when the container is run
