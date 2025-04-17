@@ -41,7 +41,7 @@ function build_main() {
 
     # See if we are building from within neuro-san repo to optionally set a build arg.
     PACKAGE_INSTALL="DUMMY=dummy"
-    # sheelcheck disable=SC2010
+    # shellcheck disable=SC2010
     if [ "$(ls -p | grep neuro_san)" == "neuro_san/" ]
     then
         PACKAGE_INSTALL="PACKAGE_INSTALL=/usr/local/neuro-san/myapp"
