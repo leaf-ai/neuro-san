@@ -9,7 +9,7 @@ name = "neuro-san"
 authors = [
     { name="Dan Fink", email="Daniel.Fink@cognizant.com" }
 ]
-description = "Data-driven System for multi-Agent Networks - client, library and server"
+description = "NeuroAI data-driven System for multi-Agent Networks - client, library and server"
 keywords = ["LLM", "langchain", "agent", "multi-agent"]
 
 # This license name comes from doc recommendation here
