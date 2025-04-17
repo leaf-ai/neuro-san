@@ -108,7 +108,7 @@ WORKDIR ${APP_SOURCE}
 # This value below comes from the above RUN command.
 # Cannot set ENV vars in Dockerfiles based on shell output within in-progress container build,
 # only from build args.
-ARG PACKAGE_INSTALL /usr/local/lib/python3.12/site-packages
+ARG PACKAGE_INSTALL=/usr/local/lib/python3.12/site-packages
 ENV PACKAGE_DEPLOY ${PACKAGE_INSTALL}/neuro_san/deploy
 ENV APP_ENTRYPOINT ${PACKAGE_DEPLOY}/entrypoint.sh
 
