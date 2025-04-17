@@ -39,6 +39,13 @@ function build_main() {
 
     DOCKERFILE=$(find . -name Dockerfile | sort | head -1)
 
+    # See if we are building from within neuro-san repo to optionally set a build arg.
+    PACKAGE_INSTALL=""
+    if [ $(ls -p | grep neuro_san) == "neuro_san/" ]
+    then
+        PACKAGE_INSTALL='--build-arg="/usr/local/neuro-san/myapp"'
+    fi
+
     # Build the docker image
     # DOCKER_BUILDKIT needed for secrets
     # shellcheck disable=SC2086
@@ -46,6 +53,8 @@ function build_main() {
         -t neuro-san/${SERVICE_TAG}:${SERVICE_VERSION} \
         --platform ${TARGET_PLATFORM} \
         --build-arg="NEURO_SAN_VERSION=${USER}-$(date +'%Y-%m-%d-%H-%M')" \
+        --build-arg="FROM_NEURO_SAN_REPO=${FROM_NEURO_SAN_REPO}" \
+        ${PACKAGE_INSTALL} \
         -f "${DOCKERFILE}" \
         ${CACHE_OR_NO_CACHE} \
         .

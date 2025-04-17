@@ -55,6 +55,9 @@ FROM python:3.12-slim AS final
 # Set the shell and options in each FROM section per hadolint recommendations
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+# Build arguments
+ARG NEURO_SAN_VERSION="Unspecified"
+
 # Set up user for app running in container
 ENV USERNAME neuro-san
 ENV APP_HOME /usr/local/${USERNAME}
@@ -102,8 +105,10 @@ USER ${USERNAME}
 WORKDIR ${APP_SOURCE}
 
 # RUN echo "$(pip show neuro-san | grep Location | awk '{print $2}')"
-# This value below comes from the above RUN command. Cannot set ENV vars in Dockerfiles based on shell output.
-ENV PACKAGE_INSTALL /usr/local/lib/python3.12/site-packages
+# This value below comes from the above RUN command.
+# Cannot set ENV vars in Dockerfiles based on shell output within in-progress container build,
+# only from build args.
+ARG PACKAGE_INSTALL /usr/local/lib/python3.12/site-packages
 ENV PACKAGE_DEPLOY ${PACKAGE_INSTALL}/neuro_san/deploy
 ENV APP_ENTRYPOINT ${PACKAGE_DEPLOY}/entrypoint.sh
 
@@ -167,4 +172,3 @@ ENV AGENT_REQUEST_LIMIT=1000000
 
 # ENTRYPOINT ls ${APP_SOURCE}
 ENTRYPOINT "${APP_ENTRYPOINT}"
-
