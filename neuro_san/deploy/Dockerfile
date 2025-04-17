@@ -9,7 +9,23 @@
 # neuro-san SDK Software in commercial settings.
 #
 # END COPYRIGHT
+
 # This Dockerfile is expected to be run from the top-level of neuro-san.
+
+# If you find yourself wanting to modify this file
+# and check it into the neuro-san repo or modify it in place with the
+# neuro-san source code, chances are you shouldn't. Instead, strongly
+# consider creating your own repo with your own agents and using this
+# Dockerfile and accompanying scripts as a basis to riff on for your
+# own projects.  Your own requirements.txt file for your project will
+# need to include neuro-san as a dependency.
+#
+# Use ./neuro_san/deploy/build.sh to build this container.
+# After a successful build of the container, you can use
+# ./neuro_san/deploy/run.sh to run the built container locally.
+#
+# To find server-oriented environment variables to help you configure things
+# how you want, search for "ENV AGENT_" in this file.
 
 # Stage 1: Builder Stage - Use our python base image for installations
 # Set python image as base image
@@ -19,7 +35,7 @@ FROM python:3.12-slim as builder
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # App-specific constants
-ENV USERNAME leaf-ai
+ENV USERNAME neuro-san
 ENV APP_HOME /usr/local/${USERNAME}
 ENV APP_SOURCE ${APP_HOME}/myapp
 ENV PIP3_VERSION 25.0.1
@@ -37,7 +53,7 @@ FROM python:3.12-slim AS final
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # App-specific constants
-ENV USERNAME leaf-ai
+ENV USERNAME neuro-san
 ENV APP_HOME /usr/local/${USERNAME}
 ENV APP_SOURCE ${APP_HOME}/myapp
 WORKDIR ${APP_SOURCE}
