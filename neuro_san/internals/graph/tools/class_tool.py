@@ -129,7 +129,7 @@ class ClassTool(AbstractCallableTool):
     in the agent network "{agent_network}".
 
     Check these things:
-    1.  Is there a typo in your AGENT_TOOL_PATH? Your current AGENT_TOOL_PATH is {parent_path}.
+    1.  Is there a typo in your AGENT_TOOL_PATH?
     2.  Expected to find a specific CodedTool for the given agent network in:
         <AGENT_TOOL_PATH>/<agent_network>/<coded_tool_name>.py
         Global CodedTools (shared across networks) should be located at:
