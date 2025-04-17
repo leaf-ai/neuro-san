@@ -8,7 +8,6 @@
 
 ###### Install Python dependencies
 
-From the project top-level:
 
 Set PYTHONPATH environment variable
 
@@ -18,11 +17,12 @@ Create and activate a new virtual environment:
 
     python3 -m venv venv
     . ./venv/bin/activate
+    pip install neuro-san
 
+OR from the neuro-san project top-level:
 Install packages specified in the following requirements files:
 
     pip install -r requirements.txt
-    pip install -r requirements-build.txt
 
 ###### Set necessary environment variables
 
@@ -93,7 +93,7 @@ string of a JSON dictionary. For example:
 
 ## Running Python unit/integration tests
 
-To run Python unit/integration tests, follow the instructions [here](./README_tests.md)
+To run Python unit/integration tests, follow the instructions [here](https://github.com/leaf-ai/neuro-san/blob/main/README_tests.md)
 
 ## Creating a new agent network
 
@@ -207,4 +207,4 @@ look like this:
 
 # Creating Clients
 
-To create clients, follow the instructions [here](./README_clients.md)
+To create clients, follow the instructions [here](https://github.com/leaf-ai/neuro-san/blob/main/README_clients.md)
