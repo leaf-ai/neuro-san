@@ -96,8 +96,6 @@ Option 2: Build and run the docker container for the hosting agent service:
 
     ./neuro_san/deploy/build.sh ; ./neuro_san/deploy/run.sh
 
-    You will need the leaf-common and leaf-server-common wheel files for this to work.
-
     These build.sh / Dockerfile / run.sh scripts are portable so they can be used with
     your own projects' registries and coded_tools work.
 
