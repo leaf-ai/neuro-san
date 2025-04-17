@@ -69,7 +69,8 @@ RUN \
     && mkdir -p ${APP_HOME}/.ssh \
     && chown -R ${USERNAME}: ${APP_HOME} \
     && chown -R ${USERNAME}: /usr/local/ \
-    && chown -R ${USERNAME}: /var/log
+    && chown -R ${USERNAME}: /var/log \
+    && mkdir -p ${APP_SOURCE}
 
 # This is the port the service will accept grpc requests on.
 # This should be consistent with the main port for the service as described
