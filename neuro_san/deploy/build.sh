@@ -41,7 +41,7 @@ function build_main() {
 
     # See if we are building from within neuro-san repo to optionally set a build arg.
     PACKAGE_INSTALL="DUMMY=dummy"
-    if [ $(ls -p | grep neuro_san) == "neuro_san/" ]
+    if [ "$(ls -p | grep neuro_san)" == "neuro_san/" ]
     then
         PACKAGE_INSTALL="PACKAGE_INSTALL=/usr/local/neuro-san/myapp"
     fi
@@ -58,9 +58,6 @@ function build_main() {
         -f "${DOCKERFILE}" \
         ${CACHE_OR_NO_CACHE} \
         .
-
-    # Remove the temporary creds file created in create_git_creds_requirements() above
-    rm -rf ${INSTALL_WHEELS}
 }
 
 
