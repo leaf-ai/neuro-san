@@ -603,13 +603,25 @@ class LangChainRunContext(RunContext):
         # that process them.  So, to make things continue to work, report the
         # content as an AI message - as if the bot came up with the answer itself.
 
-        # Anthropic models check message type with message.type and only allow
-        # human and ai messages, thus we have to parse tool output to AIMessage.
+        # Different LLM providers handle message types differently when constructing responses:
+        #
+        # - Anthropic models (via ChatAnthropic) explicitly check the `message.type` string
+        #   and only accept messages of type "human" or "ai". Custom subclasses like
+        #   AgentToolResultMessage return a different type (e.g., "agent_tool_result"),
+        #   which causes Anthropic's handler to reject the message.
+        #   To maintain compatibility, we fallback to a plain `AIMessage` here for Anthropic models,
+        #   even though it means we lose access to `tool_result_origin`.
+        #
+        # - OpenAI and Ollama models (via ChatOpenAI and ChatOllama) do not rely on `message.type`.
+        #   Instead, they use `isinstance(message, AIMessage)` checks, which allows us to safely pass
+        #   `AgentToolResultMessage` since it subclasses `AIMessage`. This gives us the flexibility
+        #   to include additional metadata like `tool_result_origin` when supported.
+        #
+        # If needed, additional metadata can be injected into the "AIMessage.additional_kwargs" field for
+        # broader compatibility in the future.
         if isinstance(self.llm, ChatAnthropic):
             tool_message = AIMessage(content=tool_result_dict.get("content"))
         else:
-            # OpenAi and Ollama models do not check message type with message.type
-            # but check attribute of the message so we can use AgentToolResultMessage.
             tool_message = AgentToolResultMessage(content=tool_result_dict.get("content"),
                                                   tool_result_origin=tool_output.get("origin"))
 
