@@ -4,13 +4,39 @@
 
 ### Prep
 
-Set up your virtual environment per instructions [here](./README_setup.md)
+##### Setup your virtual environment
 
-### Direct Setup
+###### Install Python dependencies
+
+From the project top-level:
+
+Set PYTHONPATH environment variable
+
+    export PYTHONPATH=$(pwd)
+
+Create and activate a new virtual environment:
+
+    python3 -m venv venv
+    . ./venv/bin/activate
+
+Install packages specified in the following requirements files:
+
+    pip install -r requirements.txt
+    pip install -r requirements-build.txt
+
+###### Set necessary environment variables
+
+In a terminal window, set at least these environment variables:
+
+    export OPENAI_API_KEY="XXX_YOUR_OPENAI_API_KEY_HERE"
+
+Any other API key environment variables for other LLM provider(s) also need to be set if you are using them.
+
+### Using as a library (Direct)
 
 From the top-level of this repo:
 
-    python -m neuro_san.client.agent_cli --connection direct --agent hello_world
+    python -m neuro_san.client.agent_cli --agent hello_world
 
 Type in this input to the chat client:
 
@@ -47,7 +73,7 @@ Option 2: Build and run the docker container for the hosting agent service:
 
 In another terminal start the chat client:
 
-    python -m neuro_san.client.agent_cli --connection service --agent hello_world
+    python -m neuro_san.client.agent_cli --http --agent hello_world
 
 
 ### Extra info about agent_cli.py
