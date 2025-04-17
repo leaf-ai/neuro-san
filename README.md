@@ -1,5 +1,38 @@
 # Neuro-San Data-Driven Agents
 
+Neuro-San (System of Agent Networks) is a library for building data-driven multi-agent networks
+which can be run as a library, or served up via an HTTP/gRPC server.
+
+Motivation: People come with all their hopes and dreams to lay them at the altar
+of a single LLM/agent expecting it to do the most complex tasks.  This often fails
+because the scope is often too big for a single LLM to handle.  People expect the
+eqivalent of an adult PhD to be at their disposal, but what you really get is a high-school intern.
+
+Solution: Allow these problems to be broken up into smaller pieces so that multiple LLM-enabled
+agents can communicate with each other to solve a single problem.
+
+Neuro-San agent networks can be entirely specified in a data-only
+[HOCON](https://github.com/lightbend/config/blob/main/HOCON.md)
+file format (think: JSON with comments, among other things), enabling subject matter experts
+to be the authors of complex agent networks, not just programmers.
+
+Neuro-San agent networks can also call CodedTools (langchain or our own interface) which do things
+that LLMs can't on their own like: Query a web service, effectuate change via a web API, handle
+private data correctly, do complex math operations, copy large bits of data without error.
+While this aspect _does_ require programming skills, what the savvy gain with Neuro-San is a new way
+to think about your problems that involves a weave between natural language tasks that LLMs are good at
+and traditional computing tasks which deterministic Python code gives you.
+
+Neuro-San also offers:
+    * channels for private data (aka sly_data) that should be kept out of LLM chat streams
+    * LLM-provider agnosticism and extensibiltiy of data-only-configured LLMs when new hotness arrives.
+    * agent-specific LLM specifications - use the right LLM for the cost/latency/context-window/data-privacy each agent needs.
+    * fallback LLM specifications for when your fave goes down.
+    * powerful debugging information for gaining insight into your mutli-agent systems.
+    * server-readiness at scale
+    * enabling of distributed agent webs that call each other to work together, wheverer they are hosted.
+    * security-by-default - you set what private data is to be shared downstream/upstream
+
 ## Running client and server
 
 ### Prep
