@@ -90,11 +90,11 @@ COPY --from=builder /install /usr/local
 # Copy application code and necessary files
 # Note: The registries directory where agent definitions live is mandatory
 #       The coded_tools directory where agent code lives is optional
-COPY ./registries ${APP_SOURCE}/registries
-COPY ./coded_tool[s] ${APP_SOURCE}/coded_tools
+COPY ./[neuro_san/]registries ${APP_SOURCE}/registries
+COPY ./[neuro_san/]coded_tools ${APP_SOURCE}/coded_tools
 
-# Copy application code and necessary files
-COPY ./neuro_san ${APP_SOURCE}/neuro_san
+# Copy application code and necessary files if we are running within the neuro-san repo
+COPY ./neuro_[san] ${APP_SOURCE}/neuro_san
 RUN chmod -R a+r ${APP_SOURCE}
 
 # Set up the entry point for when the container is run

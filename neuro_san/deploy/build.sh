@@ -21,21 +21,8 @@
 export SERVICE_TAG=${SERVICE_TAG:-neuro-san}
 export SERVICE_VERSION=${SERVICE_VERSION:-0.0.1}
 
-function check_directory() {
-    working_dir=$(pwd)
-    if [ "neuro-san" == "$(basename "${working_dir}")" ]
-    then
-        # We are in the neuro-san repo.
-        # Change directories so that the rest of the script will work OK.
-        cd neuro_san || exit 1
-    fi
-}
-
-
 function build_main() {
     # Outline function which delegates most work to other functions
-
-    check_directory
 
     # Parse for a specific arg when debugging
     CACHE_OR_NO_CACHE="--rm"
