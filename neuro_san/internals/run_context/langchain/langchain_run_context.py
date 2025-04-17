@@ -31,7 +31,6 @@ from langchain.agents import AgentExecutor
 from langchain.agents.tool_calling_agent.base import create_tool_calling_agent
 from langchain.base_language import BaseLanguageModel
 from langchain.callbacks.tracers.logging import LoggingCallbackHandler
-from langchain_anthropic.chat_models import ChatAnthropic
 from langchain_core.callbacks.base import BaseCallbackHandler
 from langchain_core.messages.ai import AIMessage
 from langchain_core.messages.base import BaseMessage
@@ -602,28 +601,8 @@ class LangChainRunContext(RunContext):
         # kind of conversion at this point runs into problems with OpenAI models
         # that process them.  So, to make things continue to work, report the
         # content as an AI message - as if the bot came up with the answer itself.
-
-        # Different LLM providers handle message types differently when constructing responses:
-        #
-        # - Anthropic models (via ChatAnthropic) explicitly check the `message.type` string
-        #   and only accept messages of type "human" or "ai". Custom subclasses like
-        #   AgentToolResultMessage return a different type (e.g., "agent_tool_result"),
-        #   which causes Anthropic's handler to reject the message.
-        #   To maintain compatibility, we fallback to a plain `AIMessage` here for Anthropic models,
-        #   even though it means we lose access to `tool_result_origin`.
-        #
-        # - OpenAI and Ollama models (via ChatOpenAI and ChatOllama) do not rely on `message.type`.
-        #   Instead, they use `isinstance(message, AIMessage)` checks, which allows us to safely pass
-        #   `AgentToolResultMessage` since it subclasses `AIMessage`. This gives us the flexibility
-        #   to include additional metadata like `tool_result_origin` when supported.
-        #
-        # If needed, additional metadata can be injected into the "AIMessage.additional_kwargs" field for
-        # broader compatibility in the future.
-        if isinstance(self.llm, ChatAnthropic):
-            tool_message = AIMessage(content=tool_result_dict.get("content"))
-        else:
-            tool_message = AgentToolResultMessage(content=tool_result_dict.get("content"),
-                                                  tool_result_origin=tool_output.get("origin"))
+        tool_message = AgentToolResultMessage(content=tool_result_dict.get("content"),
+                                              tool_result_origin=tool_output.get("origin"))
 
         return_messages: List[BaseMessage] = [tool_message]
         return return_messages
