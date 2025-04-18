@@ -1,6 +1,7 @@
 # Creating Clients
 
 ## Python Clients
+
 If you are using Python to create your client, then you are in luck!
 The command line client at neuro_san/client/agent_cli.py is a decent example
 of how to construct a chat client in Python.
@@ -9,6 +10,7 @@ A little deeper under the hood, that agent_cli client uses these classes under n
 to connect to a server:
 
 Synchronous connection:
+
 * GrpcServiceAgentSession
 * HttpServiceAgentSession
 
@@ -40,13 +42,14 @@ To get the hello_world agent's prompt, we do a GET to the function url for the a
     curl --request GET --url localhost:8080/api/v1/hello_world/function
 
 returns:
-```
-{
-    "function": {
-        "description": "\nI can help you to make a terse anouncement.\nTell me what your target audience is, and what sentiment you would like to relate.\n"
+
+    ```json
+    {
+        "function": {
+            "description": "\nI can help you to make a terse anouncement.\nTell me what your target audience is, and what sentiment you would like to relate.\n"
+        }
     }
-}
-```
+    ```
 
 The description field of the function structure is a user-displayable prompt.
 
@@ -57,33 +60,34 @@ The description field of the function structure is a user-displayable prompt.
 Using the same principle of specifying the agent name in a route, we can use the hello_world
 url to initiate a conversation with an agent with a POST:
 
-```
-curl --request POST --url localhost:8080/api/v1/hello_world/streaming_chat --data '{
-    "user_message": {
-        "text": "I approach a new planet and wish to send greetings to the orb."
-    }
-}'
-```
+    curl --request POST --url localhost:8080/api/v1/hello_world/streaming_chat --data '{
+        "user_message": {
+            "text": "I approach a new planet and wish to send greetings to the orb."
+        }
+    }'
 
 This will result in a stream of a single chat message structure coming back until the processing of the request is finished:
-```
-{
-    "response": {
-        "type": "AGENT_FRAMEWORK",
-        "text": "The announcement \"Hello, world!\" is an apt and concise greeting for the new planet.",
-        "chat_context": {
-            <blah blah>
+
+    ```json
+    {
+        "response": {
+            "type": "AGENT_FRAMEWORK",
+            "text": "The announcement \"Hello, world!\" is an apt and concise greeting for the new planet.",
+            "chat_context": {
+                <blah blah>
+            }
         }
     }
-}
-```
+    ```
+
 This response is telling you:
-    * The message from the hello_world agent network was the typical end "AGENT_FRAMEWORK"-typed message.
-      These kinds of messages come from neuro-san itself, not from any particular agent
-      within the network.
-    * The "text" of what came back as the answer - "Hello, world!" with typical extra LLM elaborating text.
-    * The chat_context that is returned is a structure that helps you continue the conversation.
-      For the most part, you can think of this as semi-opaque chat history data.
+
+* The message from the hello_world agent network was the typical end "AGENT_FRAMEWORK"-typed message.
+  These kinds of messages come from neuro-san itself, not from any particular agent
+  within the network.
+* The "text" of what came back as the answer - "Hello, world!" with typical extra LLM elaborating text.
+* The chat_context that is returned is a structure that helps you continue the conversation.
+  For the most part, you can think of this as semi-opaque chat history data.
 
 For a single-shot conversation, this is all you really need to report back to your user.
 
@@ -96,14 +100,13 @@ the details of the content are not as important.
 In order to continue the conversation, you simply take the value of the last AGENT_FRAMEWORK message's
 chat_context and add that to your next streaming_chat request:
 
-```
-curl --request POST --url localhost:8080/api/v1/hello_world/streaming_chat --data '{
-    "user_message": {
-        "text": "I approach a new planet and wish to send greetings to the orb."
-    },
-    "chat_context": {
-        <blah blah>
-    }
-}'
-```
+    curl --request POST --url localhost:8080/api/v1/hello_world/streaming_chat --data '{
+        "user_message": {
+            "text": "I approach a new planet and wish to send greetings to the orb."
+        },
+        "chat_context": {
+            <blah blah>
+        }
+    }'
+
 ... and back comes the next result for your conversation
