@@ -6,7 +6,7 @@ which can be run as a library, or served up via an HTTP/gRPC server.
 Motivation: People come with all their hopes and dreams to lay them at the altar
 of a single LLM/agent expecting it to do the most complex tasks.  This often fails
 because the scope is often too big for a single LLM to handle.  People expect the
-eqivalent of an adult PhD to be at their disposal, but what you really get is a high-school intern.
+equivalent of an adult PhD to be at their disposal, but what you really get is a high-school intern.
 
 Solution: Allow these problems to be broken up into smaller pieces so that multiple LLM-enabled
 agents can communicate with each other to solve a single problem.
@@ -24,14 +24,14 @@ to think about your problems that involves a weave between natural language task
 and traditional computing tasks which deterministic Python code gives you.
 
 Neuro-San also offers:
-    * channels for private data (aka sly_data) that should be kept out of LLM chat streams
-    * LLM-provider agnosticism and extensibiltiy of data-only-configured LLMs when new hotness arrives.
-    * agent-specific LLM specifications - use the right LLM for the cost/latency/context-window/data-privacy each agent needs.
-    * fallback LLM specifications for when your fave goes down.
-    * powerful debugging information for gaining insight into your mutli-agent systems.
-    * server-readiness at scale
-    * enabling of distributed agent webs that call each other to work together, wheverer they are hosted.
-    * security-by-default - you set what private data is to be shared downstream/upstream
+* channels for private data (aka sly_data) that should be kept out of LLM chat streams
+* LLM-provider agnosticism and extensibiltiy of data-only-configured LLMs when new hotness arrives.
+* agent-specific LLM specifications - use the right LLM for the cost/latency/context-window/data-privacy each agent needs.
+* fallback LLM specifications for when your fave goes down.
+* powerful debugging information for gaining insight into your mutli-agent systems.
+* server-readiness at scale
+* enabling of distributed agent webs that call each other to work together, wheverer they are hosted.
+* security-by-default - you set what private data is to be shared downstream/upstream
 
 ## Running client and server
 
