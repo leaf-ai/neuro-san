@@ -64,7 +64,9 @@ class DirectAgentSessionFactory:
 
         llm_factory: ContextTypeLlmFactory = MasterLlmFactory.create_llm_factory()
         # Load once now that we know what tool registry to use.
-        llm_factory.load()
+        # Include "agent_llm_info_file" from agent network hocon to llm factory.
+        agent_llm_info_file = tool_registry.get_agent_llm_info_file()
+        llm_factory.load(agent_llm_info_file)
 
         invocation_context = SessionInvocationContext(factory, llm_factory, metadata)
         invocation_context.start()

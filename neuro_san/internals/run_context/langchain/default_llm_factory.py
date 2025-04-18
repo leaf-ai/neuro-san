@@ -67,7 +67,7 @@ class DefaultLlmFactory(ContextTypeLlmFactory, LangChainLlmFactory):
             StandardLangChainLlmFactory()
         ]
 
-    def load(self):
+    def load(self, agent_llm_info_file: str):
         """
         Loads the LLM information from hocon files.
         """
@@ -75,7 +75,11 @@ class DefaultLlmFactory(ContextTypeLlmFactory, LangChainLlmFactory):
         self.llm_infos = restorer.restore()
 
         # Mix in user-specified llm info, if available.
-        llm_info_file: str = os.getenv("AGENT_LLM_INFO_FILE")
+        # First check "agent_llm_info_file" key from agent network hocon.
+        # If that is unavailable, fallback to env variable.
+        llm_info_file: str = agent_llm_info_file
+        if not agent_llm_info_file:
+            llm_info_file = os.getenv("AGENT_LLM_INFO_FILE")
         if llm_info_file is not None and len(llm_info_file) > 0:
             extra_llm_infos: Dict[str, Any] = restorer.restore(file_reference=llm_info_file)
             self.llm_infos = self.overlayer.overlay(self.llm_infos, extra_llm_infos)
