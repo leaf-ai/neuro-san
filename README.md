@@ -24,6 +24,7 @@ to think about your problems that involves a weave between natural language task
 and traditional computing tasks which deterministic Python code gives you.
 
 Neuro-San also offers:
+
 * channels for private data (aka sly_data) that should be kept out of LLM chat streams
 * LLM-provider agnosticism and extensibiltiy of data-only-configured LLMs when new hotness arrives.
 * agent-specific LLM specifications - use the right LLM for the cost/latency/context-window/data-privacy each agent needs.
@@ -37,10 +38,9 @@ Neuro-San also offers:
 
 ### Prep
 
-##### Setup your virtual environment
+#### Setup your virtual environment
 
-###### Install Python dependencies
-
+##### Install Python dependencies
 
 Set PYTHONPATH environment variable
 
@@ -57,7 +57,7 @@ Install packages specified in the following requirements files:
 
     pip install -r requirements.txt
 
-###### Set necessary environment variables
+##### Set necessary environment variables
 
 In a terminal window, set at least these environment variables:
 
@@ -99,13 +99,11 @@ Option 2: Build and run the docker container for the hosting agent service:
     These build.sh / Dockerfile / run.sh scripts are portable so they can be used with
     your own projects' registries and coded_tools work.
 
-
 #### Client
 
 In another terminal start the chat client:
 
     python -m neuro_san.client.agent_cli --http --agent hello_world
-
 
 ### Extra info about agent_cli.py
 
@@ -120,7 +118,7 @@ message.
 
 You can send private data that does not go into the chat stream as a single escaped
 string of a JSON dictionary. For example:
---sly_data "{ \"login\": \"<your login>\" }"
+--sly_data "{ \"login\": \"your_login\" }"
 
 ## Running Python unit/integration tests
 
@@ -139,12 +137,12 @@ Here are some descriptions of the example hocon files provided in this repo.
 To play with them, specify their stem as the argument for --agent on the agent_cli.py chat client.
 In some order of complexity, they are:
 
-*   hello_world
+* hello_world
 
     This is the initial example used above and demonstrates
     a front-man agent talking to another agent downstream.
 
-*   esp_decision_assistant
+* esp_decision_assistant
 
     This is Babak's original decision assistant.
     Very abstract, but also very powerful.
@@ -163,7 +161,7 @@ you specify your agent correctly (per the hocon file stem).
 ### More agent example files
 
 For more examples of agent networks, documentation and tutorials,
-see this repo: https://github.com/leaf-ai/neuro-san-demos
+see the [neuro-san-demos repo.](https://github.com/leaf-ai/neuro-san-demos)
 
 ### Manifest file
 
@@ -176,12 +174,12 @@ at your own manifest file, set a new environment variable:
 
     export AGENT_MANIFEST_FILE=<your_repo>/registries/manifest.hocon
 
-# Infrastructure
+## Infrastructure
 
 The agent infrastructure is run as a gRPC service.
-That gRPC service is implemented (client and server) using this interface:
-
-https://github.com/leaf-ai/neuro-san/blob/main/neuro_san/session/agent_session.py
+That gRPC service is implemented (client and server) using the
+[AgentSession](https://github.com/leaf-ai/neuro-san/blob/main/neuro_san/session/agent_session.py)
+interface:
 
 It has 2 main methods:
 
@@ -212,9 +210,9 @@ Note that agent_cli uses both of these.  You can look at the source code there f
 
 There is also an AsyncServiceAgentSession implementation available
 
-# Advanced concepts
+## Advanced concepts
 
-## Coded Tools
+### Coded Tools
 
 Most of the examples provided here show how no-code agents are put together,
 but neuro-san agent networks support the notion of coded tools for
@@ -236,6 +234,6 @@ look like this:
 
     <your_repo>/coded_tools/<your_agent_name>/<your_coded_tool>.py
 
-# Creating Clients
+## Creating Clients
 
 To create clients, follow the instructions [here](https://github.com/leaf-ai/neuro-san/blob/main/README_clients.md)
