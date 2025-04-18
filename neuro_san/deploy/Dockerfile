@@ -42,10 +42,10 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 WORKDIR /
 
 # App-specific constants
-ENV USERNAME neuro-san
-ENV APP_HOME /usr/local/${USERNAME}
-ENV APP_SOURCE ${APP_HOME}/myapp
-ENV PIP3_VERSION 25.0.1
+ENV USERNAME=neuro-san
+ENV APP_HOME=/usr/local/${USERNAME}
+ENV APP_SOURCE=${APP_HOME}/myapp
+ENV PIP3_VERSION=25.0.1
 
 # Explicitly get the desired pip version
 RUN pip3 install --upgrade pip==${PIP3_VERSION} --no-cache-dir ; mkdir -p ${APP_SOURCE}
@@ -61,9 +61,9 @@ FROM python:3.12-slim AS final
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Set up user for app running in container
-ENV USERNAME neuro-san
-ENV APP_HOME /usr/local/${USERNAME}
-ENV APP_SOURCE ${APP_HOME}/myapp
+ENV USERNAME=neuro-san
+ENV APP_HOME=/usr/local/${USERNAME}
+ENV APP_SOURCE=${APP_HOME}/myapp
 
 RUN \
     useradd -ms /bin/bash -d ${APP_HOME} -u 1001 ${USERNAME} \
@@ -114,9 +114,9 @@ WORKDIR ${APP_SOURCE}
 # Cannot set ENV vars in Dockerfiles based on shell output within in-progress container build,
 # only from build args.
 ARG PACKAGE_INSTALL
-ENV PACKAGE_INSTALL ${PACKAGE_INSTALL}
-ENV PACKAGE_DEPLOY ${PACKAGE_INSTALL}/neuro_san/deploy
-ENV APP_ENTRYPOINT ${PACKAGE_DEPLOY}/entrypoint.sh
+ENV PACKAGE_INSTALL=${PACKAGE_INSTALL}
+ENV PACKAGE_DEPLOY=${PACKAGE_INSTALL}/neuro_san/deploy
+ENV APP_ENTRYPOINT=${PACKAGE_DEPLOY}/entrypoint.sh
 
 ARG NEURO_SAN_VERSION
 
