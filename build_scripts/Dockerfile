@@ -55,18 +55,6 @@ RUN /bin/bash -c "pip3 install -r ${APP_SOURCE}/requirements-build.txt"
 COPY --chown=${USERNAME}:${USERNAME} ${EXTERNAL_BUILD_ROOT}/requirements.txt ${APP_SOURCE}
 RUN /bin/bash -c "pip3 install -r ${APP_SOURCE}/requirements.txt"
 
-# Use the with_creds_requirements secret as the basis for the pip install
-# of the main requirements.  We still do the COPY first so the container
-# cache is properly broken on changes.
-#
-# NOTE: We expect the with_creds_requirement file to provide us with
-#       ephemeral GitHub creds from vault as the proper replacement mechanism
-#       for LEAF_SOURCE_CREDENTIALS.  This way, it's OK if these inherently
-#       short-lived happen to be stored in the container.
-COPY --chown=${USERNAME}:${USERNAME}  ${EXTERNAL_BUILD_ROOT}/requirements-private.txt ${APP_SOURCE}
-RUN --mount=type=secret,id=with_creds_requirements \
-    /bin/bash -c "pip3 install -r <(cat /run/secrets/with_creds_requirements)"
-
 # Now we copy the full source tree into the container, which will almost always
 # in practice break the cache since we build when code changes.
 # We do this after all the requirements are installed as code changes more often than requirements
