@@ -40,6 +40,11 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
+      - name: Lint Markdown
+        run: |
+          npm install -g markdownlint-cli2
+          markdownlint-cli2 '**/*.md'
+
       - name: Notify Slack on success
         if: success()
         uses: slackapi/slack-github-action@v1.24.0
