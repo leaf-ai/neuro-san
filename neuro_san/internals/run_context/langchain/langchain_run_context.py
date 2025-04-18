@@ -187,9 +187,12 @@ class LangChainRunContext(RunContext):
 
         if tool_names is not None:
             for tool_name in tool_names:
-                tool: BaseTool = await self._create_base_tool(tool_name)
+                tool: Union[BaseTool | List[BaseTool]] = await self._create_base_tool(tool_name)
                 if tool is not None:
-                    self.tools.append(tool)
+                    if isinstance(tool, List):
+                        self.tools.extend(tool)
+                    else:
+                        self.tools.append(tool)
 
         prompt_template: ChatPromptTemplate = await self._create_prompt_template(instructions, assignments)
 
@@ -315,8 +318,16 @@ class LangChainRunContext(RunContext):
         else:
             base_tool: str = agent_spec.get('base_tool')
             if base_tool:
-                base_tool_factory = BaseToolFactory()
-                return base_tool_factory.get_agent_tool(base_tool, agent_spec.get('args'))
+                base_tool_factory: BaseToolFactory = self.invocation_context.get_base_tool_factory()
+                try:
+                    return base_tool_factory.create_base_tool(base_tool, agent_spec.get('args'))
+                except ValueError as base_tool_creation_exception:
+                    # There are errors in BaseTool creation process
+                    message: str = f"Failed to create Agent/tool '{name}': {base_tool_creation_exception}"
+                    agent_message = AgentMessage(content=message)
+                    await self.journal.write_message(agent_message)
+                    self.logger.info(message)
+                    return None
 
             function_json = agent_spec.get("function")
 

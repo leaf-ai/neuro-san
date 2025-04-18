@@ -15,3 +15,4 @@ include neuro_san/deploy/entrypoint.sh
 include neuro_san/deploy/logging.json
 include neuro_san/deploy/run.sh
 include neuro_san/internals/run_context/langchain/default_llm_info.hocon
+include neuro_san/internals/run_context/langchain/base_tool_info.hocon
