@@ -55,19 +55,25 @@ class StreamingChatHandler(BaseRequestHandler):
                 sent_out += 1
         return sent_out
 
-    async def post(self):
+    async def post(self, agent_name: str):
         """
         Implementation of POST request handler for streaming chat API call.
         """
+        if not self.agent_policy.allow(agent_name):
+            self.set_status(404)
+            self.logger.error({}, "error: Invalid request path %s", self.request.path)
+            await self.flush()
+            return
+
         metadata: Dict[str, Any] = self.get_metadata()
-        self.logger.info(metadata, "Start POST %s/streaming_chat", self.agent_name)
+        self.logger.info(metadata, "Start POST %s/streaming_chat", agent_name)
         sent_out = 0
         try:
             # Parse JSON body
             data = json.loads(self.request.body)
 
             grpc_request = Parse(json.dumps(data), ChatRequest())
-            grpc_session: AsyncAgentSession = self.get_agent_grpc_session(metadata)
+            grpc_session: AsyncAgentSession = self.get_agent_grpc_session(metadata, agent_name)
 
             # Mind the type hint:
             # here we are getting Generator of Generators of ChatResponses!
@@ -81,7 +87,7 @@ class StreamingChatHandler(BaseRequestHandler):
             await self.flush()
             # We are done with response stream:
             await self.finish()
-            self.logger.info(metadata, "Finish POST %s/streaming_chat %d responses", self.agent_name, sent_out)
+            self.logger.info(metadata, "Finish POST %s/streaming_chat %d responses", agent_name, sent_out)
 
     async def options(self):
         """

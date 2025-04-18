@@ -288,7 +288,7 @@
     },
 
     "claude-3-opus": {
-        "class": "anthropic",
+        "use_model_name": "claude-3-opus-20240229",
     },
     "claude-3-opus-20240229": {
         "class": "anthropic",

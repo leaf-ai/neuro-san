@@ -13,11 +13,13 @@ from typing import Dict
 
 from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.interfaces.context_type_base_tool_factory import ContextTypeBaseToolFactory
+from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
 from neuro_san.internals.run_context.factory.master_base_tool_factory import MasterBaseToolFactory
 from neuro_san.internals.run_context.factory.master_llm_factory import MasterLlmFactory
 from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
-from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
+from neuro_san.internals.interfaces.agent_tool_factory_provider import AgentToolFactoryProvider
+from neuro_san.internals.tool_factories.service_tool_factory_provider import ServiceToolFactoryProvider
 from neuro_san.session.direct_agent_session import DirectAgentSession
 from neuro_san.session.external_agent_session_factory import ExternalAgentSessionFactory
 from neuro_san.session.session_invocation_context import SessionInvocationContext
@@ -28,6 +30,8 @@ class DirectAgentSessionFactory:
     Sets up everything needed to use a DirectAgentSession more as a library.
     This includes:
         * Some reading of AgentToolRegistries
+        * Setting up ServiceToolFactoryProvider with agent registries
+          which were read in
         * Initializing an LlmFactory
     """
 
@@ -37,6 +41,10 @@ class DirectAgentSessionFactory:
         """
         manifest_restorer = RegistryManifestRestorer()
         self.manifest_tool_registries: Dict[str, AgentToolRegistry] = manifest_restorer.restore()
+        tool_factory: ServiceToolFactoryProvider =\
+            ServiceToolFactoryProvider.get_instance()
+        for agent_name, tool_registry in self.manifest_tool_registries.items():
+            tool_factory.add_agent_tool_registry(agent_name, tool_registry)
 
     def create_session(self, agent_name: str, use_direct: bool = False,
                        metadata: Dict[str, str] = None) -> AgentSession:
@@ -50,7 +58,11 @@ class DirectAgentSessionFactory:
         """
 
         factory = ExternalAgentSessionFactory(use_direct=use_direct)
-        tool_registry: AgentToolRegistry = factory.get_tool_registry(agent_name, self.manifest_tool_registries)
+        tool_factory: ServiceToolFactoryProvider =\
+            ServiceToolFactoryProvider.get_instance()
+        tool_registry_provider: AgentToolFactoryProvider =\
+            tool_factory.get_agent_tool_factory_provider(agent_name)
+        tool_registry: AgentToolRegistry = tool_registry_provider.get_agent_tool_factory()
 
         llm_factory: ContextTypeLlmFactory = MasterLlmFactory.create_llm_factory()
         base_tool_factory: ContextTypeBaseToolFactory = MasterBaseToolFactory.create_base_tool_factory()

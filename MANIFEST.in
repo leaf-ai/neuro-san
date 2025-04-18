@@ -6,6 +6,7 @@ recursive-include neuro_san/api/grpc *
 recursive-include neuro_san/api/scripts *
 recursive-include neuro_san/registries *
 recursive-exclude tests *
+recursive-exclude build_scripts *
 recursive-exclude neuro_san/api/grpc/__pycache__ *
 recursive-exclude neuro_san/deploy/internal *
 include neuro_san/deploy/build.sh
@@ -15,7 +16,3 @@ include neuro_san/deploy/logging.json
 include neuro_san/deploy/run.sh
 include neuro_san/internals/run_context/langchain/default_llm_info.hocon
 include neuro_san/internals/run_context/langchain/base_tool_info.hocon
-include README.md
-include README_setup.md
-include README_client.md
-include README_tests.md
