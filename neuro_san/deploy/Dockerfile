@@ -10,22 +10,28 @@
 #
 # END COPYRIGHT
 
+# This Dockerfile is expected to be run from the top-level of neuro-san.
+
 # If you find yourself wanting to modify this file
 # and check it into the neuro-san repo or modify it in place with the
 # neuro-san source code, chances are you shouldn't. Instead, strongly
 # consider creating your own repo with your own agents and using this
 # Dockerfile and accompanying scripts as a basis to riff on for your
-# own projects.
+# own projects.  Your own requirements.txt file for your project will
+# need to include neuro-san as a dependency.
 #
-# Use ./neuro_san/deploy/build.sh to build this container only *after*
-# you have installed the neuro-san, leaf-server-common and leaf-common wheel files
-# in your own virtual environment.  After a successful build, you can use
+# Use ./neuro_san/deploy/build.sh to build this container from within the
+# neuro-san repo. After a successful build of the container, you can use
 # ./neuro_san/deploy/run.sh to run the built container locally.
 #
 # To find server-oriented environment variables to help you configure things
 # how you want, search for "ENV AGENT_" in this file.
 
-# Stage 1: Builder Stage - Use our python and git base image for installations
+# Build arguments
+ARG NEURO_SAN_VERSION="Unspecified"
+ARG PACKAGE_INSTALL=/usr/local/lib/python3.12/site-packages
+
+# Stage 1: Builder Stage - Use our python base image for installations
 # Set python image as base image
 FROM python:3.12-slim as builder
 
@@ -36,25 +42,17 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 WORKDIR /
 
 # App-specific constants
-ENV USERNAME neuro-san
-ENV APP_HOME /usr/local/${USERNAME}
-ENV APP_SOURCE ${APP_HOME}/myapp
-ENV PIP3_VERSION 25.0.1
+ENV USERNAME=neuro-san
+ENV APP_HOME=/usr/local/${USERNAME}
+ENV APP_SOURCE=${APP_HOME}/myapp
+ENV PIP3_VERSION=25.0.1
 
 # Explicitly get the desired pip version
-RUN pip3 install --upgrade pip==${PIP3_VERSION} --no-cache-dir
+RUN pip3 install --upgrade pip==${PIP3_VERSION} --no-cache-dir ; mkdir -p ${APP_SOURCE}
 
-# Having a requirements.txt file for your coded_tool dependencies is optional
-COPY ./requirement[s].txt ${APP_SOURCE}/requirements.txt
-RUN if [ -f ${APP_SOURCE}/requirements.txt ]; \
-    then \
-        pip install --prefix=/install --no-cache-dir -r ${APP_SOURCE}/requirements.txt ; \
-    fi
-
-# Copy in the wheel files to include in the Dockerfile
-ENV WHEEL_DIR .requirements-wheels
-COPY ./${WHEEL_DIR} ${APP_SOURCE}/${WHEEL_DIR}
-RUN pip install --prefix=/install --no-cache-dir ${APP_SOURCE}/${WHEEL_DIR}/*.whl
+# [s] allows for the requirements file not to be there.
+COPY ./requirement[s].txt ${APP_SOURCE}
+RUN pip install --prefix=/install --no-cache-dir -r ${APP_SOURCE}/requirements.txt
 
 # Stage 2: Final Stage - Use a slim Python image
 FROM python:3.12-slim AS final
@@ -63,9 +61,9 @@ FROM python:3.12-slim AS final
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Set up user for app running in container
-ENV USERNAME neuro-san
-ENV APP_HOME /usr/local/${USERNAME}
-ENV APP_SOURCE ${APP_HOME}/myapp
+ENV USERNAME=neuro-san
+ENV APP_HOME=/usr/local/${USERNAME}
+ENV APP_SOURCE=${APP_HOME}/myapp
 
 RUN \
     useradd -ms /bin/bash -d ${APP_HOME} -u 1001 ${USERNAME} \
@@ -73,16 +71,13 @@ RUN \
     && mkdir -p ${APP_HOME}/.ssh \
     && chown -R ${USERNAME}: ${APP_HOME} \
     && chown -R ${USERNAME}: /usr/local/ \
-    && chown -R ${USERNAME}: /var/log
-
-# Set up a place for the mount of secrets to happen
-RUN mkdir -p ${APP_HOME}/certs/aws \
-    && ln -s ${APP_HOME}/certs/aws ${APP_HOME}/.aws
+    && chown -R ${USERNAME}: /var/log \
+    && mkdir -p ${APP_SOURCE}
 
 # This is the port the service will accept grpc requests on.
 # This should be consistent with the main port for the service as described
-# in the <service>.yaml file for any kubernetes deployment.
-# This default port number is also mentioned as AGENT_PORT below
+# in any kubernetes <service>.yaml file
+# This port number is also mentioned as AGENT_PORT below
 # and ServiceAgentSession.DEFAULT_PORT
 # In order to be self-discovered by supporting build/run scripts this must
 # be the first port exposed in the Dockerfile.
@@ -90,8 +85,8 @@ EXPOSE 30011
 
 # This is the port the service will accept http requests on.
 # This should be consistent with the main port for the service as described
-# in the <service>.yaml file for any kubernetes deployment.
-# This default port number is also mentioned as AGENT_HTTP_PORT below
+# in any kubernetes <service>.yaml file
+# This port number is also mentioned as AGENT_HTTP_PORT below
 # and ServiceAgentSession.DEFAULT_HTTP_PORT
 EXPOSE 8080
 
@@ -101,18 +96,29 @@ COPY --from=builder /install /usr/local
 # Copy application code and necessary files
 # Note: The registries directory where agent definitions live is mandatory
 #       The coded_tools directory where agent code lives is optional
-COPY ./registries ${APP_SOURCE}/registries
-COPY ./coded_tool[s] ${APP_SOURCE}/coded_tools
+#       [s] allows for registries/coded_tools from within client repo or neuro-san repo
+COPY ./neuro_san/registrie[s] ./registrie[s] ${APP_SOURCE}/registries
+COPY ./neuro_san/coded_tool[s] ./coded_tool[s] ${APP_SOURCE}/coded_tools
+
+# Copy application code and necessary files if we are running within the neuro-san repo
+# [n] allows this to not have to be there for client repo builds.
+COPY ./neuro_sa[n] ${APP_SOURCE}/neuro_san
+RUN chmod -R a+r ${APP_SOURCE}
 
 # Set up the entry point for when the container is run
 USER ${USERNAME}
 WORKDIR ${APP_SOURCE}
 
 # RUN echo "$(pip show neuro-san | grep Location | awk '{print $2}')"
-# This value below comes from the above RUN command. Cannot set ENV vars in Dockerfiles based on shell output.
-ENV PACKAGE_INSTALL /usr/local/lib/python3.12/site-packages
-ENV PACKAGE_DEPLOY ${PACKAGE_INSTALL}/neuro_san/deploy
-ENV APP_ENTRYPOINT ${PACKAGE_DEPLOY}/entrypoint.sh
+# This value below comes from the above RUN command.
+# Cannot set ENV vars in Dockerfiles based on shell output within in-progress container build,
+# only from build args.
+ARG PACKAGE_INSTALL
+ENV PACKAGE_INSTALL=${PACKAGE_INSTALL}
+ENV PACKAGE_DEPLOY=${PACKAGE_INSTALL}/neuro_san/deploy
+ENV APP_ENTRYPOINT=${PACKAGE_DEPLOY}/entrypoint.sh
+
+ARG NEURO_SAN_VERSION
 
 #
 # Server configuration
@@ -166,7 +172,7 @@ ENV AGENT_PORT=30011
 ENV AGENT_HTTP_PORT=8080
 
 # Maximm number of requests that can be served at the same time
-ENV AGENT_MAX_CONCURRENT_REQUESTS=10
+ENV AGENT_MAX_CONCURRENT_REQUESTS 50
 
 # Number of requests served before the server shuts down in an orderly fashion.
 # This is useful for testing response handling in clusters with duplicated pods.
@@ -174,4 +180,3 @@ ENV AGENT_REQUEST_LIMIT=1000000
 
 # ENTRYPOINT ls ${APP_SOURCE}
 ENTRYPOINT "${APP_ENTRYPOINT}"
-

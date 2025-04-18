@@ -61,64 +61,35 @@ url to initiate a conversation with an agent with a POST:
 curl --request POST --url localhost:8080/api/v1/hello_world/streaming_chat --data '{
     "user_message": {
         "text": "I approach a new planet and wish to send greetings to the orb."
-    },
-    "chat_filter": {
-        "chat_filter_type": "MINIMAL"
     }
 }'
 ```
 
-This will result in a stream of 2 chat messages structures coming back until the processing of the request is finished:
-```
-Message 1:
-
-{
-    "request": <blah blah>,
-    "response": {
-        "type": "AI",
-        "text": "The announcement \"Hello, world!\" is an apt and concise greeting for the new planet.",
-        "origin": [
-            {
-                "tool": "announcer",
-                "instantiation_index": 1
-            }
-        ]
-    }
-}
-```
-This first response is telling you:
-    * The message from the hello_world agent network was a typical "AI"-typed message.
-      AI messages are the results coming from an LLM.
-    * The "text" of what came back in the AI message - "Hello, world!" with typical extra LLM elaborating text.
-    * The "origin" is of length 1, which tells you that it came from the network's front-man agent,
-      whose job it was to assemble an answer from all the other agents in the network.
-    * That front-man's internal name is "announcer" (look it up in hello_world.hocon)
-    * The "instantiation_index" tells us there was only one of those announcers.
-
-For a single-shot conversation, this is all you really need to report back to your user.
-But if you want to continue the conversation, you will need to pay attention to the second message.
-
-Message 2:
-
-Now what comes back as the 2nd message is actually fairly large, but for purposes of this conversation,
-the details of the content are not as important.
+This will result in a stream of a single chat message structure coming back until the processing of the request is finished:
 ```
 {
-    "request": <blah blah>,
     "response": {
         "type": "AGENT_FRAMEWORK",
+        "text": "The announcement \"Hello, world!\" is an apt and concise greeting for the new planet.",
         "chat_context": {
             <blah blah>
         }
     }
 }
 ```
-This tells you:
-    * The message from the hello_world agent network was an "AGENT_FRAMEWORK" message.
+This response is telling you:
+    * The message from the hello_world agent network was the typical end "AGENT_FRAMEWORK"-typed message.
       These kinds of messages come from neuro-san itself, not from any particular agent
       within the network.
+    * The "text" of what came back as the answer - "Hello, world!" with typical extra LLM elaborating text.
     * The chat_context that is returned is a structure that helps you continue the conversation.
       For the most part, you can think of this as semi-opaque chat history data.
+
+For a single-shot conversation, this is all you really need to report back to your user.
+
+But if you want to continue the conversation, you will need to pay attention to the chat_context.
+What comes back in the chat_context can be fairly large, but for purposes of this conversation,
+the details of the content are not as important.
 
 ##### Continuing the conversation
 
@@ -129,9 +100,6 @@ chat_context and add that to your next streaming_chat request:
 curl --request POST --url localhost:8080/api/v1/hello_world/streaming_chat --data '{
     "user_message": {
         "text": "I approach a new planet and wish to send greetings to the orb."
-    },
-    "chat_filter": {
-        "chat_filter_type": "MINIMAL"
     },
     "chat_context": {
         <blah blah>

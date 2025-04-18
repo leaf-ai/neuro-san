@@ -9,9 +9,9 @@ name = "neuro-san"
 authors = [
     { name="Dan Fink", email="Daniel.Fink@cognizant.com" }
 ]
-description = "NeuroAI data-driven System for multi-Agent Networks"
+description = "NeuroAI data-driven System for multi-Agent Networks - client, library and server"
 keywords = ["LLM", "langchain", "agent", "multi-agent"]
-readme = "README.md"
+
 # This license name comes from doc recommendation here
 # https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license
 license = "LicenseRef-CognizantAcademicSource"
@@ -31,11 +31,13 @@ classifiers = [
 ]
 # "dynamic" says we are going to get these project properties by dynamic means.
 # More on each below
-dynamic = ["version", "dependencies"]
+dynamic = ["version", "dependencies", "readme"]
 
 [tool.setuptools.dynamic]
 # Specify the dependencies for the library from what is given in requirements.txt
 dependencies = {file = ["requirements.txt"]}
+
+readme = {file = ["README.md", "README_clients.md", "README_tests.md"]}
 
 [tool.setuptools.packages.find]
 # Standard setup has source existing under /src directory.
