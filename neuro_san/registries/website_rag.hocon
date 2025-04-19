@@ -47,8 +47,13 @@
             "instructions": """
 Use your tool to respond to the inquiry.
 """,
-            "tools": ["website_search"]
+            "tools": ["website_search", "rag_retriever"]
         },
+
+        # "website_search" with class "website_search_global.WebsiteSearch" and
+        # "rag_retriever" with class "rag_global.RAG" are global CodedTools and
+        # can be used in any agent networks.
+
         {
             "name": "website_search",
             "function": {
@@ -59,20 +64,40 @@ Assist caller with searching an url on the web by using your tool.
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "url": {
-                            "type": "string",
-                            "description": "The url to search in."
-                        },
                         "search_terms": {
                             "type": "string",
                             "description": "Search terms to return options."
                         },
                     },
-                    "required": ["url", "search_terms"]
+                    "required": ["search_terms"]
                 }
             },
             "class": "website_search_global.WebsiteSearch",
             "command": "Call the API to get a list of URLs for available options."
         },
+        {
+            "name": "rag_retriever",
+            "function": {
+                "description": "Retrieve information on the given urls",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "urls": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                            "description": "List of url to retrieve info from"
+                        },
+                        "query": {
+                            "type": "string",
+                            "description": "Query for retrieval"
+                        }
+                    },
+                    "required": ["urls", "query"]
+                }
+            },
+            "class": "rag_global.RAG"
+        }
     ]
 }
