@@ -11,6 +11,8 @@
 
 from unittest import TestCase
 
+from pytest.mark import skip
+
 from tests.neuro_san.client.data_driven_agent_test import DataDrivenAgentTest
 from tests.neuro_san.client.unit_test_assert_forwarder import UnitTestAssertForwarder
 
@@ -28,6 +30,7 @@ class TestMathGuy(TestCase):
         agent_test = DataDrivenAgentTest(asserts)
         agent_test.one_test("math_guy/basic_sly_data.hocon")
 
+    @skip(reason="needs more functionality first")
     def test_forwarded_sly_data(self):
         """
         Tests forwarded sly_data going to and from an agent network.

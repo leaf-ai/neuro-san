@@ -14,6 +14,9 @@
     # Describes what agent to test against.
     "agent": "math_guy_passthrough",
 
+    # Use direct sessions for external agents
+    "use_direct": true,
+
     # Interactions are a series of dictionaries with request elements paired with
     # descriptions of response checks.
     "interactions": [
