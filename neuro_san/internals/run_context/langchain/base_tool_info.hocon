@@ -34,20 +34,23 @@
     # This configuration defines the Bing Search tool.
     # It initializes a BingSearchResults instance with:
     # - api_wrapper: An instance of BingSearchAPIWrapper
-    # - num_results: Specifies that the search should return 3 results
-    # BingSearchResults(api_wrapper=BingSearchAPIWrapper(), num_results=3)
+    # BingSearchResults(api_wrapper=BingSearchAPIWrapper())
+
     "bing_search": {
-        # This is the class of the tool to use
+        # Fully qualified class path of the tool to be instantiated.
         "class": "langchain_community.tools.bing_search.BingSearchResults",
-        # This is where more info on the tool can be found.
+
+        # (Optional) URL for reference documentation about this tool.
         "base_tool_info_url": "https://python.langchain.com/docs/integrations/tools/bing_search/",
+
         # Arguments for the tool's constructor.
         # These arguments will be used when instantiating the tool unless overridden in the agent HOCON file.
         "args": {
             "api_wrapper": {
-                "class": "langchain_community.utilities.BingSearchAPIWrapper",
+                # If the argument should be instantiated as a class, specify it using the "class" key.
+                # This tells the system to create an instance of the provided class instead of passing it as-is.
+                "class": "langchain_community.utilities.BingSearchAPIWrapper"
             },
-            "num_results": 3
         }
     },
 
@@ -56,11 +59,14 @@
     # It initializes a TavilySearchResults instance with:
     # - max_results: Specifies that the search should return 5 results
     # TavilySearchResults(max_results=5)
+
     "tavily_search": {
         # This is the class of the tool to use
         "class": "langchain_community.tools.tavily_search.TavilySearchResults",
+
         # This is where more info on the tool can be found.
         "base_tool_info_url": "https://python.langchain.com/api_reference/community/tools/langchain_community.tools.tavily_search.tool.TavilySearchResults.html",
+
         # Arguments for the tool's constructor.
         # These arguments will be used when instantiating the tool unless overridden in the agent HOCON file.
         "args": {
@@ -74,18 +80,18 @@
     # - requests_wrapper: An instance of TextRequestsWrapper (used to manage headers)
     # - allow_dangerous_requests: Enables execution of potentially unsafe requests
     # The `.get_tools()` method is called, meaning this toolkit returns multiple tools.
-    # RequestsToolkit(requests_wrapper=TextRequestsWrapper(), allow_dangerous_requests=True).get_tools()
+    # RequestsToolkit(allow_dangerous_requests=True).get_tools()
+
     "requests_toolkit": {
         # This is the class of the tool to use
         "class": "langchain_community.agent_toolkits.openapi.toolkit.RequestsToolkit",
+
         # This is where more info on the tool can be found.
         "base_tool_info_url": "https://python.langchain.com/docs/integrations/tools/requests/",
+
         # Arguments for the tool's constructor.
         # These arguments will be used when instantiating the tool unless overridden in the agent HOCON file.
         "args": {
-            "requests_wrapper": {
-                "class": "langchain_community.utilities.requests.TextRequestsWrapper",
-            },
             "allow_dangerous_requests": true
         }
     },
@@ -97,18 +103,18 @@
     # It initializes RequestsGetTool with:
     # - requests_wrapper: Manages request headers
     # - allow_dangerous_requests: Enables potentially unsafe requests
-    # RequestsGetTool(requests_wrapper=TextRequestsWrapper(), allow_dangerous_requests=True)
+    # RequestsGetTool(allow_dangerous_requests=True)
+
     "requests_get": {
         # This is the class of the tool to use
         "class": "langchain_community.tools.requests.tool.RequestsGetTool",
+
         # This is where more info on the tool can be found.
         "base_tool_info_url": "https://python.langchain.com/docs/integrations/tools/requests/",
+
         # Arguments for the tool's constructor.
         # These arguments will be used when instantiating the tool unless overridden in the agent HOCON file.
         "args": {
-            "requests_wrapper": {
-                "class": "langchain_community.utilities.requests.TextRequestsWrapper",
-            },
             "allow_dangerous_requests": true
         }
     },
@@ -116,72 +122,72 @@
     # POST request tool
     # This configures an HTTP POST request tool.
     # It is similar to the GET tool but allows sending data in the request body.
-    # RequestsPostTool(requests_wrapper=TextRequestsWrapper(), allow_dangerous_requests=True)
+    # RequestsPostTool(allow_dangerous_requests=True)
+
     "requests_post": {
         # This is the class of the tool to use
         "class": "langchain_community.tools.requests.tool.RequestsPostTool",
+
         # This is where more info on the tool can be found.
         "base_tool_info_url": "https://python.langchain.com/docs/integrations/tools/requests/",
+
         # Arguments for the tool's constructor.
         # These arguments will be used when instantiating the tool unless overridden in the agent HOCON file.
         "args": {
-            "requests_wrapper": {
-                "class": "langchain_community.utilities.requests.TextRequestsWrapper",
-            },
             "allow_dangerous_requests": true
         }
     },
 
     # PATCH request tool
     # This allows sending PATCH requests, typically used to update resources.
-    # RequestsPatchTool(requests_wrapper=TextRequestsWrapper(), allow_dangerous_requests=True)
+    # RequestsPatchTool(allow_dangerous_requests=True)
+
     "requests_patch": {
         # This is the class of the tool to use
         "class": "langchain_community.tools.requests.tool.RequestsPatchTool",
+
         # This is where more info on the tool can be found.
         "base_tool_info_url": "https://python.langchain.com/docs/integrations/tools/requests/",
+
         # Arguments for the tool's constructor.
         # These arguments will be used when instantiating the tool unless overridden in the agent HOCON file.
         "args": {
-            "requests_wrapper": {
-                "class": "langchain_community.utilities.requests.TextRequestsWrapper",
-            },
             "allow_dangerous_requests": true
         }
     },
 
     # PUT request tool
     # This allows sending PUT requests, which are used to replace resources.
-    # RequestsPutTool(requests_wrapper=TextRequestsWrapper(), allow_dangerous_requests=True)
+    # RequestsPutTool(allow_dangerous_requests=True)
+
     "requests_put": {
         # This is the class of the tool to use
         "class": "langchain_community.tools.requests.tool.RequestsPutTool",
+
         # This is where more info on the tool can be found.
         "base_tool_info_url": "https://python.langchain.com/docs/integrations/tools/requests/",
+
         # Arguments for the tool's constructor.
         # These arguments will be used when instantiating the tool unless overridden in the agent HOCON file.
         "args": {
-            "requests_wrapper": {
-                "class": "langchain_community.utilities.requests.TextRequestsWrapper",
-            },
             "allow_dangerous_requests": true
         }
     },
 
     # DELETE request tool
     # This enables HTTP DELETE requests to remove resources.
-    # RequestsDeleteTool(requests_wrapper=TextRequestsWrapper(), allow_dangerous_requests=True)
+    # RequestsDeleteTool(allow_dangerous_requests=True)
+
     "requests_delete": {
         # This is the class of the tool to use
         "class": "langchain_community.tools.requests.tool.RequestsDeleteTool",
+
         # This is where more info on the tool can be found.
         "base_tool_info_url": "https://python.langchain.com/docs/integrations/tools/requests/",
+
         # Arguments for the tool's constructor.
         # These arguments will be used when instantiating the tool unless overridden in the agent HOCON file.
         "args": {
-            "requests_wrapper": {
-                "class": "langchain_community.utilities.requests.TextRequestsWrapper",
-            },
             "allow_dangerous_requests": true
         }
     }
