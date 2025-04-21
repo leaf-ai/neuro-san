@@ -13,8 +13,10 @@
 from inspect import signature
 from types import MethodType
 from typing import Any
+from typing import Callable
 from typing import Dict
 from typing import List
+from typing import Optional
 from typing import Set
 from typing import Type
 from typing import Union
@@ -84,7 +86,7 @@ class BaseToolFactory(ContextTypeBaseToolFactory):
 
     **Note:**
     Future updates will introduce support for integrating custom "CodedTool"
-    implementations and Langchain’s "BaseToolKit" into this factory.
+    implementations into this factory.
     """
 
     def __init__(self):
@@ -135,25 +137,21 @@ class BaseToolFactory(ContextTypeBaseToolFactory):
                 "Example: 'class': 'langchain_community.tools.bing_search.BingSearchResults'."
             )
 
-        # Instance can be a BaseTool or a BaseToolkit
-        instance: Union[BaseTool, BaseToolkit] = None
-        # The combined arguments of user_args and class or method args
-        final_args: Dict[str, Any] = None
-
         # Instantiate the main tool or toolkit class
         tool_class: Type[Any] = self._resolve_class(tool_info.get("class"))
         # Recursively resolve arguments (including wrapper dependencies)
         resolved_args: Dict[str, Any] = self._resolve_args(tool_info.get("args", empty))
         # Merge with user arguments where user_args get the priority
-        final_args = self.overlayer.overlay(resolved_args, user_args) if user_args else resolved_args
+        final_args: Dict[str, Any] = self.overlayer.overlay(resolved_args, user_args) if user_args else resolved_args
 
-        from_api_wrapper_method = self._get_from_api_wrapper_method(tool_class)
         # Use the "from_{tool_name}_api_wrapper" method if available, otherwise the constructor
-        callable_obj = getattr(tool_class, from_api_wrapper_method) if from_api_wrapper_method else tool_class
+        callable_obj: Union[Type[BaseTool], Type[BaseToolkit], Callable[..., Any]] = \
+            self._get_from_api_wrapper_method(tool_class) or tool_class
 
         # Validate and instantiate
         self._check_invalid_args(callable_obj, final_args)
-        instance = callable_obj(**final_args)
+        # Instance can be a BaseTool or a BaseToolkit
+        instance: Union[BaseTool, BaseToolkit] = callable_obj(**final_args)
 
         # If the instantiated class has "get_tools()", assume it's a toolkit and return a list of tools
         if hasattr(instance, "get_tools") and callable(instance.get_tools):
@@ -225,16 +223,19 @@ class BaseToolFactory(ContextTypeBaseToolFactory):
                 "of the class or any arguments of the method."
             )
 
-    def _get_from_api_wrapper_method(self, tool_class: Union[BaseTool, BaseToolkit]) -> str:
+    def _get_from_api_wrapper_method(
+        self,
+        tool_class: Union[Type[BaseTool], Type[BaseToolkit]]
+    ) -> Optional[Callable[..., Any]]:
         """
-        Get 'from_{tool_name}_api_wrapper' from the tool class if the method is available
-        :param tool_class: BaseTool or BaseToolkit Class to check for the method
+        Get a 'from_{tool_name}_api_wrapper' class method from the tool class if available.
 
-        :return: 'from_{tool_name}_api_wrapper' if the method is available, None otherwise
+        :param tool_class: BaseTool or BaseToolkit class to check for the method.
+        :return: The method if found, None otherwise.
         """
         for attr_name in dir(tool_class):
             if attr_name.startswith("from") and attr_name.endswith("api_wrapper"):
-                attr = getattr(tool_class, attr_name)
+                attr: Callable[..., Any] = getattr(tool_class, attr_name)
                 if callable(attr):
                     return attr
         return None
