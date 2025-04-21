@@ -62,7 +62,7 @@
         #   and `another_arg = "some_value"`.
     },
 
-    # -------------------------- TOOLKITS (INSTANTIATED VIA CONSTRUCTOR) --------------------------
+    # -------------------------- TOOLKITS --------------------------
     "test_toolkit_constructor_name": {
         # The fully qualified class name of the toolkit.
         # Toolkit classes are usually found in `langchain_community.agent_toolkits`.
@@ -84,29 +84,4 @@
         # ToolkitClass(tool_wrapper=ToolAPIWrapper(wrapper_arg="test_wrapper_arg"), constructor_arg="test_constructor_arg")
         # and then calls `.get_tools()` to retrieve a list of related tools.
     },
-
-    # -------------------------- TOOLKITS (INSTANTIATED VIA CLASS METHOD) --------------------------
-    "test_toolkit_method_name": {
-        # The fully qualified class name of the toolkit.
-        "class": "langchain_community.agent_toolkits.toolkit_module.ToolkitClass",
-
-        # Instead of using a constructor, this toolkit is instantiated via a class method.
-        # The method name is typically in the format `from_{tool_name}_api_wrapper`.
-        "method": {
-            "name": "from_tool_api_wrapper",
-            "args": {
-                "tool_api_wrapper": {
-                    "class": "langchain_community.utilities.ToolAPIWrapper",
-                    "args": {
-                        "wrapper_arg": "test_wrapper_arg"
-                    }
-                },
-                "method_arg": "test_method_arg"
-            }
-        }
-
-        # This configuration results in:
-        # ToolkitClass.from_tool_api_wrapper(tool_api_wrapper=ToolAPIWrapper(wrapper_arg="test_wrapper_arg"), method_arg="test_method_arg")
-        # and then calls `.get_tools()` to retrieve a list of related tools.
-    }
 }
