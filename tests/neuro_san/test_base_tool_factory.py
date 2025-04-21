@@ -109,12 +109,9 @@ class TestBaseToolFactory:
         factory.base_tool_infos = {
             "method_toolkit": {
                 "class": "mock_package.mock_module.TestToolkit",
-                "method": {
-                    "name": "from_tool_api_wrapper",
-                    "args": {
-                        "param1": "value1",
-                        "param2": "value2"
-                    }
+                "args": {
+                    "param1": "value1",
+                    "param2": "value2"
                 }
             }
         }
