@@ -231,6 +231,9 @@ context with which it will proces input, essentially telling it what to do.
             "origin": callable_component.get_origin(),
             "tool_call_id": component_tool_call.get_id(),
             "output": output,
+            # Add the component's sly_data to the mix.
+            # External tools have separate dictionaries of redacted sly_data that need to
+            # be reintegrated with the single copy that floats around the agent network.
             "sly_data": callable_component.sly_data
         }
 

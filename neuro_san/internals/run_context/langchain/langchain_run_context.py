@@ -609,6 +609,7 @@ class LangChainRunContext(RunContext):
         if tool_sly_data is not None and tool_sly_data != self.tool_caller.sly_data and bool(tool_sly_data):
             # We have sly data from the tool output that is not the same as our own
             # and it has data in it.  Integrate that.
+            # It's possible we might need to run a SlyDataRedactor against from_download.sly_data on this.
             self.tool_caller.sly_data.update(tool_sly_data)
 
         return_messages: List[BaseMessage] = [tool_message]
