@@ -146,6 +146,7 @@ done
 echo "generating OpenAPI specification for ${TOP_LEVEL}/${GENERATED_DIR}/agent.proto"
 # shellcheck disable=SC2086    # PROTO_PATH is compilation of cmd line args
 python -m grpc_tools.protoc ${PROTO_PATH} \
+    --plugin=protoc-gen-openapi=${HOME}/go/bin/protoc-gen-openapi-enums \
     --openapi_out="${TOP_LEVEL}"/${GENERATED_DIR} \
     --openapi_opt title="${SERVICE_TITLE}" \
     --openapi_opt version="${SERVICE_VERSION}" \
