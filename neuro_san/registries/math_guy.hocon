@@ -31,13 +31,26 @@
             "function": {
 
                 # When there are no function parameters to the front-man,
-                # its description acts as an initial prompt. 
+                # its description acts as an initial prompt.
 
                 "description": """
 I am a test agent network that can do math with values in sly_data.
 Just give me the name of an arithmetic operator and I will do the work
 on the secret numbers.
-"""
+""",
+                # This parameters section isn't strictly needed if the agent network
+                # is not expected to be called as a coded tool.  This one is used with
+                # math_guy_passthrough, so we need to add this.
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "operator": {
+                            "type": "string",
+                            "description": "The single-word name of the math operator to perform"
+                        }
+                    },
+                    "required": ["operator"]
+                }
             },
 
             "instructions": """
