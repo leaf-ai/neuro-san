@@ -12,6 +12,7 @@
 from tests.neuro_san.client.agent_evaluator import AgentEvaluator
 from tests.neuro_san.client.assert_forwarder import AssertForwarder
 from tests.neuro_san.client.keywords_agent_evaluator import KeywordsAgentEvaluator
+from tests.neuro_san.client.value_agent_evaluator import ValueAgentEvaluator
 
 
 class AgentEvaluatorFactory:
@@ -20,17 +21,18 @@ class AgentEvaluatorFactory:
     """
 
     @staticmethod
-    def create_evaluator(asserts: AssertForwarder, evaluation_type: str, test_key: str) -> AgentEvaluator:
+    def create_evaluator(asserts: AssertForwarder, evaluation_type: str) -> AgentEvaluator:
         """
         Creates AgentEvaluators
 
         :param asserts: The AssertForwarder instance to handle failures
         :param evaluation_type: A string key describing how the evaluation will take place
-        :param test_key: The test key describing the portion of the ChatMessage contents to evaluate
         """
         evaluator: AgentEvaluator = None
 
         if evaluation_type == "keywords":
-            evaluator = KeywordsAgentEvaluator(asserts, test_key)
+            evaluator = KeywordsAgentEvaluator(asserts)
+        elif evaluation_type == "value":
+            evaluator = ValueAgentEvaluator(asserts)
 
         return evaluator
