@@ -42,7 +42,7 @@ jobs:
 
       - name: Check README renders correctly on PyPI
         run: |
-          pip install readme_renderer
+          pip install readme_renderer readme_renderer[md]
           python -m readme_renderer README.md
 
       - name: Notify Slack on success
