@@ -20,10 +20,18 @@ class TestMathGuy(TestCase):
     Tests basic functionality via the math_guy agent.
     """
 
-    def test_simple_sly_data(self):
+    def test_basic_sly_data(self):
         """
-        Tests simple sly_data going to and from an agent network.
+        Tests basic sly_data going to and from an agent network.
         """
         asserts = UnitTestAssertForwarder(self)
         agent_test = DataDrivenAgentTest(asserts)
-        agent_test.one_test("math_guy/simple_sly_data.hocon")
+        agent_test.one_test("math_guy/basic_sly_data.hocon")
+
+    def test_forwarded_sly_data(self):
+        """
+        Tests forwarded sly_data going to and from an agent network.
+        """
+        asserts = UnitTestAssertForwarder(self)
+        agent_test = DataDrivenAgentTest(asserts)
+        agent_test.one_test("math_guy/forwarded_sly_data.hocon")
