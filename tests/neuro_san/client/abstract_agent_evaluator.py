@@ -45,17 +45,20 @@ class AbstractAgentEvaluator(AgentEvaluator):
         :param verify_for: The data to evaluate the response against
         """
 
+        split: str = test_key.split(".")
+        first_component: str = split[0]
+
         # Make a dictionary out of what we want to test
         test_dict: Dict[str, Any] = {}
-        if test_key == "text":
-            test_dict[test_key] = processor.get_answer()
-        elif test_key == "sly_data":
-            test_dict[test_key] = processor.get_sly_data()
+        if first_component == "text":
+            test_dict[first_component] = processor.get_answer()
+        elif first_component == "sly_data":
+            test_dict[first_component] = processor.get_sly_data()
 
         # Get the value we want to test out of that dictionary
         extractor = DictionaryExtractor(test_dict)
         test_value: Any = extractor.get(test_key)
-        self.asserts.assertIsNotNone(test_value)
+        self.asserts.assertIsNotNone(test_value, f"{test_key} is None")
 
         # Prepare a list of keywords to verify
         verify_all: List[Any] = verify_for

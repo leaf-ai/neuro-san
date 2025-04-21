@@ -31,8 +31,12 @@ class AgentEvaluatorFactory:
         evaluator: AgentEvaluator = None
 
         if evaluation_type == "keywords":
-            evaluator = KeywordsAgentEvaluator(asserts)
+            evaluator = KeywordsAgentEvaluator(asserts, negate=False)
+        elif evaluation_type == "not_keywords":
+            evaluator = KeywordsAgentEvaluator(asserts, negate=True)
         elif evaluation_type == "value":
-            evaluator = ValueAgentEvaluator(asserts)
+            evaluator = ValueAgentEvaluator(asserts, negate=False)
+        elif evaluation_type == "not_value":
+            evaluator = ValueAgentEvaluator(asserts, negate=True)
 
         return evaluator
