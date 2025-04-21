@@ -11,9 +11,6 @@ class DateTime(CodedTool):
     CodedTool implementation which provides a current date and time
     """
 
-    def __init__(self):
-        self.top_n = 5
-
     def invoke(self, args: Dict[str, Any], sly_data: Dict[str, Any]) -> Union[Dict[str, Any], str]:
         """
         :param args: An argument dictionary whose keys are the parameters

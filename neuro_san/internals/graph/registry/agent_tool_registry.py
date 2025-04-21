@@ -256,7 +256,10 @@ Some things to try:
         """
         front_men: List[str] = []
 
-        # The primary way to identify a front-man is that it has instructions and its function has no parameters.
+        # Identify the "front-man" agent.
+        # Primary heuristic: an agent with defined instructions and a function that takes no parameters.
+        # The presence of instructions ensures it was explicitly defined, since users may add parameters
+        # to front-men, making function signature alone unreliable.
         for name, agent_spec in self.agent_spec_map.items():
             instructions: str = agent_spec.get("instructions")
             function: Dict[str, Any] = agent_spec.get("function")
