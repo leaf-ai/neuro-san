@@ -140,47 +140,20 @@ class BaseToolFactory(ContextTypeBaseToolFactory):
         # The combined arguments of user_args and class or method args
         final_args: Dict[str, Any] = None
 
-        # If a method is specified (e.g., "from_github_api_wrapper"), use it instead of constructor
-        method_info: Dict[str, Any] = tool_info.get("method", empty)
-        if method_info:
-            method_name: str = method_info.get("name")
-            if not method_name:
-                raise ValueError(
-                    "Please specify the class method to load the toolkit."
-                    "In general, the mehod is in the form of 'from_<tool_name>_api_wrapper'."
-                )
+        # Instantiate the main tool or toolkit class
+        tool_class: Type[Any] = self._resolve_class(tool_info.get("class"))
+        # Recursively resolve arguments (including wrapper dependencies)
+        resolved_args: Dict[str, Any] = self._resolve_args(tool_info.get("args", empty))
+        # Merge with user arguments where user_args get the priority
+        final_args = self.overlayer.overlay(resolved_args, user_args) if user_args else resolved_args
 
-            # Recursively resolve arguments (including wrapper dependencies)
-            # Return arguments of class method
-            method_args: Dict[str, Any] = self._resolve_args(method_info.get("args", empty))
+        from_api_wrapper_method = self._get_from_api_wrapper_method(tool_class)
+        # Use the "from_{tool_name}_api_wrapper" method if available, otherwise the constructor
+        callable_obj = getattr(tool_class, from_api_wrapper_method) if from_api_wrapper_method else tool_class
 
-            # Merge user args where user_args get the priority
-            final_args = self.overlayer.overlay(method_args, user_args) if user_args else method_args
-
-            # Resolve the toolkit class
-            toolkit_class: Type[BaseToolkit] = self._resolve_class(tool_info.get("class"))
-
-            # Call the class method dynamically
-            if not hasattr(toolkit_class, method_name):
-                raise ValueError(f"Method '{method_name}' not found in '{toolkit_class.__name__}'.")
-
-            method = getattr(toolkit_class, method_name)
-            # Check for arguments validity and call the method
-            self._check_invalid_args(method, final_args)
-            instance = method(**final_args)
-        else:
-            # Regular instantiation case for BaseTool or BaseToolkit that use constructor
-
-            # Recursively resolve arguments (including wrapper dependencies)
-            resolved_args: Dict[str, Any] = self._resolve_args(tool_info.get("args", empty))
-
-            # Merge with user arguments where user_args get the priority
-            final_args = self.overlayer.overlay(resolved_args, user_args) if user_args else resolved_args
-
-            # Instantiate the main tool or toolkit class
-            tool_class: Type[Any] = self._resolve_class(tool_info.get("class"))
-            self._check_invalid_args(tool_class, final_args)
-            instance = tool_class(**final_args)
+        # Validate and instantiate
+        self._check_invalid_args(callable_obj, final_args)
+        instance = callable_obj(**final_args)
 
         # If the instantiated class has "get_tools()", assume it's a toolkit and return a list of tools
         if hasattr(instance, "get_tools") and callable(instance.get_tools):
@@ -251,3 +224,17 @@ class BaseToolFactory(ContextTypeBaseToolFactory):
                 f"Arguments {invalid_args} for '{method_class.__name__}' do not match any attributes "
                 "of the class or any arguments of the method."
             )
+
+    def _get_from_api_wrapper_method(self, tool_class: Union[BaseTool, BaseToolkit]) -> str:
+        """
+        Get 'from_{tool_name}_api_wrapper' from the tool class if the method is available
+        :param tool_class: BaseTool or BaseToolkit Class to check for the method
+
+        :return: 'from_{tool_name}_api_wrapper' if the method is available, None otherwise
+        """
+        for attr_name in dir(tool_class):
+            if attr_name.startswith("from") and attr_name.endswith("api_wrapper"):
+                attr = getattr(tool_class, attr_name)
+                if callable(attr):
+                    return attr
+        return None
