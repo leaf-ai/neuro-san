@@ -123,7 +123,7 @@ class DataDrivenAgentTest:
         datestr: str = now.strftime("%Y-%m-%d-%H:%M:%S")
         thinking_dir: str = f"/tmp/agent_test/{datestr}_agent"
         input_processor = StreamingInputProcessor("", None, session, thinking_dir)
-        processor: BasicMessageProcessor = input_processor.processor
+        processor: BasicMessageProcessor = input_processor.get_message_processor()
 
         # Prepare the request
         text: str = interaction.get("text")
