@@ -39,7 +39,7 @@ jobs:
         run: pytest --verbose -m "not integration" --timer-top-n 10
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          AGENT_TOOL_PATH: "./neuro_san"
+          AGENT_TOOL_PATH: "./neuro_san/coded_tools"
           PYTHONPATH: ${{ env.PYTHONPATH }}:"."
 
       - name: Notify Slack on success
