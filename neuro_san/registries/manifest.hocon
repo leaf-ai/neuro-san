@@ -20,6 +20,9 @@
     "music_nerd.hocon": true,
     "music_nerd_pro.hocon": true,
 
+    # This one is an example of agnets calling tools that has no parameters.
+    "date_time.hocon": true,
+
     # These next 2 go together as an example for agents calling other agents.
     # They are the only reason we have duckduckgo_search listed in the dependencies.
     "website_search.hocon": true,

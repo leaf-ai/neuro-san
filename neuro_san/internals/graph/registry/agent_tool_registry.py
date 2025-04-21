@@ -256,10 +256,11 @@ Some things to try:
         """
         front_men: List[str] = []
 
-        # The primary way to identify a front-man is that its function has no parameters.
+        # The primary way to identify a front-man is that it has instructions and its function has no parameters.
         for name, agent_spec in self.agent_spec_map.items():
+            instructions: str = agent_spec.get("instructions")
             function: Dict[str, Any] = agent_spec.get("function")
-            if function is not None and function.get("parameters") is None:
+            if instructions is not None and function is not None and function.get("parameters") is None:
                 front_men.append(name)
 
         if len(front_men) == 0:
