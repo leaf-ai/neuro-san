@@ -230,7 +230,8 @@ context with which it will proces input, essentially telling it what to do.
         tool_output: Dict[str, Any] = {
             "origin": callable_component.get_origin(),
             "tool_call_id": component_tool_call.get_id(),
-            "output": output
+            "output": output,
+            "sly_data": callable_component.sly_data
         }
 
         # Clean up after this CallableTool.

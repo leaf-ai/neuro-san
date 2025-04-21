@@ -604,6 +604,13 @@ class LangChainRunContext(RunContext):
         tool_message = AgentToolResultMessage(content=tool_result_dict.get("content"),
                                               tool_result_origin=tool_output.get("origin"))
 
+        # Integrate any sly data
+        tool_sly_data: Dict[str, Any] = tool_output.get("sly_data")
+        if tool_sly_data is not None and tool_sly_data != self.tool_caller.sly_data and bool(tool_sly_data):
+            # We have sly data from the tool output that is not the same as our own
+            # and it has data in it.  Integrate that.
+            self.tool_caller.sly_data.update(tool_sly_data)
+
         return_messages: List[BaseMessage] = [tool_message]
         return return_messages
 

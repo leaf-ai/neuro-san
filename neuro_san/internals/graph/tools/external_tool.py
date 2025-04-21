@@ -67,7 +67,7 @@ class ExternalTool(AbstractCallableTool):
                  This gets passed along as a distinct argument to the referenced python class's
                  invoke() method.
         :param allow_from_downstream: A dictionary describing how to handle information
-                coming in from the downstreamexternal agent
+                coming in from the downstream external agent
         """
         # There is no spec on our end for the agent_tool_spec
         super().__init__(factory, None, sly_data)
