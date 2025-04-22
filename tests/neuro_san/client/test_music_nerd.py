@@ -11,8 +11,8 @@
 
 from unittest import TestCase
 
-from tests.neuro_san.client.data_driven_agent_test import DataDrivenAgentTest
-from tests.neuro_san.client.unit_test_assert_forwarder import UnitTestAssertForwarder
+from tests.framework.asserts.unit_test_assert_forwarder import UnitTestAssertForwarder
+from tests.framework.driver.data_driven_agent_test import DataDrivenAgentTest
 
 
 class TestMusicNerd(TestCase):
