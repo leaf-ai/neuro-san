@@ -22,7 +22,7 @@
         # he is the only one with no parameters in his function definition,
         # and therefore he needs to talk to the outside world to get things rolling.
         {
-            "name": "math_guy",
+            "name": "passthrough",
 
             # Note that there are no parameters defined for this guy's "function" key.
             # This is the primary way to identify this tool as a front-man,
@@ -37,52 +37,37 @@
 I am a test agent network that can do math with values in sly_data.
 Just give me the name of an arithmetic operator and I will do the work
 on the secret numbers.
-""",
-                # This parameters section isn't strictly needed if the agent network
-                # is not expected to be called as a coded tool.  This one is used with
-                # math_guy_passthrough, so we need to add this.
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "operator": {
-                            "type": "string",
-                            "description": "The single-word name of the math operator to perform"
-                        }
-                    },
-                    "required": ["operator"]
-                }
+"""
             },
 
             "instructions": """
-Always call the calculator tool to populate the return sly_data correctly.
+Always call the math_guy tool to populate the return sly_data correctly.
 Return verbatim whatever it returns.
 """,
+            # Call the math_guy as an "external tool". Tools that are prefixed
+            # with a slash "/" are expected to reside as agents on the same server.
+            "tools": ["/math_guy"],
+
+            # The allow block below lets us deviate from the standard security policy.
+            # This policy is one of securtiy-by-default, whereby no sly_data gets out
+            # of the agent network at all unless otherwise specified (as below).
             "allow": {
+                "to_downstream": {
+                    # Specifying this allows specific sly_data keys from this agent network
+                    # to be sent to downstream agents
+                    "sly_data": ["x", "y"]
+                },
+                "from_downstream": {
+                    # Specifying this allows sly_data keys to be ingested from downstream agents
+                    # as sly_data for this agent network
+                    "sly_data": ["equals"]
+                },
                 "to_upstream": {
+                    # Specifying this allows sly_data keys from this network to be passed back
+                    # to the calling client
                     "sly_data": ["equals"]
                 }
-            },
-            "tools": ["calculator"]
-        },
-
-        # The calculator is a low-level CodedTool and does not call anyone else.
-        # He is called by the front-man.
-        {
-            "name": "calculator",
-            "function": {
-                "description": "Performs arithmetic on sly-data values x and y given the operator",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "operator": {
-                            "type": "string",
-                            "description": "The single-word name of the math operator to perform"
-                        }
-                    },
-                    "required": ["operator"]
-                }
-            },
-            "class": "calculator.Calculator"
+            }
         }
     ]
 }

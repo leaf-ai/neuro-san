@@ -17,6 +17,7 @@
     "hello_world.hocon": true,
     "intranet_agents.hocon": true,
     "math_guy.hocon": true,
+    "math_guy_passthrough.hocon": true,
     "music_nerd.hocon": true,
     "music_nerd_pro.hocon": true,
 
