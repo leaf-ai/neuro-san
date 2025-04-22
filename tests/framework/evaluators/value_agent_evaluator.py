@@ -11,12 +11,12 @@
 
 from typing import Any
 
-from tests.neuro_san.client.abstract_agent_evaluator import AbstractAgentEvaluator
+from tests.framework.evaluators.abstract_agent_evaluator import AbstractAgentEvaluator
 
 
-class KeywordsAgentEvaluator(AbstractAgentEvaluator):
+class ValueAgentEvaluator(AbstractAgentEvaluator):
     """
-    AbstractAgentEvaluator implementation that looks for specific keywords in output.
+    AbstractAgentEvaluator implementation that looks for specific values in output.
     """
 
     def test_one(self, verify_value: Any, test_value: Any):
@@ -25,6 +25,6 @@ class KeywordsAgentEvaluator(AbstractAgentEvaluator):
         :param test_value: The value appearing in the test sample
         """
         if self.negate:
-            self.asserts.assertNotIn(verify_value, test_value)
+            self.asserts.assertNotEqual(verify_value, test_value)
         else:
-            self.asserts.assertIn(verify_value, test_value)
+            self.asserts.assertEqual(verify_value, test_value)
