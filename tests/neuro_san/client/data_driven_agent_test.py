@@ -17,6 +17,7 @@ from typing import Union
 
 from datetime import datetime
 
+from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 from leaf_common.persistence.easy.easy_hocon_persistence import EasyHoconPersistence
 
 from neuro_san.client.agent_session_factory import AgentSessionFactory
@@ -122,7 +123,7 @@ class DataDrivenAgentTest:
         datestr: str = now.strftime("%Y-%m-%d-%H:%M:%S")
         thinking_dir: str = f"/tmp/agent_test/{datestr}_agent"
         input_processor = StreamingInputProcessor("", None, session, thinking_dir)
-        processor: BasicMessageProcessor = input_processor.processor
+        processor: BasicMessageProcessor = input_processor.get_message_processor()
 
         # Prepare the request
         text: str = interaction.get("text")
@@ -140,16 +141,8 @@ class DataDrivenAgentTest:
 
         # Evaluate response
         response: Dict[str, Any] = interaction.get("response", empty)
-
-        # Look for a block for each ChatMessage section key to test
-        for test_key in self.TEST_KEYS:
-            response_section: Dict[str, Any] = response.get(test_key, empty)
-            for one_evaluation, verify_for in response_section.items():
-                # Evaluate each item in the test block
-                evaluator: AgentEvaluator = AgentEvaluatorFactory.create_evaluator(self.asserts,
-                                                                                   one_evaluation,
-                                                                                   test_key)
-                evaluator.evaluate(processor, verify_for)
+        response_extractor = DictionaryExtractor(response)
+        self.test_response_keys(processor, response_extractor, self.TEST_KEYS)
 
         # See how we should continue the conversation
         return_chat_context: Dict[str, Any] = None
@@ -157,3 +150,40 @@ class DataDrivenAgentTest:
             return_chat_context = processor.get_chat_context()
 
         return return_chat_context
+
+    def test_response_keys(self, processor: BasicMessageProcessor,
+                           response_extractor: DictionaryExtractor,
+                           keys: List[str]):
+        """
+        Tests the given response keys
+
+        :param processor: The BasicMessageProcessor instance to query results from.
+        :param response_extractor: The DictionaryExtractor for the test structure from the test hocon file.
+        :param keys: The response keys to test
+        """
+        deeper_test_keys: List[str] = []
+
+        for test_key in keys:
+
+            test_key_value: Dict[str, Any] = response_extractor.get(test_key)
+            if test_key_value is None:
+                # Got nothing for test_key. Nothing to see here. Please move along.
+                continue
+
+            if isinstance(test_key_value, Dict):
+                # The value refers to a deeper dictionary test
+                for deeper_key in test_key_value.keys():
+                    deeper_test_keys.append(f"{test_key}.{deeper_key}")
+            else:
+                # The last part of the test_key refers to a specific evaluator type.
+                split: List[str] = test_key.split(".")
+                evaluator_type: str = split[-1]            # Last component of .-delimited key
+                verify_key: str = ".".join(split[:-1])      # All but last component of .-delimited key
+                evaluator: AgentEvaluator = AgentEvaluatorFactory.create_evaluator(self.asserts,
+                                                                                   evaluator_type)
+                if evaluator is not None:
+                    evaluator.evaluate(processor, verify_key, test_key_value)
+
+        # Recurse if there are further dictionary specs to dive into
+        if len(deeper_test_keys) > 0:
+            self.test_response_keys(processor, response_extractor, deeper_test_keys)
