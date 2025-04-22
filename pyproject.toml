@@ -37,7 +37,7 @@ dynamic = ["version", "dependencies", "readme"]
 # Specify the dependencies for the library from what is given in requirements.txt
 dependencies = {file = ["requirements.txt"]}
 
-readme = {file = ["README.md"]}
+readme = {file = ["README.md"], content-type = "text/markdown"}
 
 [tool.setuptools.packages.find]
 # Standard setup has source existing under /src directory.
