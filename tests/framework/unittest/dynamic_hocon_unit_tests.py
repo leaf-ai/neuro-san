@@ -16,7 +16,7 @@ from unittest import TestCase
 from neuro_san.internals.utils.file_of_class import FileOfClass
 
 from tests.framework.driver.data_driven_agent_test_driver import DataDrivenAgentTestDriver
-from tests.framework.pytest.unit_test_assert_forwarder import UnitTestAssertForwarder
+from tests.framework.unittest.unit_test_assert_forwarder import UnitTestAssertForwarder
 
 
 class DynamicHoconUnitTests:
