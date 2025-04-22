@@ -26,7 +26,7 @@ and traditional computing tasks which deterministic Python code gives you.
 Neuro-San also offers:
 
 * channels for private data (aka sly_data) that should be kept out of LLM chat streams
-* LLM-provider agnosticism and extensibiltiy of data-only-configured LLMs when new hotness arrives.
+* LLM-provider agnosticism and extensibility of data-only-configured LLMs when new hotness arrives.
 * agent-specific LLM specifications - use the right LLM for the cost/latency/context-window/data-privacy each agent needs.
 * fallback LLM specifications for when your fave goes down.
 * powerful debugging information for gaining insight into your mutli-agent systems.
