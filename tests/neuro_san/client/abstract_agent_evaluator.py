@@ -72,6 +72,9 @@ class AbstractAgentEvaluator(AgentEvaluator):
 
     def test_one(self, verify_value: Any, test_value: Any):
         """
+        Subclasses override this with the details of how they are testing
+        the test_value from the test instance against the constancy of the verify_value.
+
         :param verify_value: The value to verify against
         :param test_value: The value appearing in the test sample
         """

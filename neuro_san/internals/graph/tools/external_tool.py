@@ -70,7 +70,11 @@ class ExternalTool(AbstractCallableTool):
                 coming in from the downstream external agent
         """
         # There is no spec on our end for the agent_tool_spec
+        # Also worth noting that normally, sly_data is shared between all tools
+        # but this implementation provides a security buffer for that with
+        # SlyDataRedactor in multiple places.
         super().__init__(factory, None, sly_data)
+
         self.agent_url: str = agent_url
         self.run_context: RunContext = RunContextFactory.create_run_context(parent_run_context, self)
         self.journal: Journal = self.run_context.get_journal()
@@ -159,10 +163,10 @@ class ExternalTool(AbstractCallableTool):
         redactor = SlyDataRedactor(self.allow_from_downstream,
                                    config_keys=["sly_data"],
                                    allow_empty_dict=True)
-        redacted_sly_data: Dict[str, Any] = redactor.filter_config(returned_sly_data)
-        if redacted_sly_data is not None:
-            for key in redacted_sly_data:
-                self.sly_data[key] = redacted_sly_data[key]
+
+        # Note: Instance of sly_data is no longer the shared instance.
+        #       This ends up needing to be re-integrated in the RunContext.
+        self.sly_data = redactor.filter_config(returned_sly_data)
 
         message = AgentMessage(content=f"Got result: {answer}")
         await self.journal.write_message(message)
