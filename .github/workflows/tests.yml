@@ -42,6 +42,11 @@ jobs:
           AGENT_TOOL_PATH: "./neuro_san/coded_tools"
           PYTHONPATH: ${{ env.PYTHONPATH }}:"."
 
+      - name: Check README renders correctly on PyPI
+        run: |
+          pip install readme_renderer readme_renderer[md]
+          python -m readme_renderer README.md
+
       - name: Notify Slack on success
         if: success()
         uses: slackapi/slack-github-action@v1.24.0
