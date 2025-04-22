@@ -42,6 +42,12 @@ class StreamingInputProcessor:
         self.processor = BasicMessageProcessor()
         self.processor.add_processor(ThinkingFileMessageProcessor(thinking_file, thinking_dir))
 
+    def get_message_processor(self) -> BasicMessageProcessor:
+        """
+        :return: The message processor
+        """
+        return self.processor
+
     # pylint: disable=too-many-locals
     def process_once(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """
