@@ -12,7 +12,7 @@
 from unittest import TestCase
 
 from tests.framework.asserts.unit_test_assert_forwarder import UnitTestAssertForwarder
-from tests.framework.driver.data_driven_agent_test import DataDrivenAgentTest
+from tests.framework.driver.data_driven_agent_test_driver import DataDrivenAgentTestDriver
 
 
 class TestMusicNerd(TestCase):
@@ -25,5 +25,5 @@ class TestMusicNerd(TestCase):
         Tests a basic conversation to see if chat context is being carried over correctly.
         """
         asserts = UnitTestAssertForwarder(self)
-        agent_test = DataDrivenAgentTest(asserts)
+        agent_test = DataDrivenAgentTestDriver(asserts)
         agent_test.one_test("music_nerd/beatles_with_history.hocon")

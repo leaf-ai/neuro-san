@@ -32,7 +32,7 @@ from tests.framework.interfaces.agent_evaluator import AgentEvaluator
 from tests.framework.interfaces.assert_forwarder import AssertForwarder
 
 
-class DataDrivenAgentTest:
+class DataDrivenAgentTestDriver:
     """
     Abstract test class whose subclasses define hocon file to parse as test cases.
     """

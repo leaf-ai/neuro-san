@@ -12,7 +12,7 @@
 from unittest import TestCase
 
 from tests.framework.asserts.unit_test_assert_forwarder import UnitTestAssertForwarder
-from tests.framework.driver.data_driven_agent_test import DataDrivenAgentTest
+from tests.framework.driver.data_driven_agent_test_driver import DataDrivenAgentTestDriver
 
 
 class TestMathGuy(TestCase):
@@ -25,7 +25,7 @@ class TestMathGuy(TestCase):
         Tests basic sly_data going to and from an agent network.
         """
         asserts = UnitTestAssertForwarder(self)
-        agent_test = DataDrivenAgentTest(asserts)
+        agent_test = DataDrivenAgentTestDriver(asserts)
         agent_test.one_test("math_guy/basic_sly_data.hocon")
 
     def test_forwarded_sly_data(self):
@@ -33,5 +33,5 @@ class TestMathGuy(TestCase):
         Tests forwarded sly_data going to and from an agent network.
         """
         asserts = UnitTestAssertForwarder(self)
-        agent_test = DataDrivenAgentTest(asserts)
+        agent_test = DataDrivenAgentTestDriver(asserts)
         agent_test.one_test("math_guy/forwarded_sly_data.hocon")
