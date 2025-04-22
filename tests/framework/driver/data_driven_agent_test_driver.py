@@ -34,7 +34,8 @@ from tests.framework.interfaces.assert_forwarder import AssertForwarder
 
 class DataDrivenAgentTestDriver:
     """
-    Abstract test class whose subclasses define hocon file to parse as test cases.
+    Class which manages the execution of a single data-driven test case
+    specified as a hocon file.
     """
 
     TEST_KEYS: List[str] = ["text", "sly_data"]
