@@ -11,8 +11,8 @@
 
 from unittest import TestCase
 
-from tests.framework.asserts.unit_test_assert_forwarder import UnitTestAssertForwarder
 from tests.framework.driver.data_driven_agent_test_driver import DataDrivenAgentTestDriver
+from tests.framework.pytest.unit_test_assert_forwarder import UnitTestAssertForwarder
 
 
 class TestMathGuy(TestCase):
