@@ -12,7 +12,7 @@ from typing import Any
 
 from unittest import TestCase
 
-from tests.neuro_san.client.assert_forwarder import AssertForwarder
+from tests.framework.interfaces.assert_forwarder import AssertForwarder
 
 
 class UnitTestAssertForwarder(AssertForwarder):

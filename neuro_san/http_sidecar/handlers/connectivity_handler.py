@@ -49,3 +49,9 @@ class ConnectivityHandler(BaseRequestHandler):
         finally:
             await self.flush()
             self.logger.info(metadata, "Finish GET %s/connectivity request", agent_name)
+
+    async def options(self):
+        """
+        Implementation of OPTIONS request handler for streaming chat API call.
+        """
+        await self.flush()
