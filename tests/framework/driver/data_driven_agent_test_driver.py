@@ -108,7 +108,7 @@ class DataDrivenAgentTestDriver:
             asserts: List[AssertionError] = assert_capture.get_asserts()
             if len(asserts) > 0:
                 one_assert: AssertionError = asserts[0]
-                message: str = """
+                message: str = f"""
 {num_successful} of {num_iterations} iterations on agent {agent} were successful.
 Need at least {num_need_success} to consider {hocon_file} test to be successful.
 """

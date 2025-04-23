@@ -35,10 +35,23 @@ class GistAgentEvaluator(AbstractAgentEvaluator):
         pass_fail: bool = self.ask_llm(acceptance_criteria=str(verify_value),
                                        text_sample=str(test_value))
 
+        did_str: str = "didn't"
         if self.negate:
-            self.asserts.assertFalse(pass_fail)
+            did_str = "did"
+
+        message: str = f"""
+text_sample unexpectedly {did_str} match acceptance criteria.
+
+text_sample:
+{test_value}
+
+acceptance_criteria:
+{verify_value}
+"""
+        if self.negate:
+            self.asserts.assertFalse(pass_fail, msg=message)
         else:
-            self.asserts.assertTrue(pass_fail)
+            self.asserts.assertTrue(pass_fail, msg=message)
 
     def ask_llm(self, acceptance_criteria: str, text_sample: str) -> bool:
         """
