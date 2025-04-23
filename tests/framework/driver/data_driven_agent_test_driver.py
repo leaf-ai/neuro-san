@@ -95,8 +95,14 @@ class DataDrivenAgentTestDriver:
 
             # Update our counter if this iteration is successful
             asserts: List[AssertionError] = assert_capture.get_asserts()
-            if len(asserts) == 0:
-                num_successful += 1
+            if len(asserts) > 0:
+                # Not successful
+                continue
+
+            num_successful += 1
+            if num_successful == num_need_success:
+                # Don't do more tests than we actually need to
+                break
 
         # Don't bother reporting any asserts if we have met our success ratio.
         # Return early to pass this test.
