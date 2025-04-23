@@ -9,10 +9,10 @@
 #
 # END COPYRIGHT
 
-from tests.neuro_san.client.agent_evaluator import AgentEvaluator
-from tests.neuro_san.client.assert_forwarder import AssertForwarder
-from tests.neuro_san.client.keywords_agent_evaluator import KeywordsAgentEvaluator
-from tests.neuro_san.client.value_agent_evaluator import ValueAgentEvaluator
+from tests.framework.evaluators.keywords_agent_evaluator import KeywordsAgentEvaluator
+from tests.framework.evaluators.value_agent_evaluator import ValueAgentEvaluator
+from tests.framework.interfaces.agent_evaluator import AgentEvaluator
+from tests.framework.interfaces.assert_forwarder import AssertForwarder
 
 
 class AgentEvaluatorFactory:
