@@ -80,11 +80,12 @@ class ServiceToolFactoryProvider(ToolFactoryProvider):
         # Notify listeners about this state change:
         # do it outside of internal lock
         for listener in self.listeners:
-            listener.agent_added(agent_name)
-        if is_new:
-            self.logger.info("ADDED tool registry for agent %s", agent_name)
-        else:
-            self.logger.info("REPLACED tool registry for agent %s", agent_name)
+            if is_new:
+                listener.agent_added(agent_name)
+                self.logger.info("ADDED tool registry for agent %s", agent_name)
+            else:
+                listener.agent_modified(agent_name)
+                self.logger.info("REPLACED tool registry for agent %s", agent_name)
 
     def remove_agent_tool_registry(self, agent_name: str):
         """

@@ -23,6 +23,13 @@ class AgentStateListener:
         """
         raise NotImplementedError
 
+    def agent_modified(self, agent_name: str):
+        """
+        Existing agent has been modified in service scope.
+        :param agent_name: name of an agent
+        """
+        raise NotImplementedError
+
     def agent_removed(self, agent_name: str):
         """
         Agent is being removed from the service.
