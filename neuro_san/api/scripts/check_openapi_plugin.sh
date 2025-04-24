@@ -3,15 +3,16 @@
 set -e
 
 REQUIRED_GO_VERSION="1.23"
+OPEN_API_PLUGIN="protoc-gen-openapi-enums"
 
-echo "🔍 Checking for protoc-gen-openapi in PATH..."
+echo "🔍 Checking for ${OPEN_API_PLUGIN} in PATH..."
 
-if command -v protoc-gen-openapi >/dev/null 2>&1 && [ -x "$(command -v protoc-gen-openapi)" ]; then
-  echo "✅ Found protoc-gen-openapi at: $(command -v protoc-gen-openapi)"
+if command -v ${OPEN_API_PLUGIN} >/dev/null 2>&1 && [ -x "$(command -v ${OPEN_API_PLUGIN})" ]; then
+  echo "✅ Found ${OPEN_API_PLUGIN} at: $(command -v ${OPEN_API_PLUGIN})"
   exit 0
 fi
 
-echo "❌ protoc-gen-openapi not found in PATH or not executable."
+echo "❌ ${OPEN_API_PLUGIN} not found in PATH or not executable."
 echo ""
 echo "📋 To install it, follow these steps:"
 
@@ -23,10 +24,13 @@ if [[ "$OS" == "Darwin" ]]; then
   echo "1. Install Go (version >= $REQUIRED_GO_VERSION):"
   echo "   brew install go"
   echo ""
-  echo "2. Install protoc-gen-openapi plug-in:"
-  echo "   go install github.com/google/gnostic/cmd/protoc-gen-openapi@latest"
+  echo "2. Install protoc-gen-openapi plug-in from kollalabs git repo:"
+  echo "   go install github.com/kollalabs/protoc-gen-openapi@latest"
   echo ""
-  echo "3. Add to PATH:"
+  echo "3. Rename this executable to the proper name:"
+  echo "   mv ${HOME}/go/bin/protoc-gen-openapi ${HOME}/go/bin/${OPEN_API_PLUGIN}"
+  echo ""
+  echo "4. Add to PATH:"
   echo "   export PATH=\"\$PATH:\$HOME/go/bin\""
 elif [[ "$OS" == "Linux" ]]; then
   echo ""
@@ -39,10 +43,13 @@ elif [[ "$OS" == "Linux" ]]; then
   echo "   sudo tar -C /usr/local -xzf go1.23.0.linux-amd64.tar.gz"
   echo "   export PATH=\"\$PATH:/usr/local/go/bin\""
   echo ""
-  echo "2. Install protoc-gen-openapi plug-in:"
-  echo "   go install github.com/google/gnostic/cmd/protoc-gen-openapi@latest"
+  echo "2. Install protoc-gen-openapi plug-in from kollalabs git repo:"
+  echo "   go install github.com/kollalabs/protoc-gen-openapi@latest"
   echo ""
-  echo "3. Add to PATH:"
+  echo "3. Rename this executable to the proper name:"
+  echo "   mv ${HOME}/go/bin/protoc-gen-openapi ${HOME}/go/bin/${OPEN_API_PLUGIN}"
+  echo ""
+  echo "4. Add to PATH:"
   echo "   export PATH=\"\$PATH:\$HOME/go/bin\""
 else
   echo "⚠️ Unsupported OS: $OS"
