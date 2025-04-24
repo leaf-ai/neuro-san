@@ -20,6 +20,7 @@
     "math_guy_passthrough.hocon": true,
     "music_nerd.hocon": true,
     "music_nerd_pro.hocon": true,
+    "gist.hocon": true,
 
     # These next 2 go together as an example for agents calling other agents.
     # They are the only reason we have duckduckgo_search listed in the dependencies.

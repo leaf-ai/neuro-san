@@ -29,10 +29,10 @@ class StreamingInputProcessor:
     """
 
     def __init__(self,
-                 default_input: str,
-                 thinking_file: str,
-                 session: AgentSession,
-                 thinking_dir: str):
+                 default_input: str = "",
+                 thinking_file: str = None,
+                 session: AgentSession = None,
+                 thinking_dir: str = None):
         """
         Constructor
         """
@@ -40,7 +40,11 @@ class StreamingInputProcessor:
         self.default_input: str = default_input
         self.session: AgentSession = session
         self.processor = BasicMessageProcessor()
-        self.processor.add_processor(ThinkingFileMessageProcessor(thinking_file, thinking_dir))
+        if thinking_dir is not None and thinking_file is not None:
+            self.processor.add_processor(ThinkingFileMessageProcessor(thinking_file, thinking_dir))
+
+        if self.session is None:
+            raise ValueError("StreamingInputProcessor session cannot be None")
 
     def get_message_processor(self) -> BasicMessageProcessor:
         """
