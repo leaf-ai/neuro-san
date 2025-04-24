@@ -28,9 +28,13 @@ class TestHocons(TestCase):
     DYNAMIC = DynamicHoconUnitTests(__file__, path_to_basis="../../fixtures")
 
     @parameterized.expand(DynamicHoconUnitTests.from_hocon_list([
+        # These can be in any order.
+        # Ideally more basic functionality will come first.
+        # Barring that, try to stick to alphabetical order.
         "math_guy/basic_sly_data.hocon",
         "math_guy/forwarded_sly_data.hocon",
         "music_nerd/beatles_with_history.hocon",
+        "esp_decision_assistant/chicken_scenario.hocon",
 
         # List more hocon files as they become available here.
     ]))

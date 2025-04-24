@@ -1,9 +1,0 @@
-Should I cross the road?
-
-There is a traffic light and it is yellow.
-The traffic is very busy.
-The is a designated crosswalk. I am standing there now.
-It is a rainy afternoon. Visibility is poor. A 3 out of 10.
-It is urgent that I cross.
-
-If you have all the information you need, there is no need to confirm the context attributes.

@@ -9,6 +9,7 @@
 #
 # END COPYRIGHT
 
+from tests.framework.evaluators.gist_agent_evaluator import GistAgentEvaluator
 from tests.framework.evaluators.keywords_agent_evaluator import KeywordsAgentEvaluator
 from tests.framework.evaluators.value_agent_evaluator import ValueAgentEvaluator
 from tests.framework.interfaces.agent_evaluator import AgentEvaluator
@@ -38,5 +39,9 @@ class AgentEvaluatorFactory:
             evaluator = ValueAgentEvaluator(asserts, negate=False)
         elif evaluation_type == "not_value":
             evaluator = ValueAgentEvaluator(asserts, negate=True)
+        elif evaluation_type == "gist":
+            evaluator = GistAgentEvaluator(asserts, negate=False)
+        elif evaluation_type == "not_gist":
+            evaluator = GistAgentEvaluator(asserts, negate=True)
 
         return evaluator
