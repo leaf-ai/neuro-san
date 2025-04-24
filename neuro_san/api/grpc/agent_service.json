@@ -10,6 +10,7 @@
         "tags": [
           "ConciergeService"
         ],
+        "summary": "List",
         "description": "Called when a client needs the information about available agents.",
         "operationId": "ConciergeService_List",
         "responses": {
@@ -41,6 +42,7 @@
         "tags": [
           "AgentService"
         ],
+        "summary": "Connectivity",
         "description": "Called when a client needs the internal connectivity description of an agent.",
         "operationId": "AgentService_Connectivity",
         "parameters": [
@@ -82,6 +84,7 @@
         "tags": [
           "AgentService"
         ],
+        "summary": "Function",
         "description": "Called when a client needs the function description of an agent.",
         "operationId": "AgentService_Function",
         "parameters": [
@@ -123,6 +126,7 @@
         "tags": [
           "AgentService"
         ],
+        "summary": "StreamingChat",
         "description": "Most important semantics of the streaming:\n  1) The \"answer\" to a query of any agent network is in the *last* streamed\n     AGENT_FRAMEWORK message.\n  2) To RESTfully continue your conversation with the agent network:\n     The very last AGENT_FRAMEWORK message before the stream closes will\n     have its chat_context field filled in with a structure. You can\n     copy this whole-cloth to the chat_context of your next StreamingChat\n     request to continue the conversation.",
         "operationId": "AgentService_StreamingChat",
         "parameters": [
@@ -194,17 +198,22 @@
             "items": {
               "$ref": "#/components/schemas/ChatHistory"
             },
-            "description": "A potentially full list of chat histories that pertain to the node.\n These will typically come in the last message of any particular agent's\n chat stream.   Do not expect any or all internal agents will broadcast their\n chat history, but you can at least expect the front-man to broadcast his."
+            "description": "A potentially full list of chat histories that pertain to the node. These will typically come in the last message of any particular agent's chat stream.   Do not expect any or all internal agents will broadcast their chat history, but you can at least expect the front-man to broadcast his."
           }
         },
-        "description": "Message for holding the state of play for any chat session\n such that should the client send this back to the service,\n a different server knows exactly where to pick up where the previous\n conversation left off."
+        "description": "Message for holding the state of play for any chat session such that should the client send this back to the service, a different server knows exactly where to pick up where the previous conversation left off."
       },
       "ChatFilter": {
         "type": "object",
         "properties": {
           "chat_filter_type": {
-            "type": "integer",
-            "description": "For now allow for an enum to describe how we want chat messages streamed.\n In the future the description of this server-side filter might offer more\n fine-grained control (hence an encapsulating structure).",
+            "enum": [
+              "UNKNOWN",
+              "MINIMAL",
+              "MAXIMAL"
+            ],
+            "type": "string",
+            "description": "For now allow for an enum to describe how we want chat messages streamed. In the future the description of this server-side filter might offer more fine-grained control (hence an encapsulating structure).",
             "format": "enum"
           }
         },
@@ -226,13 +235,22 @@
             }
           }
         },
-        "description": "A structure for storing chat history for a given node in the graph\n described by the origin."
+        "description": "A structure for storing chat history for a given node in the graph described by the origin."
       },
       "ChatMessage": {
         "type": "object",
         "properties": {
           "type": {
-            "type": "integer",
+            "enum": [
+              "UNKNOWN",
+              "SYSTEM",
+              "HUMAN",
+              "AI",
+              "AGENT",
+              "AGENT_FRAMEWORK",
+              "AGENT_TOOL_RESULT"
+            ],
+            "type": "string",
             "description": "The type of chat message",
             "format": "enum"
           },
@@ -245,71 +263,51 @@
             "items": {
               "$ref": "#/components/schemas/MimeData"
             },
-            "description": "Optional bytes for any non-text media referenced by this message.\n For some chat sources, the string text field might also be populated as a\n reference for how the data was created.  If this happens, then\n it should be safe to assume that the text is enough to represent the\n message in any history carried forward.\n\n As of 1/13/25 this is a forward-looking, experimental field not likely\n to be used in regular operation until we can get proper plumbing of such\n data in place."
+            "description": "Optional bytes for any non-text media referenced by this message. For some chat sources, the string text field might also be populated as a reference for how the data was created.  If this happens, then it should be safe to assume that the text is enough to represent the message in any history carried forward. As of 1/13/25 this is a forward-looking, experimental field not likely to be used in regular operation until we can get proper plumbing of such data in place."
           },
           "origin": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Origin"
             },
-            "description": "Optional list of Origin structures (see above) describing the origin of the chat message.\n The intent here is to be able to distiguish responses from nested agents.\n\n For each top-level agent/front-man (perhaps on another server) that is called,\n an extra structure is added to the list."
+            "description": "Optional list of Origin structures (see above) describing the origin of the chat message. The intent here is to be able to distiguish responses from nested agents. For each top-level agent/front-man (perhaps on another server) that is called, an extra structure is added to the list."
           },
           "structure": {
             "type": "object",
-            "description": "Optional structure for a message whose contents are parsed JSON.\n The idea is to have the server side do the parsing when requested\n by the agent spec.\n\n As of 1/30/25 this is a forward-looking, experimental field not likely\n to be used in regular operation until we can get proper plumbing of such\n data in place."
+            "description": "Optional structure for a message whose contents are parsed JSON. The idea is to have the server side do the parsing when requested by the agent spec. As of 1/30/25 this is a forward-looking, experimental field not likely to be used in regular operation until we can get proper plumbing of such data in place."
           },
           "chat_context": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ChatContext"
-              }
-            ],
-            "description": "Message for holding the state of play for any chat session\n such that should the client send this back to the service,\n a different server knows exactly where to pick up where the previous\n conversation left off."
+            "$ref": "#/components/schemas/ChatContext"
           },
           "tool_result_origin": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Origin"
             },
-            "description": "Optional list of Origin structures (see above) describing the origin of\n a tool result."
+            "description": "Optional list of Origin structures (see above) describing the origin of a tool result."
           },
           "sly_data": {
             "type": "object",
-            "description": "This is an entirely optional map whose keys refer to data that is better\n left out of the LLM chat stream.  The keys themselves might appear in the\n chat stream, referring to the data, but the data itself does not.\n The intent is for the key references to be passed to tools,\n which then grab the values by programmatic means, but these tools\n might also have private data to send back to the client as well."
+            "description": "This is an entirely optional map whose keys refer to data that is better left out of the LLM chat stream.  The keys themselves might appear in the chat stream, referring to the data, but the data itself does not. The intent is for the key references to be passed to tools, which then grab the values by programmatic means, but these tools might also have private data to send back to the client as well."
           }
         },
-        "description": "Structure describing a single chat message.\n This could be a single response, or a list of these might comprise\n a chat history."
+        "description": "Structure describing a single chat message. This could be a single response, or a list of these might comprise a chat history."
       },
       "ChatRequest": {
         "type": "object",
         "properties": {
           "sly_data": {
             "type": "object",
-            "description": "This is an entirely optional map whose keys refer to data that is better\n left out of the LLM chat stream.  The keys themselves might appear in the\n chat stream, referring to the data, but the data itself does not.\n The intent is for the key references to be passed to tools,\n which then grab the values by programmatic means."
+            "description": "This is an entirely optional map whose keys refer to data that is better left out of the LLM chat stream.  The keys themselves might appear in the chat stream, referring to the data, but the data itself does not. The intent is for the key references to be passed to tools, which then grab the values by programmatic means."
           },
           "user_message": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ChatMessage"
-              }
-            ],
-            "description": "To send basic user input, simply add a user_message to your request\n and fill in its \"text\" field."
+            "$ref": "#/components/schemas/ChatMessage"
           },
           "chat_context": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ChatContext"
-              }
-            ],
-            "description": "Message for holding the state of play for any chat session\n such that should the client send this back to the service,\n a different server knows exactly where to pick up where the previous\n conversation left off. There are 2 uses:\n  1)  When this is not present in the request, a completely new conversation\n      is initiated.\n  2)  To RESTfully continue an existing conversation: The last AGENT_FRAMEWORK\n      message that was streamed from your previous StreamingChat() call\n      will have its chat_context field filled in its ChatMessage.\n      Simply take the value there and put it here for your next request\n      to continue the conversation (your new user_input adding to the exchange).\n      No client-side parsing of the ChatContext is explicitly required."
+            "$ref": "#/components/schemas/ChatContext"
           },
           "chat_filter": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ChatFilter"
-              }
-            ],
-            "description": "A structure defining a server-side filter on what kind of messages come\n over the stream. When not present, defaults to MINIMAL chat filter."
+            "$ref": "#/components/schemas/ChatFilter"
           }
         },
         "description": "Request structure for Chat gRPC method"
@@ -318,20 +316,10 @@
         "type": "object",
         "properties": {
           "request": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ChatRequest"
-              }
-            ],
-            "description": "The request that generated this response"
+            "$ref": "#/components/schemas/ChatRequest"
           },
           "response": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ChatMessage"
-              }
-            ],
-            "description": "Optionally returned.\n Idea is that all of the above come back immediately to establish\n the connection, but likely the field below would not initially be filled in.\n Later on, as messages return from agents, later streamed versions of this\n message would have response below filled in with single messages from\n specific agents any time any one of them has something new to say.\n The origin info on the ChatMessage would allow the client to place\n just where in the agent hierarchy the message comes from.\n (Think like a URI:\n  opportunity_finder_pipeline/opportunity_finder_process_manager/synthetic_data_generator)"
+            "$ref": "#/components/schemas/ChatMessage"
           }
         },
         "description": "Response structure for Chat gRPC method"
@@ -361,7 +349,7 @@
             "items": {
               "type": "string"
             },
-            "description": "A list of tool nodes that are possible to reach from the origin\n\n This might include references into external agent networks, perhaps hosted\n on other servers.  Separate calls to those guys will need to be made\n in order to gain information about their own connectivity, if this is\n actually desired by the client.\n\n Worth noting that server-side agent descriptions are allowed to\n withhold connectivity info they deem private, or too much of an\n implementation detail.  That is, connectivity reported is only\n as much as the server wants a client to know."
+            "description": "A list of tool nodes that are possible to reach from the origin This might include references into external agent networks, perhaps hosted on other servers.  Separate calls to those guys will need to be made in order to gain information about their own connectivity, if this is actually desired by the client. Worth noting that server-side agent descriptions are allowed to withhold connectivity info they deem private, or too much of an implementation detail.  That is, connectivity reported is only as much as the server wants a client to know."
           }
         }
       },
@@ -373,7 +361,7 @@
             "items": {
               "$ref": "#/components/schemas/ConnectivityInfo"
             },
-            "description": "The description of the agent network's internal connectivity\n ... as far as the agent wants the outside world to know.."
+            "description": "The description of the agent network's internal connectivity ... as far as the agent wants the outside world to know.."
           }
         },
         "description": "Response structure for Connectivity gRPC method"
@@ -387,7 +375,7 @@
           },
           "parameters": {
             "type": "object",
-            "description": "Optional map of parameters that the agent needs in order to work.\n This is really a pydantic/OpenAI function description, which is\n a bit too complex to specify directly in protobuf."
+            "description": "Optional map of parameters that the agent needs in order to work. This is really a pydantic/OpenAI function description, which is a bit too complex to specify directly in protobuf."
           }
         },
         "description": "Description of an agent's function"
@@ -396,12 +384,7 @@
         "type": "object",
         "properties": {
           "function": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Function"
-              }
-            ],
-            "description": "The functional description of the agent.\n Any initial chat prompt is obtained from the Function's description."
+            "$ref": "#/components/schemas/Function"
           }
         },
         "description": "Response structure for Function gRPC method"
@@ -427,7 +410,7 @@
           "mime_bytes": {
             "type": "string",
             "description": "Raw bytes of the image",
-            "format": "bytes"
+            "format": "byte"
           }
         },
         "description": "A Message identifying image data"
@@ -441,7 +424,7 @@
           },
           "instantiation_index": {
             "type": "integer",
-            "description": "Some tools can be called more than once by one or more different paths.\n Allow for an instantiation index to distinguish these in the chat stream.\n Index counting starts at 0.",
+            "description": "Some tools can be called more than once by one or more different paths. Allow for an instantiation index to distinguish these in the chat stream. Index counting starts at 0.",
             "format": "int32"
           }
         }

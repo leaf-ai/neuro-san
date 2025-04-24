@@ -20,6 +20,7 @@
     "math_guy_passthrough.hocon": true,
     "music_nerd.hocon": true,
     "music_nerd_pro.hocon": true,
+    "gist.hocon": true,
 
     # This one is an example of agnets calling tools that has no parameters.
     "date_time.hocon": true,
