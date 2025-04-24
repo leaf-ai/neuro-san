@@ -1,0 +1,87 @@
+
+# Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
+# All Rights Reserved.
+# Issued under the Academic Public License.
+#
+# You can be released from the terms, and requirements of the Academic Public
+# License by purchasing a commercial license.
+# Purchase of a commercial license is mandatory for any use of the
+# neuro-san SDK Software in commercial settings.
+#
+# END COPYRIGHT
+
+# To integrate this configuration with your agent server/library, set the AGENT_BASE_TOOL_INFO_FILE 
+# environment variable to point to this file.
+
+{
+    # ------------------------------------------------------------------------------------------
+    # Overview:
+    # - This file defines configurations for tools and toolkits compatible with LangChain.
+    # - More details about LangChain tools and toolkits can be found at:
+    #   https://python.langchain.com/docs/integrations/tools/
+    #
+    # Requirements:
+    # - Each tool or toolkit must have a "class" key.
+    # - The specified class must be available in the server's PYTHONPATH.
+    # - Depending on the Tools, Toolkits are instantiate either via a constructor or a class method.
+    # - Additional dependencies (outside of langchain_community) must be installed separately.
+    #
+    # Customization via Agent HOCON File:
+    # - In the agent HOCON file, users can define an "args" section to **add or override** 
+    #   arguments from this tool configuration file dynamically at runtime.
+    # - Users can override or add **only the constructor or method arguments** via the agent HOCON file.
+    # - Users cannot override or inject args into nested classes like wrappers (e.g. ToolAPIWrapper).
+    # ------------------------------------------------------------------------------------------
+
+    # --------------------------------- TOOL CONFIGURATION ---------------------------------
+    "test_tool_name": {
+        # The fully qualified class name of the tool.
+        # Tool classes are usually found in `langchain_community.tools` or `langchain_{tool_name}`.
+        "class": "langchain_community.tools.tool_module.ToolClass",
+
+        # Arguments for the tool's constructor.
+        # These arguments will be used when instantiating the tool unless overridden in the agent HOCON file.
+        "args": {
+            "tool_wrapper": {
+                "class": "langchain_community.utilities.ToolAPIWrapper",
+                "args": {
+                    # Argument for ToolAPIWrapper
+                    "wrapper_arg": "test_wrapper_arg"
+                }
+            },
+            # Direct argument for ToolClass
+            "constructor_arg": "test_constructor_arg"
+        }
+
+        # This configuration results in:
+        # ToolClass(tool_wrapper=ToolAPIWrapper(wrapper_arg="test_wrapper_arg"), constructor_arg="test_constructor_arg")
+        #
+        #   How Overrides Work:
+        # - If the agent HOCON file specifies `"args": {"constructor_arg": "new_value", "another_arg": "some_value"}`, then:
+        #   The tool will be instantiated with `constructor_arg="new_value"`, replacing the default
+        #   and `another_arg = "some_value"`.
+    },
+
+    # -------------------------- TOOLKITS --------------------------
+    "test_toolkit_constructor_name": {
+        # The fully qualified class name of the toolkit.
+        # Toolkit classes are usually found in `langchain_community.agent_toolkits`.
+        "class": "langchain_community.agent_toolkits.toolkit_module.ToolkitClass",
+
+        # Arguments required for the toolkit's constructor.
+        # These can be overridden in the agent HOCON file.
+        "args": {
+            "tool_wrapper": {
+                "class": "langchain_community.utilities.ToolAPIWrapper",
+                "args": {
+                    "wrapper_arg": "test_wrapper_arg"
+                }
+            },
+            "constructor_arg": "test_constructor_arg"
+        }
+
+        # This configuration results in:
+        # ToolkitClass(tool_wrapper=ToolAPIWrapper(wrapper_arg="test_wrapper_arg"), constructor_arg="test_constructor_arg")
+        # and then calls `.get_tools()` to retrieve a list of related tools.
+    },
+}
