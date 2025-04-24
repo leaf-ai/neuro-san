@@ -89,7 +89,7 @@ class StreamingInputProcessor:
             # Update the state if there is something to update it with
             chat_context = self.processor.get_chat_context()
             last_chat_response = self.processor.get_answer()
-            returned_sly_data: Dict[str, Any] = self.processor.get_sly_data()
+            sly_data: Dict[str, Any] = self.processor.get_sly_data()
             origin_str = Origination.get_full_name_from_origin(self.processor.get_answer_origin())
 
         if origin_str is None or len(origin_str) == 0:
@@ -100,8 +100,7 @@ class StreamingInputProcessor:
             "num_input": num_input + 1,
             "last_chat_response": last_chat_response,
             "user_input": None,
-            "sly_data": None,
-            "returned_sly_data": returned_sly_data,
+            "sly_data": sly_data,
             "origin_str": origin_str
         }
         return_state.update(update)
