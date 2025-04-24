@@ -27,6 +27,7 @@ from neuro_san.internals.utils.file_of_class import FileOfClass
 from neuro_san.message_processing.basic_message_processor import BasicMessageProcessor
 from neuro_san.session.direct_agent_session import DirectAgentSession
 
+from tests.framework.driver.assert_capture import AssertCapture
 from tests.framework.evaluators.agent_evaluator_factory import AgentEvaluatorFactory
 from tests.framework.interfaces.agent_evaluator import AgentEvaluator
 from tests.framework.interfaces.assert_forwarder import AssertForwarder
@@ -47,7 +48,7 @@ class DataDrivenAgentTestDriver:
                         back into the test system.
         :param fixtures: Optional path to the fixtures root.
         """
-        self.asserts: AssertForwarder = asserts
+        self.asserts_basis: AssertForwarder = asserts
         self.fixtures: FileOfClass = fixtures
         if self.fixtures is None:
             self.fixtures = FileOfClass(__file__, path_to_basis="../../fixtures")
@@ -60,9 +61,75 @@ class DataDrivenAgentTestDriver:
         """
         test_case: Dict[str, Any] = self.parse_hocon_test_case(hocon_file)
 
+        agent: str = test_case.get("agent")
+        self.asserts_basis.assertIsNotNone(agent)
+
+        # Get the success ration
+        success_ratio: str = test_case.get("success_ratio", "1/1")
+        self.asserts_basis.assertIn("/", success_ratio)
+
+        # Find the integer components of the success ratio
+        success_split: List[str] = success_ratio.split("/")
+        num_need_success: int = int(success_split[0])
+        num_iterations: int = int(success_split[-1])
+
+        # Put some bounds on the number of iterations
+        num_iterations = max(1, num_iterations)
+        num_need_success = min(num_need_success, num_iterations)
+
+        # Capture asserts for each iteration
+        iteration_asserts: List[AssertCapture] = []
+
+        # Loop through each iteration, capturing any asserts.
+        num_successful: int = 0
+        for index in range(num_iterations):
+
+            _ = index
+
+            # Capture the asserts for this iteration and add it to the list for later
+            assert_capture = AssertCapture(self.asserts_basis)
+            iteration_asserts.append(assert_capture)
+
+            # Perform a single iteration of the test.
+            self.one_iteration(test_case, assert_capture)
+
+            # Update our counter if this iteration is successful
+            asserts: List[AssertionError] = assert_capture.get_asserts()
+            if len(asserts) > 0:
+                # Not successful
+                continue
+
+            num_successful += 1
+            if num_successful == num_need_success:
+                # Don't do more tests than we actually need to
+                break
+
+        # Don't bother reporting any asserts if we have met our success ratio.
+        # Return early to pass this test.
+        if num_successful >= num_need_success:
+            return
+
+        # Find the first assert that fails and use it to fail this test
+        for assert_capture in iteration_asserts:
+            asserts: List[AssertionError] = assert_capture.get_asserts()
+            if len(asserts) > 0:
+                one_assert: AssertionError = asserts[0]
+                message: str = f"""
+{num_successful} of {num_iterations} iterations on agent {agent} were successful.
+Need at least {num_need_success} to consider {hocon_file} test to be successful.
+"""
+                raise AssertionError(message) from one_assert
+
+    def one_iteration(self, test_case: Dict[str, Any], asserts: AssertForwarder):
+        """
+        Perform a single iteration on the test case.
+
+        :param test_case: The dictionary describing the data-driven test case
+        :param asserts: The AssertForwarder to send asserts to.
+        """
+
         # Get the agent to use
         agent: str = test_case.get("agent")
-        self.asserts.assertIsNotNone(agent)
 
         # Get the connection type
         connections: Union[List[str], str] = test_case.get("connections")
@@ -72,13 +139,13 @@ class DataDrivenAgentTestDriver:
         elif isinstance(connections, str):
             # Make single strings into a list for consistent parsing
             connections = [connections]
-        self.asserts.assertIsInstance(connections, List)
-        self.asserts.assertTrue(len(connections) > 0)
+        asserts.assertIsInstance(connections, List)
+        asserts.assertTrue(len(connections) > 0)
 
         # Collect the interations to test for
         empty: List[Any] = []
         interactions: List[Dict[str, Any]] = test_case.get("interactions", empty)
-        self.asserts.assertTrue(len(interactions) > 0)
+        asserts.assertTrue(len(interactions) > 0)
 
         # Collect other session information
         use_direct: bool = test_case.get("use_direct", False)
@@ -94,7 +161,7 @@ class DataDrivenAgentTestDriver:
             for interaction in interactions:
                 if isinstance(session, DirectAgentSession):
                     session.reset()
-                chat_context = self.interact(agent, session, interaction, chat_context)
+                chat_context = self.interact(agent, session, interaction, chat_context, asserts)
 
     def parse_hocon_test_case(self, hocon_file: str) -> Dict[str, Any]:
         """
@@ -107,14 +174,16 @@ class DataDrivenAgentTestDriver:
         test_case: Dict[str, Any] = hocon.restore(file_reference=test_path)
         return test_case
 
-    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals,too-many-arguments,too-many-positional-arguments
     def interact(self, agent: str, session: AgentSession, interaction: Dict[str, Any],
-                 chat_context: Dict[str, Any]) -> Dict[str, Any]:
+                 chat_context: Dict[str, Any], asserts: AssertForwarder) -> Dict[str, Any]:
         """
         Interact with an agent and evaluate its output
 
         :param session: The AgentSession to work with
         :param interaction: The interaction dictionary to base evalaution off of.
+        :param chat_context: The chat context to use with the interaction (if any)
+        :param asserts: The AssertForwarder to send asserts to.
         """
         _ = agent       # For now
         empty: Dict[str, Any] = {}
@@ -143,7 +212,7 @@ class DataDrivenAgentTestDriver:
         # Evaluate response
         response: Dict[str, Any] = interaction.get("response", empty)
         response_extractor = DictionaryExtractor(response)
-        self.test_response_keys(processor, response_extractor, self.TEST_KEYS)
+        self.test_response_keys(processor, response_extractor, self.TEST_KEYS, asserts)
 
         # See how we should continue the conversation
         return_chat_context: Dict[str, Any] = None
@@ -154,13 +223,15 @@ class DataDrivenAgentTestDriver:
 
     def test_response_keys(self, processor: BasicMessageProcessor,
                            response_extractor: DictionaryExtractor,
-                           keys: List[str]):
+                           keys: List[str],
+                           asserts: AssertForwarder):
         """
         Tests the given response keys
 
         :param processor: The BasicMessageProcessor instance to query results from.
         :param response_extractor: The DictionaryExtractor for the test structure from the test hocon file.
         :param keys: The response keys to test
+        :param asserts: The AssertForwarder to send asserts to.
         """
         deeper_test_keys: List[str] = []
 
@@ -180,11 +251,11 @@ class DataDrivenAgentTestDriver:
                 split: List[str] = test_key.split(".")
                 evaluator_type: str = split[-1]            # Last component of .-delimited key
                 verify_key: str = ".".join(split[:-1])      # All but last component of .-delimited key
-                evaluator: AgentEvaluator = AgentEvaluatorFactory.create_evaluator(self.asserts,
+                evaluator: AgentEvaluator = AgentEvaluatorFactory.create_evaluator(asserts,
                                                                                    evaluator_type)
                 if evaluator is not None:
                     evaluator.evaluate(processor, verify_key, test_key_value)
 
         # Recurse if there are further dictionary specs to dive into
         if len(deeper_test_keys) > 0:
-            self.test_response_keys(processor, response_extractor, deeper_test_keys)
+            self.test_response_keys(processor, response_extractor, deeper_test_keys, asserts)

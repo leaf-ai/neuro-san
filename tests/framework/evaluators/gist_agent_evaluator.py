@@ -35,10 +35,28 @@ class GistAgentEvaluator(AbstractAgentEvaluator):
         pass_fail: bool = self.ask_llm(acceptance_criteria=str(verify_value),
                                        text_sample=str(test_value))
 
+        # Make the exception messaging agree with the sense of the negation.
+        # That is: When we are playing it straight (no negation), the assertion
+        # fails because the text sample didn't match the acceptance criteria
+        # and that failure is unexpected.  When the negation is in place,
+        # it is unexpected that it actually *did* match the acceptance criteria.
+        did_str: str = "didn't"
         if self.negate:
-            self.asserts.assertFalse(pass_fail)
+            did_str = "did"
+
+        message: str = f"""
+text_sample unexpectedly {did_str} match acceptance criteria.
+
+text_sample:
+{test_value}
+
+acceptance_criteria:
+{verify_value}
+"""
+        if self.negate:
+            self.asserts.assertFalse(pass_fail, msg=message)
         else:
-            self.asserts.assertTrue(pass_fail)
+            self.asserts.assertTrue(pass_fail, msg=message)
 
     def ask_llm(self, acceptance_criteria: str, text_sample: str) -> bool:
         """
