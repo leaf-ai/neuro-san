@@ -43,3 +43,11 @@ class ConciergeHandler(BaseRequestHandler):
         finally:
             self.flush()
             self.logger.info(metadata, "Finish GET /api/v1/list")
+
+    def options(self):
+        """
+        Handles OPTIONS requests for CORS support
+        """
+        # No body needed. Tornado will return a 204 No Content by default
+        self.set_status(204)
+        self.finish()
