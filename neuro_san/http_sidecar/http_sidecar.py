@@ -14,6 +14,7 @@ See class comment for details
 """
 
 import copy
+import threading
 from typing import Any, Dict, List
 
 from tornado.ioloop import IOLoop
@@ -23,6 +24,7 @@ from neuro_san.http_sidecar.logging.http_logger import HttpLogger
 from neuro_san.service.agent_server import DEFAULT_FORWARDED_REQUEST_METADATA
 
 from neuro_san.http_sidecar.interfaces.agent_authorizer import AgentAuthorizer
+from neuro_san.http_sidecar.interfaces.agents_updater import AgentsUpdater
 from neuro_san.http_sidecar.handlers.health_check_handler import HealthCheckHandler
 from neuro_san.http_sidecar.handlers.connectivity_handler import ConnectivityHandler
 from neuro_san.http_sidecar.handlers.function_handler import FunctionHandler
@@ -31,7 +33,7 @@ from neuro_san.http_sidecar.handlers.concierge_handler import ConciergeHandler
 from neuro_san.http_sidecar.handlers.openapi_publish_handler import OpenApiPublishHandler
 
 
-class HttpSidecar(AgentAuthorizer):
+class HttpSidecar(AgentAuthorizer, AgentsUpdater):
     """
     Class provides simple http endpoint for neuro-san API,
     working as a client to neuro-san gRPC service.
@@ -59,6 +61,7 @@ class HttpSidecar(AgentAuthorizer):
         self.openapi_service_spec_path: str = openapi_service_spec_path
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata.split(" ")
         self.allowed_agents: Dict[str, bool] = {}
+        self.lock = threading.Lock()
 
     def __call__(self):
         """
@@ -98,6 +101,16 @@ class HttpSidecar(AgentAuthorizer):
     def allow(self, agent_name) -> bool:
         return self.allowed_agents.get(agent_name, False)
 
+    def update_agents(self, agents: Dict[str, Any]):
+        with self.lock:
+            # We assume all agents from "agents" dictionary are enabled:
+            for agent_name, _ in agents.items():
+                self.allowed_agents[agent_name] = True
+            # All other agents are disabled:
+            for agent_name, _ in self.allowed_agents.items():
+                if not agent_name in agents.keys():
+                    self.allowed_agents[agent_name] = False
+
     def build_request_data(self) -> Dict[str, Any]:
         """
         Build request data for Http handlers.
@@ -105,6 +118,7 @@ class HttpSidecar(AgentAuthorizer):
         """
         return {
             "agent_policy": self,
+            "agents_updater": self,
             "port": self.port,
             "forwarded_request_metadata": self.forwarded_request_metadata,
             "openapi_service_spec_path": self.openapi_service_spec_path

@@ -1,0 +1,29 @@
+
+# Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
+# All Rights Reserved.
+# Issued under the Academic Public License.
+#
+# You can be released from the terms, and requirements of the Academic Public
+# License by purchasing a commercial license.
+# Purchase of a commercial license is mandatory for any use of the
+# neuro-san SDK Software in commercial settings.
+#
+# END COPYRIGHT
+"""
+See class comment for details
+"""
+
+
+class AgentsUpdater:
+    """
+    Abstract interface for updating current collection of agents
+    being served.
+    """
+
+    def update_agents(self, agents: Dict[str, Any]):
+        """
+        :param agents: dictionary of agents which should be served currently.
+            dictionary keys are "agent_name"
+        :return: nothing
+        """
+        raise NotImplementedError
