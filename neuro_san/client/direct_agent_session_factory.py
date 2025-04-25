@@ -17,6 +17,7 @@ from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegi
 from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
 from neuro_san.internals.run_context.factory.master_base_tool_factory import MasterBaseToolFactory
 from neuro_san.internals.run_context.factory.master_llm_factory import MasterLlmFactory
+from neuro_san.internals.graph.persistence.agent_tool_registry_restorer import AgentToolRegistryRestorer
 from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
 from neuro_san.internals.interfaces.agent_tool_factory_provider import AgentToolFactoryProvider
 from neuro_san.internals.tool_factories.service_tool_factory_provider import ServiceToolFactoryProvider
@@ -50,6 +51,8 @@ class DirectAgentSessionFactory:
                        metadata: Dict[str, str] = None) -> AgentSession:
         """
         :param agent_name: The name of the agent to use for the session.
+                This name can be something in the manifest file (with no file suffix)
+                or a specific full-reference to an agent network's hocon file.
         :param use_direct: When True, will use a Direct session for
                     external agents that would reside on the same server.
         :param metadata: A grpc metadata of key/value pairs to be inserted into
@@ -57,12 +60,7 @@ class DirectAgentSessionFactory:
                          dictionary of string keys to string values.
         """
 
-        factory = ExternalAgentSessionFactory(use_direct=use_direct)
-        tool_factory: ServiceToolFactoryProvider =\
-            ServiceToolFactoryProvider.get_instance()
-        tool_registry_provider: AgentToolFactoryProvider =\
-            tool_factory.get_agent_tool_factory_provider(agent_name)
-        tool_registry: AgentToolRegistry = tool_registry_provider.get_agent_tool_factory()
+        tool_registry: AgentToolRegistry = self.get_agent_tool_registry(agent_name)
 
         llm_factory: ContextTypeLlmFactory = MasterLlmFactory.create_llm_factory()
         base_tool_factory: ContextTypeBaseToolFactory = MasterBaseToolFactory.create_base_tool_factory()
@@ -70,9 +68,36 @@ class DirectAgentSessionFactory:
         llm_factory.load()
         base_tool_factory.load()
 
+        factory = ExternalAgentSessionFactory(use_direct=use_direct)
         invocation_context = SessionInvocationContext(factory, llm_factory, base_tool_factory, metadata)
         invocation_context.start()
         session: DirectAgentSession = DirectAgentSession(tool_registry=tool_registry,
                                                          invocation_context=invocation_context,
                                                          metadata=metadata)
         return session
+
+    def get_agent_tool_registry(self, agent_name: str) -> AgentToolRegistry:
+        """
+        :param agent_name: The name of the agent whose AgentToolRegistry we want to get.
+                This name can be something in the manifest file (with no file suffix)
+                or a specific full-reference to an agent network's hocon file.
+        :return: The AgentToolRegistry corresponding to that agent.
+        """
+
+        if agent_name is None or len(agent_name) == 0:
+            return None
+
+        tool_registry: AgentToolRegistry = None
+        if agent_name.endswith(".hocon") or agent_name.endswith(".json"):
+            # We got a specific file name
+            restorer = AgentToolRegistryRestorer()
+            tool_registry = restorer.restore(file_reference=agent_name)
+        else:
+            # Use the standard stuff available via the manifest file.
+            tool_factory: ServiceToolFactoryProvider =\
+                ServiceToolFactoryProvider.get_instance()
+            tool_registry_provider: AgentToolFactoryProvider =\
+                tool_factory.get_agent_tool_factory_provider(agent_name)
+            tool_registry = tool_registry_provider.get_agent_tool_factory()
+
+        return tool_registry

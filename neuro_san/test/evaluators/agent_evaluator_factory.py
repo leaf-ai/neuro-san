@@ -9,11 +9,11 @@
 #
 # END COPYRIGHT
 
-from tests.framework.evaluators.gist_agent_evaluator import GistAgentEvaluator
-from tests.framework.evaluators.keywords_agent_evaluator import KeywordsAgentEvaluator
-from tests.framework.evaluators.value_agent_evaluator import ValueAgentEvaluator
-from tests.framework.interfaces.agent_evaluator import AgentEvaluator
-from tests.framework.interfaces.assert_forwarder import AssertForwarder
+from neuro_san.test.evaluators.gist_agent_evaluator import GistAgentEvaluator
+from neuro_san.test.evaluators.keywords_agent_evaluator import KeywordsAgentEvaluator
+from neuro_san.test.evaluators.value_agent_evaluator import ValueAgentEvaluator
+from neuro_san.test.interfaces.agent_evaluator import AgentEvaluator
+from neuro_san.test.interfaces.assert_forwarder import AssertForwarder
 
 
 class AgentEvaluatorFactory:

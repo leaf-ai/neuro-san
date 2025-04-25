@@ -15,7 +15,7 @@ import pytest
 
 from parameterized import parameterized
 
-from tests.framework.unittest.dynamic_hocon_unit_tests import DynamicHoconUnitTests
+from neuro_san.test.unittest.dynamic_hocon_unit_tests import DynamicHoconUnitTests
 
 
 class TestIntegrationTestHocons(TestCase):
