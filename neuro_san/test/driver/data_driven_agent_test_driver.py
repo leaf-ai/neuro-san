@@ -26,11 +26,10 @@ from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.utils.file_of_class import FileOfClass
 from neuro_san.message_processing.basic_message_processor import BasicMessageProcessor
 from neuro_san.session.direct_agent_session import DirectAgentSession
-
-from tests.framework.driver.assert_capture import AssertCapture
-from tests.framework.evaluators.agent_evaluator_factory import AgentEvaluatorFactory
-from tests.framework.interfaces.agent_evaluator import AgentEvaluator
-from tests.framework.interfaces.assert_forwarder import AssertForwarder
+from neuro_san.test.driver.assert_capture import AssertCapture
+from neuro_san.test.evaluators.agent_evaluator_factory import AgentEvaluatorFactory
+from neuro_san.test.interfaces.agent_evaluator import AgentEvaluator
+from neuro_san.test.interfaces.assert_forwarder import AssertForwarder
 
 
 class DataDrivenAgentTestDriver:
