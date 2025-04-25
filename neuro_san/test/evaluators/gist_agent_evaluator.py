@@ -25,6 +25,17 @@ class GistAgentEvaluator(AbstractAgentEvaluator):
     match the gist of the value to be verified against.
     """
 
+    def __init__(self, disciminator_agent: str = "gist", connection_type: str = "direct"):
+        """
+        Constructor
+
+        :param discriminator_agent: The name of the discriminator agent to use for the test
+                                By default this is the "gist" agent.
+        :param connection_type: The string connection type to pass to the AgentSessionFactory
+        """
+        self.disciminator_agent: str = disciminator_agent
+        self.connection_type: str = connection_type
+
     def test_one(self, verify_value: Any, test_value: Any):
         """
         :param verify_value: The value to verify against
@@ -75,7 +86,8 @@ The text_sample is:
 """
 
         # Use the "gist" agent to do the evalution
-        session: AgentSession = AgentSessionFactory().create_session("direct", "gist")
+        session: AgentSession = AgentSessionFactory().create_session(self.connection_type,
+                                                                     self.discriminator_agent)
         input_processor = StreamingInputProcessor(session=session)
         processor: BasicMessageProcessor = input_processor.get_message_processor()
         request: Dict[str, Any] = input_processor.formulate_chat_request(text)
