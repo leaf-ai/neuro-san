@@ -60,6 +60,8 @@ class WebsiteSearch(CodedTool):
 
         # Currently duckduckgo_search does not support async operations
         # Thus, we can only implement it in "invoke".
+        # However, asyncio.to_thread method maybe useful here
+        # https://docs.python.org/3/library/asyncio-task.html
 
         search_terms: str = args.get("search_terms", "")
         if search_terms == "":
