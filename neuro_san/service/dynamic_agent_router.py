@@ -13,11 +13,12 @@
 See comments in class description
 """
 
-import grpc
 import logging
 from typing import Any
 from typing import Dict
 from threading import Lock
+import grpc
+
 
 class DynamicAgentRouter(grpc.GenericRpcHandler):
     """

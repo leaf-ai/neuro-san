@@ -142,16 +142,17 @@ class AgentServer:
         Start serving gRPC requests
         """
         values = agent_pb2.DESCRIPTOR.services_by_name.values()
-        self.server_lifetime = ServerLifetime(self.server_name,
-                                         self.server_name_for_logs,
-                                         self.port, self.logger,
-                                         request_limit=self.request_limit,
-                                         max_workers=self.max_concurrent_requests,
-                                         max_concurrent_rpcs=None,
-                                         # Used for health checking. Probably needs agent-specific love.
-                                         protocol_services_by_name_values=values,
-                                         loop_sleep_seconds=5.0,
-                                         server_loop_callbacks=self.server_loop_callbacks)
+        self.server_lifetime = ServerLifetime(
+            self.server_name,
+            self.server_name_for_logs,
+            self.port, self.logger,
+            request_limit=self.request_limit,
+            max_workers=self.max_concurrent_requests,
+            max_concurrent_rpcs=None,
+            # Used for health checking. Probably needs agent-specific love.
+            protocol_services_by_name_values=values,
+            loop_sleep_seconds=5.0,
+            server_loop_callbacks=self.server_loop_callbacks)
 
         server = self.server_lifetime.create_server()
 

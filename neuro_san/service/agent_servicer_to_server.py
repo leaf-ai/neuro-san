@@ -11,14 +11,10 @@
 # END COPYRIGHT
 from typing import Dict
 
-from grpc import GenericRpcHandler
 from grpc import RpcMethodHandler
-from grpc import Server
-from grpc import method_handlers_generic_handler
 from grpc import unary_stream_rpc_method_handler
 from grpc import unary_unary_rpc_method_handler
 
-from neuro_san.session.agent_service_stub import AgentServiceStub
 import neuro_san.api.grpc.agent_pb2 as agent__pb2
 from neuro_san.api.grpc.agent_pb2_grpc import AgentServiceServicer
 

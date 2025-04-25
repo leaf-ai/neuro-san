@@ -109,7 +109,7 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
                 self.allowed_agents[agent_name] = True
             # All other agents are disabled:
             for agent_name, _ in self.allowed_agents.items():
-                if not agent_name in agents:
+                if agent_name not in agents:
                     self.allowed_agents[agent_name] = False
 
     def build_request_data(self) -> Dict[str, Any]:
