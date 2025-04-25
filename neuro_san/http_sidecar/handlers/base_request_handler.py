@@ -177,5 +177,4 @@ class BaseRequestHandler(RequestHandler):
         """
         # No body needed. Tornado will return a 204 No Content by default
         self.set_status(http.HTTPStatus.NO_CONTENT)
-        await self.flush()
         await self.finish()
