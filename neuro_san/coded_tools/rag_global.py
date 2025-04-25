@@ -23,9 +23,17 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from neuro_san.interfaces.coded_tool import CodedTool
 
 
-class RAG(CodedTool):
+class RagGlobal(CodedTool):
     """
-    CodedTool implementation which provides a way to utilize different websites' search feature
+    A CodedTool implementation that performs Retrieval-Augmented Generation (RAG)
+    using URLs obtained from a website search.
+
+    This class assumes that a prior search has been conducted to identify relevant URLs.
+    It then retrieves the content from those URLs and applies a language model to
+    generate responses based on the retrieved information.
+
+    This is useful in workflows where external search tools provide candidate links,
+    and RAG is applied afterward to synthesize a meaningful answer from the linked content.
     """
 
     def invoke(self, args: Dict[str, Any], sly_data: Dict[str, Any]):

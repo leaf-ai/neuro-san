@@ -20,7 +20,7 @@ from duckduckgo_search import DDGS
 from neuro_san.interfaces.coded_tool import CodedTool
 
 
-class WebsiteSearch(CodedTool):
+class WebsiteSearchGlobal(CodedTool):
     """
     CodedTool implementation which provides a way to utilize different websites' search feature
     """
