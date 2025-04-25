@@ -171,7 +171,7 @@ class BaseRequestHandler(RequestHandler):
         """
         return
 
-    async def options(self):
+    async def options(self, *_args, **_kwargs):
         """
         Handles OPTIONS requests for CORS support
         """
