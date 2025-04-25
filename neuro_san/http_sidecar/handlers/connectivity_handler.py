@@ -50,8 +50,10 @@ class ConnectivityHandler(BaseRequestHandler):
             await self.flush()
             self.logger.info(metadata, "Finish GET %s/connectivity request", agent_name)
 
-    async def options(self):
+    def options(self):
         """
-        Implementation of OPTIONS request handler for streaming chat API call.
+        Handles OPTIONS requests for CORS support
         """
-        await self.flush()
+        # No body needed. Tornado will return a 204 No Content by default
+        self.set_status(204)
+        self.finish()

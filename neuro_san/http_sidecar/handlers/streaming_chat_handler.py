@@ -89,8 +89,10 @@ class StreamingChatHandler(BaseRequestHandler):
             await self.finish()
             self.logger.info(metadata, "Finish POST %s/streaming_chat %d responses", agent_name, sent_out)
 
-    async def options(self):
+    def options(self):
         """
-        Implementation of OPTIONS request handler for streaming chat API call.
+        Handles OPTIONS requests for CORS support
         """
-        await self.flush()
+        # No body needed. Tornado will return a 204 No Content by default
+        self.set_status(204)
+        self.finish()
