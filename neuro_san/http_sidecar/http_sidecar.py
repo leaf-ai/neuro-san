@@ -61,13 +61,14 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
         self.openapi_service_spec_path: str = openapi_service_spec_path
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata.split(" ")
         self.allowed_agents: Dict[str, bool] = {}
-        self.lock = threading.Lock()
+        self.lock = None
 
     def __call__(self):
         """
         Method to be called by a process running tornado HTTP server
         to actually start serving requests.
         """
+        self.lock = threading.Lock()
         self.logger = HttpLogger(self.forwarded_request_metadata)
 
         app = self.make_app()
@@ -101,14 +102,14 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
     def allow(self, agent_name) -> bool:
         return self.allowed_agents.get(agent_name, False)
 
-    def update_agents(self, agents: Dict[str, Any]):
+    def update_agents(self, agents: List[str]):
         with self.lock:
             # We assume all agents from "agents" dictionary are enabled:
-            for agent_name, _ in agents.items():
+            for agent_name in agents:
                 self.allowed_agents[agent_name] = True
             # All other agents are disabled:
             for agent_name, _ in self.allowed_agents.items():
-                if not agent_name in agents.keys():
+                if not agent_name in agents:
                     self.allowed_agents[agent_name] = False
 
     def build_request_data(self) -> Dict[str, Any]:

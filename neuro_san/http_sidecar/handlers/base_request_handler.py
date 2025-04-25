@@ -141,13 +141,17 @@ class BaseRequestHandler(RequestHandler):
             data: Dict[str, Any] = {}
             grpc_session: ConciergeSession = self.get_concierge_grpc_session(metadata)
             agents_dict: Dict[str, Any] = grpc_session.list(data)
-            self.agents_updater.update_agents(agents_dict)
+            agents_list = agents_dict.get("agents", [])
+            agents_names: List[str] = []
+            for agent_dict in agents_list:
+                agents_names.append(agent_dict["agent_name"])
+
+            print(f">>>>>>>>>>>> AGENTS: {agents_names}")
+
+            self.agents_updater.update_agents(agents_names)
             return True
         except Exception as exc:  # pylint: disable=broad-exception-caught
             self.process_exception(exc)
-            return False
-        finally:
-            await self.flush()
             return False
 
     def extract_grpc_error_info(self, exc: grpc.aio.AioRpcError) -> Tuple[int, str, str]:
