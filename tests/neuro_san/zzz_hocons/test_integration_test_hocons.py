@@ -11,12 +11,14 @@
 
 from unittest import TestCase
 
+import pytest
+
 from parameterized import parameterized
 
 from tests.framework.unittest.dynamic_hocon_unit_tests import DynamicHoconUnitTests
 
 
-class TestHocons(TestCase):
+class TestIntegrationTestHocons(TestCase):
     """
     Data-driven dynamic test cases where each test case is specified by a single hocon file.
     """
@@ -31,13 +33,11 @@ class TestHocons(TestCase):
         # These can be in any order.
         # Ideally more basic functionality will come first.
         # Barring that, try to stick to alphabetical order.
-        "math_guy/basic_sly_data.hocon",
-        "math_guy/forwarded_sly_data.hocon",
-        "music_nerd/beatles_with_history.hocon",
-        "esp_decision_assistant/chicken_scenario.hocon",
+        "esp_decision_assistant/fallbacks_and_commondef_values.hocon",
 
         # List more hocon files as they become available here.
     ]))
+    @pytest.mark.integration
     def test_hocon(self, test_name: str, test_hocon: str):
         """
         Test method for a single parameterized test case specified by a hocon file.
