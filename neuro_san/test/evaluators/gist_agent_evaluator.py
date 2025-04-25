@@ -15,8 +15,10 @@ from typing import Dict
 from neuro_san.client.agent_session_factory import AgentSessionFactory
 from neuro_san.client.streaming_input_processor import StreamingInputProcessor
 from neuro_san.interfaces.agent_session import AgentSession
+from neuro_san.internals.utils.file_of_class import FileOfClass
 from neuro_san.message_processing.basic_message_processor import BasicMessageProcessor
 from neuro_san.test.evaluators.abstract_agent_evaluator import AbstractAgentEvaluator
+from neuro_san.test.interfaces.assert_forwarder import AssertForwarder
 
 
 class GistAgentEvaluator(AbstractAgentEvaluator):
@@ -25,16 +27,26 @@ class GistAgentEvaluator(AbstractAgentEvaluator):
     match the gist of the value to be verified against.
     """
 
-    def __init__(self, disciminator_agent: str = "gist", connection_type: str = "direct"):
+    SHIPPED_HOCONS = FileOfClass(__file__, path_to_basis="../../registries")
+
+    def __init__(self, asserts: AssertForwarder, negate: bool = False,
+                 discriminator_agent: str = None, connection_type: str = "direct"):
         """
         Constructor
 
+        :param asserts: The AssertForwarder instance to handle failures
+        :param negate: If true the verification criteria should be negated
         :param discriminator_agent: The name of the discriminator agent to use for the test
-                                By default this is the "gist" agent.
+                                By default this is None, implying the stock "gist.hocon"
+                                agent shipped with neuro-san should be used.
         :param connection_type: The string connection type to pass to the AgentSessionFactory
         """
-        self.disciminator_agent: str = disciminator_agent
+        super().__init__(asserts, negate)
         self.connection_type: str = connection_type
+        self.discriminator_agent: str = discriminator_agent
+
+        if discriminator_agent is None:
+            self.discriminator_agent = self.SHIPPED_HOCONS.get_file_in_basis("gist.hocon")
 
     def test_one(self, verify_value: Any, test_value: Any):
         """
