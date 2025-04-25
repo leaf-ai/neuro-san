@@ -1,0 +1,53 @@
+name: Integration
+
+on:
+  schedule:
+    - cron: '0 12 * * *'  # 12:00 PM UTC = 4:00 AM PT (standard)
+  workflow_dispatch:      # enables manual triggering
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.12-slim
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          apt-get update && apt-get install -y shellcheck
+          pip install -r requirements-build.txt
+          pip install -r requirements.txt
+
+      - name: Show installed packages
+        run: pip freeze
+
+
+      - name: Run pytest (excluding integration tests)
+        run: pytest -s --verbose -m "integration" --timer-top-n 100
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Notify Slack on success
+        if: success()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "✅ *Integration Tests Passed* for `${{ github.repository }}` on `${{ github.ref_name }}`"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify Slack on failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "❌ *Integration Tests Failed* for `${{ github.repository }}` on `${{ github.ref_name }}`"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
