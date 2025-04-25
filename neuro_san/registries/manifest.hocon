@@ -22,6 +22,9 @@
     "music_nerd_pro.hocon": true,
     "gist.hocon": true,
 
+    # This shows how to have the frontman return structured output
+    "music_nerd_pro_structured_output.hocon": true,
+
     # This one is an example of agnets calling tools that has no parameters.
     "date_time.hocon": true,
 

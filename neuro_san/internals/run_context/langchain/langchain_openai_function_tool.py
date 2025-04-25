@@ -68,6 +68,11 @@ class LangChainOpenAIFunctionTool(BaseTool):
     # See comment near assignment in from_function_json() below.
     args_schema: Optional[Type[BaseTool]] = None
 
+    # When True, after invoking the given tool, the agent will stop and return the result direcly to the user.
+    # This can be used so the frontman return structured output.
+    # https://python.langchain.com/docs/how_to/custom_tools/
+    return_direct: Optional[bool] = False
+
     # The actual schema we want to report
     function_json: Optional[Dict[str, Any]] = None
 
@@ -158,6 +163,9 @@ It's function_json is described thusly:
         if use_function_json != function_json:
             converter = BaseModelDictionaryConverter("parameters")
             tool.args_schema = converter.from_dict(use_function_json)
+
+        # If set "return_direct" if the value is provided, otherwise set it to False.
+        tool.return_direct = function_json.get("return_direct", False)
 
         tool.tool_caller = tool_caller
 
