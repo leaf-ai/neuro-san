@@ -18,4 +18,3 @@ def verify_keywords_in_response(response: str, keywords: list[str]) -> list[str]
             missing.append(keyword)
 
     return missing
-

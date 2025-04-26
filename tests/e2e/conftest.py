@@ -23,6 +23,7 @@ config = ConfigFactory.parse_file(CONFIG_HOCON_PATH)
 # Hooks
 # ------------------------------------------------------------------------------
 
+
 def pytest_configure(config):
     """
     Prints custom environment info when pytest starts.
@@ -30,6 +31,7 @@ def pytest_configure(config):
     """
     print("\nCustom Environment Info")
     print(f"thinking-file path      : {THINKING_FILE_PATH}")
+
 
 def pytest_addoption(parser):
     """
@@ -58,6 +60,7 @@ def pytest_addoption(parser):
         default=False,
         help="If enabled, agent will write a thinking_file log per test case (grpc/http/direct)."
     )
+
 
 def pytest_generate_tests(metafunc):
     """
@@ -97,9 +100,9 @@ def pytest_generate_tests(metafunc):
 # Utilities
 # ------------------------------------------------------------------------------
 
+
 def load_connections():
     """
     Loads the list of supported connection names from the static config file.
     """
     return config.get("connection")
-

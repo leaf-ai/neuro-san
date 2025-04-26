@@ -31,6 +31,7 @@ test_data = ConfigFactory.parse_file(os.path.abspath(TEST_DATA_HOCON_PATH))
 #   - Validates the connection name if needed
 #   - Returns extracted values for CLI interaction testing
 # ------------------------------------------------------------------------
+
 def extract_test_values(connection_name):
     """
     Loads test prompts and expected outputs for a given connection
@@ -66,4 +67,3 @@ def extract_test_values(connection_name):
 
     # Return all values required for the test runner
     return connection_name, prompt_1, prompt_2, word_1, word_2, cost_1, cost_2, input_done
-

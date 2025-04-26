@@ -3,17 +3,17 @@
 # CLI-based test runner: drives input/output to the MusicNerdPro agent CLI
 # ------------------------------------------------------------------------
 
-import os
 import sys
 import pexpect
 from utils.mnpt_output_parser import extract_agent_response, extract_cost_line
 from utils.verifier import verify_keywords_in_response
 from utils.thinking_file_builder import build_thinking_file_arg
 
+
 def run_test(conn, prompt_1, prompt_2, word_1, word_2, cost_1, cost_2, prompt_final, repeat_index, use_thinking_file):
     """
     Executes a CLI test scenario by interacting with the agent using pexpect.
-    
+
     Args:
         conn (str): Connection type ('direct', 'grpc', 'http')
         prompt_1 (str): First user input
@@ -89,4 +89,3 @@ def run_test(conn, prompt_1, prompt_2, word_1, word_2, cost_1, cost_2, prompt_fi
         sys.exit(1)
     else:
         print("✅ Test passed successfully!")
-

@@ -6,6 +6,7 @@
 import re
 import json
 
+
 def extract_agent_response(output: str, start_marker="Response from MusicNerdPro:"):
     """
     Extracts agent's response text based on a start marker.
@@ -18,6 +19,7 @@ def extract_agent_response(output: str, start_marker="Response from MusicNerdPro
     )
     match = re.search(pattern, output, re.DOTALL | re.IGNORECASE)
     return match.group(1).strip() if match else None
+
 
 def extract_cost_line(output: str):
     """
@@ -41,4 +43,3 @@ def extract_cost_line(output: str):
             continue
 
     return None
-

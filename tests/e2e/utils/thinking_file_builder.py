@@ -13,6 +13,7 @@ import os
 # Root directory where all thinking_file outputs are stored
 THINKING_FILE_DIR = "/private/tmp/agent_thinking"
 
+
 def build_thinking_file_arg(conn: str, repeat_index: int, use_thinking_file: bool) -> str:
     """
     Builds the --thinking_file CLI argument if applicable.
@@ -53,4 +54,3 @@ def build_thinking_file_arg(conn: str, repeat_index: int, use_thinking_file: boo
 
     # Return the CLI-ready argument string
     return f" --thinking_file {thinking_path}"
-
