@@ -66,5 +66,5 @@ def extract_test_values(connection_name):
     # Extract the input for termination (e.g., "quit")
     input_done = next((item.get("input_done") for item in test_entries if "input_done" in item), None)
 
-    # Return all values required for the test runner
+    # Return all values required for the test runner call
     return connection_name, prompt_1, prompt_2, word_1, word_2, cost_1, cost_2, input_done

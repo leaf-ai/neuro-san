@@ -85,7 +85,6 @@ def run_test(conn, prompt_1, prompt_2, word_1, word_2, cost_1, cost_2, prompt_fi
         verify("Cost 2", cost_2_out, cost_2),
     ])
 
-    # Exit code 1
     if failed:
         sys.exit(1)
     else:
