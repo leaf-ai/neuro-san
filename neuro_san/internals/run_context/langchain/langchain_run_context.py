@@ -187,9 +187,12 @@ class LangChainRunContext(RunContext):
 
         if tool_names is not None:
             for tool_name in tool_names:
-                tool: BaseTool = await self._create_base_tool(tool_name)
+                tool: Union[BaseTool | List[BaseTool]] = await self._create_base_tool(tool_name)
                 if tool is not None:
-                    self.tools.append(tool)
+                    if isinstance(tool, List):
+                        self.tools.extend(tool)
+                    else:
+                        self.tools.append(tool)
 
         prompt_template: ChatPromptTemplate = await self._create_prompt_template(instructions, assignments)
 
@@ -315,8 +318,16 @@ class LangChainRunContext(RunContext):
         else:
             base_tool: str = agent_spec.get('base_tool')
             if base_tool:
-                base_tool_factory = BaseToolFactory()
-                return base_tool_factory.get_agent_tool(base_tool, agent_spec.get('args'))
+                base_tool_factory: BaseToolFactory = self.invocation_context.get_base_tool_factory()
+                try:
+                    return base_tool_factory.create_base_tool(base_tool, agent_spec.get('args'))
+                except ValueError as base_tool_creation_exception:
+                    # There are errors in BaseTool creation process
+                    message: str = f"Failed to create Agent/tool '{name}': {base_tool_creation_exception}"
+                    agent_message = AgentMessage(content=message)
+                    await self.journal.write_message(agent_message)
+                    self.logger.info(message)
+                    return None
 
             function_json = agent_spec.get("function")
 
@@ -603,6 +614,14 @@ class LangChainRunContext(RunContext):
         # content as an AI message - as if the bot came up with the answer itself.
         tool_message = AgentToolResultMessage(content=tool_result_dict.get("content"),
                                               tool_result_origin=tool_output.get("origin"))
+
+        # Integrate any sly data
+        tool_sly_data: Dict[str, Any] = tool_output.get("sly_data")
+        if tool_sly_data and tool_sly_data != self.tool_caller.sly_data:
+            # We have sly data from the tool output that is not the same as our own
+            # and it has data in it.  Integrate that.
+            # It's possible we might need to run a SlyDataRedactor against from_download.sly_data on this.
+            self.tool_caller.sly_data.update(tool_sly_data)
 
         return_messages: List[BaseMessage] = [tool_message]
         return return_messages

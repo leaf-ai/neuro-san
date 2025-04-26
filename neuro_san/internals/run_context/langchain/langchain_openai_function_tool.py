@@ -58,10 +58,11 @@ class LangChainOpenAIFunctionTool(BaseTool):
     # This group of member variables are required in OpenAI function definitions
     name: str
     description: str
-    parameters: object
 
     # All the other "member" variables assigned below are typed as
     # "Optional" so that we can have this class function as we like.
+
+    parameters: Optional[Dict[str, Any]] = None
 
     # This guy is required to satisfy langchain internals.
     # See comment near assignment in from_function_json() below.
@@ -91,9 +92,7 @@ class LangChainOpenAIFunctionTool(BaseTool):
             message = f"Function for {name} has no description.\n"
 
         parameters: Dict[str, Any] = function_json.get("parameters")
-        if parameters is None:
-            message = f"Function for {name} has no parameters defined.\n"
-        else:
+        if parameters:
             if parameters.get("type") is None:
                 message = f"Function for {name} needs to have a parameters.type set to 'object'.\n"
             properties: Dict[str, Any] = parameters.get("properties")
@@ -152,12 +151,13 @@ It's function_json is described thusly:
         # to be an args_schema member which should be a pydantic BaseModel
         # for the objects that are passed as arguments.
         #
-        # Create a pydantic BaseModel of the OpenAI function spec for the agent
+        # If "parameters" is not None, create a pydantic BaseModel of the OpenAI function spec for the agent
         # to satisfy that langchain need.  It's kind of a shame because this is just
         # going to get converted back to an OpenAI function again later on in langchain
         #  agent-land.
-        converter = BaseModelDictionaryConverter("parameters")
-        tool.args_schema = converter.from_dict(use_function_json)
+        if use_function_json != function_json:
+            converter = BaseModelDictionaryConverter("parameters")
+            tool.args_schema = converter.from_dict(use_function_json)
 
         tool.tool_caller = tool_caller
 

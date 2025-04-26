@@ -89,7 +89,7 @@ syntactically incorrect in that file.
         #           the calls to Pathlib/__file__ as a valid means to resolve
         #           these kinds of issues.
         name = Path(use_file).stem
-        tool_registry = self.restore_from_config(name, config)
+        tool_registry: AgentToolRegistry = self.restore_from_config(name, config)
         return tool_registry
 
     def restore_from_config(self, agent_name: str, config: Dict[str, Any]) -> AgentToolRegistry:

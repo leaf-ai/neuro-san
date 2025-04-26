@@ -1,0 +1,73 @@
+
+# Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
+# All Rights Reserved.
+# Issued under the Academic Public License.
+#
+# You can be released from the terms, and requirements of the Academic Public
+# License by purchasing a commercial license.
+# Purchase of a commercial license is mandatory for any use of the
+# neuro-san SDK Software in commercial settings.
+#
+# END COPYRIGHT
+{
+    "llm_config": {
+        "model_name": "gpt-4o",
+    },
+    "tools": [
+        # These tool definitions do not have to be in any particular order
+        # How they are linked and call each other is defined within their
+        # own specs.  This could be a graph, potentially even with cycles.
+
+        # This first guy is the "Front Man".  He is identified as such because
+        # he is the only one with no parameters in his function definition,
+        # and therefore he needs to talk to the outside world to get things rolling.
+        {
+            "name": "passthrough",
+
+            # Note that there are no parameters defined for this guy's "function" key.
+            # This is the primary way to identify this tool as a front-man,
+            # distinguishing it from the rest of the tools.
+
+            "function": {
+
+                # When there are no function parameters to the front-man,
+                # its description acts as an initial prompt.
+
+                "description": """
+I am a test agent network that can do math with values in sly_data.
+Just give me the name of an arithmetic operator and I will do the work
+on the secret numbers.
+"""
+            },
+
+            "instructions": """
+Always call the math_guy tool to populate the return sly_data correctly.
+Return verbatim whatever it returns.
+""",
+            # Call the math_guy as an "external tool". Tools that are prefixed
+            # with a slash "/" are expected to reside as agents on the same server.
+            "tools": ["/math_guy"],
+
+            # The allow block below lets us deviate from the standard security policy.
+            # This policy is one of securtiy-by-default, whereby no sly_data gets out
+            # of the agent network at all unless otherwise specified (as below).
+            "allow": {
+                "to_downstream": {
+                    # Specifying this allows specific sly_data keys from this agent network
+                    # to be sent to downstream agents
+                    "sly_data": ["x", "y"]
+                },
+                "from_downstream": {
+                    # Specifying this allows sly_data keys to be ingested from downstream agents
+                    # as sly_data for this agent network
+                    "sly_data": ["equals"]
+                },
+                "to_upstream": {
+                    # Specifying this allows sly_data keys from this network to be passed back
+                    # to the calling client
+                    "sly_data": ["equals"]
+                }
+            }
+        }
+    ]
+}

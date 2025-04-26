@@ -12,6 +12,7 @@
 """
 See class comment for details
 """
+import http
 from typing import Any
 from typing import Dict
 from typing import List
@@ -169,3 +170,11 @@ class BaseRequestHandler(RequestHandler):
         with no-op implementation.
         """
         return
+
+    async def options(self, *_args, **_kwargs):
+        """
+        Handles OPTIONS requests for CORS support
+        """
+        # No body needed. Tornado will return a 204 No Content by default
+        self.set_status(http.HTTPStatus.NO_CONTENT)
+        await self.finish()

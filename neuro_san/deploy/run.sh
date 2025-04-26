@@ -64,7 +64,6 @@ function run() {
         --network=$network \
         -e OPENAI_API_KEY \
         -e ANTHROPIC_API_KEY \
-        -e TOOL_REGISTRY_FILE=$1 \
         -p $SERVICE_PORT:$SERVICE_PORT \
         -p $SERVICE_HTTP_PORT:$SERVICE_HTTP_PORT \
             neuro-san/neuro-san:$CONTAINER_VERSION"

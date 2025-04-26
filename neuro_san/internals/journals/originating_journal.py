@@ -13,9 +13,11 @@ from typing import Any
 from typing import Dict
 from typing import List
 
+from langchain_core.messages.ai import AIMessage
 from langchain_core.messages.base import BaseMessage
 
 from neuro_san.internals.journals.journal import Journal
+from neuro_san.internals.messages.agent_tool_result_message import AgentToolResultMessage
 from neuro_san.internals.messages.message_utils import is_relevant_to_chat_history
 
 
@@ -65,7 +67,27 @@ class OriginatingJournal(Journal):
             use_origin = origin
 
         if self.chat_history is not None and is_relevant_to_chat_history(message):
-            self.chat_history.append(message)
+            # Different LLM providers handle message types differently when constructing responses:
+            #
+            # - Anthropic models (via ChatAnthropic) explicitly check the `message.type` string
+            #   and only accept messages of type "human" or "ai". Custom subclasses like
+            #   AgentToolResultMessage return a different type (e.g., "agent_tool_result"),
+            #   which causes Anthropic's handler to reject the message.
+            #
+            #
+            # - OpenAI and Ollama models (via ChatOpenAI and ChatOllama) do not rely on `message.type`.
+            #   Instead, they use `isinstance(message, AIMessage)` checks, which allows us to safely pass
+            #   `AgentToolResultMessage` since it subclasses `AIMessage`. This gives us the flexibility
+            #   to include additional metadata like `tool_result_origin` when supported.
+            #
+            # To avoid problem with any other LLMs, convert "AgentToolResultMessage" to "AIMessage"
+            # when appending it chathistory but allow it to be written in the journal as is to
+            # to maintain the information on tool origin.
+            if isinstance(message, AgentToolResultMessage):
+                ai_message = AIMessage(content=message.content)
+                self.chat_history.append(ai_message)
+            else:
+                self.chat_history.append(message)
 
         if self.pending is not None:
             # Avoid cases where two different kinds of message hold the same content.

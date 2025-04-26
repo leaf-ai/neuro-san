@@ -1,0 +1,70 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+      - "**"
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.12-slim
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          apt-get update && apt-get install -y shellcheck
+          pip install -r requirements-build.txt
+          pip install -r requirements.txt
+
+      - name: Show installed packages
+        run: pip freeze
+
+      - name: Run pylint
+        run: build_scripts/run_pylint.sh
+
+      - name: Run shellcheck
+        run: build_scripts/run_shellcheck.sh
+
+      - name: Run flake8
+        run: flake8
+
+      - name: Run pytest (excluding integration tests)
+        run: pytest --verbose -m "not integration" --timer-top-n 10
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          AGENT_TOOL_PATH: "./neuro_san/coded_tools"
+          PYTHONPATH: ${{ env.PYTHONPATH }}:"."
+
+      - name: Check README renders correctly on PyPI
+        run: |
+          pip install readme_renderer readme_renderer[md]
+          python -m readme_renderer README.md
+
+      - name: Notify Slack on success
+        if: success()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "✅ *Tests Passed* for `${{ github.repository }}` on `${{ github.ref_name }}`"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify Slack on failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "❌ *Tests Failed* for `${{ github.repository }}` on `${{ github.ref_name }}`"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
