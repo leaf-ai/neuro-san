@@ -33,6 +33,10 @@ Neuro-San also offers:
 * server-readiness at scale
 * enabling of distributed agent webs that call each other to work together, wheverer they are hosted.
 * security-by-default - you set what private data is to be shared downstream/upstream
+* test infrastructure for your agent networks, including:
+    * data-driven test cases
+    * the ability for LLMs to test your agent networks
+    * definition of a "success_ratio" for your tests
 
 ## Running client and server
 

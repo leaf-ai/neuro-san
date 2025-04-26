@@ -11,7 +11,7 @@
 
 from typing import Any
 
-from tests.framework.evaluators.abstract_agent_evaluator import AbstractAgentEvaluator
+from neuro_san.test.evaluators.abstract_agent_evaluator import AbstractAgentEvaluator
 
 
 class KeywordsAgentEvaluator(AbstractAgentEvaluator):

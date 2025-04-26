@@ -9,25 +9,33 @@
 #
 # END COPYRIGHT
 from typing import Any
+from typing import List
 
-from unittest import TestCase
-
-from tests.framework.interfaces.assert_forwarder import AssertForwarder
+from neuro_san.test.interfaces.assert_forwarder import AssertForwarder
 
 
-class UnitTestAssertForwarder(AssertForwarder):
+class AssertCapture(AssertForwarder):
     """
-    AssertForwarder implemetation for python unittest.TestCase
+    AssertForwarder implementation that wraps another AssertForwarder and
+    captures any exceptions thrown from it.
     """
 
-    def __init__(self, test_case: TestCase):
+    def __init__(self, basis: AssertForwarder):
         """
         Constructor
 
-        :param test_case: The python unitest.TestCase instance on which to base any asserts.
+        :param basis: AssertForwarder
         """
-        self.test_case: TestCase = test_case
+        self.basis: AssertForwarder = basis
+        self.asserts: List[AssertionError] = []
 
+    def get_asserts(self) -> List[AssertionError]:
+        """
+        :return: The list of asserts captured from the basis
+        """
+        return self.asserts
+
+    # pylint: disable=invalid-name
     def assertEqual(self, first: Any, second: Any, msg: str = None):
         """
         Assert that the first is equal to the second
@@ -36,8 +44,12 @@ class UnitTestAssertForwarder(AssertForwarder):
         :param second: Second comparison element
         :param msg: optional string message
         """
-        self.test_case.assertEqual(first, second, msg=msg)
+        try:
+            self.basis.assertEqual(first, second, msg)
+        except AssertionError as exception:
+            self.asserts.append(exception)
 
+    # pylint: disable=invalid-name
     def assertNotEqual(self, first: Any, second: Any, msg: str = None):
         """
         Assert that the first is not equal to the second
@@ -46,8 +58,12 @@ class UnitTestAssertForwarder(AssertForwarder):
         :param second: Second comparison element
         :param msg: optional string message
         """
-        self.test_case.assertNotEqual(first, second, msg=msg)
+        try:
+            self.basis.assertNotEqual(first, second, msg)
+        except AssertionError as exception:
+            self.asserts.append(exception)
 
+    # pylint: disable=invalid-name
     def assertTrue(self, expr: Any, msg: str = None):
         """
         Assert that the expression is true
@@ -55,8 +71,12 @@ class UnitTestAssertForwarder(AssertForwarder):
         :param expr: Expression to test
         :param msg: optional string message
         """
-        self.test_case.assertTrue(expr, msg=msg)
+        try:
+            self.basis.assertTrue(expr, msg)
+        except AssertionError as exception:
+            self.asserts.append(exception)
 
+    # pylint: disable=invalid-name
     def assertFalse(self, expr: Any, msg: str = None):
         """
         Assert that the expression is false
@@ -64,8 +84,12 @@ class UnitTestAssertForwarder(AssertForwarder):
         :param expr: Expression to test
         :param msg: optional string message
         """
-        self.test_case.assertFalse(expr, msg=msg)
+        try:
+            self.basis.assertFalse(expr, msg)
+        except AssertionError as exception:
+            self.asserts.append(exception)
 
+    # pylint: disable=invalid-name
     def assertIs(self, first: Any, second: Any, msg: str = None):
         """
         Assert that the first and second are the same object
@@ -74,8 +98,12 @@ class UnitTestAssertForwarder(AssertForwarder):
         :param second: Second comparison element
         :param msg: optional string message
         """
-        self.test_case.assertIs(first, second, msg=msg)
+        try:
+            self.basis.assertIs(first, second, msg)
+        except AssertionError as exception:
+            self.asserts.append(exception)
 
+    # pylint: disable=invalid-name
     def assertIsNot(self, first: Any, second: Any, msg: str = None):
         """
         Assert that the first and second are not the same object
@@ -84,8 +112,12 @@ class UnitTestAssertForwarder(AssertForwarder):
         :param second: Second comparison element
         :param msg: optional string message
         """
-        self.test_case.assertIsNot(first, second, msg=msg)
+        try:
+            self.basis.assertIsNot(first, second, msg)
+        except AssertionError as exception:
+            self.asserts.append(exception)
 
+    # pylint: disable=invalid-name
     def assertIsNone(self, expr: Any, msg: str = None):
         """
         Assert that the expression is None
@@ -93,8 +125,12 @@ class UnitTestAssertForwarder(AssertForwarder):
         :param expr: Expression to test
         :param msg: optional string message
         """
-        self.test_case.assertIsNone(expr, msg=msg)
+        try:
+            self.basis.assertIsNone(expr, msg)
+        except AssertionError as exception:
+            self.asserts.append(exception)
 
+    # pylint: disable=invalid-name
     def assertIsNotNone(self, expr: Any, msg: str = None):
         """
         Assert that the expression is not None
@@ -102,8 +138,12 @@ class UnitTestAssertForwarder(AssertForwarder):
         :param expr: Expression to test
         :param msg: optional string message
         """
-        self.test_case.assertIsNotNone(expr, msg=msg)
+        try:
+            self.basis.assertIsNotNone(expr, msg)
+        except AssertionError as exception:
+            self.asserts.append(exception)
 
+    # pylint: disable=invalid-name
     def assertIn(self, member: Any, container: Any, msg: str = None):
         """
         Assert that the member is in the container
@@ -112,8 +152,12 @@ class UnitTestAssertForwarder(AssertForwarder):
         :param container: Container comparison element
         :param msg: optional string message
         """
-        self.test_case.assertIn(member, container, msg=msg)
+        try:
+            self.basis.assertIn(member, container, msg)
+        except AssertionError as exception:
+            self.asserts.append(exception)
 
+    # pylint: disable=invalid-name
     def assertNotIn(self, member: Any, container: Any, msg: str = None):
         """
         Assert that the member is not in the container
@@ -122,7 +166,10 @@ class UnitTestAssertForwarder(AssertForwarder):
         :param container: Container comparison element
         :param msg: optional string message
         """
-        self.test_case.assertNotIn(member, container, msg=msg)
+        try:
+            self.basis.assertNotIn(member, container, msg)
+        except AssertionError as exception:
+            self.asserts.append(exception)
 
     # pylint: disable=invalid-name
     def assertIsInstance(self, obj: Any, cls: Any, msg: str = None):
@@ -133,7 +180,10 @@ class UnitTestAssertForwarder(AssertForwarder):
         :param cls: Class comparison element
         :param msg: optional string message
         """
-        self.test_case.assertIsInstance(obj, cls, msg=msg)
+        try:
+            self.basis.assertIsInstance(obj, cls, msg)
+        except AssertionError as exception:
+            self.asserts.append(exception)
 
     # pylint: disable=invalid-name
     def assertNotIsInstance(self, obj: Any, cls: Any, msg: str = None):
@@ -144,4 +194,7 @@ class UnitTestAssertForwarder(AssertForwarder):
         :param cls: Class comparison element
         :param msg: optional string message
         """
-        self.test_case.assertNotIsInstance(obj, cls, msg=msg)
+        try:
+            self.basis.assertNotIsInstance(obj, cls, msg)
+        except AssertionError as exception:
+            self.asserts.append(exception)

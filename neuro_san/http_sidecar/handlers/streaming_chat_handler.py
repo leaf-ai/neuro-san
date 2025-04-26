@@ -88,9 +88,3 @@ class StreamingChatHandler(BaseRequestHandler):
             # We are done with response stream:
             await self.finish()
             self.logger.info(metadata, "Finish POST %s/streaming_chat %d responses", agent_name, sent_out)
-
-    async def options(self):
-        """
-        Implementation of OPTIONS request handler for streaming chat API call.
-        """
-        await self.flush()
