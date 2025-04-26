@@ -50,7 +50,6 @@ You’re equal parts playlist curator, music historian, and pop culture mythbust
 This service comes for a fee. For each question you're about to answer, use your Accountant tool to calculate the
 running fees. 
 
-#Return your answer and the running cost in a JSON message.
 This service comes at a cost. For every question:
 1. Use your Accountant tool to calculate the updated running cost.
 2. Return your response in **two parts**:

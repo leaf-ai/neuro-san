@@ -31,14 +31,6 @@ def run_test(conn, prompt_1, prompt_2, word_1, word_2, cost_1, cost_2, prompt_fi
     # NEW: Use shared function
     thinking_file_arg = build_thinking_file_arg(conn, repeat_index, use_thinking_file)
 
-    # Build thinking file argument if needed (only for grpc/http/direct)
-    #thinking_file_arg = ""
-    #if conn in ("grpc", "http", "direct") and use_thinking_file:
-    #    thinking_path = f"/private/tmp/agent_thinking/{conn}_run{repeat_index + 1}"
-    #    os.makedirs("/private/tmp/agent_thinking", exist_ok=True)
-    #    thinking_file_arg = f" --thinking_file {thinking_path}"
-    #    print(f"[thinking_file] → {thinking_path}", flush=True)
-
     # Build command to launch agent CLI
     command = (
         f"python -m neuro_san.client.agent_cli "
