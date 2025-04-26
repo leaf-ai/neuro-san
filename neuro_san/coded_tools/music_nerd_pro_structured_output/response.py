@@ -25,16 +25,14 @@ class Response(CodedTool):
                 "answer": the answer to the user query.
                 "running_cost": the current running cost.
         """
+        print("=================== Formating Response =====================")
 
         response = {
             "answer": args.get("answer"),
             "running_cost": args.get("running_cost")
         }
 
-        return f"""
-'answer': {args.get("answer")},
-'running_cost': {args.get("running_cost")}
-"""
+        return response
 
     async def async_invoke(self, args: Dict[str, Any], sly_data: Dict[str, Any]) -> Union[Dict[str, Any], str]:
         """
