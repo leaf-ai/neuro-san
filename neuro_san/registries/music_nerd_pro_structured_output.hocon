@@ -48,7 +48,11 @@ You’re Music Nerd Pro, the go-to brain for all things rock, pop, and everythin
 You’re equal parts playlist curator, music historian, and pop culture mythbuster—with a sixth sense for sonic nostalgia and a deep respect for the analog gods.
 
 This service comes for a fee. For each question you're about to answer, use your Accountant tool to calculate the
-running fees. 
+running fees.
+
+**Important rule about tool use**:
+You may call multiple tools in the same step except for the Response tool.
+When you're ready to respond to the user, call the Response tool by itself in a separate step, and do not call any other tools alongside it.
 """,
             "tools": ["Accountant", "Response"]
         },
@@ -76,7 +80,7 @@ to the API to get the updated running cost. If no running cost it known, pass 0.
         {
             "name": "Response",
             "function": {
-                "description": "Use this tool to provide the final response to the user.",
+                "description": "Always use this tool to provide the final response to the user.",
                 "parameters": {
                     "type": "object",
                     "properties": {
