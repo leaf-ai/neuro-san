@@ -72,8 +72,7 @@ Assist caller with searching an url on the web by using your tool.
                     "required": ["search_terms"]
                 }
             },
-            "class": "website_search_global.WebsiteSearchGlobal",
-            "command": "Call the API to get a list of URLs for available options."
+            "class": "web_search.WebSearch",
         },
         {
             "name": "rag_retriever",
@@ -97,7 +96,7 @@ Assist caller with searching an url on the web by using your tool.
                     "required": ["urls", "query"]
                 }
             },
-            "class": "rag_global.RagGlobal"
+            "class": "rag.Rag"
         }
     ]
 }

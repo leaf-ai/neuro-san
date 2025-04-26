@@ -23,7 +23,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from neuro_san.interfaces.coded_tool import CodedTool
 
 
-class RagGlobal(CodedTool):
+class Rag(CodedTool):
     """
     A CodedTool implementation that performs Retrieval-Augmented Generation (RAG)
     using URLs obtained from a website search.
