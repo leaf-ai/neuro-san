@@ -32,6 +32,7 @@ test_data = ConfigFactory.parse_file(os.path.abspath(TEST_DATA_HOCON_PATH))
 #   - Returns extracted values for CLI interaction testing
 # ------------------------------------------------------------------------
 
+
 def extract_test_values(connection_name):
     """
     Loads test prompts and expected outputs for a given connection

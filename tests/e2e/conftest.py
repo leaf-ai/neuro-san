@@ -103,6 +103,6 @@ def pytest_generate_tests(metafunc):
 
 def load_connections():
     """
-    Loads the list of supported connection names from the static config file.
+    Loads the list of supported connection names from the HOCON config file.
     """
     return config.get("connection")

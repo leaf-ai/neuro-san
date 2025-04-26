@@ -52,5 +52,5 @@ def build_thinking_file_arg(conn: str, repeat_index: int, use_thinking_file: boo
     # Print the thinking path to stdout for debug visibility
     print(f"[thinking_file] → {thinking_path}", flush=True)
 
-    # Return the CLI-ready argument string
+    # Return the CLI-ready argument string(s)
     return f" --thinking_file {thinking_path}"

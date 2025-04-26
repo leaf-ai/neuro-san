@@ -25,6 +25,7 @@ def extract_cost_line(output: str):
     """
     Finds and returns cost-related information from agent output.
     Tries different styles: labeled, sentence, or JSON block.
+    Return None on nothing
     """
     label = re.search(r"Running Cost:\s*\$\d+\.\d{2}", output)
     if label:
