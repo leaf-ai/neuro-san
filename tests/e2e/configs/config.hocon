@@ -1,0 +1,8 @@
+# config.hocon
+# Agent config & connection setup
+
+connection = ["direct", "grpc", "http"]
+agent = [music_nerd_pro]
+
+model_llm = ["gpt-4o", "llama3.1"]
+

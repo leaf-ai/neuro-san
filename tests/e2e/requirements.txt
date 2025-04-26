@@ -1,0 +1,6 @@
+pexpect
+pyhocon
+pytest
+pytest-xdist
+pytest-timeout
+pytest-timer

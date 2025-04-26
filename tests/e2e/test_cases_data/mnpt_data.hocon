@@ -1,0 +1,29 @@
+# test_data.hocon
+# Input/output test pairs
+
+test = [
+  {
+    input_1: {
+      user_text: "Who did yellow submarine?"
+      answer: {
+        type_match: "keyword"
+        word: "Beatles"
+        cost: "3.0"
+      }
+    }
+  },
+  {
+    input_2: {
+      user_text: "Where were they from?"
+      answer: {
+        type_match: "keyword"
+        word: "Liverpool"
+        cost: "6.0"
+      }
+    }
+  },
+  {
+    input_done: "quit"
+  }
+]
+
