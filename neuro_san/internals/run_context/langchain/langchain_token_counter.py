@@ -21,13 +21,8 @@ from contextvars import ContextVar
 from contextvars import copy_context
 from time import time
 
-from langchain_anthropic.chat_models import ChatAnthropic
-from langchain_community.callbacks.bedrock_anthropic_callback \
-    import BedrockAnthropicTokenUsageCallbackHandler
 from langchain_community.callbacks.openai_info import OpenAICallbackHandler
-from langchain_community.callbacks.manager import bedrock_anthropic_callback_var
 from langchain_community.callbacks.manager import get_openai_callback
-from langchain_community.callbacks.manager import get_bedrock_anthropic_callback
 from langchain_community.callbacks.manager import openai_callback_var
 from langchain_core.callbacks import AsyncCallbackHandler
 from langchain_core.callbacks.base import BaseCallbackHandler
@@ -210,14 +205,16 @@ class LangChainTokenCounter:
             #     configured in order to get good token info back reliably.
             return get_openai_callback
 
-        if isinstance(llm, ChatAnthropic):
-            #   * ChatAnthropic needs to have stream_usage=True configured
-            #     in order to get good token info back reliably.
-            #     Per class docs this is on by default.
-            return get_bedrock_anthropic_callback
+        # * ChatAnthropic needs to have stream_usage=True configured
+        #   in order to get good token info back reliably.
+        #   Per class docs this is on by default.
 
         # Open up a context manager for LlmTokenCallbackHandler, which also gets token usage
-        # from "usage_metadata" but give "total_cost" = 0.
+        # from "usage_metadata"
+        # # Cost for Anthropic models can be determined as we import the lookup table
+        # from https://python.langchain.com/api_reference/_modules/langchain_community/callbacks/
+        # bedrock_anthropic_callback.html#BedrockAnthropicTokenUsageCallbackHandler
+        # for non "claude" model "total_cost" = 0.0.
         return get_llm_token_callback
 
     @staticmethod
@@ -232,10 +229,7 @@ class LangChainTokenCounter:
         if isinstance(llm, (ChatOpenAI, AzureChatOpenAI)):
             return openai_callback_var
 
-        if isinstance(llm, ChatAnthropic):
-            return bedrock_anthropic_callback_var
-
-        # Collect tokens for models other than OpenAI and Anthropic.
+        # Collect tokens for models other than OpenAI
         return llm_token_callback_var
 
     @staticmethod
@@ -258,7 +252,7 @@ class LangChainTokenCounter:
 
         if isinstance(
             callback,
-            (OpenAICallbackHandler, BedrockAnthropicTokenUsageCallbackHandler, LlmTokenCallbackHandler)
+            (OpenAICallbackHandler, LlmTokenCallbackHandler)
         ):
             # So far these two instances share the same reporting structure
             token_dict = {
