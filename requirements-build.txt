@@ -8,6 +8,10 @@ timeout-decorator==0.5.0
 coverage==7.6.1
 pytest-cov==5.0.0
 parameterized
+pexpect
+pyhocon
+pytest-xdist
+pytest-timeout
 
 # Code quality
 flake8==7.1.1
