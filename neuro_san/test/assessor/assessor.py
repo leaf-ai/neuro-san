@@ -9,6 +9,9 @@
 # neuro-san SDK Software in commercial settings.
 #
 # END COPYRIGHT
+from typing import Any
+from typing import Dict
+from typing import List
 
 import argparse
 
@@ -32,10 +35,24 @@ class Assessor:
         """
         Main entry point for command line user interaction.
         """
+        # Parse command line arguments
         self.parse_args()
+
+        # Run the tests per the test case, collecting failure information in the AssertForwarder
         asserts = AssessorAssertForwarder()
         driver = DataDrivenAgentTestDriver(asserts)
         driver.one_test(self.args.test_hocon)
+
+        # Get raw failure information from AssertForwarder
+        num_total: int = asserts.get_num_total()
+        fail: List[Dict[str, Any]] = asserts.get_fail()
+        num_pass: int = num_total - len(fail)
+
+        # Initial output
+        print(f"{self.args.test_hocon}:")
+        print(f"{num_pass}/{num_total} attempts passed.")
+        if num_pass < num_total:
+            print(f"{len(fail)}/{num_total} attempts failed.")
 
     def parse_args(self):
         """
