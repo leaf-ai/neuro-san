@@ -162,6 +162,10 @@ build.sh / run.sh the service like you did above to re-load the server,
 and interact with it via the agent_cli.py chat client, making sure
 you specify your agent correctly (per the hocon file stem).
 
+Note that the .hocon files in this repo are more spartan for testing and simple
+demonstration purposes.  For more full-featured demos, see the
+[neuro-san-demo repo.](https://github.com/leaf-ai/neuro-san-demos)
+
 ### More agent example files
 
 For more examples of agent networks, documentation and tutorials,
