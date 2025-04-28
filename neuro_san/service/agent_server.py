@@ -128,6 +128,15 @@ class AgentServer:
         service_router: DynamicAgentRouter = DynamicAgentRouter().get_instance()
         service_router.add_service(agent_service_name, agent_rpc_handlers)
 
+    def agent_modified(self, agent_name: str):
+        """
+        Agent is being modified in the service scope.
+        :param agent_name: name of an agent
+        """
+        # Endpoints configuration has not changed,
+        # so nothing to do here, actually.
+        return
+
     def agent_removed(self, agent_name: str):
         """
         Agent is being removed from the service.
