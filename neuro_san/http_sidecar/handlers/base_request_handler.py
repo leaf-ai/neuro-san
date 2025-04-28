@@ -147,9 +147,6 @@ class BaseRequestHandler(RequestHandler):
             agents_names: List[str] = []
             for agent_dict in agents_list:
                 agents_names.append(agent_dict["agent_name"])
-
-            print(f">>>>>>>>>>>> AGENTS: {agents_names}")
-
             self.agents_updater.update_agents(agents_names)
             return True
         except Exception as exc:  # pylint: disable=broad-exception-caught

@@ -176,20 +176,6 @@ class AgentServer:
 
         self.setup_tool_factory_provider()
 
-        # service_router: DynamicAgentRouter = DynamicAgentRouter().get_instance()
-        # agent_names: List[str] = tool_factory_provider.get_agent_names()
-        # for agent_name in agent_names:
-        #     service = AgentService(server_lifetime, security_cfg,
-        #                            agent_name,
-        #                            tool_factory_provider.get_agent_tool_factory_provider(agent_name),
-        #                            self.server_logging)
-        #     self.services.append(service)
-        #
-        #     servicer_to_server = AgentServicerToServer(service)
-        #     agent_rpc_handlers = servicer_to_server.build_rpc_handlers()
-        #     agent_service_name: str = AgentServiceStub.prepare_service_name(agent_name)
-        #     service_router.add_service(agent_service_name, agent_rpc_handlers)
-
         # Add DynamicAgentRouter instance as a generic RPC handler for our server:
         service_router: DynamicAgentRouter = DynamicAgentRouter().get_instance()
         server.add_generic_rpc_handlers((service_router,))
