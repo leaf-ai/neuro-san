@@ -1,5 +1,5 @@
 # conftest.py
-
+# ------------------------------------------------------------------------
 # Provides custom CLI flags, dynamic test generation, and environment setup.
 # Pytest configuration to share like MusicNerdPro test
 # ------------------------------------------------------------------------
