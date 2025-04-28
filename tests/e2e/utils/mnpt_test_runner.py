@@ -89,4 +89,3 @@ def run_test(conn, prompt_1, prompt_2, word_1, word_2, cost_1, cost_2, prompt_fi
         sys.exit(1)
     else:
         print("✅ Test passed successfully!")
-        
