@@ -36,7 +36,7 @@ jobs:
         run: flake8
 
       - name: Run E2E (Tests Only)
-        run: pytest tests/e2e/tests/ --verbose --thinking-file --repeat 2 -n auto
+        run: pytest tests/e2e/tests/ --verbose --connection direct --thinking-file --repeat 1 -n auto
 
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
