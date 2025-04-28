@@ -12,12 +12,70 @@
 
 import asyncio
 from typing import Any
+from typing import Dict
+from typing import List
 from typing_extensions import override
 
+from langchain_community.callbacks.bedrock_anthropic_callback import MODEL_COST_PER_1K_INPUT_TOKENS
+from langchain_community.callbacks.bedrock_anthropic_callback import MODEL_COST_PER_1K_OUTPUT_TOKENS
 from langchain_core.callbacks import AsyncCallbackHandler
 from langchain_core.messages import AIMessage
 from langchain_core.messages.ai import UsageMetadata
 from langchain_core.outputs import ChatGeneration, LLMResult
+
+EMPTY = ""
+
+
+def calculate_anthropic_token_cost(input_tokens: int, output_tokens: int, model_name: str) -> float:
+    """
+    Calculate the token cost for an Anthropic Claude model from lookup table MODEL_COST_PER_1K_INPUT_TOKENS
+    and MODEL_COST_PER_1K_OUTPUT_TOKENS.
+
+    This function allows users to input a partial model name (e.g., 'claude-3-7-sonnet-20250219')
+    instead of requiring the full internal model ID (e.g., 'anthropic.claude-3-7-sonnet-20250219-v1:0').
+
+    Since users often do not know or use the full system-defined model names,
+    we perform a flexible substring match across all known models:
+    - If exactly one match is found, we calculate the cost based on that model.
+    - If multiple matches are found, we return 0.0 and print an error to alert the user.
+    - If no matches are found, we also return 0.0 and print an error.
+
+    :param prompt_tokens: Number of input (prompt) tokens.
+    :param completion_tokens: Number of output (completion) tokens.
+    :param model_name: A model name (e.g., 'claude-3-7-sonnet-20250219').
+
+    :return: The total cost as a float.
+    """
+
+    if not model_name:
+        print("[Error] model_name must be provided.")
+        return 0.0
+
+    # Check if "model_name" is in any keys of the lookup table.
+    matching_models: List[str] = [
+        model for model in MODEL_COST_PER_1K_INPUT_TOKENS if model_name in model
+    ]
+
+    # Return cost = 0.0 if there are no match or more than one matches.
+    if not matching_models:
+        print(
+            f"[Error] Unknown model: '{model_name}'. No matches found. "
+            "Known models are: " + ", ".join(MODEL_COST_PER_1K_INPUT_TOKENS.keys())
+        )
+        return 0.0
+
+    if len(matching_models) > 1:
+        print(
+            f"[Error] Ambiguous model name '{model_name}'. Matches multiple models: "
+            + ", ".join(matching_models)
+        )
+        return 0.0
+
+    full_model_id: str = matching_models[0]
+
+    input_cost: float = (input_tokens / 1000) * MODEL_COST_PER_1K_INPUT_TOKENS[full_model_id]
+    output_cost: float = (output_tokens / 1000) * MODEL_COST_PER_1K_OUTPUT_TOKENS[full_model_id]
+    return input_cost + output_cost
 
 
 # pylint: disable=too-many-ancestors
@@ -73,7 +131,6 @@ class LlmTokenCallbackHandler(AsyncCallbackHandler):
     prompt_tokens: int = 0
     completion_tokens: int = 0
     successful_requests: int = 0
-    # There is no cost for Ollama model. Define "total_cost" and set at 0.0 to fit the report template.
     total_cost: float = 0.0
 
     def __init__(self) -> None:
@@ -103,13 +160,24 @@ class LlmTokenCallbackHandler(AsyncCallbackHandler):
         except IndexError:
             generation = None
 
-        usage_metadata = None
+        usage_metadata: UsageMetadata = None
+        response_metadata: Dict[str, Any] = None
+        model_name: str = EMPTY
         if isinstance(generation, ChatGeneration):
             try:
                 message = generation.message
                 if isinstance(message, AIMessage):
                     # Token info is in an attribute of AIMessage called "usage_metadata".
-                    usage_metadata: UsageMetadata = message.usage_metadata
+                    usage_metadata = message.usage_metadata
+                    # Get model name so that cost can be determined if needed.
+                    response_metadata = message.response_metadata
+                    if response_metadata:
+                        if "model_name" in response_metadata:
+                            model_name = response_metadata.get("model_name")
+                        elif "model_id" in response_metadata:
+                            model_name = response_metadata.get("model_id")
+                        elif "model" in response_metadata:
+                            model_name = response_metadata.get("model")
             except AttributeError:
                 pass
 
@@ -118,9 +186,16 @@ class LlmTokenCallbackHandler(AsyncCallbackHandler):
             completion_tokens: int = usage_metadata.get("output_tokens", 0)
             prompt_tokens: int = usage_metadata.get("input_tokens", 0)
 
+            # If it is an anthropic model, calculate the cost.
+            if "claude" in model_name:
+                total_cost: float = calculate_anthropic_token_cost(prompt_tokens, completion_tokens, model_name)
+            else:
+                total_cost = 0.0
+
             # update shared state behind lock
             async with self._lock:
                 self.total_tokens += total_tokens
                 self.prompt_tokens += prompt_tokens
                 self.completion_tokens += completion_tokens
                 self.successful_requests += 1
+                self.total_cost += total_cost
