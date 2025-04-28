@@ -135,7 +135,7 @@ class AgentServer:
         """
         # Endpoints configuration has not changed,
         # so nothing to do here, actually.
-        return
+        _ = agent_name
 
     def agent_removed(self, agent_name: str):
         """
