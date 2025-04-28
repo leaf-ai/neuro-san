@@ -36,7 +36,7 @@ Neuro-San also offers:
 * test infrastructure for your agent networks, including:
     * data-driven test cases
     * the ability for LLMs to test your agent networks
-    * definition of a "success_ratio" for your tests as a means to pass never-perfect agents
+    * definition of a "success_ratio" for your tests as a means to pass never-perfect but good-enough agents
 
 ## Running client and server
 
