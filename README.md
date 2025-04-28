@@ -207,7 +207,7 @@ Implementations of the AgentSession interface:
 
 * DirectAgentSession class.  Use this if you want to call neuro-san as a library
 * GrpcServiceAgentSession class. Use this if you want to call neuro-san as a client to a gRPC service
-* HttpcServiceAgentSession class. Use this if you want to call neuro-san as a client to a HTTP service
+* HttpServiceAgentSession class. Use this if you want to call neuro-san as a client to a HTTP service
 
 Note that agent_cli uses all of these.  You can look at the source code there for examples.
 
