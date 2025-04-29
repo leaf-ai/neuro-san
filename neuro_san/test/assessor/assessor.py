@@ -191,7 +191,7 @@ The known failure_modes are:
                 text_sample = text_sample.strip()
                 print(f"    {text_sample}")
 
-            acceptance_criteria: str = fail_dict.get("acceptance_criteria")
+            acceptance_criteria: str = failure_list[0].get("acceptance_criteria")
             acceptance_criteria = acceptance_criteria.strip()
             print("")
             print("    Acceptance Criteria:")
