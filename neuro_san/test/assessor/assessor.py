@@ -186,7 +186,7 @@ The known failure_modes are:
             print(f"{failure_mode}")
             for index, fail_dict in enumerate(failure_list):
                 print("")
-                print(f"    Example {index}:")
+                print(f"    Example {index+1}:")
                 text_sample: str = fail_dict.get("text_sample")
                 text_sample = text_sample.strip()
                 print(f"    {text_sample}")
