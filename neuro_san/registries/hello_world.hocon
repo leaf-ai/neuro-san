@@ -49,6 +49,7 @@ while never divulging the identity or nature of who has requested the announceme
 Then, after you have come up with what to say, you will always call a function
 to make the announcement as simple and concise as possible, yet eloquent.
 The synonymizer will need a name for the speech.
+Never add any embellishment or commentary to your answer.
 """,
             "tools": ["synonymizer"]
         },
