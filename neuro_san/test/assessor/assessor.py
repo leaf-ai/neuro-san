@@ -184,8 +184,8 @@ The known failure_modes are:
             print(f"{mode_count}/{num_fail} failures ({percent:.2f}%):")
             print("Failure Mode:")
             print(f"{failure_mode}")
-            print("")
             for index, fail_dict in enumerate(failure_list):
+                print("")
                 print(f"    Example {index}:")
                 text_sample: str = fail_dict.get("text_sample")
                 text_sample = text_sample.strip()
@@ -193,6 +193,7 @@ The known failure_modes are:
 
             acceptance_criteria: str = fail_dict.get("acceptance_criteria")
             acceptance_criteria = acceptance_criteria.strip()
+            print("")
             print("    Acceptance Criteria:")
             print(f"    {acceptance_criteria}")
 
