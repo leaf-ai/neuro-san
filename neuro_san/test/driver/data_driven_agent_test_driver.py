@@ -49,8 +49,6 @@ class DataDrivenAgentTestDriver:
         """
         self.asserts_basis: AssertForwarder = asserts
         self.fixtures: FileOfClass = fixtures
-        if self.fixtures is None:
-            self.fixtures = FileOfClass(__file__, path_to_basis="../../fixtures")
 
     def one_test(self, hocon_file: str):
         """
@@ -168,7 +166,9 @@ Need at least {num_need_success} to consider {hocon_file} test to be successful.
 
         :param hocon_file: The name of the hocon from the fixtures directory.
         """
-        test_path: str = self.fixtures.get_file_in_basis(hocon_file)
+        test_path: str = hocon_file
+        if self.fixtures is not None:
+            test_path = self.fixtures.get_file_in_basis(hocon_file)
         hocon = EasyHoconPersistence(must_exist=True)
         test_case: Dict[str, Any] = hocon.restore(file_reference=test_path)
         return test_case
