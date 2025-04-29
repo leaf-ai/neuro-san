@@ -50,9 +50,3 @@ class FunctionHandler(BaseRequestHandler):
         finally:
             await self.flush()
             self.logger.info(metadata, "Finish GET %s/function", agent_name)
-
-    async def options(self):
-        """
-        Implementation of OPTIONS request handler for streaming chat API call.
-        """
-        await self.flush()

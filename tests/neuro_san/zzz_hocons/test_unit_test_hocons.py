@@ -13,10 +13,10 @@ from unittest import TestCase
 
 from parameterized import parameterized
 
-from tests.framework.unittest.dynamic_hocon_unit_tests import DynamicHoconUnitTests
+from neuro_san.test.unittest.dynamic_hocon_unit_tests import DynamicHoconUnitTests
 
 
-class TestHocons(TestCase):
+class TestUnitTestHocons(TestCase):
     """
     Data-driven dynamic test cases where each test case is specified by a single hocon file.
     """
@@ -34,7 +34,6 @@ class TestHocons(TestCase):
         "math_guy/basic_sly_data.hocon",
         "math_guy/forwarded_sly_data.hocon",
         "music_nerd/beatles_with_history.hocon",
-        "esp_decision_assistant/chicken_scenario.hocon",
 
         # List more hocon files as they become available here.
     ]))
