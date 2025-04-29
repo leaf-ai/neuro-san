@@ -169,7 +169,7 @@ Need at least {num_need_success} to consider {hocon_file} test to be successful.
         :param hocon_file: The name of the hocon from the fixtures directory.
         """
         test_path: str = self.fixtures.get_file_in_basis(hocon_file)
-        hocon = EasyHoconPersistence()
+        hocon = EasyHoconPersistence(must_exist=True)
         test_case: Dict[str, Any] = hocon.restore(file_reference=test_path)
         return test_case
 
