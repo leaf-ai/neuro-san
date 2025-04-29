@@ -165,9 +165,11 @@ The known failure_modes are:
                 and whose values are a list of failure dictionaries.
         :param num_total: The total number of attempts, including passing attempts.
         """
+        # Get a total failure count
         num_fail: int = 0
         for failure_list in assessment.values():
             num_fail += len(failure_list)
+        print(f"{num_fail}/{num_total} attempts failed.")
 
         # Sort the modes of failure by how often they occurred,
         # with the most common appearing at the beginning of the list.
@@ -177,7 +179,7 @@ The known failure_modes are:
         sorted_assessment: Dict[str, List[Dict[str, Any]]] = \
             dict(sorted(assessment.items(), key=lambda item: len(item[1]), reverse=True))
 
-        print(f"{num_fail}/{num_total} attempts failed.")
+        # Output specific modes of failure with example agent return values.
         print("Modes of failure:")
         for failure_mode, failure_list in sorted_assessment.items():
             mode_count: int = len(failure_list)
