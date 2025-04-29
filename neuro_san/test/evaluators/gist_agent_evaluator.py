@@ -128,6 +128,9 @@ The text_sample is:
         test_passes: bool = passing and not failing
         test_fails: bool = failing and not passing
         only_one: bool = test_passes or test_fails
-        self.asserts.assertEquals(only_one, True)
+
+        # Specifically use assertEqual() here to reserve assertTrue/False for
+        # whether or not the test itself passed, as those feed into the Assessor.
+        self.asserts.assertEqual(only_one, True)
 
         return test_passes
