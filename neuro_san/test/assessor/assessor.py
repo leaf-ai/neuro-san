@@ -73,12 +73,12 @@ class Assessor:
                 mode_count[index] = mode_count[index] + 1
             else:
                 failure_modes.append(failure_mode)
-                mode_count[index] = 1
+                mode_count.append(1)
 
         # End ouput
         print(f"{len(fail)}/{num_total} attempts failed.")
         print("Modes of failure:")
-        for failure_mode, index in enumerate(failure_modes):
+        for index, failure_mode in enumerate(failure_modes):
             print("\n")
             print(f"{mode_count[index]}/{len(fail)}:")
             print(f"{failure_mode}")
