@@ -58,6 +58,8 @@ class Assessor:
         # Initial output
         print(f"{self.args.test_hocon}:")
         print(f"{num_pass}/{num_total} attempts passed.")
+        if num_total == 1:
+            print("There was only one test attempt done. Consider setting 'success_ratio' on your test case hocon.")
         if num_pass == num_total:
             return
 
