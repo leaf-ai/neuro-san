@@ -18,6 +18,9 @@ from neuro_san.test.interfaces.assert_forwarder import AssertForwarder
 class AssessorAssertForwarder(AssertForwarder):
     """
     AssertForwarder implemetation for the agent Assessor.
+
+    This guy generally does not care about the correctness of the asserts themselves,
+    but serves to collect failure data for the Assessor.
     """
 
     def __init__(self):
