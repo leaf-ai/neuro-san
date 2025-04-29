@@ -137,12 +137,12 @@ Need at least {num_need_success} to consider {hocon_file} test to be successful.
             # Make single strings into a list for consistent parsing
             connections = [connections]
         asserts.assertIsInstance(connections, List)
-        asserts.assertTrue(len(connections) > 0)
+        asserts.assertGreater(len(connections), 0)
 
         # Collect the interations to test for
         empty: List[Any] = []
         interactions: List[Dict[str, Any]] = test_case.get("interactions", empty)
-        asserts.assertTrue(len(interactions) > 0)
+        asserts.assertGreater(len(interactions), 0)
 
         # Collect other session information
         use_direct: bool = test_case.get("use_direct", False)

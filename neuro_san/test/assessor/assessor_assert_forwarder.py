@@ -191,3 +191,47 @@ class AssessorAssertForwarder(AssertForwarder):
         :param msg: optional string message
         """
         # Do nothing
+
+    # pylint: disable=invalid-name
+    def assertGreater(self, first: Any, second: Any, msg: str = None):
+        """
+        Assert that the first is greater than the second.
+
+        :param first: First comparison element
+        :param second: Second comparison element
+        :param msg: optional string message
+        """
+        # Do nothing
+
+    # pylint: disable=invalid-name
+    def assertGreaterEqual(self, first: Any, second: Any, msg: str = None):
+        """
+        Assert that the first is greater than or equal to the second.
+
+        :param first: First comparison element
+        :param second: Second comparison element
+        :param msg: optional string message
+        """
+        # Do nothing
+
+    # pylint: disable=invalid-name
+    def assertLess(self, first: Any, second: Any, msg: str = None):
+        """
+        Assert that the first is less than the second.
+
+        :param first: First comparison element
+        :param second: Second comparison element
+        :param msg: optional string message
+        """
+        # Do nothing
+
+    # pylint: disable=invalid-name
+    def assertLessEqual(self, first: Any, second: Any, msg: str = None):
+        """
+        Assert that the first is less than or equal to the second.
+
+        :param first: First comparison element
+        :param second: Second comparison element
+        :param msg: optional string message
+        """
+        # Do nothing

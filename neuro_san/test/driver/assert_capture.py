@@ -198,3 +198,59 @@ class AssertCapture(AssertForwarder):
             self.basis.assertNotIsInstance(obj, cls, msg)
         except AssertionError as exception:
             self.asserts.append(exception)
+
+    # pylint: disable=invalid-name
+    def assertGreater(self, first: Any, second: Any, msg: str = None):
+        """
+        Assert that the first is greater than the second.
+
+        :param first: First comparison element
+        :param second: Second comparison element
+        :param msg: optional string message
+        """
+        try:
+            self.basis.assertGreater(first, second, msg)
+        except AssertionError as exception:
+            self.asserts.append(exception)
+
+    # pylint: disable=invalid-name
+    def assertGreaterEqual(self, first: Any, second: Any, msg: str = None):
+        """
+        Assert that the first is greater than or equal to the second.
+
+        :param first: First comparison element
+        :param second: Second comparison element
+        :param msg: optional string message
+        """
+        try:
+            self.basis.assertGreaterEqual(first, second, msg)
+        except AssertionError as exception:
+            self.asserts.append(exception)
+
+    # pylint: disable=invalid-name
+    def assertLess(self, first: Any, second: Any, msg: str = None):
+        """
+        Assert that the first is less than the second.
+
+        :param first: First comparison element
+        :param second: Second comparison element
+        :param msg: optional string message
+        """
+        try:
+            self.basis.assertLess(first, second, msg)
+        except AssertionError as exception:
+            self.asserts.append(exception)
+
+    # pylint: disable=invalid-name
+    def assertLessEqual(self, first: Any, second: Any, msg: str = None):
+        """
+        Assert that the first is less than or equal to the second.
+
+        :param first: First comparison element
+        :param second: Second comparison element
+        :param msg: optional string message
+        """
+        try:
+            self.basis.assertLessEqual(first, second, msg)
+        except AssertionError as exception:
+            self.asserts.append(exception)
