@@ -105,12 +105,14 @@ class Assessor:
 
         # Sort the modes of failure by how often they occurred,
         # with the most common appearing at the beginning of the list.
-        sorted_failures: List[str] = sorted(assessment.items(), key=lambda item: item[1], reverse=True)
+        # The item[1] in the lambda is the integer value representing the mode count of the failure.
+        # What is returned from sorted() is a list of key/value tuples which are reassembled
+        # back into a dictionary.
+        sorted_assessment: Dict[str, int] = dict(sorted(assessment.items(), key=lambda item: item[1], reverse=True))
 
         print(f"{num_fail}/{num_total} attempts failed.")
         print("Modes of failure:")
-        for failure_mode in sorted_failures:
-            mode_count: int = assessment.get(failure_mode)
+        for failure_mode, mode_count in sorted_assessment.items():
             percent: float = 100.0 * mode_count / num_fail
             print("")
             print(f"{mode_count}/{num_fail} failures ({percent:.2f}%):")
