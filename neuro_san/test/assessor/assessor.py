@@ -64,6 +64,17 @@ class Assessor:
         if num_pass == num_total:
             return
 
+        assessment: Dict[str, int] = self.assess_failures(fail)
+        self.output_failures(assessment, num_total)
+
+    def assess_failures(self, fail: List[Dict[str, Any]]) -> Dict[str, int]:
+        """
+        Assess the failures in a failure list
+
+        :param fail: A list of failure dictionaries from asserts.get_fail_dicts()
+        :return: A dictionary whose keys describe specific modes of failure,
+                and whose values are how many times that kind of failure occurred.
+        """
         failure_modes: List[str] = []
         mode_count: List[int] = []
         for one_failure in fail:
@@ -75,12 +86,34 @@ class Assessor:
                 failure_modes.append(failure_mode)
                 mode_count.append(1)
 
-        # End ouput
-        print(f"{len(fail)}/{num_total} attempts failed.")
-        print("Modes of failure:")
+        assessment: Dict[str, int] = {}
         for index, failure_mode in enumerate(failure_modes):
-            print("\n")
-            print(f"{mode_count[index]}/{len(fail)}:")
+            assessment[failure_mode] = mode_count[index]
+
+        return assessment
+
+    def output_failures(self, assessment: Dict[str, int], num_total: int):
+        """
+        Output the results of the failure assessment
+        :param assessment: A dictionary whose keys describe specific modes of failure,
+                and whose values are how many times that kind of failure occurred.
+        :param num_total: The total number of attempts, including passing attempts.
+        """
+        num_fail: int = 0
+        for value in assessment.values():
+            num_fail += value
+
+        # Sort the modes of failure by how often they occurred,
+        # with the most common appearing at the beginning of the list.
+        sorted_failures: List[str] = sorted(assessment.items(), key=lambda item: item[1], reverse=True)
+
+        print(f"{num_fail}/{num_total} attempts failed.")
+        print("Modes of failure:")
+        for failure_mode in sorted_failures:
+            mode_count: int = assessment.get(failure_mode)
+            percent: float = 100.0 * mode_count / num_fail
+            print("")
+            print(f"{mode_count}/{num_fail} failures ({percent:.2f}%):")
             print(f"{failure_mode}")
 
     def parse_args(self):
