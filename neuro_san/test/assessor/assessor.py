@@ -147,13 +147,19 @@ The known failure_modes are:
         :return: A dictionary whose keys describe specific modes of failure,
                 and whose values are a list of failure dictionaries.
         """
+        # Loop through each failure dictionary and categorize each one.
         assessment: Dict[str, Dict[str, Any]] = {}
         for one_failure in fail:
+
+            # Always use our latest-greatest list of known failure modes.
             failure_modes: List[str] = assessment.keys()
             failure_mode: str = self.categorize_one_failure(one_failure, failure_modes)
+
+            # If we have seen this failure before, add to the existing list.
             if failure_mode in failure_modes:
                 assessment[failure_mode].append(one_failure)
             else:
+                # ... otherwise make a new list for more potential matches later.
                 assessment[failure_mode] = [one_failure]
 
         return assessment
