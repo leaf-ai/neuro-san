@@ -86,7 +86,7 @@ class Assessor:
         arg_parser.add_argument("--test_hocon", type=str,
                                 help="The test case .hocon file to use as a basis for assessment")
         arg_parser.add_argument("--assessor_agent", type=str, default=None,
-                                help="The assessor agent to use. A default of None implies use of assess_failure.hocon")
+                                help="The assessor agent to use. A default of None implies use of neuro-san stock assess_failure.hocon")
         arg_parser.add_argument("--connection", default="direct", type=str,
                                 choices=["grpc", "direct", "http", "https"],
                                 help="""
