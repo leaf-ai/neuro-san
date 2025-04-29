@@ -182,7 +182,19 @@ The known failure_modes are:
             percent: float = 100.0 * mode_count / num_fail
             print("")
             print(f"{mode_count}/{num_fail} failures ({percent:.2f}%):")
+            print("Failure Mode:")
             print(f"{failure_mode}")
+            print("")
+            for index, fail_dict in enumerate(failure_list):
+                print(f"    Example {index}:")
+                text_sample: str = fail_dict.get("text_sample")
+                text_sample = text_sample.strip()
+                print(f"    {text_sample}")
+
+            acceptance_criteria: str = fail_dict.get("acceptance_criteria")
+            acceptance_criteria = acceptance_criteria.strip()
+            print("    Acceptance Criteria:")
+            print(f"    {acceptance_criteria}")
 
 
 if __name__ == '__main__':
