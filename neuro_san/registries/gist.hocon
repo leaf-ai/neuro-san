@@ -30,15 +30,15 @@
                 # its description acts as an initial prompt.
 
                 "description": """
-Will return the single string "pass" if the text sample meets the given acceptance criterion
-or the single string "fail" if the text sample does not meet the given acceptance criterion.
+Will return the single string "pass" if the text sample meets the given acceptance criteria
+or the single string "fail" if the text sample does not meet the given acceptance criteria.
 """,
                 # This parameters section isn't strictly needed if the agent network
                 # is not expected to be called as a coded tool.
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "acceptance_criterion": {
+                        "acceptance_criteria": {
                             "type": "string",
                             "description": """
 A description of what kind of content or meaning a text_sample would need to contain
@@ -47,10 +47,10 @@ in order to constitute a passing value for the test.
                         },
                         "text_sample": {
                             "type": "string",
-                            "description": "The sample of text to match against the acceptance_criterion"
+                            "description": "The sample of text to match against the acceptance_criteria"
                         }
                     },
-                    "required": ["sample", "acceptance_criterion"]
+                    "required": ["sample", "acceptance_criteria"]
                 }
             },
 
@@ -58,18 +58,18 @@ in order to constitute a passing value for the test.
 You are an expert at evaluating text samples.
 
 You will be given two inputs:
-1. an acceptance_criterion which describes what constitutes a passing evaluation for any sample of text.
-2. a text_sample which is to be evaluated against the acceptance_criterion description.
+1. an acceptance_criteria which describes what constitutes a passing evaluation for any sample of text.
+2. a text_sample which is to be evaluated against the acceptance_criteria description.
 
 Evaluate the text_sample and come to a conclusion as to whether or not
-it meets what is described by the acceptance_criterion.
+it meets what is described by the acceptance_criteria.
 
-Should there be multiple points described in the acceptance_criterion, take care that any logical 
+Should there be multiple points described in the acceptance_criteria, take care that any logical 
 descriptions containing OR or AND are upheld in your conclusion.
 
 If you conclude that what is described by the acceptance_criteria is met by the contents of the text_sample, 
 output only the single word "pass", otherwise output only the single word "fail".
-Never add any embellishment or commentary to your answer other.
+Never add any embellishment or commentary to your answer.
 """,
             "tools": []
         }

@@ -100,7 +100,7 @@ class AssessorAssertForwarder(AssertForwarder):
         :param second: Second comparison element
         :param msg: optional string message
         """
-        pass
+        # Do nothing
 
     def assertNotEqual(self, first: Any, second: Any, msg: str = None):
         """
@@ -110,7 +110,7 @@ class AssessorAssertForwarder(AssertForwarder):
         :param second: Second comparison element
         :param msg: optional string message
         """
-        pass
+        # Do nothing
 
     def assertIs(self, first: Any, second: Any, msg: str = None):
         """
@@ -120,7 +120,7 @@ class AssessorAssertForwarder(AssertForwarder):
         :param second: Second comparison element
         :param msg: optional string message
         """
-        pass
+        # Do nothing
 
     def assertIsNot(self, first: Any, second: Any, msg: str = None):
         """
@@ -130,7 +130,7 @@ class AssessorAssertForwarder(AssertForwarder):
         :param second: Second comparison element
         :param msg: optional string message
         """
-        pass
+        # Do nothing
 
     def assertIsNone(self, expr: Any, msg: str = None):
         """
@@ -139,7 +139,7 @@ class AssessorAssertForwarder(AssertForwarder):
         :param expr: Expression to test
         :param msg: optional string message
         """
-        pass
+        # Do nothing
 
     def assertIsNotNone(self, expr: Any, msg: str = None):
         """
@@ -148,7 +148,7 @@ class AssessorAssertForwarder(AssertForwarder):
         :param expr: Expression to test
         :param msg: optional string message
         """
-        pass
+        # Do nothing
 
     def assertIn(self, member: Any, container: Any, msg: str = None):
         """
@@ -158,7 +158,7 @@ class AssessorAssertForwarder(AssertForwarder):
         :param container: Container comparison element
         :param msg: optional string message
         """
-        pass
+        # Do nothing
 
     def assertNotIn(self, member: Any, container: Any, msg: str = None):
         """
@@ -168,7 +168,7 @@ class AssessorAssertForwarder(AssertForwarder):
         :param container: Container comparison element
         :param msg: optional string message
         """
-        pass
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertIsInstance(self, obj: Any, cls: Any, msg: str = None):
@@ -179,7 +179,7 @@ class AssessorAssertForwarder(AssertForwarder):
         :param cls: Class comparison element
         :param msg: optional string message
         """
-        pass
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertNotIsInstance(self, obj: Any, cls: Any, msg: str = None):
@@ -190,4 +190,4 @@ class AssessorAssertForwarder(AssertForwarder):
         :param cls: Class comparison element
         :param msg: optional string message
         """
-        pass
+        # Do nothing

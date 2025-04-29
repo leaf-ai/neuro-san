@@ -1,0 +1,101 @@
+
+# Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
+# All Rights Reserved.
+# Issued under the Academic Public License.
+#
+# You can be released from the terms, and requirements of the Academic Public
+# License by purchasing a commercial license.
+# Purchase of a commercial license is mandatory for any use of the
+# neuro-san SDK Software in commercial settings.
+#
+# END COPYRIGHT
+{
+    "llm_config": {
+        "model_name": "gpt-4o",
+    },
+    "tools": [
+        # These tool definitions do not have to be in any particular order
+        # How they are linked and call each other is defined within their
+        # own specs.  This could be a graph, potentially even with cycles.
+
+        # This first guy is the "Front Man".  He is identified as such because
+        # he is the only one with no parameters in his function definition,
+        # and therefore he needs to talk to the outside world to get things rolling.
+        {
+            "name": "assess_failure",
+
+            "function": {
+
+                # When there are no function parameters to the front-man,
+                # its description acts as an initial prompt.
+
+                "description": """
+Knowing that a given text_sample fails against a given acceptance_criteria,
+this tool will attempt to classify just how the failure relates to which one
+of a list of previously known failure_modes.  Classifications can come from
+existing entries in the failure_modes list, or if nothing quite right exists
+in that list, this tool will propose a new category.
+""",
+                # This parameters section isn't strictly needed if the agent network
+                # is not expected to be called as a coded tool.
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "acceptance_criteria": {
+                            "type": "string",
+                            "description": """
+A description of what kind of content or meaning a text_sample would need to contain
+in order to constitute a passing value for the test.
+"""
+                        },
+                        "text_sample": {
+                            "type": "string",
+                            "description": "The sample of text known to fail against the acceptance_criteria"
+                        },
+                        "failure_modes": {
+                            "type": "array",
+                            "description": """
+An ordered list of strings describing modes of failure in which text_samples
+are known to fail against the given acceptance_criteria.
+"""
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "required": ["sample", "acceptance_criteria"]
+                }
+            },
+
+            "instructions": """
+You are an expert at categorizing descriptions of failure modes.
+
+You will be given these inputs:
+* an acceptance_criteria which describes what constitutes a passing evaluation for any sample of text.
+* a text_sample which is to be evaluated against the acceptance_criteria description.
+* a list of previously known failure_modes by which the text_sample is known to fail against the acceptance_criteria. It is possible this failure_modes list might be empty or be an incomplete listing.
+
+You will assess which failure_mode (if any) best corresponds to how the text_sample
+does not meet the acceptance_criteria.
+
+Follow these steps in your assessment:
+1.  Come to your own conclusion as to why the text_sample failed against the acceptance_criteria.
+    Should there be multiple points described in the acceptance_criteria, take care that any logical
+    descriptions containing OR or AND are upheld in your conclusion.
+2.  See if there is any one description in the failure_modes list that best matches your own assessment.
+    The description you select does not have to be an exact match to your own assessment,
+    but it should match the overall spirit of what failed down to a medium-grained level of detail
+    with respect to what was previously described.
+3.  It is possible that no existing description in the failure_modes quite matches your assessment.
+    If this is the case, prepare a description of a maximum of 2 sentences for a new failure mode with
+    enough detail for future matches to be made against it.
+
+Return one and only one of the following:
+    * only the exact contents of the failure_mode you found in step (2) OR
+    * your newly prepared description of a newly discovered failure mode from step (3)
+Never add any embellishment or commentary to your answer.
+""",
+            "tools": []
+        }
+    ]
+}

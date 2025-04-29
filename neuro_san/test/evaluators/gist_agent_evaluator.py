@@ -90,7 +90,7 @@ acceptance_criteria:
         :return: A boolean value as to whether or not the text_sample passes the acceptance_criteria.
         """
         text: str = f"""
-The acceptance_criterion is:
+The acceptance_criteria is:
 "{acceptance_criteria}".
 
 The text_sample is:
