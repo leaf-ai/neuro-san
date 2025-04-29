@@ -29,7 +29,8 @@ class Accountant(CodedTool):
         print(f"args: {args}")
         running_cost: float = float(args.get("running_cost"))
 
-        # Increment the running cost
+        # Increment the running cost not using value other 1
+        # This would make a little hard if the LLM wanted to guess
         updated_running_cost: float = running_cost + 3.0
 
         tool_response = {
