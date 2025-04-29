@@ -64,55 +64,51 @@ class Assessor:
         if num_pass == num_total:
             return
 
-        assessment: Dict[str, int] = self.assess_failures(fail)
+        assessment: Dict[str, List[Dict[str, Any]]] = self.assess_failures(fail)
         self.output_failures(assessment, num_total)
 
-    def assess_failures(self, fail: List[Dict[str, Any]]) -> Dict[str, int]:
+    def assess_failures(self, fail: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
         """
         Assess the failures in a failure list
 
         :param fail: A list of failure dictionaries from asserts.get_fail_dicts()
         :return: A dictionary whose keys describe specific modes of failure,
-                and whose values are how many times that kind of failure occurred.
+                and whose values are a list of failure dictionaries.
         """
-        failure_modes: List[str] = []
-        mode_count: List[int] = []
+        assessment: Dict[str, Dict[str, Any]] = {}
         for one_failure in fail:
+            failure_modes: List[str] = assessment.keys()
             failure_mode: str = self.categorize_one_failure(one_failure, failure_modes)
             if failure_mode in failure_modes:
-                index: int = failure_modes.index(failure_mode)
-                mode_count[index] = mode_count[index] + 1
+                assessment[failure_mode].append(one_failure)
             else:
-                failure_modes.append(failure_mode)
-                mode_count.append(1)
-
-        assessment: Dict[str, int] = {}
-        for index, failure_mode in enumerate(failure_modes):
-            assessment[failure_mode] = mode_count[index]
+                assessment[failure_mode] = [one_failure]
 
         return assessment
 
-    def output_failures(self, assessment: Dict[str, int], num_total: int):
+    def output_failures(self, assessment: Dict[str, Dict[str, Any]], num_total: int):
         """
         Output the results of the failure assessment
         :param assessment: A dictionary whose keys describe specific modes of failure,
-                and whose values are how many times that kind of failure occurred.
+                and whose values are a list of failure dictionaries.
         :param num_total: The total number of attempts, including passing attempts.
         """
         num_fail: int = 0
-        for value in assessment.values():
-            num_fail += value
+        for failure_list in assessment.values():
+            num_fail += len(failure_list)
 
         # Sort the modes of failure by how often they occurred,
         # with the most common appearing at the beginning of the list.
-        # The item[1] in the lambda is the integer value representing the mode count of the failure.
+        # The item[1] in the lambda is a list of failure dictionaries corresponding to the failure mode.
         # What is returned from sorted() is a list of key/value tuples which are reassembled
-        # back into a dictionary.
-        sorted_assessment: Dict[str, int] = dict(sorted(assessment.items(), key=lambda item: item[1], reverse=True))
+        # back into a sorted dictionary where earlier entries reflects higher occurrence.
+        sorted_assessment: Dict[str, List[Dict[str, Any]]] = \
+            dict(sorted(assessment.items(), key=lambda item: len(item[1]), reverse=True))
 
         print(f"{num_fail}/{num_total} attempts failed.")
         print("Modes of failure:")
-        for failure_mode, mode_count in sorted_assessment.items():
+        for failure_mode, failure_list in sorted_assessment.items():
+            mode_count: int = len(failure_list)
             percent: float = 100.0 * mode_count / num_fail
             print("")
             print(f"{mode_count}/{num_fail} failures ({percent:.2f}%):")
