@@ -48,6 +48,8 @@ class Assessor:
         # Run the tests per the test case, collecting failure information in the AssertForwarder
         asserts = AssessorAssertForwarder()
         driver = DataDrivenAgentTestDriver(asserts)
+
+        print(f"Testing {self.args.test_hocon}:")
         driver.one_test(self.args.test_hocon)
 
         # Get raw failure information from AssertForwarder
@@ -56,7 +58,6 @@ class Assessor:
         num_pass: int = num_total - len(fail)
 
         # Initial output
-        print(f"{self.args.test_hocon}:")
         print(f"{num_pass}/{num_total} attempts passed.")
         if num_total == 1:
             print("There was only one test attempt done. Consider setting 'success_ratio' on your test case hocon.")
