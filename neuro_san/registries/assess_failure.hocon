@@ -91,7 +91,7 @@ Follow these steps in your assessment:
     enough detail for future matches to be made against it.
 
 Return one and only one of the following:
-    * only the exact contents of the failure_mode you found in step (2) OR
+    * only the exact contents of the failure_mode you found in step (2) without any quotes OR
     * your newly prepared description of a newly discovered failure mode from step (3)
 Never add any embellishment or commentary to your answer.
 """,
