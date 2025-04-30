@@ -14,22 +14,23 @@ It supports:
 
 ```bash
 e2e/
-├── README.md              # This documentation
-├── configs/                # Static agent configuration
+├── README.md                     # This documentation
+├── configs/                      # Static agent configuration
 │   └── config.hocon
-├── conftest.py             # Pytest customizations (CLI args, test discovery)
-├── pytest.ini              # Pytest settings
-├── requirements.txt        # Python dependencies
-├── test_cases_data/        # Test data for each agent
+├── conftest.py                   # Pytest customizations (CLI args, test discovery)
+├── pytest.ini                    # Pytest settings
+├── requirements.txt              # Python dependencies
+├── test_cases_data/              # Test data for each agent
 │   └── mnpt_data.hocon
-├── tests/                  # Test case source files
+├── tests/                        # Test case source files
 │   └── test_music_nerd_pro.py
-└── utils/                  # Helper modules (parsing, building commands, etc.)
-    ├── mnpt_hocon_loader.py
-    ├── mnpt_output_parser.py
-    ├── mnpt_test_runner.py
-    ├── thinking_file_builder.py
-    └── verifier.py
+└── utils/                        # Helper modules for parsing, test orchestration, and CLI interaction
+  ├── mnpt_hocon_loader.py        # Loads test input data from HOCON config files (connection, prompts, expectations)
+  ├── mnpt_output_parser.py       # Parses agent CLI output (response and cost lines) using regex/JSON extraction
+  ├── mnpt_test_runner.py         # Main runner that drives CLI interaction using pexpect and verifies output
+  ├── server_manager.py           # Starts and stops the backend agent service (used for grpc/http test runs)
+  ├── thinking_file_builder.py    # Builds --thinking-file arguments dynamically for repeated test runs
+  └── verifier.py                 # Contains logic to validate whether agent responses contain expected keywords/costs
 ```
 
 ---
