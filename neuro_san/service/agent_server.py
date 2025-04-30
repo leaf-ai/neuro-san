@@ -23,8 +23,10 @@ from neuro_san.api.grpc import concierge_pb2_grpc
 
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.tool_factories.service_tool_factory_provider import ServiceToolFactoryProvider
+from neuro_san.session.agent_service_stub import AgentServiceStub
 from neuro_san.service.agent_server_logging import AgentServerLogging
 from neuro_san.service.agent_servicer_to_server import AgentServicerToServer
+from neuro_san.service.dynamic_agent_router import DynamicAgentRouter
 from neuro_san.service.agent_service import AgentService
 from neuro_san.service.concierge_service import ConciergeService
 
@@ -86,7 +88,11 @@ class AgentServer:
         self.max_concurrent_requests: int = max_concurrent_requests
         self.request_limit: int = request_limit
 
+        self.server_lifetime = None
+        self.security_cfg = None
         self.services: List[AgentService] = []
+
+        self.service_router: DynamicAgentRouter = DynamicAgentRouter()
 
         self.logger.info("tool_registries found: %s", str(list(self.tool_registries.keys())))
 
@@ -106,48 +112,79 @@ class AgentServer:
         for agent_name, tool_registry in self.tool_registries.items():
             tool_factory_provider.add_agent_tool_registry(agent_name, tool_registry)
 
+    def agent_added(self, agent_name: str):
+        """
+        Agent is being added to the service.
+        :param agent_name: name of an agent
+        """
+        tool_factory_provider: ServiceToolFactoryProvider =\
+            ServiceToolFactoryProvider.get_instance()
+        service = AgentService(self.server_lifetime, self.security_cfg,
+                               agent_name,
+                               tool_factory_provider.get_agent_tool_factory_provider(agent_name),
+                               self.server_logging)
+        self.services.append(service)
+        servicer_to_server = AgentServicerToServer(service)
+        agent_rpc_handlers = servicer_to_server.build_rpc_handlers()
+        agent_service_name: str = AgentServiceStub.prepare_service_name(agent_name)
+        self.service_router.add_service(agent_service_name, agent_rpc_handlers)
+
+    def agent_modified(self, agent_name: str):
+        """
+        Agent is being modified in the service scope.
+        :param agent_name: name of an agent
+        """
+        # Endpoints configuration has not changed,
+        # so nothing to do here, actually.
+        _ = agent_name
+
+    def agent_removed(self, agent_name: str):
+        """
+        Agent is being removed from the service.
+        :param agent_name: name of an agent
+        """
+        agent_service_name: str = AgentServiceStub.prepare_service_name(agent_name)
+        self.service_router.remove_service(agent_service_name)
+
     def serve(self):
         """
         Start serving gRPC requests
         """
         values = agent_pb2.DESCRIPTOR.services_by_name.values()
-        server_lifetime = ServerLifetime(self.server_name,
-                                         self.server_name_for_logs,
-                                         self.port, self.logger,
-                                         request_limit=self.request_limit,
-                                         max_workers=self.max_concurrent_requests,
-                                         max_concurrent_rpcs=None,
-                                         # Used for health checking. Probably needs agent-specific love.
-                                         protocol_services_by_name_values=values,
-                                         loop_sleep_seconds=5.0,
-                                         server_loop_callbacks=self.server_loop_callbacks)
+        self.server_lifetime = ServerLifetime(
+            self.server_name,
+            self.server_name_for_logs,
+            self.port, self.logger,
+            request_limit=self.request_limit,
+            max_workers=self.max_concurrent_requests,
+            max_concurrent_rpcs=None,
+            # Used for health checking. Probably needs agent-specific love.
+            protocol_services_by_name_values=values,
+            loop_sleep_seconds=5.0,
+            server_loop_callbacks=self.server_loop_callbacks)
 
-        server = server_lifetime.create_server()
+        server = self.server_lifetime.create_server()
 
         # New-style service
-        security_cfg = None     # ... yet
+        self.security_cfg = None     # ... yet
 
-        self.setup_tool_factory_provider()
         tool_factory_provider: ServiceToolFactoryProvider = \
             ServiceToolFactoryProvider.get_instance()
+        # Add listener to handle adding per-agent gRPC services
+        # to our dynamic router:
+        tool_factory_provider.add_listener(self)
 
-        agent_names: List[str] = tool_factory_provider.get_agent_names()
-        for agent_name in agent_names:
-            service = AgentService(server_lifetime, security_cfg,
-                                   agent_name,
-                                   tool_factory_provider.get_agent_tool_factory_provider(agent_name),
-                                   self.server_logging)
-            self.services.append(service)
+        self.setup_tool_factory_provider()
 
-            servicer_to_server = AgentServicerToServer(service, agent_name=agent_name)
-            servicer_to_server.add_rpc_handlers(server)
+        # Add DynamicAgentRouter instance as a generic RPC handler for our server:
+        server.add_generic_rpc_handlers((self.service_router,))
 
         concierge_service: ConciergeService = \
-            ConciergeService(server_lifetime,
-                             security_cfg,
+            ConciergeService(self.server_lifetime,
+                             self.security_cfg,
                              self.server_logging)
         concierge_pb2_grpc.add_ConciergeServiceServicer_to_server(
             concierge_service,
             server)
 
-        server_lifetime.run()
+        self.server_lifetime.run()

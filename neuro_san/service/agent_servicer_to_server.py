@@ -11,14 +11,10 @@
 # END COPYRIGHT
 from typing import Dict
 
-from grpc import GenericRpcHandler
 from grpc import RpcMethodHandler
-from grpc import Server
-from grpc import method_handlers_generic_handler
 from grpc import unary_stream_rpc_method_handler
 from grpc import unary_unary_rpc_method_handler
 
-from neuro_san.session.agent_service_stub import AgentServiceStub
 import neuro_san.api.grpc.agent_pb2 as agent__pb2
 from neuro_san.api.grpc.agent_pb2_grpc import AgentServiceServicer
 
@@ -30,20 +26,17 @@ class AgentServicerToServer:
     by the same server with a simple addition of an agent name in the gRPC path.
     """
 
-    def __init__(self, servicer: AgentServiceServicer,
-                 agent_name: str = ""):
+    def __init__(self, servicer: AgentServiceServicer):
         """
         Constructor
         """
         self.servicer: AgentServiceServicer = servicer
-        self.agent_name: str = agent_name
 
-    def add_rpc_handlers(self, server: Server):
+    def build_rpc_handlers(self):
         """
-        Adds the RpcMethodHandlers to the server
-        :param server: The grpc.Server to which method handlers should be added
+        Constructs a table of RpcMethodHandlers
+        to be used for an agent service
         """
-
         # One entry for each grpc method defined in the agent handling protobuf
         # Note that all methods (as of 8/27/2024) are unary_unary.
         # (Watch generated _grpc.py for changes).
@@ -65,10 +58,4 @@ class AgentServicerToServer:
                     response_serializer=agent__pb2.ChatResponse.SerializeToString,
             ),
         }
-
-        # Prepare the service name on a per-agent basis
-        service_name: str = AgentServiceStub.prepare_service_name(self.agent_name)
-
-        generic_handler: GenericRpcHandler = method_handlers_generic_handler(service_name,
-                                                                             rpc_method_handlers)
-        server.add_generic_rpc_handlers((generic_handler,))
+        return rpc_method_handlers

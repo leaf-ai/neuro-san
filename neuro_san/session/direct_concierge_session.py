@@ -12,10 +12,10 @@
 
 from typing import Any
 from typing import Dict
+from typing import List
 
 from neuro_san.interfaces.concierge_session import ConciergeSession
-from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
-from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
+from neuro_san.internals.tool_factories.service_tool_factory_provider import ServiceToolFactoryProvider
 
 
 class DirectConciergeSession(ConciergeSession):
@@ -51,10 +51,10 @@ class DirectConciergeSession(ConciergeSession):
                     protobuf structure. Has the following keys:
                 "agents" - the sequence of dictionaries describing available agents
         """
-        manifest_restorer = RegistryManifestRestorer()
-        manifest_registries: Dict[str, AgentToolRegistry] = manifest_restorer.restore()
-
-        agents_list = []
-        for agent_name, _ in manifest_registries.items():
+        tool_factory_provider: ServiceToolFactoryProvider = \
+            ServiceToolFactoryProvider.get_instance()
+        agents_names: List[str] = tool_factory_provider.get_agent_names()
+        agents_list: List[Dict[str, Any]] = []
+        for agent_name in agents_names:
             agents_list.append({"agent_name": agent_name, "description": ""})
         return {"agents": agents_list}
