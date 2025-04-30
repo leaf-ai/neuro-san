@@ -11,7 +11,6 @@
 
 import logging
 import threading
-from typing import Any
 from typing import Dict
 from typing import List
 
@@ -19,7 +18,6 @@ from neuro_san.internals.interfaces.tool_factory_provider import ToolFactoryProv
 from neuro_san.internals.interfaces.agent_state_listener import AgentStateListener
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.tool_factories.single_agent_tool_factory_provider import SingleAgentToolFactoryProvider
-from neuro_san.internals.graph.persistence.agent_tool_registry_restorer import AgentToolRegistryRestorer
 
 
 class ServiceToolFactoryProvider(ToolFactoryProvider):
