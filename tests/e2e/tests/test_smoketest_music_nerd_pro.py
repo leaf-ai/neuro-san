@@ -8,11 +8,11 @@ from utils.mnpt_hocon_loader import extract_test_values
 from utils.mnpt_test_runner import run_test
 
 
-@pytest.mark.e2e
+@pytest.mark.smoke
 @pytest.mark.timeout(120)
-def test_run_connection(connection_name, repeat_index, request):
+def test_run_cli_smoke(connection_name, repeat_index, request):
     """
-    End-to-end test for the music_nerd_pro agent across different connections.
+    Smoke test [End-to-end] using the music_nerd_pro agent across different connections.
 
     This test:
     - Dynamically parametrizes across multiple connections (e.g., direct, grpc, http).
