@@ -7,6 +7,7 @@
 import pytest
 import os
 from pyhocon import ConfigFactory
+from utils.server_manager import start_server, stop_server
 
 # ------------------------------------------------------------------------------
 # Constants
@@ -106,3 +107,20 @@ def load_connections():
     Loads the list of supported connection names from the HOCON config file.
     """
     return config.get("connection")
+
+@pytest.fixture(scope="session", autouse=True)
+def e2e_server(request):
+    """
+    Start the agent server once before any E2E tests run.
+    Stop it after the whole test session ends.
+    Only starts if connection is grpc or http.
+    """
+    conn = request.config.getoption("--connection")
+    
+    if conn in ("grpc", "http"):
+        print("[fixture] Starting agent server for E2E tests")
+        proc = start_server()
+
+        def fin():
+            print("[fixture] Shutting down agent server after E2E tests")
+            stop_server(proc)
