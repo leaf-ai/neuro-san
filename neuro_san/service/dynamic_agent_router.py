@@ -39,15 +39,6 @@ class DynamicAgentRouter(grpc.GenericRpcHandler):
         self.table_lock: Lock = Lock()
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    @classmethod
-    def get_instance(cls):
-        """
-        Get singleton instance of DynamicAgentRouter
-        """
-        if DynamicAgentRouter.instance is None:
-            DynamicAgentRouter.instance = DynamicAgentRouter()
-        return DynamicAgentRouter.instance
-
     def add_service(self, service_name: str, handlers: Dict[str, Any]):
         """
         Add service with its API handlers to this router.
@@ -84,4 +75,6 @@ class DynamicAgentRouter(grpc.GenericRpcHandler):
                 return method_handlers.get(method_name, None)
         except Exception as exc:  # pylint: disable=broad-exception-caught
             self.logger.error("Failed to execute %s - %s", full_method, str(exc))
-        return None  # Request not handled
+        # Request not handled, in this case gRPC stack will raise UNIMPLEMENTED exception
+        # and http server will return error code 500 with details: "Method not found!"
+        return None

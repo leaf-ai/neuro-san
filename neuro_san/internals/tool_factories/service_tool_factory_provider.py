@@ -61,17 +61,11 @@ class ServiceToolFactoryProvider(ToolFactoryProvider):
         if listener in self.listeners:
             self.listeners.remove(listener)
 
-    def build_agent_tool_registry(self, agent_name: str, config: Dict[str, Any]):
-        """
-        Build agent tool registry from its configuration dictionary
-        and register it for given agent name.
-        """
-        registry: AgentToolFactory = AgentToolRegistryRestorer().restore_from_config(agent_name, config)
-        self.add_agent_tool_registry(agent_name, registry)
-
     def add_agent_tool_registry(self, agent_name: str, registry: AgentToolFactory):
         """
-        Register existing agent tool registry
+        This method is a single point of entry in the service
+        where we register a new "agent name + AgentToolFactory" pair in the service scope
+        or notify the service that for existing agent its AgentToolFactory has been modified.
         """
         is_new: bool = False
         with self.lock:
@@ -89,7 +83,8 @@ class ServiceToolFactoryProvider(ToolFactoryProvider):
 
     def remove_agent_tool_registry(self, agent_name: str):
         """
-        Remove agent tool registry from the table
+        Remove agent name and its AgentToolFactory from service scope,
+        so that agent becomes unavailable on our server.
         """
         with self.lock:
             self.agents_table.pop(agent_name, None)

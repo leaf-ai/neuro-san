@@ -92,6 +92,8 @@ class AgentServer:
         self.security_cfg = None
         self.services: List[AgentService] = []
 
+        self.service_router: DynamicAgentRouter = DynamicAgentRouter()
+
         self.logger.info("tool_registries found: %s", str(list(self.tool_registries.keys())))
 
     def get_services(self) -> List[AgentService]:
@@ -125,8 +127,7 @@ class AgentServer:
         servicer_to_server = AgentServicerToServer(service)
         agent_rpc_handlers = servicer_to_server.build_rpc_handlers()
         agent_service_name: str = AgentServiceStub.prepare_service_name(agent_name)
-        service_router: DynamicAgentRouter = DynamicAgentRouter().get_instance()
-        service_router.add_service(agent_service_name, agent_rpc_handlers)
+        self.service_router.add_service(agent_service_name, agent_rpc_handlers)
 
     def agent_modified(self, agent_name: str):
         """
@@ -143,8 +144,7 @@ class AgentServer:
         :param agent_name: name of an agent
         """
         agent_service_name: str = AgentServiceStub.prepare_service_name(agent_name)
-        service_router: DynamicAgentRouter = DynamicAgentRouter().get_instance()
-        service_router.remove_service(agent_service_name)
+        self.service_router.remove_service(agent_service_name)
 
     def serve(self):
         """
@@ -177,8 +177,7 @@ class AgentServer:
         self.setup_tool_factory_provider()
 
         # Add DynamicAgentRouter instance as a generic RPC handler for our server:
-        service_router: DynamicAgentRouter = DynamicAgentRouter().get_instance()
-        server.add_generic_rpc_handlers((service_router,))
+        server.add_generic_rpc_handlers((self.service_router,))
 
         concierge_service: ConciergeService = \
             ConciergeService(self.server_lifetime,
