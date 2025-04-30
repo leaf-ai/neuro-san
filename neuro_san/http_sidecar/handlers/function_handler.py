@@ -27,13 +27,17 @@ class FunctionHandler(BaseRequestHandler):
         """
         Implementation of GET request handler for "function" API call.
         """
+        metadata: Dict[str, Any] = self.get_metadata()
+        update_done: bool = await self.update_agents(metadata)
+        if not update_done:
+            return
+
         if not self.agent_policy.allow(agent_name):
             self.set_status(404)
             self.logger.error({}, "error: Invalid request path %s", self.request.path)
             await self.flush()
             return
 
-        metadata: Dict[str, Any] = self.get_metadata()
         self.logger.info(metadata, "Start GET %s/function", agent_name)
         try:
             data: Dict[str, Any] = {}
