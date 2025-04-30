@@ -13,6 +13,7 @@
 from typing import Any
 from typing import Dict
 from typing import Generator
+from typing import Optional
 from copy import copy
 
 from neuro_san.client.thinking_file_message_processor import ThinkingFileMessageProcessor
@@ -70,7 +71,7 @@ class StreamingInputProcessor:
         if user_input is None or user_input == self.default_input:
             return state
 
-        sly_data: Dict[str, Any] = state.get("sly_data")
+        sly_data: Optional[Dict[str, Any]] = state.get("sly_data", None)
         # Note that by design, a client does not have to interpret the
         # chat_context at all. It merely needs to pass it along to continue
         # the conversation.
@@ -79,6 +80,7 @@ class StreamingInputProcessor:
         self.reset()
 
         return_state: Dict[str, Any] = copy(state)
+        returned_sly_data: Optional[Dict[str, Any]] = None
         chat_responses: Generator[Dict[str, Any], None, None] = self.session.streaming_chat(chat_request)
         for chat_response in chat_responses:
 
@@ -89,8 +91,15 @@ class StreamingInputProcessor:
             # Update the state if there is something to update it with
             chat_context = self.processor.get_chat_context()
             last_chat_response = self.processor.get_answer()
-            sly_data: Dict[str, Any] = self.processor.get_sly_data()
+            returned_sly_data: Dict[str, Any] = self.processor.get_sly_data()
             origin_str = Origination.get_full_name_from_origin(self.processor.get_answer_origin())
+
+        # Update the sly_data if new sly_data was returned
+        if returned_sly_data is not None:
+            if sly_data is not None:
+                sly_data.update(returned_sly_data)
+            else:
+                sly_data = returned_sly_data.copy()
 
         if origin_str is None or len(origin_str) == 0:
             origin_str = "agent network"
