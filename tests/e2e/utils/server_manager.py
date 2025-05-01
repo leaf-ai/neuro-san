@@ -19,9 +19,8 @@ def start_server():
         stderr=subprocess.PIPE
     )
 
-
     # Optional: wait briefly for the server to initialize (adjust if needed)
-    time.sleep(2)
+    time.sleep(5)
 
     return proc
 
