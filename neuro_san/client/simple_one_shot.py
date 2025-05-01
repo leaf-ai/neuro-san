@@ -20,8 +20,8 @@ from neuro_san.message_processing.basic_message_processor import BasicMessagePro
 
 class SimpleOneShot:
     """
-    Encapulates basic operation of sending a single text message
-    and getting simple text back.
+    Encapulates basic operation of sending a single message to an agent
+    and getting single aswer back.
     """
 
     def __init__(self, agent: str, connection_type: str = "direct",
