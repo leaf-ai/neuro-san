@@ -10,13 +10,9 @@
 # END COPYRIGHT
 
 from typing import Any
-from typing import Dict
 
-from neuro_san.client.agent_session_factory import AgentSessionFactory
-from neuro_san.client.streaming_input_processor import StreamingInputProcessor
-from neuro_san.interfaces.agent_session import AgentSession
+from neuro_san.client.simple_one_shot import SimpleOneShot
 from neuro_san.internals.utils.file_of_class import FileOfClass
-from neuro_san.message_processing.basic_message_processor import BasicMessageProcessor
 from neuro_san.test.evaluators.abstract_agent_evaluator import AbstractAgentEvaluator
 from neuro_san.test.interfaces.assert_forwarder import AssertForwarder
 
@@ -82,19 +78,8 @@ The text_sample is:
 """
 
         # Use the "gist" agent to do the evalution
-        session: AgentSession = AgentSessionFactory().create_session(self.connection_type,
-                                                                     self.discriminator_agent)
-        input_processor = StreamingInputProcessor(session=session)
-        processor: BasicMessageProcessor = input_processor.get_message_processor()
-        request: Dict[str, Any] = input_processor.formulate_chat_request(text)
-
-        # Call streaming_chat()
-        empty: Dict[str, Any] = {}
-        for chat_response in session.streaming_chat(request):
-            message: Dict[str, Any] = chat_response.get("response", empty)
-            processor.process_message(message, chat_response.get("type"))
-
-        raw_answer: str = processor.get_answer()
+        one_shot = SimpleOneShot(self.discriminator_agent, self.connection_type)
+        raw_answer: str = one_shot.get_answer_for(text)
         answer: str = raw_answer.lower()
         test_passes: bool = self.determine_pass_fail(answer)
         return test_passes
