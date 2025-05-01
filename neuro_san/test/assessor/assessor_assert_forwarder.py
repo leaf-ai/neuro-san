@@ -52,7 +52,7 @@ class AssessorAssertForwarder(NullAssertForwarder):
         :param text_sample: The value appearing in the test sample
         :param msg: optional string message
         """
-        self.handle_assert(gist, acceptance_criteria, text_sample, True, msg)
+        self.handle_assert(gist, acceptance_criteria, text_sample, True)
 
     # pylint: disable=invalid-name
     def assertNotGist(self, gist: bool, acceptance_criteria: str, text_sample: str, msg: str = None):
@@ -64,19 +64,18 @@ class AssessorAssertForwarder(NullAssertForwarder):
         :param text_sample: The value appearing in the test sample
         :param msg: optional string message
         """
-        self.handle_assert(gist, acceptance_criteria, text_sample, False, msg)
+        self.handle_assert(gist, acceptance_criteria, text_sample, False)
 
     def handle_assert(self, is_passing: bool,
                       acceptance_criteria: str,
                       text_sample: str,
-                      sense: bool, msg: str):
+                      sense: bool):
         """
         Handle the assert.
         :param is_passing: Boolean as to whether or not the test is passing.
         :param acceptance_criteria: The value to verify against
         :param text_sample: The value appearing in the test sample
         :param sense: Whether the test was supposed to be true or false.
-        :param msg: The assert message to parse.
         """
         self.num_total += 1
         if is_passing == sense:
