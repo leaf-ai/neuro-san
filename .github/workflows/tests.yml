@@ -40,9 +40,7 @@ jobs:
           pytest tests/e2e/tests/ \
             --verbose \
             -m smoke \
-            --thinking-file \
-            --repeat 1 \
-            -n auto
+            --thinking-file
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           AGENT_TOOL_PATH: "./neuro_san/coded_tools"
