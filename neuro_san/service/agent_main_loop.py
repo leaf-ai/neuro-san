@@ -137,6 +137,9 @@ class AgentMainLoop(ServerLoopCallbacks):
                                   request_limit=self.request_limit,
                                   forwarded_request_metadata=self.forwarded_request_metadata)
 
+
+
+
         # Start HTTP server side-car:
         http_sidecar = HttpSidecar(
             self.port,

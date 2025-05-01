@@ -9,21 +9,25 @@
 #
 # END COPYRIGHT
 
+import logging
 from pathlib import Path
 from watchdog.observers import Observer
 
+from neuro_san.interfaces.registry_updates_policy import RegistryUpdatePolicy
 from neuro_san.registries_watcher.registrie_change_handler import RegistrieChangeHandler
 
 
 class RegistryObserver:
 
-    def __init__(self, registry_path: str):
+    def __init__(self, registry_path: str, policy: RegistryUpdatePolicy):
         self.registry_path: str = str(Path(registry_path).resolve())
+        self.policy: RegistryUpdatePolicy = policy
+        self.logger = logging.getLogger(self.__class__.__name__)
         self.observer: Observer = Observer()
-        self.event_handler: RegistriesChangeHandler = RegistriesChangeHandler(self.registry_path)
+        self.event_handler: RegistriesChangeHandler =\
+            RegistriesChangeHandler(self.registry_path, self.policy)
 
     def start(self):
         self.observer.schedule(self.event_handler, path=self.registry_path, recursive=False)
         self.observer.start()
-        print("~~~~~~~~~~~~~~~~~~ Observer STARTED!")
-
+        self.logger.info("Registry watchdog started on: %s", self.registry_path)

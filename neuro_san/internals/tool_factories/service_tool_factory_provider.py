@@ -79,6 +79,23 @@ class ServiceToolFactoryProvider(ToolFactoryProvider):
                 listener.agent_modified(agent_name)
                 self.logger.info("REPLACED tool registry for agent %s", agent_name)
 
+    def setup_tool_registries(self, registries: Dict[str, AgentToolFactory]):
+        """
+        Replace agents registries with "registries" collection.
+        Previous state could be empty.
+        """
+        prev_agents: Dict[str, AgentToolFactory] = {}
+        with self.lock:
+            prev_agents = self.agents_table
+            self.agents_table = {}
+        # Notify listeners that previous set of agents is removed
+        for agent_name, _ in prev_agents.items():
+            for listener in self.listeners:
+                listener.agent_removed(agent_name)
+        # Add the new agent+registry pairs
+        for agent_name, tool_registry in registries.items():
+            self.add_agent_tool_registry(agent_name, tool_registry)
+
     def remove_agent_tool_registry(self, agent_name: str):
         """
         Remove agent name and its AgentToolFactory from service scope,
