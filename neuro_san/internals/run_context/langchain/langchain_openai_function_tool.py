@@ -164,7 +164,7 @@ It's function_json is described thusly:
             converter = BaseModelDictionaryConverter("parameters")
             tool.args_schema = converter.from_dict(use_function_json)
 
-        # If set "return_direct" if the value is provided, otherwise set it to False.
+        # Set "return_direct" if the value is provided, otherwise set it to False.
         tool.return_direct = function_json.get("return_direct", False)
 
         tool.tool_caller = tool_caller

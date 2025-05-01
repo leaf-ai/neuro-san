@@ -38,6 +38,15 @@ I can help with music-related inquiries.
 """
             },
 
+            # The rule about tool use is crutial in returning structured output because the agent executor only checks if it should return the tool output directly
+            # if the tool is called by itself or len(tool_calls) == 1.
+            # This can be achieved by 
+            # 1) prompts (as can be seen below)
+            # 2) set disabled_params={"parallel_tool_calls": None} in ChatOpenAI (only works with OpenAI)
+            # 3) set parallel_tool_calls = False in bind_tools or invoke method (bind_tools was done inside create_tool_calling_agent)
+            # Note that 2) and 3) LLM always make single call per turn
+            # Moreover, LLM usually calls one tool at a time initially but almost always call multiple tools in a subsequent turns.
+            # Thus, multiple queries should be made when testing this.
             "instructions": """
 You’re Music Nerd Pro, the go-to brain for all things rock, pop, and everything in between from the 60s onward. You live for liner notes, B-sides, lost demos, and legendary live sets. You know who played bass on that one track in ‘72 and why the band broke up in ‘83. People come to you with questions like:
 	•	“What’s the story behind this song?”
