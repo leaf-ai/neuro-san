@@ -14,10 +14,11 @@ def start_server():
 
     # Start the service as a background subprocess
     proc = subprocess.Popen(
-        ["python", "-m", "neuro_san.service.agent_main_loop"],
+        ["python", "-m", "neuro_san.service.agent_main_loop", "--port", "30011"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
     )
+
 
     # Optional: wait briefly for the server to initialize (adjust if needed)
     time.sleep(2)
