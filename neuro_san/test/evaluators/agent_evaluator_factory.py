@@ -28,16 +28,16 @@ class AgentEvaluatorFactory:
     """
 
     NAME_TO_AGENT_EVALUATOR: Dict[str, Tuple[Type[AgentEvaluator], bool]] = {
-        "gist": (GistAgentEvaluator, True),
-        "not_gist": (GistAgentEvaluator, False),
-        "greater": (GreaterAgentEvaluator, True),
-        "not_greater": (GreaterAgentEvaluator, False),
-        "keywords": (KeywordsAgentEvaluator, True),
-        "not_keywords": (KeywordsAgentEvaluator, False),
-        "less": (LessAgentEvaluator, True),
-        "not_less": (LessAgentEvaluator, False),
-        "value": (ValueAgentEvaluator, True),
-        "not_value": (ValueAgentEvaluator, False),
+        "gist": (GistAgentEvaluator, False),
+        "not_gist": (GistAgentEvaluator, True),
+        "greater": (GreaterAgentEvaluator, False),
+        "not_greater": (GreaterAgentEvaluator, True),
+        "keywords": (KeywordsAgentEvaluator, False),
+        "not_keywords": (KeywordsAgentEvaluator, True),
+        "less": (LessAgentEvaluator, False),
+        "not_less": (LessAgentEvaluator, True),
+        "value": (ValueAgentEvaluator, False),
+        "not_value": (ValueAgentEvaluator, True),
     }
 
     @staticmethod
