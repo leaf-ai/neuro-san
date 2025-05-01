@@ -132,9 +132,7 @@ class LangChainRunContext(RunContext):
             agent_name: str = tool_caller.get_name()
             origination: Origination = self.invocation_context.get_origination()
             self.origin = origination.add_spec_name_to_origin(parent_origin, agent_name)
-        print(f"before_{self.chat_history=}")
         self.update_from_chat_context(self.chat_context)
-        print(f"after_{self.chat_history=}")
         # Set up so local logging gives origin info.
         if self.origin is not None and len(self.origin) > 0:
             full_name: str = Origination.get_full_name_from_origin(self.origin)
@@ -456,7 +454,6 @@ class LangChainRunContext(RunContext):
 
         # Chat history is updated in write_message
         await self.journal.write_message(self.recent_human_message)
-        print(f"invoke_{self.chat_history=}")
         inputs = {
             "chat_history": self.chat_history,
             "input": self.recent_human_message
@@ -519,13 +516,15 @@ class LangChainRunContext(RunContext):
                     backtrace = traceback.format_exc()
 
         output: str = None
-        print(f"{return_dict=}")
         if return_dict is None and exception is not None:
             output = f"Agent stopped due to exception {exception}"
         else:
             # Other keys generally available at this point from return_dict are
             # "chat_history" and "input".
             output = return_dict.get("output", "")
+            # If return_direct, the tool output is returned direcctly
+            # Since AgentToolResultMessage is converted to AIMessage for chat_history,
+            # content has to be extracted from AIMessage.
             if isinstance(output, AIMessage):
                 output = output.content
             backtrace = None
@@ -550,7 +549,6 @@ class LangChainRunContext(RunContext):
         :param tool_outputs: The tool outputs to submit
         :return: A potentially updated run handle
         """
-        print(f"{tool_outputs=}")
         if tool_outputs is not None and len(tool_outputs) > 0:
             for tool_output in tool_outputs:
                 tool_messages: List[BaseMessage] = self.parse_tool_output(tool_output)
