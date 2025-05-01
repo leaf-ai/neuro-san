@@ -115,8 +115,7 @@ def e2e_server(request):
     Start the agent server once before any E2E tests run.
     Stop it after the whole test session ends.
     Only starts if connection is grpc or http.
-    """  
-
+    """
     proc = start_server()
 
     def fin():
