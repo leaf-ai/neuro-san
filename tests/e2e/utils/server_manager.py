@@ -1,7 +1,20 @@
 import subprocess
+import os
+import sys
 import time
+import logging
 from contextlib import contextmanager
 
+LOG_PATH = os.path.abspath("/tmp/e2e_server.log")  # <- safe, visible location
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.FileHandler(LOG_PATH),
+        logging.StreamHandler()
+    ]
+)
 
 def start_server():
     """
@@ -10,18 +23,19 @@ def start_server():
     Returns:
         subprocess.Popen: The running process object.
     """
-    print("[INFO] Starting agent server: neuro_san.service.agent_main_loop")
+    logging.info("🚀 [SERVER] Starting agent service...")
+    #print("[INFO] Starting agent server: neuro_san.service.agent_main_loop")
 
     # Start the service as a background subprocess
     proc = subprocess.Popen(
-        ["python", "-m", "neuro_san.service.agent_main_loop", "--port", "30011"],
+        ["python", "-m", "neuro_san.service.agent_main_loop"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
     )
 
     # Optional: wait briefly for the server to initialize (adjust if needed)
-    time.sleep(5)
-
+    time.sleep(2)
+    logging.info("✅ [SERVER] Agent service started.")
     return proc
 
 
@@ -33,11 +47,13 @@ def stop_server(proc):
         proc (subprocess.Popen): The process to terminate.
     """
     if proc:
-        print("[INFO] Terminating agent server process")
+        # print("[INFO] Terminating agent server process")
+        logging.info("🛑 [SERVER] Stopping agent service...")
         proc.terminate()
         proc.wait()
-        print("[INFO] Server process stopped")
-
+        logging.info("✅ [SERVER] Agent service stopped.")
+        logging.shutdown()  # ✅ Flush all logging buffers
+        sys.stdout.flush()  # ✅ Ensure everything gets written
 
 @contextmanager
 def agent_server():

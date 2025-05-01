@@ -116,12 +116,17 @@ def e2e_server(request):
     Stop it after the whole test session ends.
     Only starts if connection is grpc or http.
     """
-    conn = request.config.getoption("--connection")
+    # conn = request.config.getoption("--connection")
 
-    if conn in ("grpc", "http"):
-        print("[fixture] Starting agent server for E2E tests")
-        proc = start_server()
+    #if conn in ("grpc", "http", "direct"):
+    #    print("[fixture] Starting agent server for E2E tests")
+    #    proc = start_server()
 
-        def fin():
-            print("[fixture] Shutting down agent server after E2E tests")
-            stop_server(proc)
+    #    def fin():
+    #        print("[fixture] Shutting down agent server after E2E tests")
+    #        stop_server(proc)
+        
+    proc = start_server()
+    def fin():
+         stop_server(proc)
+    request.addfinalizer(fin)

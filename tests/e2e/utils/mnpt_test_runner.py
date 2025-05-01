@@ -50,12 +50,12 @@ def run_test(conn, prompt_1, prompt_2, word_1, word_2, cost_1, cost_2, prompt_fi
     def send_and_parse(prompt_text):
         """Send a prompt, wait for agent reply, extract response and cost."""
         child.sendline(prompt_text)
-        child.expect(prompt, timeout=180)
+        child.expect(prompt, timeout=60)
         output = child.before + child.after
         return extract_agent_response(output), extract_cost_line(output)
 
     # Begin interaction
-    child.expect(prompt, timeout=180)
+    child.expect(prompt, timeout=60)
     resp_1, cost_1_out = send_and_parse(prompt_1)
     resp_2, cost_2_out = send_and_parse(prompt_2)
 
