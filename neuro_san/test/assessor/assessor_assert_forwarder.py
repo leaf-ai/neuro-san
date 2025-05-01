@@ -9,14 +9,92 @@
 #
 # END COPYRIGHT
 from typing import Any
+from typing import Dict
+from typing import List
+
+from neuro_san.test.interfaces.assert_forwarder import AssertForwarder
 
 
-class AssertForwarder:
+class AssessorAssertForwarder(AssertForwarder):
     """
-    Interface definition for forwarding asserts to different test infrastructure systems.
+    AssertForwarder implemetation for the agent Assessor.
+
+    This guy generally does not care about the correctness of the asserts themselves,
+    but serves to collect failure data for the Assessor.
     """
 
-    # pylint: disable=invalid-name
+    def __init__(self):
+        """
+        Constructor
+        """
+        self.num_total: int = 0
+        self.fail: List[Dict[str, Any]] = []
+
+    def get_num_total(self) -> int:
+        """
+        :return: The total number of test cases seen
+        """
+        return self.num_total
+
+    def get_fail_dicts(self) -> List[Dict[str, Any]]:
+        """
+        :return: The failure dictionaries for further analysis
+        """
+        return self.fail
+
+    def assertTrue(self, expr: Any, msg: str = None):
+        """
+        Assert that the expression is true
+
+        :param expr: Expression to test
+        :param msg: optional string message
+        """
+        self.handle_assert(bool(expr), True, msg)
+
+    def assertFalse(self, expr: Any, msg: str = None):
+        """
+        Assert that the expression is false
+
+        :param expr: Expression to test
+        :param msg: optional string message
+        """
+        self.handle_assert(bool(expr), False, msg)
+
+    def handle_assert(self, is_passing: bool, sense: bool, msg: str):
+        """
+        Handle the assert.
+        :param is_passing: Boolean as to whether or not the test is passing.
+        :param sense: Whether the test was supposed to be true or false.
+        :param msg: The assert message to parse.
+        """
+        self.num_total += 1
+        if is_passing == sense:
+            return
+
+        components: Dict[str, Any] = self.parse_assert_message(msg)
+        components["sense"] = sense
+        self.fail.append(components)
+
+    def parse_assert_message(self, message: str) -> Dict[str, Any]:
+        """
+        Parse a single assert message into its parts.
+        :param message: The assert message from GistAgentEvaluator
+        :return: A dictionary with the relevant components of the message
+        """
+
+        # See GistAgentEvaluator for format.
+        acceptance_split: List[str] = message.split("acceptance_criteria:")
+        sample_split: List[str] = acceptance_split[0].split("text_sample:")
+
+        components: Dict[str, Any] = {
+            # Get what comes after the "acceptance_criteria" delimiter
+            "acceptance_criteria": acceptance_split[-1],
+
+            # Get what comes after the "text_sample" delimiter
+            "text_sample": sample_split[-1]
+        }
+        return components
+
     def assertEqual(self, first: Any, second: Any, msg: str = None):
         """
         Assert that the first is equal to the second
@@ -25,9 +103,8 @@ class AssertForwarder:
         :param second: Second comparison element
         :param msg: optional string message
         """
-        raise NotImplementedError
+        # Do nothing
 
-    # pylint: disable=invalid-name
     def assertNotEqual(self, first: Any, second: Any, msg: str = None):
         """
         Assert that the first is not equal to the second
@@ -36,29 +113,8 @@ class AssertForwarder:
         :param second: Second comparison element
         :param msg: optional string message
         """
-        raise NotImplementedError
+        # Do nothing
 
-    # pylint: disable=invalid-name
-    def assertTrue(self, expr: Any, msg: str = None):
-        """
-        Assert that the expression is true
-
-        :param expr: Expression to test
-        :param msg: optional string message
-        """
-        raise NotImplementedError
-
-    # pylint: disable=invalid-name
-    def assertFalse(self, expr: Any, msg: str = None):
-        """
-        Assert that the expression is false
-
-        :param expr: Expression to test
-        :param msg: optional string message
-        """
-        raise NotImplementedError
-
-    # pylint: disable=invalid-name
     def assertIs(self, first: Any, second: Any, msg: str = None):
         """
         Assert that the first and second are the same object
@@ -67,9 +123,8 @@ class AssertForwarder:
         :param second: Second comparison element
         :param msg: optional string message
         """
-        raise NotImplementedError
+        # Do nothing
 
-    # pylint: disable=invalid-name
     def assertIsNot(self, first: Any, second: Any, msg: str = None):
         """
         Assert that the first and second are not the same object
@@ -78,9 +133,8 @@ class AssertForwarder:
         :param second: Second comparison element
         :param msg: optional string message
         """
-        raise NotImplementedError
+        # Do nothing
 
-    # pylint: disable=invalid-name
     def assertIsNone(self, expr: Any, msg: str = None):
         """
         Assert that the expression is None
@@ -88,9 +142,8 @@ class AssertForwarder:
         :param expr: Expression to test
         :param msg: optional string message
         """
-        raise NotImplementedError
+        # Do nothing
 
-    # pylint: disable=invalid-name
     def assertIsNotNone(self, expr: Any, msg: str = None):
         """
         Assert that the expression is not None
@@ -98,9 +151,8 @@ class AssertForwarder:
         :param expr: Expression to test
         :param msg: optional string message
         """
-        raise NotImplementedError
+        # Do nothing
 
-    # pylint: disable=invalid-name
     def assertIn(self, member: Any, container: Any, msg: str = None):
         """
         Assert that the member is in the container
@@ -109,9 +161,8 @@ class AssertForwarder:
         :param container: Container comparison element
         :param msg: optional string message
         """
-        raise NotImplementedError
+        # Do nothing
 
-    # pylint: disable=invalid-name
     def assertNotIn(self, member: Any, container: Any, msg: str = None):
         """
         Assert that the member is not in the container
@@ -120,7 +171,7 @@ class AssertForwarder:
         :param container: Container comparison element
         :param msg: optional string message
         """
-        raise NotImplementedError
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertIsInstance(self, obj: Any, cls: Any, msg: str = None):
@@ -131,7 +182,7 @@ class AssertForwarder:
         :param cls: Class comparison element
         :param msg: optional string message
         """
-        raise NotImplementedError
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertNotIsInstance(self, obj: Any, cls: Any, msg: str = None):
@@ -142,7 +193,7 @@ class AssertForwarder:
         :param cls: Class comparison element
         :param msg: optional string message
         """
-        raise NotImplementedError
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertGreater(self, first: Any, second: Any, msg: str = None):
@@ -153,7 +204,7 @@ class AssertForwarder:
         :param second: Second comparison element
         :param msg: optional string message
         """
-        raise NotImplementedError
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertGreaterEqual(self, first: Any, second: Any, msg: str = None):
@@ -164,7 +215,7 @@ class AssertForwarder:
         :param second: Second comparison element
         :param msg: optional string message
         """
-        raise NotImplementedError
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertLess(self, first: Any, second: Any, msg: str = None):
@@ -175,7 +226,7 @@ class AssertForwarder:
         :param second: Second comparison element
         :param msg: optional string message
         """
-        raise NotImplementedError
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertLessEqual(self, first: Any, second: Any, msg: str = None):
@@ -186,4 +237,4 @@ class AssertForwarder:
         :param second: Second comparison element
         :param msg: optional string message
         """
-        raise NotImplementedError
+        # Do nothing

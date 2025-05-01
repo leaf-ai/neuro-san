@@ -20,9 +20,8 @@
     "math_guy_passthrough.hocon": true,
     "music_nerd.hocon": true,
     "music_nerd_pro.hocon": true,
-    "gist.hocon": true,
 
-    # This one is an example of agnets calling tools that has no parameters.
+    # This one is an example of agents calling tools that has no parameters.
     "date_time.hocon": true,
 
     # These next 2 go together as an example for agents calling other agents.
@@ -36,6 +35,10 @@
     # This one is an example of agents calling global coded tools.
     # In other words, these coded tools can be used in any agent network.
     "website_rag.hocon": true,
+
+    # Agents having to do with test infrastructure
+    "gist.hocon": true,
+    "assess_failure.hocon": true,
 
     # STOP AND READ: YOU PROBABLY DON'T WANT TO ADD YOUR .hocon FILE HERE.
     #

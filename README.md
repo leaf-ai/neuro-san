@@ -77,7 +77,7 @@ From the top-level of this repo:
 
 Type in this input to the chat client:
 
-    I am travelling to a new planet and wish to send greetings to the orb.
+    From earth, I approach a new planet and wish to send a short 2-word greeting to the new orb.
 
 What should return is something like:
 
@@ -162,11 +162,10 @@ build.sh / run.sh the service like you did above to re-load the server,
 and interact with it via the agent_cli.py chat client, making sure
 you specify your agent correctly (per the hocon file stem).
 
-Note that the .hocon files in this repo are more spartan for testing and simple
-demonstration purposes.  For more full-featured demos, see the
-[neuro-san-demo repo.](https://github.com/leaf-ai/neuro-san-demos)
-
 ### More agent example files
+
+Note that the .hocon files in this repo are more spartan for testing and simple
+demonstration purposes.
 
 For more examples of agent networks, documentation and tutorials,
 see the [neuro-san-demos repo.](https://github.com/leaf-ai/neuro-san-demos)
