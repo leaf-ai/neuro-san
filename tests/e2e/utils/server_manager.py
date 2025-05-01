@@ -16,6 +16,7 @@ logging.basicConfig(
     ]
 )
 
+
 def start_server():
     """
     Start the agent server as a subprocess.
@@ -24,9 +25,11 @@ def start_server():
         subprocess.Popen: The running process object.
     """
     logging.info("🚀 [SERVER] Starting agent service...")
+    """
     #print("[INFO] Starting agent server: neuro_san.service.agent_main_loop")
 
     # Start the service as a background subprocess
+    """
     proc = subprocess.Popen(
         ["python", "-m", "neuro_san.service.agent_main_loop"],
         stdout=subprocess.PIPE,
@@ -54,6 +57,7 @@ def stop_server(proc):
         logging.info("✅ [SERVER] Agent service stopped.")
         logging.shutdown()  # ✅ Flush all logging buffers
         sys.stdout.flush()  # ✅ Ensure everything gets written
+
 
 @contextmanager
 def agent_server():
