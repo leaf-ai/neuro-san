@@ -116,6 +116,11 @@ def e2e_server(request):
     Stop it after the whole test session ends.
     Only starts if connection is grpc or http.
     """
+    conn = request.config.getoption("--connection")
+
+    if conn == "direct":
+        return  # ❌ Don't start server for direct
+
     proc = start_server()
 
     def fin():
