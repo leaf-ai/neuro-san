@@ -108,6 +108,7 @@ def load_connections():
     """
     return config.get("connection")
 
+
 @pytest.fixture(scope="session", autouse=True)
 def e2e_server(request):
     """
@@ -116,7 +117,7 @@ def e2e_server(request):
     Only starts if connection is grpc or http.
     """
     conn = request.config.getoption("--connection")
-    
+
     if conn in ("grpc", "http"):
         print("[fixture] Starting agent server for E2E tests")
         proc = start_server()
