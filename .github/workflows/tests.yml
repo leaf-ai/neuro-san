@@ -40,7 +40,7 @@ jobs:
           pytest tests/e2e/tests/ \
             --verbose \
             -m smoke \
-            --connection direct \
+            --connection http \
             --thinking-file \
             --repeat 1 \
             -n auto
