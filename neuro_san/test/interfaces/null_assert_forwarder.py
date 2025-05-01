@@ -16,6 +16,8 @@ from neuro_san.test.interfaces.assert_forwarder import AssertForwarder
 class NullAssertForwarder(AssertForwarder):
     """
     Implementation of the AssertForwarder interface that does nothing for each assert type.
+    This is useful as a superclass for other AssertForwarders that only want to focus
+    on a few specific asserts.
     """
 
     # pylint: disable=invalid-name
