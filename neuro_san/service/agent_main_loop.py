@@ -34,6 +34,8 @@ from neuro_san.service.agent_server import DEFAULT_FORWARDED_REQUEST_METADATA
 from neuro_san.service.agent_service import AgentService
 from neuro_san.http_sidecar.http_sidecar import HttpSidecar
 from neuro_san.internals.utils.file_of_class import FileOfClass
+from neuro_san.registries_watcher.registry_observer import RegistryObserver
+from neuro_san.registries_watcher.manifest_update_policy import ManifestUpdatePolicy
 
 
 # pylint: disable=too-many-instance-attributes
@@ -58,6 +60,7 @@ class AgentMainLoop(ServerLoopCallbacks):
         self.forwarded_request_metadata: int = DEFAULT_FORWARDED_REQUEST_METADATA
         self.service_openapi_spec_file: str = self._get_default_openapi_spec_path()
         self.server: AgentServer = None
+        self.manifest_files: List[str] = []
 
     def parse_args(self):
         """
@@ -111,6 +114,7 @@ class AgentMainLoop(ServerLoopCallbacks):
 
         manifest_restorer = RegistryManifestRestorer()
         manifest_tool_registries: Dict[str, AgentToolRegistry] = manifest_restorer.restore()
+        self.manifest_files = manifest_restorer.get_manifest_files()
 
         self.tool_registries = manifest_tool_registries
 
@@ -137,8 +141,11 @@ class AgentMainLoop(ServerLoopCallbacks):
                                   request_limit=self.request_limit,
                                   forwarded_request_metadata=self.forwarded_request_metadata)
 
-
-
+        policy: ManifestUpdatePolicy = ManifestUpdatePolicy()
+        manifest_file: str = self.manifest_files[0]
+        observer: RegistryObserver =\
+            RegistryObserver(manifest_file, policy)
+        observer.start()
 
         # Start HTTP server side-car:
         http_sidecar = HttpSidecar(

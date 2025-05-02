@@ -14,7 +14,7 @@ from pathlib import Path
 from watchdog.observers import Observer
 
 from neuro_san.interfaces.registry_updates_policy import RegistryUpdatePolicy
-from neuro_san.registries_watcher.registrie_change_handler import RegistrieChangeHandler
+from neuro_san.registries_watcher.registry_change_handler import RegistryChangeHandler
 
 
 class RegistryObserver:
@@ -24,8 +24,8 @@ class RegistryObserver:
         self.policy: RegistryUpdatePolicy = policy
         self.logger = logging.getLogger(self.__class__.__name__)
         self.observer: Observer = Observer()
-        self.event_handler: RegistriesChangeHandler =\
-            RegistriesChangeHandler(self.registry_path, self.policy)
+        self.event_handler: RegistryChangeHandler =\
+            RegistryChangeHandler(self.registry_path, self.policy)
 
     def start(self):
         self.observer.schedule(self.event_handler, path=self.registry_path, recursive=False)

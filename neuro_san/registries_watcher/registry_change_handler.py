@@ -11,6 +11,8 @@
 
 import logging
 from pathlib import Path
+from typing import Dict
+from typing import Set
 from watchdog.events import FileSystemEventHandler
 
 from neuro_san.interfaces.registry_update_type import RegistryUpdateType
@@ -126,6 +128,3 @@ class RegistryChangeHandler(FileSystemEventHandler):
         Get agent name from file path
         """
         return Path(src_name).stem
-
-
-

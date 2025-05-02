@@ -10,7 +10,8 @@
 #
 # END COPYRIGHT
 
-import pathlib
+from pathlib import Path
+from typing import Set
 from neuro_san.interfaces.registry_updates_policy import RegistryUpdatePolicy
 from neuro_san.interfaces.registry_update_type import RegistryUpdateType
 
@@ -31,6 +32,6 @@ class ManifestUpdatePolicy(RegistryUpdatePolicy):
         """
         src_name: str = Path(src_path).name
         if src_name == "manifest.hocon" or src_name == "manifest.json":
-            return set(RegistryUpdateType.MODIFY)
+            return {RegistryUpdateType.MODIFY}
         # Else we don't allow anything:
         return set()

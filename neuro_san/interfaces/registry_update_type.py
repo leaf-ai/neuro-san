@@ -18,4 +18,3 @@ class RegistryUpdateType(Enum):
     CREATE = 1
     MODIFY = 2
     DELETE = 3
-
