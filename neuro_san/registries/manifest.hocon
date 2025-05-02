@@ -40,6 +40,8 @@
     "gist.hocon": true,
     "assess_failure.hocon": true,
 
+    "neuro_tools.hocon": true
+
     # STOP AND READ: YOU PROBABLY DON'T WANT TO ADD YOUR .hocon FILE HERE.
     #
     # The agent network .hocon files above are examples specific to the neuro-san library.
