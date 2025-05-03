@@ -34,8 +34,7 @@ from neuro_san.service.agent_server import DEFAULT_FORWARDED_REQUEST_METADATA
 from neuro_san.service.agent_service import AgentService
 from neuro_san.http_sidecar.http_sidecar import HttpSidecar
 from neuro_san.internals.utils.file_of_class import FileOfClass
-from neuro_san.registries_watcher.registry_observer import RegistryObserver
-from neuro_san.registries_watcher.manifest_update_policy import ManifestUpdatePolicy
+from neuro_san.registries_watcher.periodic_updater.manifest_periodic_updater import ManifestPeriodicUpdater
 
 
 # pylint: disable=too-many-instance-attributes
@@ -141,12 +140,16 @@ class AgentMainLoop(ServerLoopCallbacks):
                                   request_limit=self.request_limit,
                                   forwarded_request_metadata=self.forwarded_request_metadata)
 
-        policy: ManifestUpdatePolicy = ManifestUpdatePolicy()
         manifest_file: str = self.manifest_files[0]
-        observer: RegistryObserver =\
-            RegistryObserver(manifest_file, policy)
-        observer.start()
+        updater: ManifestPeriodicUpdater = ManifestPeriodicUpdater(manifest_file, 30)
+        updater.start()
 
+        # policy: ManifestUpdatePolicy = ManifestUpdatePolicy()
+        # manifest_file: str = self.manifest_files[0]
+        # observer: RegistryObserver =\
+        #     RegistryObserver(manifest_file, policy)
+        # observer.start()
+        #
         # Start HTTP server side-car:
         http_sidecar = HttpSidecar(
             self.port,
