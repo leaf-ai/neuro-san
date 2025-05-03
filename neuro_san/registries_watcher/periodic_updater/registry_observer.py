@@ -10,6 +10,7 @@
 # END COPYRIGHT
 
 import logging
+from typing import Tuple
 from pathlib import Path
 from watchdog.observers import Observer
 

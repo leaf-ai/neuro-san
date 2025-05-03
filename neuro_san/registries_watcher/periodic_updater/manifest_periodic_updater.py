@@ -10,6 +10,7 @@
 # END COPYRIGHT
 
 import logging
+import time
 import threading
 from pathlib import Path
 
@@ -56,7 +57,7 @@ class ManifestPeriodicUpdater:
                              modified, added, deleted)
             self.logger.info("Updating manifest file: %s", self.manifest_path)
             registries: Dict[str, AgentToolRegistry] = \
-                RegistryManifestRestorer().restore(src_path)
+                RegistryManifestRestorer().restore(self.manifest_path)
             self.tool_factory.setup_tool_registries(registries)
 
     def start(self):

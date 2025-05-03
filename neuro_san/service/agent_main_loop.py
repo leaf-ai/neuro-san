@@ -141,7 +141,7 @@ class AgentMainLoop(ServerLoopCallbacks):
                                   forwarded_request_metadata=self.forwarded_request_metadata)
 
         manifest_file: str = self.manifest_files[0]
-        updater: ManifestPeriodicUpdater = ManifestPeriodicUpdater(manifest_file, 30)
+        updater: ManifestPeriodicUpdater = ManifestPeriodicUpdater(manifest_file, 15)
         updater.start()
 
         # policy: ManifestUpdatePolicy = ManifestUpdatePolicy()
