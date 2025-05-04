@@ -58,6 +58,7 @@ class AgentMainLoop(ServerLoopCallbacks):
         self.request_limit: int = DEFAULT_REQUEST_LIMIT
         self.forwarded_request_metadata: int = DEFAULT_FORWARDED_REQUEST_METADATA
         self.service_openapi_spec_file: str = self._get_default_openapi_spec_path()
+        self.manifest_update_period: int = 0
         self.server: AgentServer = None
         self.manifest_files: List[str] = []
 
@@ -96,6 +97,9 @@ class AgentMainLoop(ServerLoopCallbacks):
                                 default=os.environ.get("AGENT_OPENAPI_SPEC",
                                                        self.service_openapi_spec_file),
                                 help="File path to OpenAPI service specification document.")
+        arg_parser.add_argument("--manifest_file_update_period", type=int,
+                                default=int(os.environ.get("AGENT_MANIFEST_UPDATE_PERIOD", "0")),
+                                help="Periodic update period for manifest in seconds.")
 
         # Actually parse the args into class variables
 
@@ -110,6 +114,7 @@ class AgentMainLoop(ServerLoopCallbacks):
         self.request_limit = args.request_limit
         self.forwarded_request_metadata = args.forwarded_request_metadata
         self.service_openapi_spec_file = args.openapi_service_spec_path
+        self.manifest_update_period = args.manifest_file_update_period
 
         manifest_restorer = RegistryManifestRestorer()
         manifest_tool_registries: Dict[str, AgentToolRegistry] = manifest_restorer.restore()
@@ -140,16 +145,12 @@ class AgentMainLoop(ServerLoopCallbacks):
                                   request_limit=self.request_limit,
                                   forwarded_request_metadata=self.forwarded_request_metadata)
 
-        manifest_file: str = self.manifest_files[0]
-        updater: ManifestPeriodicUpdater = ManifestPeriodicUpdater(manifest_file, 15)
-        updater.start()
+        if self.manifest_update_period > 0:
+            manifest_file: str = self.manifest_files[0]
+            updater: ManifestPeriodicUpdater =\
+                ManifestPeriodicUpdater(manifest_file, self.manifest_update_period)
+            updater.start()
 
-        # policy: ManifestUpdatePolicy = ManifestUpdatePolicy()
-        # manifest_file: str = self.manifest_files[0]
-        # observer: RegistryObserver =\
-        #     RegistryObserver(manifest_file, policy)
-        # observer.start()
-        #
         # Start HTTP server side-car:
         http_sidecar = HttpSidecar(
             self.port,

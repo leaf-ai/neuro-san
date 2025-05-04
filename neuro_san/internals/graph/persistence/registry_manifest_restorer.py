@@ -128,7 +128,11 @@ your current working directory (pwd).
                 file_of_class = FileOfClass(manifest_file)
                 manifest_dir: str = file_of_class.get_basis()
                 registry_restorer = AgentToolRegistryRestorer(manifest_dir)
-                tool_registry: AgentToolRegistry = registry_restorer.restore(file_reference=use_key)
+                try:
+                    tool_registry: AgentToolRegistry = registry_restorer.restore(file_reference=use_key)
+                except FileNotFoundError as exc:
+                    self.logger.error("Failed to restore registry item %s - %s", use_key, str(exc))
+                    tool_registry = None
                 if tool_registry is not None:
                     tool_name: str = Path(use_key).stem
                     tool_registries[tool_name] = tool_registry
