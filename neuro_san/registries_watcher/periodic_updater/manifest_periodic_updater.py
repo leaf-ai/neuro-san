@@ -12,16 +12,19 @@
 import logging
 import time
 import threading
-from pathlib import Path
+from typing import Dict
 
 from neuro_san.internals.tool_factories.service_tool_factory_provider import ServiceToolFactoryProvider
 from neuro_san.registries_watcher.periodic_updater.registry_observer import RegistryObserver
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
-from neuro_san.internals.graph.persistence.agent_tool_registry_restorer import AgentToolRegistryRestorer
 from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
 
 
 class ManifestPeriodicUpdater:
+    """
+    Class implementing periodic manifest directory updates
+    by watching agent files and manifest file itself.
+    """
 
     def __init__(self, manifest_path: str, update_period: int):
         """
@@ -61,6 +64,9 @@ class ManifestPeriodicUpdater:
             self.tool_factory.setup_tool_registries(registries)
 
     def start(self):
+        """
+        Start running periodic manifest updater.
+        """
         self.logger.info("Starting manifest updater for %s", self.manifest_path)
         self.observer.start()
         self.updater.start()

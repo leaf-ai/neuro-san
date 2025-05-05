@@ -18,6 +18,9 @@ from neuro_san.registries_watcher.periodic_updater.registry_change_handler impor
 
 
 class RegistryObserver:
+    """
+    Observer class for manifest file and its directory.
+    """
 
     def __init__(self, manifest_path: str):
         self.manifest_path: str = str(Path(manifest_path).resolve())
@@ -28,10 +31,16 @@ class RegistryObserver:
             RegistryChangeHandler()
 
     def start(self):
+        """
+        Start running observer
+        """
         self.observer.schedule(self.event_handler, path=self.registry_path, recursive=False)
         self.observer.start()
         self.logger.info("Registry watchdog started on: %s for manifest %s",
                          self.registry_path, self.manifest_path)
 
     def reset_event_counters(self) -> Tuple[int, int, int]:
+        """
+        Reset event counters and return current counters.
+        """
         return self.event_handler.reset_event_counters()

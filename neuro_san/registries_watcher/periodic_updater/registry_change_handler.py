@@ -10,7 +10,6 @@
 # END COPYRIGHT
 
 import logging
-from pathlib import Path
 from threading import Lock
 from typing import Dict
 from typing import Tuple
@@ -63,8 +62,11 @@ class RegistryChangeHandler(FileSystemEventHandler):
         with self.lock:
             self.event_counters[event_name] += 1
         self.logger.info("🔔 File %s: %s", event_name, src_path)
-        
+
     def reset_event_counters(self) -> Tuple[int, int, int]:
+        """
+        Reset event counters and return current counters.
+        """
         with self.lock:
             modified: int = self.event_counters[RegistryChangeHandler.MODIFIED]
             added: int = self.event_counters[RegistryChangeHandler.CREATED]
@@ -74,7 +76,7 @@ class RegistryChangeHandler(FileSystemEventHandler):
                  RegistryChangeHandler.CREATED: 0,
                  RegistryChangeHandler.DELETED: 0}
         return modified, added, deleted
-        
+
     def filter_src_name(self, src_name: str) -> bool:
         """
         Filter source names we are getting notifications for.
