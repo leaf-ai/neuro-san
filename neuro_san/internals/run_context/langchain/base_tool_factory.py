@@ -137,8 +137,10 @@ class BaseToolFactory(ContextTypeBaseToolFactory):
         if "class" not in tool_info:
             raise ValueError(
                 "Missing required key: 'class'.\n"
-                "Each tool configuration must include a 'class' key specifying the fully qualified class name.\n"
-                "Example: 'class': 'langchain_community.tools.bing_search.BingSearchResults'."
+                "Each tool must include a 'class' key:\n"
+                "- For Langchain base tools: use the full class path "
+                "(e.g., 'langchain_community.tools.bing_search.BingSearchResults')\n"
+                "- For shared CodedTools: use 'module.Class' format (e.g., 'websearch.WebSearch')"
             )
 
         # If the tool has description, then it is a shared coded tool.
