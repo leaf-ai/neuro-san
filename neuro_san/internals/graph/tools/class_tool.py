@@ -93,6 +93,8 @@ class ClassTool(AbstractCallableTool):
         # Will need some exception safety in here eventually.
         full_class_ref: str = self.agent_tool_spec.get("class")
         if full_class_ref is None:
+            # If there is no class in tool spec, then it is defined in base tool info file.
+            # Use get_shared_coded_tool_class method to get the class info.
             tool_name: str = self.agent_tool_spec.get("base_tool")
             invocation_context: InvocationContext = self.run_context.get_invocation_context()
             base_tool_factory: ContextTypeBaseToolFactory = invocation_context.get_base_tool_factory()
