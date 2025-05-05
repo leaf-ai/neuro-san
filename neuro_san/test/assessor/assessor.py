@@ -15,11 +15,9 @@ from typing import List
 
 import argparse
 
-from neuro_san.client.agent_session_factory import AgentSessionFactory
-from neuro_san.client.streaming_input_processor import StreamingInputProcessor
+from neuro_san.client.simple_one_shot import SimpleOneShot
 from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.utils.file_of_class import FileOfClass
-from neuro_san.message_processing.basic_message_processor import BasicMessageProcessor
 from neuro_san.test.assessor.assessor_assert_forwarder import AssessorAssertForwarder
 from neuro_san.test.driver.data_driven_agent_test_driver import DataDrivenAgentTestDriver
 
@@ -111,10 +109,6 @@ The type of connection to initiate. Choices are to connect to:
         :return: A string describing an existing mode of failure or
                 a description of a new mode of failure
         """
-        session: AgentSession = AgentSessionFactory().create_session(self.args.connection,
-                                                                     self.args.assessor_agent,
-                                                                     hostname=self.args.host,
-                                                                     port=self.args.port)
 
         text: str = f"""
 The acceptance_criteria is:
@@ -126,17 +120,11 @@ The text_sample is:
 The known failure_modes are:
 {failure_modes}
 """
-        input_processor = StreamingInputProcessor(session=session)
-        processor: BasicMessageProcessor = input_processor.get_message_processor()
-        request: Dict[str, Any] = input_processor.formulate_chat_request(text)
 
-        # Call streaming_chat()
-        empty: Dict[str, Any] = {}
-        for chat_response in session.streaming_chat(request):
-            message: Dict[str, Any] = chat_response.get("response", empty)
-            processor.process_message(message, chat_response.get("type"))
-
-        raw_answer: str = processor.get_answer()
+        # Use the "gist" agent to do the evalution
+        one_shot = SimpleOneShot(self.args.assessor_agent, self.args.connection,
+                                 host=self.args.host, port=self.args.port)
+        raw_answer: str = one_shot.get_answer_for(text)
         return raw_answer
 
     def assess_failures(self, fail: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:

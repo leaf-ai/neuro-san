@@ -10,13 +10,9 @@
 # END COPYRIGHT
 
 from typing import Any
-from typing import Dict
 
-from neuro_san.client.agent_session_factory import AgentSessionFactory
-from neuro_san.client.streaming_input_processor import StreamingInputProcessor
-from neuro_san.interfaces.agent_session import AgentSession
+from neuro_san.client.simple_one_shot import SimpleOneShot
 from neuro_san.internals.utils.file_of_class import FileOfClass
-from neuro_san.message_processing.basic_message_processor import BasicMessageProcessor
 from neuro_san.test.evaluators.abstract_agent_evaluator import AbstractAgentEvaluator
 from neuro_san.test.interfaces.assert_forwarder import AssertForwarder
 
@@ -54,31 +50,15 @@ class GistAgentEvaluator(AbstractAgentEvaluator):
         :param test_value: The value appearing in the test sample
         """
 
-        pass_fail: bool = self.ask_llm(acceptance_criteria=str(verify_value),
-                                       text_sample=str(test_value))
+        acceptance_criteria: str = str(verify_value)
+        text_sample: str = str(test_value)
+        pass_fail: bool = self.ask_llm(acceptance_criteria=acceptance_criteria,
+                                       text_sample=text_sample)
 
-        # Make the exception messaging agree with the sense of the negation.
-        # That is: When we are playing it straight (no negation), the assertion
-        # fails because the text sample didn't match the acceptance criteria
-        # and that failure is unexpected.  When the negation is in place,
-        # it is unexpected that it actually *did* match the acceptance criteria.
-        did_str: str = "didn't"
         if self.negate:
-            did_str = "did"
-
-        message: str = f"""
-text_sample unexpectedly {did_str} match acceptance criteria.
-
-text_sample:
-{test_value}
-
-acceptance_criteria:
-{verify_value}
-"""
-        if self.negate:
-            self.asserts.assertFalse(pass_fail, msg=message)
+            self.asserts.assertNotGist(pass_fail, acceptance_criteria, text_sample)
         else:
-            self.asserts.assertTrue(pass_fail, msg=message)
+            self.asserts.assertGist(pass_fail, acceptance_criteria, text_sample)
 
     def ask_llm(self, acceptance_criteria: str, text_sample: str) -> bool:
         """
@@ -98,19 +78,8 @@ The text_sample is:
 """
 
         # Use the "gist" agent to do the evalution
-        session: AgentSession = AgentSessionFactory().create_session(self.connection_type,
-                                                                     self.discriminator_agent)
-        input_processor = StreamingInputProcessor(session=session)
-        processor: BasicMessageProcessor = input_processor.get_message_processor()
-        request: Dict[str, Any] = input_processor.formulate_chat_request(text)
-
-        # Call streaming_chat()
-        empty: Dict[str, Any] = {}
-        for chat_response in session.streaming_chat(request):
-            message: Dict[str, Any] = chat_response.get("response", empty)
-            processor.process_message(message, chat_response.get("type"))
-
-        raw_answer: str = processor.get_answer()
+        one_shot = SimpleOneShot(self.discriminator_agent, self.connection_type)
+        raw_answer: str = one_shot.get_answer_for(text)
         answer: str = raw_answer.lower()
         test_passes: bool = self.determine_pass_fail(answer)
         return test_passes

@@ -9,31 +9,16 @@
 #
 # END COPYRIGHT
 from typing import Any
-from typing import List
 
 from neuro_san.test.interfaces.assert_forwarder import AssertForwarder
 
 
-class AssertCapture(AssertForwarder):
+class NullAssertForwarder(AssertForwarder):
     """
-    AssertForwarder implementation that wraps another AssertForwarder and
-    captures any exceptions thrown from it.
+    Implementation of the AssertForwarder interface that does nothing for each assert type.
+    This is useful as a superclass for other AssertForwarders that only want to focus
+    on a few specific asserts.
     """
-
-    def __init__(self, basis: AssertForwarder):
-        """
-        Constructor
-
-        :param basis: AssertForwarder
-        """
-        self.basis: AssertForwarder = basis
-        self.asserts: List[AssertionError] = []
-
-    def get_asserts(self) -> List[AssertionError]:
-        """
-        :return: The list of asserts captured from the basis
-        """
-        return self.asserts
 
     # pylint: disable=invalid-name
     def assertEqual(self, first: Any, second: Any, msg: str = None):
@@ -44,10 +29,7 @@ class AssertCapture(AssertForwarder):
         :param second: Second comparison element
         :param msg: optional string message
         """
-        try:
-            self.basis.assertEqual(first, second, msg)
-        except AssertionError as exception:
-            self.asserts.append(exception)
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertNotEqual(self, first: Any, second: Any, msg: str = None):
@@ -58,10 +40,7 @@ class AssertCapture(AssertForwarder):
         :param second: Second comparison element
         :param msg: optional string message
         """
-        try:
-            self.basis.assertNotEqual(first, second, msg)
-        except AssertionError as exception:
-            self.asserts.append(exception)
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertTrue(self, expr: Any, msg: str = None):
@@ -71,10 +50,7 @@ class AssertCapture(AssertForwarder):
         :param expr: Expression to test
         :param msg: optional string message
         """
-        try:
-            self.basis.assertTrue(expr, msg)
-        except AssertionError as exception:
-            self.asserts.append(exception)
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertFalse(self, expr: Any, msg: str = None):
@@ -84,10 +60,7 @@ class AssertCapture(AssertForwarder):
         :param expr: Expression to test
         :param msg: optional string message
         """
-        try:
-            self.basis.assertFalse(expr, msg)
-        except AssertionError as exception:
-            self.asserts.append(exception)
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertIs(self, first: Any, second: Any, msg: str = None):
@@ -98,10 +71,7 @@ class AssertCapture(AssertForwarder):
         :param second: Second comparison element
         :param msg: optional string message
         """
-        try:
-            self.basis.assertIs(first, second, msg)
-        except AssertionError as exception:
-            self.asserts.append(exception)
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertIsNot(self, first: Any, second: Any, msg: str = None):
@@ -112,10 +82,7 @@ class AssertCapture(AssertForwarder):
         :param second: Second comparison element
         :param msg: optional string message
         """
-        try:
-            self.basis.assertIsNot(first, second, msg)
-        except AssertionError as exception:
-            self.asserts.append(exception)
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertIsNone(self, expr: Any, msg: str = None):
@@ -125,10 +92,7 @@ class AssertCapture(AssertForwarder):
         :param expr: Expression to test
         :param msg: optional string message
         """
-        try:
-            self.basis.assertIsNone(expr, msg)
-        except AssertionError as exception:
-            self.asserts.append(exception)
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertIsNotNone(self, expr: Any, msg: str = None):
@@ -138,10 +102,7 @@ class AssertCapture(AssertForwarder):
         :param expr: Expression to test
         :param msg: optional string message
         """
-        try:
-            self.basis.assertIsNotNone(expr, msg)
-        except AssertionError as exception:
-            self.asserts.append(exception)
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertIn(self, member: Any, container: Any, msg: str = None):
@@ -152,10 +113,7 @@ class AssertCapture(AssertForwarder):
         :param container: Container comparison element
         :param msg: optional string message
         """
-        try:
-            self.basis.assertIn(member, container, msg)
-        except AssertionError as exception:
-            self.asserts.append(exception)
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertNotIn(self, member: Any, container: Any, msg: str = None):
@@ -166,10 +124,7 @@ class AssertCapture(AssertForwarder):
         :param container: Container comparison element
         :param msg: optional string message
         """
-        try:
-            self.basis.assertNotIn(member, container, msg)
-        except AssertionError as exception:
-            self.asserts.append(exception)
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertIsInstance(self, obj: Any, cls: Any, msg: str = None):
@@ -180,10 +135,7 @@ class AssertCapture(AssertForwarder):
         :param cls: Class comparison element
         :param msg: optional string message
         """
-        try:
-            self.basis.assertIsInstance(obj, cls, msg)
-        except AssertionError as exception:
-            self.asserts.append(exception)
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertNotIsInstance(self, obj: Any, cls: Any, msg: str = None):
@@ -194,10 +146,7 @@ class AssertCapture(AssertForwarder):
         :param cls: Class comparison element
         :param msg: optional string message
         """
-        try:
-            self.basis.assertNotIsInstance(obj, cls, msg)
-        except AssertionError as exception:
-            self.asserts.append(exception)
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertGreater(self, first: Any, second: Any, msg: str = None):
@@ -208,10 +157,7 @@ class AssertCapture(AssertForwarder):
         :param second: Second comparison element
         :param msg: optional string message
         """
-        try:
-            self.basis.assertGreater(first, second, msg)
-        except AssertionError as exception:
-            self.asserts.append(exception)
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertGreaterEqual(self, first: Any, second: Any, msg: str = None):
@@ -222,10 +168,7 @@ class AssertCapture(AssertForwarder):
         :param second: Second comparison element
         :param msg: optional string message
         """
-        try:
-            self.basis.assertGreaterEqual(first, second, msg)
-        except AssertionError as exception:
-            self.asserts.append(exception)
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertLess(self, first: Any, second: Any, msg: str = None):
@@ -236,10 +179,7 @@ class AssertCapture(AssertForwarder):
         :param second: Second comparison element
         :param msg: optional string message
         """
-        try:
-            self.basis.assertLess(first, second, msg)
-        except AssertionError as exception:
-            self.asserts.append(exception)
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertLessEqual(self, first: Any, second: Any, msg: str = None):
@@ -250,10 +190,7 @@ class AssertCapture(AssertForwarder):
         :param second: Second comparison element
         :param msg: optional string message
         """
-        try:
-            self.basis.assertLessEqual(first, second, msg)
-        except AssertionError as exception:
-            self.asserts.append(exception)
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertGist(self, gist: bool, acceptance_criteria: str, text_sample: str, msg: str = None):
@@ -265,10 +202,7 @@ class AssertCapture(AssertForwarder):
         :param text_sample: The value appearing in the test sample
         :param msg: optional string message
         """
-        try:
-            self.basis.assertGist(gist, acceptance_criteria, text_sample, msg)
-        except AssertionError as exception:
-            self.asserts.append(exception)
+        # Do nothing
 
     # pylint: disable=invalid-name
     def assertNotGist(self, gist: bool, acceptance_criteria: str, text_sample: str, msg: str = None):
@@ -280,7 +214,4 @@ class AssertCapture(AssertForwarder):
         :param text_sample: The value appearing in the test sample
         :param msg: optional string message
         """
-        try:
-            self.basis.assertNotGist(gist, acceptance_criteria, text_sample, msg)
-        except AssertionError as exception:
-            self.asserts.append(exception)
+        # Do nothing
