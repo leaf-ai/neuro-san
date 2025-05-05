@@ -26,6 +26,8 @@ from leaf_common.config.resolver import Resolver
 from neuro_san.interfaces.coded_tool import CodedTool
 from neuro_san.internals.graph.tools.abstract_callable_tool import AbstractCallableTool
 from neuro_san.internals.graph.tools.branch_tool import BranchTool
+from neuro_san.internals.interfaces.context_type_base_tool_factory import ContextTypeBaseToolFactory
+from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.agent_message import AgentMessage
 from neuro_san.internals.messages.origination import Origination
@@ -89,7 +91,13 @@ class ClassTool(AbstractCallableTool):
 
         # Get the python module with the class name containing a CodedTool reference.
         # Will need some exception safety in here eventually.
-        full_class_ref = self.agent_tool_spec.get("class")
+        full_class_ref: str = self.agent_tool_spec.get("class")
+        if full_class_ref is None:
+            tool_name: str = self.agent_tool_spec.get("base_tool")
+            invocation_context: InvocationContext = self.run_context.get_invocation_context()
+            base_tool_factory: ContextTypeBaseToolFactory = invocation_context.get_base_tool_factory()
+            full_class_ref = base_tool_factory.get_shared_coded_tool_class(tool_name)
+
         self.logger.info("Calling class %s", full_class_ref)
 
         class_split = full_class_ref.split(".")

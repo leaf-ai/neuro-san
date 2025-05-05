@@ -112,7 +112,11 @@ class BaseToolFactory(ContextTypeBaseToolFactory):
 
             self.base_tool_info_file = base_tool_info_file
 
-    def create_base_tool(self, tool_name: str, user_args: Dict[str, Any] = None) -> Union[BaseTool, List[BaseTool]]:
+    def create_base_tool(
+            self,
+            tool_name: str,
+            user_args: Dict[str, Any] = None
+    ) -> Union[BaseTool, List[BaseTool]]:
         """
         Resolves dependencies and instantiates the requested tool.
 
@@ -136,6 +140,11 @@ class BaseToolFactory(ContextTypeBaseToolFactory):
                 "Each tool configuration must include a 'class' key specifying the fully qualified class name.\n"
                 "Example: 'class': 'langchain_community.tools.bing_search.BingSearchResults'."
             )
+
+        # If the tool has description, then it is a shared coded tool.
+        # The tool info then contains args schema of the tool.
+        if "description" in tool_info:
+            return tool_info
 
         # Instantiate the main tool or toolkit class
         tool_class: Type[Any] = self._resolve_class(tool_info.get("class"))
@@ -239,3 +248,13 @@ class BaseToolFactory(ContextTypeBaseToolFactory):
                 if callable(attr):
                     return attr
         return None
+
+    def get_shared_coded_tool_class(self, tool_name: str) -> str:
+        """
+        Get class of the shared coded tool
+
+        :param tool_name: The name of the tool
+        :return: The class of the coded tool
+        """
+        tool_info: Dict[str, Any] = self.base_tool_infos.get(tool_name)
+        return tool_info.get("class")

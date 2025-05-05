@@ -42,6 +42,7 @@ from langchain_core.tools import BaseTool
 
 from neuro_san.internals.errors.error_detector import ErrorDetector
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
+from neuro_san.internals.interfaces.context_type_base_tool_factory import ContextTypeBaseToolFactory
 from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
@@ -64,7 +65,6 @@ from neuro_san.internals.run_context.langchain.langchain_run import LangChainRun
 from neuro_san.internals.run_context.langchain.langchain_token_counter import LangChainTokenCounter
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
-from neuro_san.internals.run_context.langchain.base_tool_factory import BaseToolFactory
 
 
 MINUTES: float = 60.0
@@ -318,9 +318,15 @@ class LangChainRunContext(RunContext):
         else:
             base_tool: str = agent_spec.get('base_tool')
             if base_tool:
-                base_tool_factory: BaseToolFactory = self.invocation_context.get_base_tool_factory()
+                base_tool_factory: ContextTypeBaseToolFactory = self.invocation_context.get_base_tool_factory()
                 try:
-                    return base_tool_factory.create_base_tool(base_tool, agent_spec.get('args'))
+                    prebuilt_tool = base_tool_factory.create_base_tool(base_tool, agent_spec.get('args'))
+                    # If the prebuilt tool is base tool, return the tool as is.
+                    if isinstance(prebuilt_tool, BaseTool):
+                        return prebuilt_tool
+                    # Otherwise, it is a shared coded tool.
+                    function_json = prebuilt_tool
+
                 except ValueError as base_tool_creation_exception:
                     # There are errors in BaseTool creation process
                     message: str = f"Failed to create Agent/tool '{name}': {base_tool_creation_exception}"
@@ -328,8 +334,8 @@ class LangChainRunContext(RunContext):
                     await self.journal.write_message(agent_message)
                     self.logger.info(message)
                     return None
-
-            function_json = agent_spec.get("function")
+            else:
+                function_json = agent_spec.get("function")
 
         if function_json is None:
             return None

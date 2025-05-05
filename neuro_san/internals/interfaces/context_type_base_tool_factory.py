@@ -38,7 +38,11 @@ class ContextTypeBaseToolFactory:
         """
         raise NotImplementedError
 
-    def create_base_tool(self, tool_name: str, user_args: Dict[str, Any]) -> Any:
+    def create_base_tool(
+            self,
+            tool_name: str,
+            user_args: Dict[str, Any]
+    ) -> Any:
         """
         Create a tool instance from the fully-specified tool config.
         :param tool_name: The name of the tool to instantiate.
@@ -46,5 +50,14 @@ class ContextTypeBaseToolFactory:
         :return: A tool instance native to the context type.
                 Can raise a ValueError if the config's class or tool_name value is
                 unknown to this method.
+        """
+        raise NotImplementedError
+
+    def get_shared_coded_tool_class(self, tool_name: str) -> str:
+        """
+        Get class of the shared coded tool
+
+        :param tool_name: The name of the tool
+        :return: The class of the coded tool
         """
         raise NotImplementedError

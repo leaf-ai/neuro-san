@@ -190,5 +190,46 @@
         "args": {
             "allow_dangerous_requests": true
         }
+    },
+
+    # The last two tools are shared CodedTools. Each tool is defined by a key-value pair:
+    # - 'args_schema' defines the tool's description and parameters.
+    # - 'class' specifies the tool's implementation as module.ClassName.
+    # Note: Parameters are optional and may be omitted if not required.
+    "website_search": {
+        "class": "web_search.WebSearch",
+        "description": "Assist caller with searching an url on the web by using your tool.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "search_terms": {
+                    "type": "string",
+                    "description": "Search terms to return options."
+                },
+            },
+            "required": ["search_terms"]
+        },
+    },
+
+    "rag_retriever": {
+        "class": "rag.Rag",
+        "description": "Retrieve information on the given urls",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "urls": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "List of url to retrieve info from"
+                },
+                "query": {
+                    "type": "string",
+                    "description": "Query for retrieval"
+                }
+            },
+            "required": ["urls", "query"]
+        },
     }
 }

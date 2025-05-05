@@ -47,56 +47,24 @@
             "instructions": """
 Use your tool to respond to the inquiry.
 """,
-            "tools": ["website_search", "rag_retriever"]
+            "tools": ["search_tool", "rag_tool"]
         },
 
-        # "website_search" with class "website_search_global.WebsiteSearch" and
-        # "rag_retriever" with class "rag_global.RAG" are global CodedTools and
-        # can be used in any agent networks.
+        # The tools "website_search" (class: web_search_global.WebSearch) and
+        # "rag_retriever" (class: rag.Rag) are shared CodedTools that can be used
+        # across all agent networks. Their argument schemas are predefined in 
+        # base_tool_info.hocon. Additional shared CodedTools can be created by 
+        # implementing the module in AGENT_TOOL_PATH and defining the corresponding 
+        # argument schema in AGENT_BASE_TOOL_INFO_FILE.
 
         {
-            "name": "website_search",
-            "function": {
-                "description": """
-Assist caller with searching an url on the web by using your tool.
-```
-                """,
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "search_terms": {
-                            "type": "string",
-                            "description": "Search terms to return options."
-                        },
-                    },
-                    "required": ["search_terms"]
-                }
-            },
-            "class": "web_search.WebSearch",
+            "name": "search_tool",
+            "base_tool": "website_search"
         },
+
         {
-            "name": "rag_retriever",
-            "function": {
-                "description": "Retrieve information on the given urls",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "urls": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                            "description": "List of url to retrieve info from"
-                        },
-                        "query": {
-                            "type": "string",
-                            "description": "Query for retrieval"
-                        }
-                    },
-                    "required": ["urls", "query"]
-                }
-            },
-            "class": "rag.Rag"
+            "name": "rag_tool",
+            "base_tool": "rag_retriever"
         }
     ]
 }
