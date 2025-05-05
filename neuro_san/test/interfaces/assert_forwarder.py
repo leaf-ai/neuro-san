@@ -187,3 +187,27 @@ class AssertForwarder:
         :param msg: optional string message
         """
         raise NotImplementedError
+
+    # pylint: disable=invalid-name
+    def assertGist(self, gist: bool, acceptance_criteria: str, text_sample: str, msg: str = None):
+        """
+        Assert that the gist is true
+
+        :param gist: Pass/Fail value of the gist expected to be True
+        :param acceptance_criteria: The value to verify against
+        :param text_sample: The value appearing in the test sample
+        :param msg: optional string message
+        """
+        raise NotImplementedError
+
+    # pylint: disable=invalid-name
+    def assertNotGist(self, gist: bool, acceptance_criteria: str, text_sample: str, msg: str = None):
+        """
+        Assert that the gist is true
+
+        :param gist: Pass/Fail value of the gist expected to be False
+        :param acceptance_criteria: The value to verify against
+        :param text_sample: The value appearing in the test sample
+        :param msg: optional string message
+        """
+        raise NotImplementedError
