@@ -10,7 +10,7 @@
 #
 # END COPYRIGHT
 {
-     "llm_config": {
+    "llm_config": {
         "model_name": "gpt-4o",
     },
     "tools": [
