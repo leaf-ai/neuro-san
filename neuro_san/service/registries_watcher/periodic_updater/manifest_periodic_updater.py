@@ -67,6 +67,7 @@ class ManifestPeriodicUpdater:
         """
         Start running periodic manifest updater.
         """
-        self.logger.info("Starting manifest updater for %s", self.manifest_path)
+        self.logger.info("Starting manifest updater for %s with %d seconds period",
+                         self.manifest_path, self.update_period_seconds)
         self.observer.start()
         self.updater.start()
