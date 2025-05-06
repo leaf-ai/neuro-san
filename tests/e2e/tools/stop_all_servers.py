@@ -5,6 +5,7 @@ import psutil
 import pytest
 from tests.e2e.utils.server_state import get_all_server_pids
 from tests.e2e.utils.server_manager import stop_all_servers
+from tests.e2e.utils.server_manager import ensure_process_stopped
 
 PID_FILE = "/tmp/neuro_san_server.pid"
 
@@ -36,11 +37,11 @@ def stop_all_agent_servers():
 
     # --- Step 4: Validate each PID is no longer running (process no longer exists)
     for pid in pids:
-        try:
-            proc = psutil.Process(pid)
-            assert not proc.is_running(), f"❌ Server PID {pid} still running after stop."
-        except psutil.NoSuchProcess:
+        success = ensure_process_stopped(pid)
+        if success:
             print(f"✅ Confirmed: server process {pid} is terminated.")
+        else:
+            pytest.fail(f"❌ Failed to stop server PID {pid}.")
 
     # --- Step 5: Double-check that PID file is removed (optional cleanup)
     assert not os.path.exists(PID_FILE), f"❌ PID file still exists: {PID_FILE}"

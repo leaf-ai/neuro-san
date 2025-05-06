@@ -3,6 +3,7 @@
 import subprocess
 import os
 import logging
+import time
 from tests.e2e.utils.server_state import get_all_server_pids
 from tests.e2e.utils.logging_config import setup_logging
 import psutil
@@ -17,6 +18,24 @@ PID_FILE = "/tmp/neuro_san_server.pid"
 # --------------------------------------------------------------------
 setup_logging()
 logging.info("✅ [SERVER_MANAGER] Logging initialized.")
+
+
+def ensure_process_stopped(pid, timeout=10, interval=0.5):
+    """
+    Repeatedly checks whether the process with `pid` is terminated.
+    Returns True if it stops within the timeout window, else False.
+    """
+    start = time.time()
+    while time.time() - start < timeout:
+        try:
+            proc = psutil.Process(pid)
+            if not proc.is_running() or proc.status() == psutil.STATUS_ZOMBIE:
+                return True
+        except psutil.NoSuchProcess:
+            return True
+        time.sleep(interval)
+    return False
+
 
 # --------------------------------------------------------------------
 # Start the server
