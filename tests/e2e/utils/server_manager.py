@@ -67,11 +67,12 @@ def start_server(conn: str):
     get_all_server_pids.SERVER_PROC = proc
     logging.info(f"✅ [SERVER] Agent started in detached mode. PID={proc.pid}")
 
-    # After starting the subprocess
-    logging.info(f"✅ [SERVER] Agent started in detached mode. PID={proc.pid}")
+    # After starting the subprocess and writing the PID
     with open(PID_FILE, "a") as f:
         f.write(f"{proc.pid}\n")
+    logging.info(f"📝 [SERVER] PID {proc.pid} written to {PID_FILE}")
     return proc
+
 
 # --------------------------------------------------------------------
 # Stop all server

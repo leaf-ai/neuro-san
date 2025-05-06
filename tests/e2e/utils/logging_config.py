@@ -29,13 +29,15 @@ def setup_logging(log_path=DEFAULT_LOG_PATH):
     """
     logger = logging.getLogger()
 
-    # Only initialize logging once — skip if already configured
-    if not logger.hasHandlers():
-        logging.basicConfig(
-            level=logging.INFO,
-            format="%(asctime)s [%(levelname)s] %(message)s",
-            handlers=[
-                logging.FileHandler(log_path),    # File output
-                logging.StreamHandler()           # Console output
-            ]
-        )
+    # 🔧 Clear any existing handlers to prevent duplicates
+    if logger.hasHandlers():
+        logger.handlers.clear()
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        handlers=[
+            logging.FileHandler(log_path),
+            logging.StreamHandler()
+        ]
+    )
