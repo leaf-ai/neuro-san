@@ -12,9 +12,8 @@
 {
     # The absolute path of the file contain llm info for llm that is not included in the default neuro-san package.
     # For required input format, please see neuro_san/internals/run_context/langchain/default_llm_info.hocon
-    "agent_llm_info_file": "/Users/username/Documents/llm_info/agent_llm_info.hocon"
-    "llm_config": {
-        "model_name": "llama3.1:8b",
+     "llm_config": {
+        "model_name": "gpt-4o",
     },
     "tools": [
         # These tool definitions do not have to be in any particular order
