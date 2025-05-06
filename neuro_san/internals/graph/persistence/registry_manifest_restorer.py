@@ -12,6 +12,7 @@
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Sequence
 from typing import Union
 
 import os
@@ -65,18 +66,16 @@ class RegistryManifestRestorer(Restorer):
         self.logger = logging.getLogger(self.__class__.__name__)
 
     # pylint: disable=too-many-locals
-    def restore(self, file_reference: str = None):
+    def restore_from_files(self, file_references: Sequence[str]) -> Dict[str, AgentToolRegistry]:
         """
-        :param file_reference: The file reference to use when restoring.
-                Default is None, implying the file reference is up to the
-                implementation.
-        :return: an object from some persisted store
+        :param file_references: The sequence of file references to use when restoring.
+        :return: a built map of agents tools registries
         """
 
         tool_registries: Dict[str, AgentToolRegistry] = {}
 
         # Loop through all the manifest files in the list to make a composite
-        for manifest_file in self.manifest_files:
+        for manifest_file in file_references:
 
             one_manifest: Dict[str, Any] = {}
             if manifest_file.endswith(".hocon"):
@@ -129,7 +128,11 @@ your current working directory (pwd).
                 file_of_class = FileOfClass(manifest_file)
                 manifest_dir: str = file_of_class.get_basis()
                 registry_restorer = AgentToolRegistryRestorer(manifest_dir)
-                tool_registry: AgentToolRegistry = registry_restorer.restore(file_reference=use_key)
+                try:
+                    tool_registry: AgentToolRegistry = registry_restorer.restore(file_reference=use_key)
+                except FileNotFoundError as exc:
+                    self.logger.error("Failed to restore registry item %s - %s", use_key, str(exc))
+                    tool_registry = None
                 if tool_registry is not None:
                     tool_name: str = Path(use_key).stem
                     tool_registries[tool_name] = tool_registry
@@ -137,3 +140,24 @@ your current working directory (pwd).
                     self.logger.error("manifest registry %s not found in %s", use_key, manifest_file)
 
         return tool_registries
+
+    # pylint: disable=too-many-locals
+    def restore(self, file_reference: str = None) -> Dict[str, AgentToolRegistry]:
+        """
+        :param file_reference: The file reference to use when restoring.
+                Default is None, implying the file reference is up to the
+                implementation.
+        :return: a built map of agents tools registries
+        """
+        if file_reference is not None:
+            return self.restore_from_files([file_reference])
+
+        tool_registries: Dict[str, AgentToolRegistry] =\
+            self.restore_from_files(self.manifest_files)
+        return tool_registries
+
+    def get_manifest_files(self) -> List[str]:
+        """
+        Return current list of manifest files.
+        """
+        return self.manifest_files
