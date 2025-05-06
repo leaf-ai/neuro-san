@@ -37,10 +37,7 @@ jobs:
 
       - name: Run Smoke Tests (only tests marked @pytest.mark.smoke)
         run: |
-          pytest tests/e2e/tests/ \
-            --verbose \
-            -m smoke \
-            --thinking-file
+          python -m tests.e2e.tools.smoke_test_runner
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           AGENT_TOOL_PATH: "./neuro_san/coded_tools"
