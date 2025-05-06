@@ -132,6 +132,10 @@ ENV AGENT_MANIFEST_FILE=${APP_SOURCE}/registries/manifest.hocon
 # in addition to the neuro-san defaults.
 ENV AGENT_LLM_INFO_FILE=""
 
+# A base_tool_info hocon file with user-provided base_tool descriptions that are to be used
+# in addition to the neuro-san defaults.
+ENV AGENT_BASE_TOOL_INFO_FILE=""
+
 # Where to find the classes for CodedTool class implementations
 # that are used by specific agent networks.
 ENV AGENT_TOOL_PATH=${APP_SOURCE}/coded_tools
@@ -140,6 +144,7 @@ ENV AGENT_TOOL_PATH=${APP_SOURCE}/coded_tools
 # See https://docs.python.org/3/library/logging.config.html#dictionary-schema-details
 # as to how this file can be configured for your own needs.  Examples there are provided in YAML,
 # but these can be easily translated to JSON (which we prefer).
+# Another good resource: https://docs.python.org/3/howto/logging-cookbook.html
 ENV AGENT_SERVICE_LOG_JSON=${PACKAGE_DEPLOY}/logging.json
 
 # Threshold for logging.

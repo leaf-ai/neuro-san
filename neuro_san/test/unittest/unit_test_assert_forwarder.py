@@ -12,7 +12,7 @@ from typing import Any
 
 from unittest import TestCase
 
-from tests.neuro_san.client.assert_forwarder import AssertForwarder
+from neuro_san.test.interfaces.assert_forwarder import AssertForwarder
 
 
 class UnitTestAssertForwarder(AssertForwarder):
@@ -145,3 +145,91 @@ class UnitTestAssertForwarder(AssertForwarder):
         :param msg: optional string message
         """
         self.test_case.assertNotIsInstance(obj, cls, msg=msg)
+
+    # pylint: disable=invalid-name
+    def assertGreater(self, first: Any, second: Any, msg: str = None):
+        """
+        Assert that the first is greater than the second.
+
+        :param first: First comparison element
+        :param second: Second comparison element
+        :param msg: optional string message
+        """
+        self.test_case.assertGreater(first, second, msg=msg)
+
+    # pylint: disable=invalid-name
+    def assertGreaterEqual(self, first: Any, second: Any, msg: str = None):
+        """
+        Assert that the first is greater than or equal to the second.
+
+        :param first: First comparison element
+        :param second: Second comparison element
+        :param msg: optional string message
+        """
+        self.test_case.assertGreaterEqual(first, second, msg=msg)
+
+    # pylint: disable=invalid-name
+    def assertLess(self, first: Any, second: Any, msg: str = None):
+        """
+        Assert that the first is less than the second.
+
+        :param first: First comparison element
+        :param second: Second comparison element
+        :param msg: optional string message
+        """
+        self.test_case.assertLess(first, second, msg=msg)
+
+    # pylint: disable=invalid-name
+    def assertLessEqual(self, first: Any, second: Any, msg: str = None):
+        """
+        Assert that the first is less than or equal to the second.
+
+        :param first: First comparison element
+        :param second: Second comparison element
+        :param msg: optional string message
+        """
+        self.test_case.assertLessEqual(first, second, msg=msg)
+
+    # pylint: disable=invalid-name
+    def assertGist(self, gist: bool, acceptance_criteria: str, text_sample: str, msg: str = None):
+        """
+        Assert that the gist is true
+
+        :param gist: Pass/Fail value of the gist expected to be True
+        :param acceptance_criteria: The value to verify against
+        :param text_sample: The value appearing in the test sample
+        :param msg: optional string message
+        """
+        if msg is None:
+            msg = f"""
+text_sample unexpectedly did not match acceptance criteria.
+
+text_sample:
+{text_sample}
+
+acceptance_criteria:
+{acceptance_criteria}
+"""
+        self.test_case.assertTrue(gist, msg=msg)
+
+    # pylint: disable=invalid-name
+    def assertNotGist(self, gist: bool, acceptance_criteria: str, text_sample: str, msg: str = None):
+        """
+        Assert that the gist is true
+
+        :param gist: Pass/Fail value of the gist expected to be False
+        :param acceptance_criteria: The value to verify against
+        :param text_sample: The value appearing in the test sample
+        :param msg: optional string message
+        """
+        if msg is None:
+            msg = f"""
+text_sample unexpectedly did match acceptance criteria.
+
+text_sample:
+{text_sample}
+
+acceptance_criteria:
+{acceptance_criteria}
+"""
+        self.test_case.assertFalse(gist, msg=msg)

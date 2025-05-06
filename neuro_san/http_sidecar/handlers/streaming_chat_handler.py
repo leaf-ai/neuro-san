@@ -59,13 +59,17 @@ class StreamingChatHandler(BaseRequestHandler):
         """
         Implementation of POST request handler for streaming chat API call.
         """
+        metadata: Dict[str, Any] = self.get_metadata()
+        update_done: bool = await self.update_agents(metadata)
+        if not update_done:
+            return
+
         if not self.agent_policy.allow(agent_name):
             self.set_status(404)
             self.logger.error({}, "error: Invalid request path %s", self.request.path)
             await self.flush()
             return
 
-        metadata: Dict[str, Any] = self.get_metadata()
         self.logger.info(metadata, "Start POST %s/streaming_chat", agent_name)
         sent_out = 0
         try:
@@ -88,9 +92,3 @@ class StreamingChatHandler(BaseRequestHandler):
             # We are done with response stream:
             await self.finish()
             self.logger.info(metadata, "Finish POST %s/streaming_chat %d responses", agent_name, sent_out)
-
-    async def options(self):
-        """
-        Implementation of OPTIONS request handler for streaming chat API call.
-        """
-        await self.flush()

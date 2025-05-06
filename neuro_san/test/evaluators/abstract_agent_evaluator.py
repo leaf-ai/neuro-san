@@ -16,9 +16,8 @@ from typing import Dict
 from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
 from neuro_san.message_processing.basic_message_processor import BasicMessageProcessor
-
-from tests.neuro_san.client.agent_evaluator import AgentEvaluator
-from tests.neuro_san.client.assert_forwarder import AssertForwarder
+from neuro_san.test.interfaces.agent_evaluator import AgentEvaluator
+from neuro_san.test.interfaces.assert_forwarder import AssertForwarder
 
 
 class AbstractAgentEvaluator(AgentEvaluator):
