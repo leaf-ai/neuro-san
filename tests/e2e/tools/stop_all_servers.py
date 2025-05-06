@@ -36,9 +36,11 @@ def stop_all_agent_servers():
 
     # --- Step 4: Validate each PID is no longer running (process no longer exists)
     for pid in pids:
-        with pytest.raises(psutil.NoSuchProcess):
-            psutil.Process(pid)
-        print(f"✅ Confirmed: server process {pid} is terminated.")
+        try:
+            proc = psutil.Process(pid)
+            assert not proc.is_running(), f"❌ Server PID {pid} still running after stop."
+        except psutil.NoSuchProcess:
+            print(f"✅ Confirmed: server process {pid} is terminated.")
 
     # --- Step 5: Double-check that PID file is removed (optional cleanup)
     assert not os.path.exists(PID_FILE), f"❌ PID file still exists: {PID_FILE}"
