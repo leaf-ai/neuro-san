@@ -68,13 +68,13 @@ class RegistryChangeHandler(FileSystemEventHandler):
         Reset event counters and return current counters.
         """
         with self.lock:
-            modified: int = self.event_counters[RegistryChangeHandler.MODIFIED]
-            added: int = self.event_counters[RegistryChangeHandler.CREATED]
-            deleted: int = self.event_counters[RegistryChangeHandler.DELETED]
+            modified: int = self.event_counters[self.MODIFIED]
+            added: int = self.event_counters[self.CREATED]
+            deleted: int = self.event_counters[self.DELETED]
             self.event_counters =\
-                {RegistryChangeHandler.MODIFIED: 0,
-                 RegistryChangeHandler.CREATED: 0,
-                 RegistryChangeHandler.DELETED: 0}
+                {self.MODIFIED: 0,
+                 self.CREATED: 0,
+                 self.DELETED: 0}
         return modified, added, deleted
 
     def filter_src_name(self, src_name: str) -> bool:

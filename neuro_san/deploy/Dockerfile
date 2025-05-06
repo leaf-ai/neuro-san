@@ -183,5 +183,15 @@ ENV AGENT_MAX_CONCURRENT_REQUESTS 50
 # This is useful for testing response handling in clusters with duplicated pods.
 ENV AGENT_REQUEST_LIMIT=1000000
 
+# If this value is specified and >0,
+# it will enable dynamic run-time updates of the server agents configuration according
+# to current state of manifest file and separate agents registry files.
+# Both manifest file and agent registry files could be modified (edited),
+# agent registry files could be added or deleted from registry directory
+# with corresponding changes in manifest file.
+# Update will be done every AGENT_MANIFEST_UPDATE_PERIOD_SECONDS seconds;
+# if value is not specified or <= 0, no dynamic updates will be executed.
+ENV AGENT_MANIFEST_UPDATE_PERIOD_SECONDS=0
+
 # ENTRYPOINT ls ${APP_SOURCE}
 ENTRYPOINT "${APP_ENTRYPOINT}"

@@ -15,7 +15,7 @@ import threading
 from typing import Dict
 
 from neuro_san.internals.tool_factories.service_tool_factory_provider import ServiceToolFactoryProvider
-from neuro_san.registries_watcher.periodic_updater.registry_observer import RegistryObserver
+from neuro_san.service.registries_watcher.periodic_updater.registry_observer import RegistryObserver
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
 
@@ -26,14 +26,14 @@ class ManifestPeriodicUpdater:
     by watching agent files and manifest file itself.
     """
 
-    def __init__(self, manifest_path: str, update_period: int):
+    def __init__(self, manifest_path: str, update_period_seconds: int):
         """
         Constructor.
         :param manifest_path: file path to server manifest file
-        :param update_period: update period in seconds
+        :param update_period_seconds: update period in seconds
         """
         self.manifest_path: str = manifest_path
-        self.update_period: int = update_period
+        self.update_period_seconds: int = update_period_seconds
         self.logger = logging.getLogger(self.__class__.__name__)
         self.updater = threading.Thread(target=self._run, daemon=True)
         self.observer: RegistryObserver = RegistryObserver(self.manifest_path)
@@ -45,11 +45,11 @@ class ManifestPeriodicUpdater:
         """
         Function runs manifest file update cycle.
         """
-        if self.update_period <= 0:
+        if self.update_period_seconds <= 0:
             # We should not run at all.
             return
         while self.go_run:
-            time.sleep(self.update_period)
+            time.sleep(self.update_period_seconds)
             # Check events that may have been triggered in target registry:
             modified, added, deleted = self.observer.reset_event_counters()
             if modified == added == deleted == 0:

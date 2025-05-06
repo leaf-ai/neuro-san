@@ -14,7 +14,7 @@ from typing import Tuple
 from pathlib import Path
 from watchdog.observers import Observer
 
-from neuro_san.registries_watcher.periodic_updater.registry_change_handler import RegistryChangeHandler
+from neuro_san.service.registries_watcher.periodic_updater.registry_change_handler import RegistryChangeHandler
 
 
 class RegistryObserver:
@@ -27,8 +27,7 @@ class RegistryObserver:
         self.registry_path: str = str(Path(self.manifest_path).parent)
         self.logger = logging.getLogger(self.__class__.__name__)
         self.observer: Observer = Observer()
-        self.event_handler: RegistryChangeHandler =\
-            RegistryChangeHandler()
+        self.event_handler: RegistryChangeHandler = RegistryChangeHandler()
 
     def start(self):
         """
