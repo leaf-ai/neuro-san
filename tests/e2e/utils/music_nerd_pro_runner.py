@@ -5,12 +5,16 @@
 
 import sys
 import pexpect
-from utils.mnpt_output_parser import extract_agent_response, extract_cost_line
+import logging
+from tests.e2e.utils.music_nerd_pro_output_parser import extract_agent_response, extract_cost_line
 from utils.verifier import verify_keywords_in_response
 from utils.thinking_file_builder import build_thinking_file_arg
+from utils.logging_config import setup_logging
+
+setup_logging()  # Call this early, ideally at the top of the file
 
 
-def run_test(conn, prompt_1, prompt_2, word_1, word_2, cost_1, cost_2, prompt_final, repeat_index, use_thinking_file):
+def runner(conn, prompt_1, prompt_2, word_1, word_2, cost_1, cost_2, prompt_final, repeat_index, use_thinking_file):
     """
     Executes a CLI test scenario by interacting with the agent using pexpect.
 
@@ -26,7 +30,7 @@ def run_test(conn, prompt_1, prompt_2, word_1, word_2, cost_1, cost_2, prompt_fi
         repeat_index (int): Current repetition index
         use_thinking_file (bool): Whether to include --thinking_file flag
     """
-    print(f"\n▶️ Running test: connection='{conn}', repeat={repeat_index + 1}")
+    logging.info(f"[TEST] ▶️ Running test: connection='{conn}', repeat={repeat_index + 1}")
 
     # NEW: Use shared function
     thinking_file_arg = build_thinking_file_arg(conn, repeat_index, use_thinking_file)
@@ -38,7 +42,7 @@ def run_test(conn, prompt_1, prompt_2, word_1, word_2, cost_1, cost_2, prompt_fi
         f"--connection {conn}"
         f"{thinking_file_arg}"
     )
-    print(f"[CMD] {command}", flush=True)
+    logging.info(f"[TEST] CMD: {command}")
 
     # Start the agent CLI process
     child = pexpect.spawn(command, encoding="utf-8", echo=False)
@@ -48,7 +52,10 @@ def run_test(conn, prompt_1, prompt_2, word_1, word_2, cost_1, cost_2, prompt_fi
     prompt = "enter your response"
 
     def send_and_parse(prompt_text):
-        """Send a prompt, wait for agent reply, extract response and cost."""
+        """
+        Send a prompt, wait for agent reply, extract response and cost.
+        """
+
         child.sendline(prompt_text)
         child.expect(prompt, timeout=60)
         output = child.before + child.after
@@ -64,20 +71,23 @@ def run_test(conn, prompt_1, prompt_2, word_1, word_2, cost_1, cost_2, prompt_fi
     child.expect(pexpect.EOF)
 
     # Print outputs
-    print("\n📤 Extracted Output:")
-    print(f"🔹 Response 1: {resp_1}")
-    print(f"💰 Cost Line 1: {cost_1_out}")
-    print(f"🔹 Response 2: {resp_2}")
-    print(f"💰 Cost Line 2: {cost_2_out}")
+    logging.info("[TEST] 📤 Extracted Output:")
+    logging.info(f"[TEST] 🔹 Response 1: {resp_1}")
+    logging.info(f"[TEST] 💰 Cost Line 1: {cost_1_out}")
+    logging.info(f"[TEST] 🔹 Response 2: {resp_2}")
+    logging.info(f"[TEST] 💰 Cost Line 2: {cost_2_out}")
 
     def verify(label, actual, expected):
-        """Verify if expected keyword/cost is found in output."""
+        """
+        Verify if expected keyword/cost is found in output.
+        """
+
         missing = verify_keywords_in_response(actual, [expected])
         if missing:
-            print(f"❌ {label} missing: {', '.join(missing)}")
+            logging.info(f"[TEST] ❌ {label} missing: {', '.join(missing)}")
         return missing
 
-    print("\n🔍 Verifying expected values...")
+    logging.info("[TEST] 🔍 Verifying expected values...")
     failed = any([
         verify("Response 1", resp_1, word_1),
         verify("Cost 1", cost_1_out, cost_1),
@@ -88,4 +98,4 @@ def run_test(conn, prompt_1, prompt_2, word_1, word_2, cost_1, cost_2, prompt_fi
     if failed:
         sys.exit(1)
     else:
-        print("✅ Test passed successfully!")
+        logging.info("[TEST] ✅ Test passed successfully!")

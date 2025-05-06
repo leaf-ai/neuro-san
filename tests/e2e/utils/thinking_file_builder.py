@@ -9,6 +9,10 @@
 # ---------------------------------------------------------
 
 import os
+import logging
+from utils.logging_config import setup_logging
+
+setup_logging()  # Call this early, ideally at the top of the file
 
 # Root directory where all thinking_file outputs are stored
 THINKING_FILE_DIR = "/private/tmp/agent_thinking"
@@ -50,7 +54,7 @@ def build_thinking_file_arg(conn: str, repeat_index: int, use_thinking_file: boo
     thinking_path = f"{THINKING_FILE_DIR}/{conn}_run{repeat_index + 1}"
 
     # Print the thinking path to stdout for debug visibility
-    print(f"[thinking_file] → {thinking_path}", flush=True)
+    logging.info(f"[thinking_file] → {thinking_path}")
 
     # Return the CLI-ready argument string
     return f" --thinking_file {thinking_path}"

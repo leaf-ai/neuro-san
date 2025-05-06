@@ -1,129 +1,133 @@
 # conftest.py
+
 # ------------------------------------------------------------------------
-# Provides custom CLI flags, dynamic test generation, and environment setup.
-# Pytest configuration to share like MusicNerdPro test
+# Pytest configuration for shared CLI options, dynamic test generation,
+# session-wide logging setup, and agent server lifecycle management.
 # ------------------------------------------------------------------------
 
 import pytest
 import os
+import logging
 from pyhocon import ConfigFactory
-from utils.server_manager import start_server, stop_server
+from pathlib import Path
+from utils.logging_config import setup_logging, DEFAULT_LOG_PATH
+setup_logging()  # Make sure logger is initialized
+
 
 # ------------------------------------------------------------------------------
 # Constants
 # ------------------------------------------------------------------------------
 
-# Directory where agent CLI thinking files will be written (optional feature)
 THINKING_FILE_PATH = "/private/tmp/agent_thinking"
+LOG_PATH = DEFAULT_LOG_PATH  # shared with logging_config
 
-# Static agent config (HOCON) loaded once for all tests
+# ------------------------------------------------------------------------------
+# One-time Log Cleanup + Logging Setup
+# ------------------------------------------------------------------------------
+
+try:
+    # Truncate the log file for a clean start (don't delete it)
+    open(LOG_PATH, "w").close()
+
+    print(f"[setup] Truncated log file: {LOG_PATH}")
+except Exception as e:
+    print(f"[setup] WARNING: Could not prepare log file: {e}")
+
+
+# Initialize shared logging (both file and console)
+setup_logging(log_path=LOG_PATH)
+logging.info("✅ Logging system initialized by conftest.py")
+
+# ------------------------------------------------------------------------------
+# Load Static Agent Configuration (HOCON)
+# ------------------------------------------------------------------------------
+
 CONFIG_HOCON_PATH = os.path.join(os.path.dirname(__file__), "configs", "config.hocon")
+
 config = ConfigFactory.parse_file(CONFIG_HOCON_PATH)
 
 # ------------------------------------------------------------------------------
-# Hooks
+# Pytest Hooks
 # ------------------------------------------------------------------------------
+
+def pytest_ignore_collect(collection_path: Path, config):
+    """
+    Prevents pytest from collecting a specific test file during discovery.
+
+    This is used to ignore test_agent_cli_music_nerd_pro.py during normal pytest runs,
+    because:
+    - It depends on a pre-started server (via start_server_manual.py)
+    - It is intended to be run only as part of tools/smoke_test_runner.py
+    - This helps avoid accidental test failures or unwanted execution
+
+    Note: Uses pathlib.Path as required by pytest 9+ (fix for PytestRemovedIn9Warning).
+    """
+    return "test_agent_cli_music_nerd_pro.py" in str(collection_path)
 
 
 def pytest_configure(config):
     """
-    Prints custom environment info when pytest starts.
-    Helps verify environment settings.
+    Pytest hook: called once at the start of the test session.
+    This function logs useful context about the test configuration.
+
+    - Logs the repeat count from `--repeat` CLI option (default = 1)
+    - Detects if pytest-xdist is enabled (i.e., running in parallel)
     """
-    print("\nCustom Environment Info")
-    print(f"thinking-file path      : {THINKING_FILE_PATH}")
+    # Fetch repeat count from command-line option or default to 1
+    repeat = config.getoption("repeat", default=1)
+
+    # Check if we are in a worker process (i.e., xdist parallel run)
+    is_parallel = hasattr(config, "workerinput")
+
+    # Emit a log entry showing test mode
+    logging.info(f"🧪 Test mode: repeat={repeat}, parallel={is_parallel}")
+    logging.info("Custom Environment Info")
+    logging.info(f"thinking-file path      : {THINKING_FILE_PATH}")
 
 
 def pytest_addoption(parser):
     """
-    Adds custom command-line options for pytest to control the test suite:
-    --connection    -> Filter tests by specific connection method (direct/grpc/http)
-    --repeat        -> Repeat the same test multiple times (for stability/reliability)
-    --thinking-file -> Enable writing out agent thinking_file logs during test
+    Defines CLI options:
+    --connection: Limit tests to a specific connection (e.g., direct/grpc/http)
+    --repeat: Repeat each test multiple times
+    --thinking-file: Enables optional thinking_file logging
     """
     group = parser.getgroup("custom options")
-    group.addoption(
-        "--connection",
-        action="store",
-        default=None,
-        help="Specify a connection name to test (e.g., direct, grpc, http). If omitted, all will be tested."
-    )
-    group.addoption(
-        "--repeat",
-        action="store",
-        type=int,
-        default=1,
-        help="Number of times to repeat each test (for stress or reliability testing)."
-    )
-    group.addoption(
-        "--thinking-file",
-        action="store_true",
-        default=False,
-        help="If enabled, agent will write a thinking_file log per test case (grpc/http/direct)."
-    )
+    group.addoption("--connection", action="store", default=None,
+                    help="Specify a connection to test: direct, grpc, or http.")
+    group.addoption("--repeat", action="store", type=int, default=1,
+                    help="Number of times to repeat each test.")
+    group.addoption("--thinking-file", action="store_true", default=False,
+                    help="Enable thinking_file output per test run.")
 
 
 def pytest_generate_tests(metafunc):
-    """
-    Dynamically parameterizes the tests based on the connection(s) and repetition requested.
+    # 🛑 Skip parametrization if running the orchestrator module
+    if metafunc.module.__name__.endswith("test_e2e_mnp"):
+        return
 
-    Example:
-    --connection grpc --repeat 3
-    → Runs 3 tests against 'grpc' connection.
-
-    --repeat 2 (with no connection)
-    → Runs 2 tests for each connection (direct, grpc, http).
-
-    This auto-expands into (connection_name, repeat_index) fixture pairs.
-    """
     if "connection_name" in metafunc.fixturenames:
         all_connections = load_connections()
-        selected_connection = metafunc.config.getoption("connection")
+        selected = metafunc.config.getoption("connection")
         repeat = metafunc.config.getoption("repeat")
 
-        # Filter if a specific connection is selected
-        if selected_connection:
-            if selected_connection not in all_connections:
-                raise ValueError(f"Connection '{selected_connection}' not found in config: {all_connections}")
-            all_connections = [selected_connection]
+        if selected:
+            if selected not in all_connections:
+                raise ValueError(f"Connection '{selected}' not in config: {all_connections}")
+            all_connections = [selected]
 
-        # Generate combinations of (connection_name, repeat_index)
         test_params = [
             pytest.param(conn, i, id=f"{conn}_run{i+1}")
             for conn in all_connections
             for i in range(repeat)
         ]
 
-        # Parametrize the test function
         metafunc.parametrize("connection_name, repeat_index", test_params)
-
-# ------------------------------------------------------------------------------
-# Utilities
-# ------------------------------------------------------------------------------
 
 
 def load_connections():
     """
-    Loads the list of supported connection names from the HOCON config file.
+    Returns the list of connections from the test config.
     """
     return config.get("connection")
 
-
-@pytest.fixture(scope="session", autouse=True)
-def e2e_server(request):
-    """
-    Start the agent server once before any E2E tests run.
-    Stop it after the whole test session ends.
-    Only starts if connection is grpc or http.
-    """
-    conn = request.config.getoption("--connection")
-
-    if conn == "direct":
-        return  # ❌ Don't start server for direct
-
-    proc = start_server()
-
-    def fin():
-        stop_server(proc)
-
-    request.addfinalizer(fin)
