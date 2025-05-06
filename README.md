@@ -36,7 +36,7 @@ Neuro-San also offers:
 * test infrastructure for your agent networks, including:
     * data-driven test cases
     * the ability for LLMs to test your agent networks
-    * definition of a "success_ratio" for your tests as a means to pass never-perfect but good-enough agents
+    * an Assessor app which classifies the modes of failure for your agents, given a data-driven test case
 
 ## Running client and server
 
@@ -148,7 +148,6 @@ In some order of complexity, they are:
 
 * esp_decision_assistant
 
-    This is Babak's original decision assistant.
     Very abstract, but also very powerful.
     A front man agent gathers information about a decision to make
     in ESP terms.  It then calls a prescriptor which in turn
@@ -169,6 +168,8 @@ demonstration purposes.
 
 For more examples of agent networks, documentation and tutorials,
 see the [neuro-san-demos repo.](https://github.com/leaf-ai/neuro-san-demos)
+
+For a complete list of agent networks keys, see the [agent hocon file reference](https://github.com/leaf-ai/neuro-san/blob/main/docs/agent_hocon_reference.md)
 
 ### Manifest file
 
