@@ -12,6 +12,7 @@ pexpect
 pyhocon
 pytest-xdist
 pytest-timeout
+psutil
 
 # Code quality
 flake8==7.1.1
