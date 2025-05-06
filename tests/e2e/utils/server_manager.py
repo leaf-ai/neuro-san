@@ -95,7 +95,7 @@ def stop_all_servers():
             if proc.is_running() and proc.status() != psutil.STATUS_ZOMBIE:
                 logging.info(f"[SERVER] 🛑 Terminating server with PID {pid}...")
                 proc.terminate()
-                proc.wait(timeout=10)
+                proc.wait(timeout=30)
                 logging.info(f"[SERVER] ✅ PID {pid} terminated.")
         except Exception as e:
             logging.warning(f"[SERVER] ⚠️ Failed to stop PID {pid}: {e}")

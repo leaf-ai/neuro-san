@@ -23,15 +23,15 @@ def stop_last_agent_server():
 
     # --- Step 1: Load all recorded PIDs
     all_pids = server_state.get_all_server_pids()
-    assert all_pids, "❌ No server PIDs found. Is the server running?"
+    assert all_pids, "❌ [SERVER] No server PIDs found. Is the server running?"
 
     # --- Step 2: Target the last one (most recent)
     last_pid = all_pids[-1]
-    print(f"🛑 Preparing to stop last server with PID: {last_pid}")
+    print(f"🛑 [SERVER] Preparing to stop last server with PID: {last_pid}")
 
     # --- Step 3: Confirm it's running before stopping
     proc = psutil.Process(last_pid)
-    assert proc.is_running(), f"❌ Process {last_pid} is not running."
+    assert proc.is_running(), f"❌ [SERVER] Process {last_pid} is not running."
 
     # --- Step 4: Stop that specific server
     stop_server_by_pid(last_pid)
@@ -39,7 +39,7 @@ def stop_last_agent_server():
     # --- Step 5: Confirm it's gone
     with pytest.raises(psutil.NoSuchProcess):
         psutil.Process(last_pid)
-    print(f"✅ Server PID {last_pid} successfully terminated.")
+    print(f"✅ [SERVER] PID {last_pid} successfully terminated.")
 
     # --- Step 6: Confirm PID file still exists and contains other PIDs (if applicable)
     remaining = [pid for pid in all_pids if pid != last_pid]
@@ -47,12 +47,12 @@ def stop_last_agent_server():
 
     if not remaining and os.path.exists(PID_FILE):
         os.remove(PID_FILE)
-        print(f"🧹 PID file cleaned up: {PID_FILE}")
+        print(f"🧹 [SERVER] PID file cleaned up: {PID_FILE}")
     elif not remaining:
-        print("🧹 No remaining PIDs. PID file was already cleaned up.")
+        print("🧹 [SERVER] No remaining PIDs. PID file was already cleaned up.")
     else:
-        assert current == remaining, f"❌ PID file mismatch. Expected {remaining}, got {current}"
-        print(f"ℹ️ Remaining PIDs still active: {current}")
+        assert current == remaining, f"❌ [SERVER] PID file mismatch. Expected {remaining}, got {current}"
+        print(f"ℹ️ [SERVER] Remaining PIDs still active: {current}")
 
 
 # CLI entrypoint

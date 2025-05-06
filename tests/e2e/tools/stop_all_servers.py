@@ -24,13 +24,13 @@ def stop_all_agent_servers():
 
     # --- Step 1: Load all known PIDs from the shared PID file
     pids = get_all_server_pids()
-    assert pids, "❌ No server PIDs recorded — is the server running?"
+    assert pids, "❌ [SERVER] No server PIDs recorded — is the server running?"
 
     # --- Step 2: Verify each PID corresponds to a live server process
     for pid in pids:
         proc = psutil.Process(pid)
-        assert proc.is_running(), f"❌ Server process with PID {pid} is not running."
-        print(f"🛑 Preparing to stop server with PID {pid}...")
+        assert proc.is_running(), f"❌ [SERVER] Server process with PID {pid} is not running."
+        print(f"🛑 [SERVER] Preparing to stop server with PID {pid}...")
 
     # --- Step 3: Call the shared stop function to clean up all servers
     stop_all_servers()
@@ -39,13 +39,13 @@ def stop_all_agent_servers():
     for pid in pids:
         success = ensure_process_stopped(pid)
         if success:
-            print(f"✅ Confirmed: server process {pid} is terminated.")
+            print(f"✅ [SERVER] Confirmed: server process {pid} is terminated.")
         else:
-            pytest.fail(f"❌ Failed to stop server PID {pid}.")
+            pytest.fail(f"❌ [SERVER] Failed to stop server PID {pid}.")
 
     # --- Step 5: Double-check that PID file is removed (optional cleanup)
-    assert not os.path.exists(PID_FILE), f"❌ PID file still exists: {PID_FILE}"
-    print(f"🧹 PID file successfully removed: {PID_FILE}")
+    assert not os.path.exists(PID_FILE), f"❌ [SERVER] PID file still exists: {PID_FILE}"
+    print(f"🧹 [SERVER] PID file successfully removed: {PID_FILE}")
 
 
 # CLI entrypoint
