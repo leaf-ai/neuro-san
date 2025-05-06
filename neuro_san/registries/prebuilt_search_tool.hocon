@@ -10,8 +10,6 @@
 #
 # END COPYRIGHT
 {
-    # The absolute path of the file contain llm info for llm that is not included in the default neuro-san package.
-    # For required input format, please see neuro_san/internals/run_context/langchain/default_llm_info.hocon
      "llm_config": {
         "model_name": "gpt-4o",
     },
