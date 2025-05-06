@@ -8,12 +8,13 @@ from tests.e2e.utils.server_manager import stop_all_servers
 
 PID_FILE = "/tmp/neuro_san_server.pid"
 
+
 @pytest.mark.order(-1)
 def stop_all_agent_servers():
     """
     Note: run as python <tools name>
     Test case that stops all agent server processes listed in the PID file.
-    
+
     Verifies:
       ✅ Each PID exists and maps to a running process
       ✅ After stop_all_servers(), the processes are no longer alive
@@ -42,6 +43,7 @@ def stop_all_agent_servers():
     # --- Step 5: Double-check that PID file is removed (optional cleanup)
     assert not os.path.exists(PID_FILE), f"❌ PID file still exists: {PID_FILE}"
     print(f"🧹 PID file successfully removed: {PID_FILE}")
+
 
 # CLI entrypoint
 if __name__ == "__main__":

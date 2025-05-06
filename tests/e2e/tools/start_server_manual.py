@@ -3,6 +3,7 @@
 import psutil
 from tests.e2e.utils import server_manager, server_state
 
+
 def start_server_and_sets_pid():
     """
     Note: run as python <tools name>
@@ -31,6 +32,7 @@ def start_server_and_sets_pid():
     assert ps_proc.status() != psutil.STATUS_ZOMBIE, "❌ Server process is a zombie."
 
     print(f"✅ Server is running (status: {ps_proc.status()})")
+
 
 # CLI entrypoint
 if __name__ == "__main__":

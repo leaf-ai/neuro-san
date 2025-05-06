@@ -50,6 +50,7 @@ config = ConfigFactory.parse_file(CONFIG_HOCON_PATH)
 # Pytest Hooks
 # ------------------------------------------------------------------------------
 
+
 def pytest_ignore_collect(collection_path: Path, config):
     """
     Prevents pytest from collecting a specific test file during discovery.
@@ -130,4 +131,3 @@ def load_connections():
     Returns the list of connections from the test config.
     """
     return config.get("connection")
-

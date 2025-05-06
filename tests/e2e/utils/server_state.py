@@ -33,5 +33,3 @@ def get_last_server_pid():
     """
     pids = get_all_server_pids()
     return pids[-1] if pids else None
-
-

@@ -9,6 +9,7 @@ from tests.e2e.utils.server_manager import stop_server_by_pid
 
 PID_FILE = "/tmp/neuro_san_server.pid"
 
+
 def stop_last_agent_server():
     """
     Note: run as python <tools name>
@@ -48,10 +49,11 @@ def stop_last_agent_server():
         os.remove(PID_FILE)
         print(f"🧹 PID file cleaned up: {PID_FILE}")
     elif not remaining:
-        print(f"🧹 No remaining PIDs. PID file was already cleaned up.")
+        print("🧹 No remaining PIDs. PID file was already cleaned up.")
     else:
         assert current == remaining, f"❌ PID file mismatch. Expected {remaining}, got {current}"
         print(f"ℹ️ Remaining PIDs still active: {current}")
+
 
 # CLI entrypoint
 if __name__ == "__main__":

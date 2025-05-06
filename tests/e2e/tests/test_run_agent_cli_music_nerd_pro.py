@@ -17,6 +17,7 @@ from tests.e2e.utils.logging_config import setup_logging
 # Initialize consistent logging across CLI tools and tests
 setup_logging()
 
+
 @pytest.mark.e2e
 @pytest.mark.timeout(120)  # Ensure no single run hangs too long
 def test_run_cli_smoke(connection_name, repeat_index, request):
@@ -34,7 +35,9 @@ def test_run_cli_smoke(connection_name, repeat_index, request):
     """
 
     # Log current run context (repeat, parallel mode)
-    logging.info(f"🧪 Test mode: repeat={request.config.getoption('repeat')}, parallel={hasattr(request.config, 'workerinput')}")
+    repeat = request.config.getoption('repeat')
+    is_parallel = hasattr(request.config, 'workerinput')
+    logging.info(f"🧪 Test mode: repeat={repeat}, parallel={is_parallel}")
 
     # Whether to emit 'thinking file' logs
     use_thinking_file = request.config.getoption("--thinking-file")

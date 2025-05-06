@@ -33,7 +33,7 @@ def setup_logging(log_path=DEFAULT_LOG_PATH):
     if not logger.hasHandlers():
         logging.basicConfig(
             level=logging.INFO,
-            format="%(asctime)s [%(levelname)s] %(message)s", # ← force newline
+            format="%(asctime)s [%(levelname)s] %(message)s",
             handlers=[
                 logging.FileHandler(log_path),    # File output
                 logging.StreamHandler()           # Console output

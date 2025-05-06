@@ -1,7 +1,6 @@
 # utils/server_manager.py
 
 import subprocess
-import sys
 import os
 import logging
 from tests.e2e.utils.server_state import get_all_server_pids
@@ -22,6 +21,8 @@ logging.info("✅ [SERVER_MANAGER] Logging initialized.")
 # --------------------------------------------------------------------
 # Start the server
 # --------------------------------------------------------------------
+
+
 def start_server(conn: str):
     """
     Start the agent server as a detached background subprocess.
@@ -56,6 +57,8 @@ def start_server(conn: str):
 # --------------------------------------------------------------------
 # Stop all server
 # --------------------------------------------------------------------
+
+
 def stop_all_servers():
     """
     Stop all PIDs listed in the PID file. Clean up the file.
@@ -83,6 +86,7 @@ def stop_all_servers():
         logging.info(f"[SERVER] 🧹 Removed PID file: {PID_FILE}")
     except Exception as e:
         logging.warning(f"[SERVER] ⚠️ Failed to delete PID file: {e}")
+
 
 def stop_server_by_pid(pid: int):
     try:
