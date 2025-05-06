@@ -126,7 +126,7 @@ string of a JSON dictionary. For example:
 
 ## Running Python unit/integration tests
 
-To run Python unit/integration tests, follow the instructions [here](https://github.com/leaf-ai/neuro-san/blob/main/README_tests.md)
+To run Python unit/integration tests, follow the instructions [here](https://github.com/leaf-ai/neuro-san/blob/main/docs/tests.md)
 
 ## Creating a new agent network
 
@@ -263,4 +263,4 @@ look like this:
 
 ## Creating Clients
 
-To create clients, follow the instructions [here](https://github.com/leaf-ai/neuro-san/blob/main/README_clients.md)
+To create clients, follow the instructions [here](https://github.com/leaf-ai/neuro-san/blob/main/docs/clients.md)
