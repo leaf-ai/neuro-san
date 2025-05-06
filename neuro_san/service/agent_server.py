@@ -109,8 +109,7 @@ class AgentServer:
         """
         tool_factory_provider: ServiceToolFactoryProvider =\
             ServiceToolFactoryProvider.get_instance()
-        for agent_name, tool_registry in self.tool_registries.items():
-            tool_factory_provider.add_agent_tool_registry(agent_name, tool_registry)
+        tool_factory_provider.setup_tool_registries(self.tool_registries)
 
     def agent_added(self, agent_name: str):
         """
