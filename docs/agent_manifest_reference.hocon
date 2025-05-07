@@ -49,3 +49,8 @@ agent files as part of the cluster configuration.
 By default, the environment variable AGENT_MANIFEST_UPDATE_PERIOD_SECONDS is set to 0, meaning this monitoring/update
 feature is turned off.  When this value is > 0, it defines how often any server will scan for updates in the manifest.hocon
 and other agent hocon files.
+
+### More information
+
+For more information on environment variables used in a neuro-san server deployment, see end of the example
+[Dockerfile](https://github.com/leaf-ai/neuro-san/blob/main/neuro_san/deploy/Dockerfile).
