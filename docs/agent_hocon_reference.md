@@ -209,7 +209,7 @@ it is considered an error and reported as such per the [error_formatter](#error-
 A list/array of [single agent specifications](#single-agent-specification) that make up the agent network.
 
 The first of these in the list is called the "Front Man".
-He does handles all the dealings with any client of the agent network.
+He handles all the dealings with any client of the agent network.
 
 Other agents listed can be in any order and can reference each other, forming trees or graphs.
 
@@ -238,7 +238,7 @@ by using its name in its [tools](#tools-agents) list.
 
 ### function
 
-A dictionary which describes what at agent can do and how it wishes to be invoked for the
+A dictionary which describes what an agent can do and how it wishes to be invoked for the
 benefit of its upstream caller's planning.
 
 Neuro-san largely follows the
@@ -348,7 +348,7 @@ Some considerations might include:
 ### class
 
 Optional string specifying a Python class which implements the
-[CodedTool](https://github.com/leaf-ai/neuro-san/blob/main/neuro_san/interfaces/coded_tool.py)
+[CodedTool](../neuro_san/interfaces/coded_tool.py)
 interface.
 
 Implementations must be found in the directory where the class can be resolved by looking
