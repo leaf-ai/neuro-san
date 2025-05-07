@@ -126,7 +126,7 @@ string of a JSON dictionary. For example:
 
 ## Running Python unit/integration tests
 
-To run Python unit/integration tests, follow the instructions [here](https://github.com/leaf-ai/neuro-san/blob/main/docs/tests.md)
+To run Python unit/integration tests, follow the instructions [here](docs/tests.md)
 
 ## Creating a new agent network
 
@@ -169,7 +169,7 @@ demonstration purposes.
 For more examples of agent networks, documentation and tutorials,
 see the [neuro-san-demos repo.](https://github.com/leaf-ai/neuro-san-demos)
 
-For a complete list of agent networks keys, see the [agent hocon file reference](https://github.com/leaf-ai/neuro-san/blob/main/docs/agent_hocon_reference.md)
+For a complete list of agent networks keys, see the [agent hocon file reference](docs/agent_hocon_reference.md)
 
 ### Manifest file
 
@@ -264,4 +264,4 @@ look like this:
 
 ## Creating Clients
 
-To create clients, follow the instructions [here](https://github.com/leaf-ai/neuro-san/blob/main/docs/clients.md)
+To create clients, follow the instructions [here](docs/clients.md)

@@ -20,7 +20,7 @@ All parameters listed here have global scope (to the agent network) and are list
 
 ### File Name Keys
 
-You will find that keys in the example [manifest.hocon](https://github.com/leaf-ai/neuro-san/blob/main/neuro_san/registries/manifest.hocon)
+You will find that keys in the example [manifest.hocon](../neuro_san/registries/manifest.hocon)
 are file references ending with the .hocon extension. Each of these *keys* points to a
 [agent network hocon description](./agent_hocon_reference.md) file relative to the manifest.hocon's location.
 
@@ -53,4 +53,4 @@ and other agent hocon files.
 ### More information
 
 For more information on environment variables used in a neuro-san server deployment, see end of the example
-[Dockerfile](https://github.com/leaf-ai/neuro-san/blob/main/neuro_san/deploy/Dockerfile).
+[Dockerfile](../neuro_san/deploy/Dockerfile).
