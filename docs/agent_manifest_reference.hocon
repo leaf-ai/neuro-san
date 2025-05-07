@@ -18,13 +18,13 @@ Sub-keys to those dictionaries will be described in the next-level down heading 
 
 All parameters listed here have global scope (to the agent network) and are listed at the top of the file by convention.
 
-### File name keys
+### File Name Keys
 
 You will find that keys in the example [manifest.hocon](https://github.com/leaf-ai/neuro-san/blob/main/neuro_san/registries/manifest.hocon)
 are file references ending with the .hocon extension. Each of these *keys* points to a
 [agent network hocon description](./agent_hocon_reference.md) file relative to the manifest.hocon's location.
 
-### File name values
+### Values for File Name Keys
 
 The value for any filename key is currently a boolean value.
 
