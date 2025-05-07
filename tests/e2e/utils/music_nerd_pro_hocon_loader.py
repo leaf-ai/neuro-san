@@ -1,5 +1,5 @@
-# ------------------------------------------------------------------------
-# mnpt_hocon_loader.py
+# music_nerd_pro_hocon_loader.py
+
 # ------------------------------------------------------------------------
 # Utility functions for loading test prompt/response values from HOCON files.
 # Separates test data loading from agent configuration loading.
@@ -7,6 +7,8 @@
 
 import os
 from pyhocon import ConfigFactory
+
+NAME_DATA_HOCON = "music_nerd_pro_data"
 
 # ------------------------------------------------------------------------
 # Path to the TEST DATA HOCON file
@@ -16,7 +18,7 @@ from pyhocon import ConfigFactory
 
 TEST_DATA_HOCON_PATH = os.path.join(
     os.path.dirname(__file__),        # This utils/ folder
-    "../test_cases_data/mnpt_data.hocon"  # Relative path to test_cases/
+    "../test_cases_data/" + NAME_DATA_HOCON + ".hocon"  # Relative path to test_cases/
 )
 
 # ------------------------------------------------------------------------
