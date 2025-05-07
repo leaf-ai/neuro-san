@@ -10,14 +10,55 @@ for its data-driven configuration elements.  Very simply put, you can think of
 .hocon files as JSON files that allow comments, but there is more to the hocon
 format than that which you can explore on your own.
 
-Specifications in this document each have header changes for the depth of scope of the dictionary
-header they pertain to, starting with these sections:
-
-* [top-level](#top-level)
-* [single agent specification](#single-agent-specification)
-
+Specifications in this document each have header changes for the depth of scope of the dictionary header they pertain to.
 Some key descriptions refer to values that are dictionaries.
 Sub-keys to those dictionaries will be described in the next-level down heading scope from their parent.
+
+<!--TOC-->
+
+- [Top-Level Agent Network Specifications](#top-level-agent-network-specifications)
+  - [commondefs](#commondefs)
+    - [replacement_strings](#replacement_strings)
+    - [replacement_values](#replacement_values)
+  - [llm_config](#llm_config)
+    - [model_name](#model_name)
+    - [fallbacks](#fallbacks)
+    - [max_iterations](#max_iterations)
+    - [max_execution_seconds](#max_execution_seconds)
+    - [temperature](#temperature)
+    - [Other LLM-specific Parameters](#other-llm-specific-parameters)
+    - [verbose](#verbose)
+    - [error_formatter](#error_formatter)
+    - [error_fragments](#error_fragments)
+  - [tools](#tools)
+- [Single Agent Specification](#single-agent-specification)
+  - [name](#name)
+  - [function](#function)
+    - [description](#description)
+    - [parameters](#parameters)
+      - [type](#type)
+      - [properties](#properties)
+      - [required](#required)
+  - [instructions](#instructions)
+  - [command](#command)
+  - [tools (agents)](#tools-agents)
+    - [External Agents](#external-agents)
+  - [llm_config](#llm_config-1)
+  - [class](#class)
+  - [args](#args)
+  - [allow](#allow)
+    - [connectivity](#connectivity)
+    - [to_downstream](#to_downstream)
+      - [sly_data](#sly_data)
+    - [from_downstream](#from_downstream)
+      - [sly_data](#sly_data-1)
+    - [to_upstream](#to_upstream)
+      - [sly_data](#sly_data-2)
+  - [max_message_history](#max_message_history)
+  - [error_formatter](#error_formatter-1)
+  - [error_fragments](#error_fragments-1)
+
+<!--TOC-->
 
 ## Top-Level Agent Network Specifications
 
