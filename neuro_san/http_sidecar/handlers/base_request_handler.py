@@ -27,6 +27,7 @@ from tornado.web import RequestHandler
 
 from neuro_san.http_sidecar.logging.http_logger import HttpLogger
 from neuro_san.http_sidecar.interfaces.agent_authorizer import AgentAuthorizer
+from neuro_san.http_sidecar.interfaces.agents_updater import AgentsUpdater
 from neuro_san.interfaces.async_agent_session import AsyncAgentSession
 from neuro_san.interfaces.concierge_session import ConciergeSession
 from neuro_san.session.async_grpc_service_agent_session import AsyncGrpcServiceAgentSession
@@ -53,8 +54,11 @@ class BaseRequestHandler(RequestHandler):
     request_id: int = 0
 
     # pylint: disable=attribute-defined-outside-init
+    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-positional-arguments
     def initialize(self,
                    agent_policy: AgentAuthorizer,
+                   agents_updater: AgentsUpdater,
                    port: int,
                    forwarded_request_metadata: List[str],
                    openapi_service_spec_path: str):
@@ -62,12 +66,15 @@ class BaseRequestHandler(RequestHandler):
         This method is called by Tornado framework to allow
         injecting service-specific data into local handler context.
         :param agent_policy: abstract policy for agent requests
+        :param agents_updater: abstract policy for updating
+                               collection of agents being served
         :param port: gRPC service port.
         :param forwarded_request_metadata: request metadata to forward.
         :param openapi_service_spec_path: file path to OpenAPI service spec.
         """
 
         self.agent_policy = agent_policy
+        self.agents_updater = agents_updater
         self.port: int = port
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata
         self.openapi_service_spec_path: str = openapi_service_spec_path
@@ -123,6 +130,28 @@ class BaseRequestHandler(RequestHandler):
                 port=self.port,
                 metadata=metadata)
         return grpc_session
+
+    async def update_agents(self, metadata: Dict[str, Any]) -> bool:
+        """
+        Update internal agents table by executing request
+        to underlying gRPC service.
+        :param metadata: metadata for request from caller context.
+        :return: True if update was successful
+                 False otherwise
+        """
+        try:
+            data: Dict[str, Any] = {}
+            grpc_session: ConciergeSession = self.get_concierge_grpc_session(metadata)
+            agents_dict: Dict[str, Any] = grpc_session.list(data)
+            agents_list = agents_dict.get("agents", [])
+            agents_names: List[str] = []
+            for agent_dict in agents_list:
+                agents_names.append(agent_dict["agent_name"])
+            self.agents_updater.update_agents(agents_names)
+            return True
+        except Exception as exc:  # pylint: disable=broad-exception-caught
+            self.process_exception(exc)
+            return False
 
     def extract_grpc_error_info(self, exc: grpc.aio.AioRpcError) -> Tuple[int, str, str]:
         """

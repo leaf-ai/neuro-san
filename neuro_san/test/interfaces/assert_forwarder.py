@@ -143,3 +143,71 @@ class AssertForwarder:
         :param msg: optional string message
         """
         raise NotImplementedError
+
+    # pylint: disable=invalid-name
+    def assertGreater(self, first: Any, second: Any, msg: str = None):
+        """
+        Assert that the first is greater than the second.
+
+        :param first: First comparison element
+        :param second: Second comparison element
+        :param msg: optional string message
+        """
+        raise NotImplementedError
+
+    # pylint: disable=invalid-name
+    def assertGreaterEqual(self, first: Any, second: Any, msg: str = None):
+        """
+        Assert that the first is greater than or equal to the second.
+
+        :param first: First comparison element
+        :param second: Second comparison element
+        :param msg: optional string message
+        """
+        raise NotImplementedError
+
+    # pylint: disable=invalid-name
+    def assertLess(self, first: Any, second: Any, msg: str = None):
+        """
+        Assert that the first is less than the second.
+
+        :param first: First comparison element
+        :param second: Second comparison element
+        :param msg: optional string message
+        """
+        raise NotImplementedError
+
+    # pylint: disable=invalid-name
+    def assertLessEqual(self, first: Any, second: Any, msg: str = None):
+        """
+        Assert that the first is less than or equal to the second.
+
+        :param first: First comparison element
+        :param second: Second comparison element
+        :param msg: optional string message
+        """
+        raise NotImplementedError
+
+    # pylint: disable=invalid-name
+    def assertGist(self, gist: bool, acceptance_criteria: str, text_sample: str, msg: str = None):
+        """
+        Assert that the gist is true
+
+        :param gist: Pass/Fail value of the gist expected to be True
+        :param acceptance_criteria: The value to verify against
+        :param text_sample: The value appearing in the test sample
+        :param msg: optional string message
+        """
+        raise NotImplementedError
+
+    # pylint: disable=invalid-name
+    def assertNotGist(self, gist: bool, acceptance_criteria: str, text_sample: str, msg: str = None):
+        """
+        Assert that the gist is true
+
+        :param gist: Pass/Fail value of the gist expected to be False
+        :param acceptance_criteria: The value to verify against
+        :param text_sample: The value appearing in the test sample
+        :param msg: optional string message
+        """
+        raise NotImplementedError

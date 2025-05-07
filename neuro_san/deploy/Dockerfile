@@ -144,6 +144,7 @@ ENV AGENT_TOOL_PATH=${APP_SOURCE}/coded_tools
 # See https://docs.python.org/3/library/logging.config.html#dictionary-schema-details
 # as to how this file can be configured for your own needs.  Examples there are provided in YAML,
 # but these can be easily translated to JSON (which we prefer).
+# Another good resource: https://docs.python.org/3/howto/logging-cookbook.html
 ENV AGENT_SERVICE_LOG_JSON=${PACKAGE_DEPLOY}/logging.json
 
 # Threshold for logging.
@@ -181,6 +182,16 @@ ENV AGENT_MAX_CONCURRENT_REQUESTS 50
 # Number of requests served before the server shuts down in an orderly fashion.
 # This is useful for testing response handling in clusters with duplicated pods.
 ENV AGENT_REQUEST_LIMIT=1000000
+
+# If this value is specified and >0,
+# it will enable dynamic run-time updates of the server agents configuration according
+# to current state of manifest file and separate agents registry files.
+# Both manifest file and agent registry files could be modified (edited),
+# agent registry files could be added or deleted from registry directory
+# with corresponding changes in manifest file.
+# Update will be done every AGENT_MANIFEST_UPDATE_PERIOD_SECONDS seconds;
+# if value is not specified or <= 0, no dynamic updates will be executed.
+ENV AGENT_MANIFEST_UPDATE_PERIOD_SECONDS=0
 
 # ENTRYPOINT ls ${APP_SOURCE}
 ENTRYPOINT "${APP_ENTRYPOINT}"
