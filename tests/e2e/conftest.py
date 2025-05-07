@@ -20,6 +20,7 @@ setup_logging()  # Make sure logger is initialized
 
 THINKING_FILE_PATH = "/private/tmp/agent_thinking"
 LOG_PATH = DEFAULT_LOG_PATH  # shared with logging_config
+NAME_CONFIG_HOCON = "share_agent_config"
 
 # ------------------------------------------------------------------------------
 # One-time Log Cleanup + Logging Setup
@@ -42,7 +43,7 @@ logging.info("✅ Logging system initialized by conftest.py")
 # Load Static Agent Configuration (HOCON)
 # ------------------------------------------------------------------------------
 
-CONFIG_HOCON_PATH = os.path.join(os.path.dirname(__file__), "configs", "config.hocon")
+CONFIG_HOCON_PATH = os.path.join(os.path.dirname(__file__), "configs", NAME_CONFIG_HOCON + ".hocon")
 
 config = ConfigFactory.parse_file(CONFIG_HOCON_PATH)
 
