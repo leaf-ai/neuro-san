@@ -128,7 +128,24 @@ def pytest_generate_tests(metafunc):
             all_connections = [selected]
 
         # 🧪 Build parameter combinations: (connection, repeat_index)
-        # For each connection and repeat value, create a separate test ID like grpc_run1, grpc_run2, etc.
+        # -----------------------------------------------------------------------------
+        # This block is responsible for *generating the test matrix*.
+        # It determines how many test cases will be launched based on:
+        #   - the list of connections (e.g., grpc, http, direct)
+        #   - the --repeat CLI argument (e.g., --repeat 3)
+        #
+        # Example:
+        #   If connections = ['grpc', 'http'] and repeat = 2, this will produce:
+        #     - grpc_run1
+        #     - grpc_run2
+        #     - http_run1
+        #     - http_run2
+        #
+        # These become individual pytest cases, allowing for:
+        #   ✅ Parallel execution (when using `-n auto`)
+        #   ✅ Fine-grained control over test case identifiers and logs
+        #
+        # The generated values are injected into the test function via parametrize.
         test_params = [
             pytest.param(conn, i, id=f"{conn}_run{i+1}")
             for conn in all_connections
@@ -138,7 +155,6 @@ def pytest_generate_tests(metafunc):
         # Inject parameters into the test function
         # This allows dynamic test generation using standard pytest features
         metafunc.parametrize("connection_name, repeat_index", test_params)
-
 
 
 def load_connections():

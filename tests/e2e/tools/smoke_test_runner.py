@@ -12,7 +12,7 @@ subprocess.run([
     "--capture=no",
     "--thinking-file",
     "--repeat", "1",
-    "-n", "1"
+    "-n", "auto"
 ], check=True)
 
 print("\n# 3. Stop all servers")
