@@ -1,3 +1,5 @@
+# tools/smoke_test_runner.py
+
 import subprocess
 
 print("\n# 1. Start server")

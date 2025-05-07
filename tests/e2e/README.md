@@ -1,115 +1,99 @@
-# 🧪 End-to-End Agent Testing Framework
+# 🧪 End-to-End Testing Suite for `music_nerd_pro`
 
-This project provides an extensible, reusable **pytest**-based test system to validate AI agent behavior through real CLI interactions.
-
-It supports:
-- Running **multiple connections** (`grpc`, `http`, `direct`)
-- **Parallel execution** with **pytest-xdist**
-- Optional **thinking file capture** for agent internals
-- Config-driven prompts using **HOCON** files
+This directory contains the full end-to-end (E2E) test infrastructure for the `music_nerd_pro` agent, including configuration, reusable utilities, test cases, and server lifecycle control tools.
 
 ---
 
-## 📦 Project Structure
+## 📁 Directory Structure
 
-```bash
-e2e/
-├── README.md                     # This documentation
-├── configs/                      # Static agent configuration
-│   └── config.hocon
-├── conftest.py                   # Pytest customizations (CLI args, test discovery)
-├── pytest.ini                    # Pytest settings
-├── requirements.txt              # Python dependencies
-├── test_cases_data/              # Test data for each agent
-│   └── mnpt_data.hocon
-├── tests/                        # Test case source files
-│   └── test_music_nerd_pro.py
-└── utils/                        # Helper modules for parsing, test orchestration, and CLI interaction
-  ├── mnpt_hocon_loader.py        # Loads test input data from HOCON config files (connection, prompts, expectations)
-  ├── mnpt_output_parser.py       # Parses agent CLI output (response and cost lines) using regex/JSON extraction
-  ├── mnpt_test_runner.py         # Main runner that drives CLI interaction using pexpect and verifies output
-  ├── server_manager.py           # Starts and stops the backend agent service (used for grpc/http test runs)
-  ├── thinking_file_builder.py    # Builds --thinking-file arguments dynamically for repeated test runs
-  └── verifier.py                 # Contains logic to validate whether agent responses contain expected keywords/costs
+```text
+tests/e2e/
+├── README.md                      # ✅ You're here
+├── configs/
+│   └── config.hocon               # HOCON config defining all agent connections
+├── conftest.py                    # Shared pytest setup, CLI options, parametrization, server startup
+├── requirements.txt               # Pip requirements for test environment
+├── test_cases_data/
+│   └── mnpt_data.hocon            # Input data and expectations for test runner
+├── tests/
+│   └── test_run_agent_cli_music_nerd_pro.py  # Main test case driver (used by orchestrators)
+├── tools/
+│   ├── smoke_test_runner.py       # Orchestrator: start → test → stop
+│   ├── start_server_manual.py     # Manual: starts server and stores PID
+│   ├── stop_all_servers.py        # Manual: stops all running agent servers from PID file
+│   └── stop_last_server.py        # Manual: stops only the most recently started server
+└── utils/
+    ├── logging_config.py          # Shared logging setup (file + console)
+    ├── music_nerd_pro_hocon_loader.py  # Extracts structured test data from HOCON config
+    ├── music_nerd_pro_output_parser.py # Parses CLI outputs for verification
+    ├── music_nerd_pro_runner.py   # Executes the CLI test logic
+    ├── server_manager.py          # Manages agent server lifecycle (start, stop, PID tracking)
+    ├── server_state.py            # In-memory + file-based PID state tracking
+    ├── thinking_file_builder.py   # Generates `thinking_file` argument path
+    └── verifier.py                # Assertion helper for output validation
 ```
 
 ---
 
-## 🚀 Running Tests
+## 🚦 How to Run E2E Tests
 
-### Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### Basic Test Command
-
-Run a test (default: **all connections**):
+### 🔁 Option 1: Manual Mode
 
 ```bash
-pytest tests/ --verbose
+# 1. Start agent server manually
+python tests/e2e/tools/start_server_manual.py
+
+# 2. Run E2E CLI tests
+pytest tests/e2e/tests/test_run_agent_cli_music_nerd_pro.py \
+  --capture=no --connection grpc --thinking-file --repeat 1 -n auto
+
+# 3. Stop all running agent servers
+python tests/e2e/tools/stop_all_servers.py
 ```
-
-Run for specific connection only:
-
-```bash
-pytest tests/ --connection grpc --verbose
-```
-
-Run and enable thinking file output:
-
-```bash
-pytest tests/ --thinking-file --verbose
-```
-
-Enable parallel test execution:
-
-```bash
-pytest tests/ --connection grpc --repeat 5 --thinking-file -n auto --verbose
-```
-
-> 💡 When using `-n auto`, each repeat runs across multiple CPU cores.
 
 ---
 
-## ⚙️ CLI Options
+### ⚡ Option 2: Orchestrated Smoke Test
 
-| Option            | Description |
-|:------------------|:------------|
-| `--connection`     | Run tests only for a specific connection (e.g., `grpc`, `http`, `direct`). |
-| `--repeat`         | Repeat each test multiple times. |
-| `--thinking-file`  | Save the agent's internal "thinking" to a temp directory during the test. |
+Run everything in one go:
 
----
-
-# 🧠 Agent: MusicNerdPro Test (test_music_nerd_pro.py)
-
-This suite tests the `music_nerd_pro` agent over all connection types.
-
-### Test Logic
-
-- Load prompt/expected outputs from **HOCON** config files
-- Spawn a CLI agent process
-- Send user questions
-- Verify that:
-  - Correct keyword appears in the response
-  - Correct cost value is returned
-
-### Related Files
-
-| File | Purpose |
-|:-----|:--------|
-| `tests/test_music_nerd_pro.py` | Main test case (pytest function) |
-| `test_cases_data/mnpt_data.hocon` | Prompt/expected answer definitions |
-| `configs/config.hocon` | Static agent config (connections list) |
-| `utils/*.py` | Reusable helpers for all agent tests |
+```bash
+python -m tests.e2e.tools.smoke_test_runner
+```
 
 ---
 
-# 📝 Notes
+## ✅ Test CLI Options
 
-- **Thinking files** are stored under `/private/tmp/agent_thinking/`
-- If `-n auto` is used, **worker-specific** folders are created (e.g., `run_gw0_1`).
-- **PEXPECT** is used to fully simulate CLI typing behavior.
-- Future agents can be easily added following the same pattern as MusicNerdPro!
+| Option           | Description                                      |
+|------------------|--------------------------------------------------|
+| `--connection`   | One of: `direct`, `grpc`, `http`                 |
+| `--repeat`       | Number of repetitions per connection             |
+| `--thinking-file`| Enables logging of agent `thinking_file` output  |
+| `-n`             | This is Pytest to launch the runner in parallel  |
+
+---
+
+## 📦 Test Environment Setup
+
+```bash
+pip install -r tests/e2e/requirements.txt
+```
+
+You must also have the `neuro_san` package accessible via `PYTHONPATH`.
+
+---
+
+## 🧠 Notes
+
+- PID tracking is handled via `/tmp/neuro_san_server.pid`.
+- Multiple PIDs are supported and cleaned up automatically.
+- The test file `test_run_agent_cli_music_nerd_pro.py` is ignored during normal discovery unless triggered explicitly.
+- Logging is unified under `/tmp/e2e_server.log`.
+
+---
+
+## 🛠️ Authors & Maintenance
+
+Maintained by QA & Platform Engineering.
+Contact: `@vincent.nguyen`
