@@ -39,7 +39,23 @@ def test_run_cli_smoke(connection_name, repeat_index, request):
     is_parallel = hasattr(request.config, 'workerinput')
     logging.info(f"🧪 Test mode: repeat={repeat}, parallel={is_parallel}")
 
-    # Whether to emit 'thinking file' logs
+    # -----------------------------------------------------------
+    # Whether to emit 'thinking file' logs (per test invocation)
+    # -----------------------------------------------------------
+    # 🔍 This option enables saving a dedicated thinking_file output for *each* test run.
+    #
+    # ⚠️ REQUIRED for correctness when:
+    #    - Running tests in parallel (`-n auto` or `-n N`) ← MUST be used
+    #    - Using `--repeat N` to run multiple iterations
+    #
+    # 🧠 Uses `utils/thinking_file_builder.py` to generate unique file paths per run:
+    #     → Path includes connection type and repeat index (e.g., grpc_run2)
+    #     → Ensures isolation across test runs
+    #
+    # ✅ Benefits:
+    #   - Prevents file overwrite in parallel workers
+    #   - Enables per-test traceability and easier failure debugging
+    #   - Maintains separate logs for each iteration
     use_thinking_file = request.config.getoption("--thinking-file")
 
     # Extract input values for the specific connection type
