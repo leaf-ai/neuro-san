@@ -87,6 +87,8 @@ def pytest_configure(config):
     logging.info(f"thinking-file path      : {THINKING_FILE_PATH}")
 
 
+# This is a special pytest hook. Do not rename it!
+# Pytest uses this to register custom CLI options.
 def pytest_addoption(parser):
     """
     Defines CLI options:
