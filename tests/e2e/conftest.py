@@ -106,27 +106,39 @@ def pytest_addoption(parser):
 
 
 def pytest_generate_tests(metafunc):
-    # 🛑 Skip parametrization if running the orchestrator module
-    if metafunc.module.__name__.endswith("test_e2e_mnp"):
+    # 🛑 Skip parametrization if running the orchestrator module (test_*.py)
+    # This avoids injecting parameters into the orchestration entrypoint file,
+    # which is responsible for launching tests, not running them directly.
+    if metafunc.module.__name__.endswith("test_none"):
         return
 
+    # ✅ Only proceed if the test function expects 'connection_name' as a fixture
     if "connection_name" in metafunc.fixturenames:
+        # Load all available connection types from the HOCON config (e.g., ['grpc', 'http', 'direct'])
         all_connections = load_connections()
-        selected = metafunc.config.getoption("connection")
-        repeat = metafunc.config.getoption("repeat")
 
+        # Read CLI overrides (if any)
+        selected = metafunc.config.getoption("connection")  # --connection grpc
+        repeat = metafunc.config.getoption("repeat")        # --repeat 3
+
+        # 🔍 If a specific connection is requested, validate and filter
         if selected:
             if selected not in all_connections:
                 raise ValueError(f"Connection '{selected}' not in config: {all_connections}")
             all_connections = [selected]
 
+        # 🧪 Build parameter combinations: (connection, repeat_index)
+        # For each connection and repeat value, create a separate test ID like grpc_run1, grpc_run2, etc.
         test_params = [
             pytest.param(conn, i, id=f"{conn}_run{i+1}")
             for conn in all_connections
             for i in range(repeat)
         ]
 
+        # Inject parameters into the test function
+        # This allows dynamic test generation using standard pytest features
         metafunc.parametrize("connection_name, repeat_index", test_params)
+
 
 
 def load_connections():
