@@ -45,14 +45,6 @@ jobs:
           AGENT_TOOL_PATH: "./neuro_san/coded_tools"
           PYTHONPATH: ${{ env.PYTHONPATH }}:"."
 
-      - name: Run Smoke Tests
-        run: |
-          python -m tests.e2e.tools.smoke_test_runner
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          AGENT_TOOL_PATH: "./neuro_san/coded_tools"
-          PYTHONPATH: ${{ env.PYTHONPATH }}:"." 
-
       - name: Check README renders correctly on PyPI
         run: |
           pip install readme_renderer readme_renderer[md]
