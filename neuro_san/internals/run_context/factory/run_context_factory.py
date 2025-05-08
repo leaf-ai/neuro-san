@@ -58,8 +58,8 @@ class RunContextFactory:
 
         # Get some fields from the config with reasonable defaults
         default_llm_config: Dict[str, Any] = {
-            "model_name": "gpt-4-turbo",
-            "verbose": True
+            "model_name": "gpt-4o",
+            "verbose": False
         }
         default_llm_config = use_config.get("llm_config", default_llm_config)
 
