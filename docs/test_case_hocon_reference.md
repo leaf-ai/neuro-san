@@ -28,10 +28,11 @@ Single string values can be:
 
 | connection type | meanining |
 |:----------------|:----------|
-| direct (default)| Do not use a server when conducting a test, connect directly to the agent via a neuro-san library call. |
+| direct (default)| Connect directly to the agent via a neuro-san library call. No server required. |
 | http  |  Connect to the agent via a server via http |
 | grpc  |  Connect to the agent via a server via gRPC |
 | https |  Connect to the agent via a server via gRPC |
+
 
 Note that it is possible to specify a list of connection types for the same test case.
 If this is the case, the test driver will conduct the same test via each connection type.
@@ -43,6 +44,8 @@ Example of a list:
     "connections": [ "direct", "http", "grpc" ]
     ...
 ```
+
+Currently, only testing against a locally running server is supported.
 
 ### success_ratio
 
