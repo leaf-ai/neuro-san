@@ -59,6 +59,9 @@ class StreamingChatHandler(BaseRequestHandler):
         """
         Implementation of POST request handler for streaming chat API call.
         """
+        self.set_header("Connection", "close")
+        # Force to close this connection without trying to reuse it.
+
         metadata: Dict[str, Any] = self.get_metadata()
         update_done: bool = await self.update_agents(metadata)
         if not update_done:
