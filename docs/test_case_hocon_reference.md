@@ -316,7 +316,7 @@ This is just like
 ###### less/not_less
 
 The "less" test looks for a value that is considered less than what is given.
-For numbers, this is the expected inequality. For strings, this is a lexicographal comparison.
+For numbers, this is the expected inequality. For strings, this is a lexicographical comparison.
 If what is tested is less than the value mentioned, the test will pass. This is just like
 [TestCase.assertLess](https://docs.python.org/3/library/unittest.html#unittest.TestCase.assertLess)
 
@@ -327,7 +327,7 @@ If what is tested is >= than the value mentioned, the test will pass. This is ju
 ###### greater/not_greater
 
 The "greater" test looks for a value that is considered greater than what is given.
-For numbers, this is the expected inequality. For strings, this is a lexicographal comparison.
+For numbers, this is the expected inequality. For strings, this is a lexicographical comparison.
 If what is tested is greater than the value mentioned, the test will pass. This is just like
 [TestCase.assertGreater](https://docs.python.org/3/library/unittest.html#unittest.TestCase.assertGreater)
 
