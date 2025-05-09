@@ -331,7 +331,7 @@ For numbers, this is the expected inequality. For strings, this is a lexicograph
 If what is tested is greater than the value mentioned, the test will pass. This is just like
 [TestCase.assertGreater](https://docs.python.org/3/library/unittest.html#unittest.TestCase.assertGreater)
 
-Similarly the "not_greatre" test looks for a value that is considered less than or equal to what is given.
+Similarly the "not_greater" test looks for a value that is considered less than or equal to what is given.
 If what is tested is <= than the value mentioned, the test will pass. This is just like
 [TestCase.assertLessEqual](https://docs.python.org/3/library/unittest.html#unittest.TestCase.assertLessEqual)
 
