@@ -15,9 +15,33 @@ Sub-keys to those dictionaries will be described in the next-level down heading 
 
 <!--TOC-->
 
+- [LLM Info HOCON File Reference](#llm-info-hocon-file-reference)
+  - [LLM Info Specifications](#llm-info-specifications)
+    - [Model Name Keys](#model-name-keys)
+      - [class](#class)
+      - [model_info_url](#model_info_url)
+      - [modalities](#modalities)
+        - [input](#input)
+        - [output](#output)
+      - [capabilities](#capabilities)
+      - [context_window_size](#context_window_size)
+      - [max_output_tokens](#max_output_tokens)
+      - [knowledge_cutoff](#knowledge_cutoff)
+    - [classes](#classes)
+      - [Class Name Keys](#class-name-keys)
+        - [token_counting](#token_counting)
+        - [extends](#extends)
+        - [args](#args)
+    - [default_config](#default_config)
+  - [Extending LLM Info Specifications](#extending-llm-info-specifications)
+
+<!--TOC-->
+
 ## LLM Info Specifications
 
 All parameters listed here have global scope (to the agent network) and are listed at the top of the file by convention.
+
+The default file used with the system lives [here](../neuro_san/internals/run_context/langchain/default_llm_info.hocon).
 
 ### Model Name Keys
 
@@ -44,3 +68,5 @@ will describe.
 ##### args
 
 ### default_config
+
+## Extending LLM Info Specifications
