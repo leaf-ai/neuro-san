@@ -27,11 +27,13 @@ Sub-keys to those dictionaries will be described in the next-level down heading 
       - [context_window_size](#context_window_size)
       - [max_output_tokens](#max_output_tokens)
       - [knowledge_cutoff](#knowledge_cutoff)
+      - [use_model_name](#use_model_name)
     - [classes](#classes)
       - [Class Name Keys](#class-name-keys)
         - [token_counting](#token_counting)
         - [extends](#extends)
         - [args](#args)
+      - [factories](#factories)
     - [default_config](#default_config)
   - [Extending LLM Info Specifications](#extending-llm-info-specifications)
 
@@ -60,12 +62,14 @@ will describe.
 #### context_window_size
 #### max_output_tokens
 #### knowledge_cutoff
+#### use_model_name
 
 ### classes
 #### Class Name Keys
 ##### token_counting
 ##### extends
 ##### args
+#### factories
 
 ### default_config
 
