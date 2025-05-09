@@ -357,6 +357,7 @@ To do this we use a separate agent to test the value against the criteria to mak
 response matches the "gist" of the criteria.
 
 If the response from the agent we are testing matches the "gist" of the given criteria, the test passes.
+
 Similarly the "not_gist" test passes when the response does not match the "gist" of the given criteria.
 
 ## Use with the Assessor
