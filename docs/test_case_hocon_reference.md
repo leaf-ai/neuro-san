@@ -58,7 +58,7 @@ Single string values can be:
 | direct (default)| Connect directly to the agent via a neuro-san library call - no server required. |
 | http  |  Connect to the agent via a server via http |
 | grpc  |  Connect to the agent via a server via gRPC |
-| https |  Connect to the agent via a server via gRPC |
+| https |  Connect to the agent via a server via secure http |
 
 
 Note that it is possible to specify a list of connection types for the same test case.
