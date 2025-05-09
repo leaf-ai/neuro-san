@@ -15,7 +15,7 @@ See class comment for details
 from typing import Dict
 from typing import List
 
-import multiprocessing
+from threading import Thread
 import os
 
 from argparse import ArgumentParser
@@ -159,14 +159,13 @@ class AgentMainLoop(ServerLoopCallbacks):
             self.tool_registries,
             self.service_openapi_spec_file,
             forwarded_request_metadata=self.forwarded_request_metadata)
-        http_server_process = multiprocessing.Process(target=http_sidecar)
-        http_server_process.start()
+        http_server_thread = Thread(target=http_sidecar, daemon=True)
+        http_server_thread.start()
 
         try:
             self.server.serve()
         finally:
-            http_server_process.terminate()
-            http_server_process.join()
+            http_server_thread.join()
 
     def loop_callback(self) -> bool:
         """
