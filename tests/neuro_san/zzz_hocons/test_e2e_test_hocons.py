@@ -9,6 +9,8 @@
 #
 # END COPYRIGHT
 
+import pytest
+
 from unittest import TestCase
 
 from parameterized import parameterized
