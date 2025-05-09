@@ -286,7 +286,7 @@ contains this interaction definition:
 
 In this response part, what is being tested is the sly_data dictionary returned with "the answer".
 That dictionary is expected to have a single key called "equals".  The value for that "equals"
-key is tested against all of the tests listed in the corrsponding dictionary. In this case,
+key is tested against all of the tests listed in the corresponding dictionary. In this case,
 there is a single [value](#valuenot_value) check against the number 19481.0.
 
 Note that for sly_data, it's possible to return nested dictionaries.
