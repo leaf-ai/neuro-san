@@ -13,6 +13,33 @@ header they pertain to.
 Some key descriptions refer to values that are dictionaries.
 Sub-keys to those dictionaries will be described in the next-level down heading scope from their parent.
 
+<!--TOC-->
+
+- [LLM Info HOCON File Reference](#llm-info-hocon-file-reference)
+  - [Data-Driven Test Case Specifications](#data-driven-test-case-specifications)
+    - [agent](#agent)
+    - [connections](#connections)
+    - [success_ratio](#success_ratio)
+    - [use_direct](#use_direct)
+    - [metadata](#metadata)
+    - [interactions](#interactions)
+      - [text](#text)
+      - [sly_data](#sly_data)
+      - [chat_filter](#chat_filter)
+      - [continue_conversation](#continue_conversation)
+      - [response](#response)
+        - [text (response)](#text-response)
+        - [sly_data (response)](#sly_data-response)
+        - [Stock Tests](#stock-tests)
+          - [value/not_value](#valuenot_value)
+          - [less/not_less](#lessnot_less)
+          - [greater/not_greater](#greaternot_greater)
+          - [keywords/not_keywords](#keywordsnot_keywords)
+          - [gist/not_gist](#gistnot_gist)
+  - [Use with the Assessor](#use-with-the-assessor)
+
+<!--TOC-->
+
 ## Data-Driven Test Case Specifications
 
 ### agent
@@ -53,6 +80,7 @@ A string value that represents the fraction of test attempts that need to succee
 in order to call the test passing.
 
 The big idea here is that this is an acknowledgement of the realities of working with LLMs:
+
 * agents do not always do what you want them to
 * getting agents to give you correct output given existing prompts and a prticular input is fundamentally an optimization exercise against the prompts themselves.
 
