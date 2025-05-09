@@ -82,7 +82,7 @@ in order to call the test passing.
 The big idea here is that this is an acknowledgement of the realities of working with LLMs:
 
 * agents do not always do what you want them to
-* getting agents to give you correct output given existing prompts and a prticular input is fundamentally an optimization exercise against the prompts themselves.
+* getting agents to give you correct output given existing prompts and a particular input is fundamentally an optimization exercise against the prompts themselves.
 
 The denominator (bottom) of the fraction is an integer indicating how many test samples (repeat iterations)
 should be attempted.
