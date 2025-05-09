@@ -31,7 +31,7 @@ class TestUnitTestHocons(TestCase):
         # These can be in any order.
         # Ideally more basic functionality will come first.
         # Barring that, try to stick to alphabetical order.
-        "music_nerd_pro/basic_sly_data.hocon",
+        "music_nerd_pro/combination_responses_with_history.hocon",
 
         # List more hocon files as they become available here.
     ]))
