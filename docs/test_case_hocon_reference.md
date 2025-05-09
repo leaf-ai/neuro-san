@@ -53,9 +53,9 @@ this value should only be the stem of that file.
 
 Single string values can be:
 
-| connection type | meanining |
+| value | meaning |
 |:----------------|:----------|
-| direct (default)| Connect directly to the agent via a neuro-san library call. No server required. |
+| direct (default)| Connect directly to the agent via a neuro-san library call - no server required. |
 | http  |  Connect to the agent via a server via http |
 | grpc  |  Connect to the agent via a server via gRPC |
 | https |  Connect to the agent via a server via gRPC |
@@ -108,6 +108,7 @@ When True, no new socket is created and a direct/library connection is used inst
 ### metadata
 
 A dictionary of request metadata to send along to a server for each interaction.
+
 What is required of request metadata dictionaries is server specific.
 The default server implementation doesn't require anything for request metadata,
 however some servers may require this to contain bearer tokens for access,
@@ -142,6 +143,7 @@ What is required here depends on the agent itself, and ideally what is required
 is at least documented in the agent's hocon file.
 
 Superfluous information is passed, taking up space, but ignored.
+
 The default value is None.
 
 #### chat_filter
@@ -158,7 +160,7 @@ The only other honored value is "MAXIMAL", indicating full debug information sho
 come back to the client.  This ends up being a lot more messages.
 
 _Future_ iterations of the test infrastructure we may elect to test at the level of
-this fine-grained debug information.
+this fine-grained MAXIMAL debug information.
 
 #### continue_conversation
 
@@ -178,6 +180,8 @@ A dictionary describing how to test various aspects of the response from the age
 By default this is an empty dictionary, indicating no tests should be done on this
 iteration of the conversation with the agent.  An empty response is valuable for at
 least advancing the conversation forward to a point of interest that you'd like to test.
+
+This is kind of abstract, so please try to follow:
 
 Keys in this response dictionary describe specific parts of the response that are to
 be tested.  The values for each key are themselves dictionaries that describe potentially
@@ -293,6 +297,11 @@ To test the key/value pairs inside nested dictionaries, simply nest your test di
 The following are lists of the stock test keywords and their negations that come with the
 test infrastructure.
 
+For any of these tests, the name of the test itself is specified as a key in a dictionary.
+The value part describes what the response should be tested against.
+These values can either be single scalar values (string, int, etc) or a list of values.
+When specifying a list of values for a test, each value listed must pass.
+
 ###### value/not_value
 
 The "value" test looks for a specific value.  If what is in the response is the exact value
@@ -352,7 +361,7 @@ Similarly the "not_gist" test passes when the response does not match the "gist"
 
 ## Use with the Assessor
 
-The (Assessor)[../neuro_san/test/assesor/assessor.py) is a tool which uses these data-driven test cases
+The [Assessor](../neuro_san/test/assesor/assessor.py) is a tool which uses these data-driven test cases
 as a basis for gathering repeated test samples so as to assess how often the test case will pass.
 You give the assessor a test case hocon file, it looks at the [success_ratio](#success-ratio) denominator
 to see how many test samples it should run.  As it gathers its output for each test sample, it
