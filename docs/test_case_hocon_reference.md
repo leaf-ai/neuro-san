@@ -159,7 +159,7 @@ on to the next interaction dictionary.
 The only other honored value is "MAXIMAL", indicating full debug information should
 come back to the client.  This ends up being a lot more messages.
 
-_Future_ iterations of the test infrastructure we may elect to test at the level of
+_Future_ iterations of the test infrastructure may elect to test at the level of
 this fine-grained MAXIMAL debug information.
 
 #### continue_conversation
