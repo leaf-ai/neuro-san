@@ -237,7 +237,7 @@ is that somewhere in the text, the keyword "Beatles" is in there.
 ##### sly_data (response)
 
 The sly_data field of the response is a dictionary describing which tests to perform
-on the sly_data dictionary optioanlly returned as part of the response from the agent's "answer".
+on the sly_data dictionary optionally returned as part of the response from the agent's "answer".
 
 Since the sly data is inherently a dictionary, we don't really want to test entire dictionary
 contents. Instead, what we want to test are specific values for particular keys inside the
