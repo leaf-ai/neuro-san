@@ -1,4 +1,4 @@
-# LLM Info HOCON File Reference
+# Data-Driven Test Case HOCON File Reference
 
 This document describes the neuro-san specifications for the test case .hocon files
 found within this repo under the [tests/fixtures](../tests/fixtures) section of this repo.
@@ -15,7 +15,7 @@ Sub-keys to those dictionaries will be described in the next-level down heading 
 
 <!--TOC-->
 
-- [LLM Info HOCON File Reference](#llm-info-hocon-file-reference)
+- [Data-Driven Test Case HOCON File Reference](#data-driven-test-case-hocon-file-reference)
   - [Data-Driven Test Case Specifications](#data-driven-test-case-specifications)
     - [agent](#agent)
     - [connections](#connections)
