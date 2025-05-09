@@ -34,6 +34,24 @@ tests/e2e/
 ```
 
 ---
+Requirment list:
+Note: It should added to top level requirments-build.txt or requirements.txt
+
+json
+logging
+os
+sys
+pexpect
+psutil
+pyhocon
+pytest
+pytest-xdist
+pytest-timeout
+pytest-timer
+subprocess
+re
+
+---
 
 ## 🚦 How to Run E2E Tests
 
