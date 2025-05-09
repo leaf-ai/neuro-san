@@ -187,8 +187,8 @@ Keys in this response dictionary describe specific parts of the response that ar
 be tested.  The values for each key are themselves dictionaries that describe potentially
 multiple tests to be done on the area of focus on the response described by the key.
 
-First we will describe the keys whose values can be tested, like [text](#test-response)
-and [sly_data](#sly-data-response) each in its own subheading.
+First we will describe the keys whose values can be tested, like [text](#text-response)
+and [sly_data](#sly_data-response) each in its own subheading.
 Then we will describe the [Stock Tests](#stock-tests) able to be performed on each
 response datum.
 
@@ -230,7 +230,7 @@ contains this interaction definition:
 The first "text" asks the agent the question "Who did Yellow Submarine?" in its request.
 In the "response" block, it is the "text" of the corresponding response that is to be tested.
 We could set up multiple tests here, but for this simple example we are electing to test
-the agent's "answer" against containing the [keyword](#keyword-not-keyword) "Beatles".
+the agent's "answer" against containing the [keyword](#keywordsnot-keyword) "Beatles".
 The test doesn't care about exact verbiage of the "answer" from the agent, all that matters
 is that somewhere in the text, the keyword "Beatles" is in there.
 
@@ -287,7 +287,7 @@ contains this interaction definition:
 In this response part, what is being tested is the sly_data dictionary returned with "the answer".
 That dictionary is expected to have a single key called "equals".  The value for that "equals"
 key is tested against all of the tests listed in the corrsponding dictionary. In this case,
-there is a single "value" check against the number 19481.0.
+there is a single [value](#valuenot_value) check against the number 19481.0.
 
 Note that for sly_data, it's possible to return nested dictionaries.
 To test the key/value pairs inside nested dictionaries, simply nest your test dictionaries.
