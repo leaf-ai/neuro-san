@@ -181,7 +181,8 @@ ENV AGENT_MAX_CONCURRENT_REQUESTS 50
 
 # Number of requests served before the server shuts down in an orderly fashion.
 # This is useful for testing response handling in clusters with duplicated pods.
-ENV AGENT_REQUEST_LIMIT=1000000
+# A value of -1 indicates unlimited requests are handled.
+ENV AGENT_REQUEST_LIMIT=-1
 
 # If this value is specified and >0,
 # it will enable dynamic run-time updates of the server agents configuration according

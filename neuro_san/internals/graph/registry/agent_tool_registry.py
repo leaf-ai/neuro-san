@@ -320,3 +320,9 @@ Some things to try:
         redactor = SlyDataRedactor(parent_spec, config_keys=["allow.sly_data", "allow.to_downstream.sly_data"])
         redacted: Dict[str, Any] = redactor.filter_config(sly_data)
         return redacted
+
+    def get_agent_llm_info_file(self) -> str:
+        """
+        :return: The absolute path of agent llm info file for llm extension.
+        """
+        return self.config.get("agent_llm_info_file")

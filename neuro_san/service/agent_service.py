@@ -90,8 +90,10 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
 
         self.llm_factory: ContextTypeLlmFactory = MasterLlmFactory.create_llm_factory()
         self.base_tool_factory: ContextTypeBaseToolFactory = MasterBaseToolFactory.create_base_tool_factory()
-        # Load once.
-        self.llm_factory.load()
+        # Load once and include "agent_llm_info_file" from agent network hocon to llm factory..
+        tool_registry: AgentToolRegistry = self.tool_registry_provider.get_agent_tool_factory()
+        agent_llm_info_file = tool_registry.get_agent_llm_info_file()
+        self.llm_factory.load(agent_llm_info_file)
         self.base_tool_factory.load()
 
     def get_request_count(self) -> int:
