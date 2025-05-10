@@ -42,7 +42,7 @@ from langchain_core.tools import BaseTool
 
 from neuro_san.internals.errors.error_detector import ErrorDetector
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
-from neuro_san.internals.interfaces.context_type_base_tool_factory import ContextTypeBaseToolFactory
+from neuro_san.internals.interfaces.context_type_toolbox_factory import ContextTypeToolboxFactory
 from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
@@ -316,20 +316,20 @@ class LangChainRunContext(RunContext):
                 await self.journal.write_message(agent_message)
                 self.logger.info(message)
         else:
-            base_tool: str = agent_spec.get('base_tool')
-            if base_tool:
-                base_tool_factory: ContextTypeBaseToolFactory = self.invocation_context.get_base_tool_factory()
+            toolbox: str = agent_spec.get('toolbox')
+            if toolbox:
+                toolbox_factory: ContextTypeToolboxFactory = self.invocation_context.get_toolbox_factory()
                 try:
-                    prebuilt_tool = base_tool_factory.create_base_tool(base_tool, agent_spec.get('args'))
+                    tool_from_toolbox = toolbox_factory.create_tool_from_toolbox(toolbox, agent_spec.get('args'))
                     # If the prebuilt tool is base tool, return the tool as is.
-                    if isinstance(prebuilt_tool, BaseTool):
-                        return prebuilt_tool
+                    if isinstance(tool_from_toolbox, BaseTool):
+                        return tool_from_toolbox
                     # Otherwise, it is a shared coded tool.
-                    function_json = prebuilt_tool
+                    function_json = tool_from_toolbox
 
-                except ValueError as base_tool_creation_exception:
-                    # There are errors in BaseTool creation process
-                    message: str = f"Failed to create Agent/tool '{name}': {base_tool_creation_exception}"
+                except ValueError as tool_creation_exception:
+                    # There are errors in tool creation process
+                    message: str = f"Failed to create Agent/tool '{name}': {tool_creation_exception}"
                     agent_message = AgentMessage(content=message)
                     await self.journal.write_message(agent_message)
                     self.logger.info(message)

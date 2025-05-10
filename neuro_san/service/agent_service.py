@@ -33,9 +33,9 @@ from neuro_san.api.grpc import agent_pb2 as service_messages
 from neuro_san.api.grpc import agent_pb2_grpc
 from neuro_san.internals.interfaces.agent_tool_factory_provider import AgentToolFactoryProvider
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
-from neuro_san.internals.interfaces.context_type_base_tool_factory import ContextTypeBaseToolFactory
+from neuro_san.internals.interfaces.context_type_toolbox_factory import ContextTypeToolboxFactory
 from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
-from neuro_san.internals.run_context.factory.master_base_tool_factory import MasterBaseToolFactory
+from neuro_san.internals.run_context.factory.master_toolbox_factory import MasterToolboxFactory
 from neuro_san.internals.run_context.factory.master_llm_factory import MasterLlmFactory
 from neuro_san.service.agent_server_logging import AgentServerLogging
 from neuro_san.session.direct_agent_session import DirectAgentSession
@@ -89,12 +89,12 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         self.request_counter = AtomicCounter()
 
         self.llm_factory: ContextTypeLlmFactory = MasterLlmFactory.create_llm_factory()
-        self.base_tool_factory: ContextTypeBaseToolFactory = MasterBaseToolFactory.create_base_tool_factory()
+        self.toolbox_factory: ContextTypeToolboxFactory = MasterToolboxFactory.create_toolbox_factory()
         # Load once and include "agent_llm_info_file" from agent network hocon to llm factory..
         tool_registry: AgentToolRegistry = self.tool_registry_provider.get_agent_tool_factory()
         agent_llm_info_file = tool_registry.get_agent_llm_info_file()
         self.llm_factory.load(agent_llm_info_file)
-        self.base_tool_factory.load()
+        self.toolbox_factory.load()
 
     def get_request_count(self) -> int:
         """
@@ -231,7 +231,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
 
         # Prepare
         factory = ExternalAgentSessionFactory(use_direct=False)
-        invocation_context = SessionInvocationContext(factory, self.llm_factory, self.base_tool_factory, metadata)
+        invocation_context = SessionInvocationContext(factory, self.llm_factory, self.toolbox_factory, metadata)
         invocation_context.start()
 
         # Set up logging inside async thread

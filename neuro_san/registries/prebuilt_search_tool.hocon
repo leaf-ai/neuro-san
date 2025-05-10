@@ -41,7 +41,7 @@
             # This tool is registered by subclass BaseTool in LangChain, which converts it into a callable function.
             # More about function specifications and custom langchain tools:
             # - LangChain Function Specification: https://python.langchain.com/docs/how_to/custom_tools/
-            "base_tool": "bing_search",
+            "toolbox": "bing_search",
             # "args" contains the parameters that will be passed to the selected tool.
             # These arguments must align with the tool’s expected function signature.
             # 

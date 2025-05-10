@@ -30,11 +30,11 @@ from pydantic import BaseModel
 from leaf_common.config.dictionary_overlay import DictionaryOverlay
 from leaf_common.config.resolver import Resolver
 
-from neuro_san.internals.interfaces.context_type_base_tool_factory import ContextTypeBaseToolFactory
-from neuro_san.internals.run_context.langchain.base_tool_info_restorer import BaseToolInfoRestorer
+from neuro_san.internals.interfaces.context_type_toolbox_factory import ContextTypeToolboxFactory
+from neuro_san.internals.run_context.langchain.toolbox_info_restorer import ToolboxInfoRestorer
 
 
-class BaseToolFactory(ContextTypeBaseToolFactory):
+class ToolboxFactory(ContextTypeToolboxFactory):
     """
     A factory class for creating instances of various prebuilt tools.
 
@@ -93,26 +93,26 @@ class BaseToolFactory(ContextTypeBaseToolFactory):
         """
         Constructor
         """
-        self.base_tool_infos: Dict[str, Any] = {}
+        self.toolbox_infos: Dict[str, Any] = {}
         self.overlayer = DictionaryOverlay()
-        self.base_tool_info_file: str = None
+        self.toolbox_info_file: str = None
 
     def load(self):
         """
         Loads the base tool information from hocon files.
         """
-        restorer = BaseToolInfoRestorer()
-        self.base_tool_infos = restorer.restore()
+        restorer = ToolboxInfoRestorer()
+        self.toolbox_infos = restorer.restore()
 
-        # Mix in user-specified base_tool info, if available.
-        base_tool_info_file: str = os.getenv("AGENT_BASE_TOOL_INFO_FILE")
-        if base_tool_info_file is not None and len(base_tool_info_file) > 0:
-            extra_base_tool_infos: Dict[str, Any] = restorer.restore(file_reference=base_tool_info_file)
-            self.base_tool_infos = self.overlayer.overlay(self.base_tool_infos, extra_base_tool_infos)
+        # Mix in user-specified toolbox info, if available.
+        toolbox_info_file: str = os.getenv("AGENT_TOOLBOX_INFO_FILE")
+        if toolbox_info_file is not None and len(toolbox_info_file) > 0:
+            extra_toolbox_infos: Dict[str, Any] = restorer.restore(file_reference=toolbox_info_file)
+            self.toolbox_infos = self.overlayer.overlay(self.toolbox_infos, extra_toolbox_infos)
 
-            self.base_tool_info_file = base_tool_info_file
+            self.toolbox_info_file = toolbox_info_file
 
-    def create_base_tool(
+    def create_tool_from_toolbox(
             self,
             tool_name: str,
             user_args: Dict[str, Any] = None
@@ -127,9 +127,9 @@ class BaseToolFactory(ContextTypeBaseToolFactory):
         """
         empty: Dict[str, Any] = {}
 
-        tool_info: Dict[str, Any] = self.base_tool_infos.get(tool_name)
+        tool_info: Dict[str, Any] = self.toolbox_infos.get(tool_name)
         if not tool_info:
-            raise ValueError(f"Tool '{tool_name}' is not defined in {self.base_tool_info_file}.")
+            raise ValueError(f"Tool '{tool_name}' is not defined in {self.toolbox_info_file}.")
 
         if not isinstance(tool_info, Dict):
             raise ValueError(f"The value for the {tool_name} key must be a dictionary.")
@@ -203,7 +203,7 @@ class BaseToolFactory(ContextTypeBaseToolFactory):
         class_split: List[str] = class_path.split(".")
         if len(class_split) <= 2:
             raise ValueError(
-                f"Value in 'class' in {self.base_tool_info_file} must be of the form "
+                f"Value in 'class' in {self.toolbox_info_file} must be of the form "
                 "'<package_name>.<module_name>.<ClassName>'"
             )
 
@@ -258,5 +258,5 @@ class BaseToolFactory(ContextTypeBaseToolFactory):
         :param tool_name: The name of the tool
         :return: The class of the coded tool
         """
-        tool_info: Dict[str, Any] = self.base_tool_infos.get(tool_name)
+        tool_info: Dict[str, Any] = self.toolbox_infos.get(tool_name)
         return tool_info.get("class")

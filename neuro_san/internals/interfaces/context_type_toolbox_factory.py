@@ -14,9 +14,9 @@ from typing import Any
 from typing import Dict
 
 
-class ContextTypeBaseToolFactory:
+class ContextTypeToolboxFactory:
     """
-    Interface for factory classes that create tools or toolkits.
+    Interface for factory classes that create tools or toolkits from a toolbox.
 
     Most methods accept a configuration dictionary, where each key is a tool name, and each value is
     a dictionary containing the corresponding tool's setup information. The configuration dictionary
@@ -27,8 +27,6 @@ class ContextTypeBaseToolFactory:
 
         - "args":    A dictionary of constructor arguments used to instantiate the tool or toolkit
                     directly via its constructor.
-
-        - "method":  A dictionary of arguments used when instantiating the toolkit via a class method.
     """
 
     def load(self):
@@ -38,7 +36,7 @@ class ContextTypeBaseToolFactory:
         """
         raise NotImplementedError
 
-    def create_base_tool(
+    def create_tool_from_toolbox(
             self,
             tool_name: str,
             user_args: Dict[str, Any]

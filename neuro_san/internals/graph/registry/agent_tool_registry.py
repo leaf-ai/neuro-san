@@ -222,9 +222,9 @@ Some things to try:
         # in the hocon file for the agent.
         use_args: Dict[str, Any] = self.merge_args(arguments, agent_tool_spec)
 
-        if agent_tool_spec.get("base_tool") is not None:
-            # If a base_tool is in the spec, this is a shared coded tool where args schema is defined in
-            # either AGENT_BASE_TOOL_INFO_FILE or base_tool_info.hocon.
+        if agent_tool_spec.get("toolbox") is not None:
+            # If a toolbox is in the spec, this is a shared coded tool where args schema is defined in
+            # either AGENT_TOOLBOX_INFO_FILE or toolbox_info.hocon.
             agent_tool = ClassTool(parent_run_context, factory, use_args, agent_tool_spec, sly_data)
             return agent_tool
 

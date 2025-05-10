@@ -30,18 +30,6 @@
 
             "function": {
                 "description": "Assist caller with searching an url.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "user_inquiry": {
-                            "type": "string",
-                            "description": """
-                            An inquiry from a user.
-                            """
-                        },
-                    },
-                    "required": ["user_inquiry"]
-                }
             },
 
             "instructions": """
@@ -53,18 +41,18 @@ Use your tool to respond to the inquiry.
         # The tools "website_search" (class: web_search_global.WebSearch) and
         # "rag_retriever" (class: rag.Rag) are shared CodedTools that can be used
         # across all agent networks. Their argument schemas are predefined in 
-        # base_tool_info.hocon. Additional shared CodedTools can be created by 
+        # toolbox_info.hocon. Additional shared CodedTools can be created by 
         # implementing the module in AGENT_TOOL_PATH and defining the corresponding 
-        # argument schema in AGENT_BASE_TOOL_INFO_FILE.
+        # argument schema in AGENT_TOOLBOX_INFO_FILE.
 
         {
             "name": "search_tool",
-            "base_tool": "website_search"
+            "toolbox": "website_search"
         },
 
         {
             "name": "rag_tool",
-            "base_tool": "rag_retriever"
+            "toolbox": "rag_retriever"
         }
     ]
 }

@@ -24,9 +24,9 @@ from leaf_common.persistence.interface.restorer import Restorer
 from neuro_san.internals.utils.file_of_class import FileOfClass
 
 
-class BaseToolInfoRestorer(Restorer):
+class ToolboxInfoRestorer(Restorer):
     """
-    Implementation of the Restorer interface to read in a BaseToolInfo dictionary
+    Implementation of the Restorer interface to read in a ToolboxInfo dictionary
     instance given a hocon file name.
     """
 
@@ -44,7 +44,7 @@ class BaseToolInfoRestorer(Restorer):
         if file_reference is None or len(file_reference) == 0:
             # Read from the default
             file_of_class = FileOfClass(__file__, ".")
-            use_file = file_of_class.get_file_in_basis("base_tool_info.hocon")
+            use_file = file_of_class.get_file_in_basis("toolbox_info.hocon")
 
         try:
             if use_file.endswith(".json"):
@@ -56,7 +56,7 @@ class BaseToolInfoRestorer(Restorer):
                 raise ValueError(f"file_reference {use_file} must be a .json or .hocon file")
         except (ParseException, ParseSyntaxException, json.decoder.JSONDecodeError) as exception:
             message = f"""
-There was an error parsing the base_tool_info file "{use_file}".
+There was an error parsing the toolbox_info file "{use_file}".
 See the accompanying ParseException (above) for clues as to what might be
 syntactically incorrect in that file.
 """

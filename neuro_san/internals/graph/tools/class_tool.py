@@ -26,7 +26,7 @@ from leaf_common.config.resolver import Resolver
 from neuro_san.interfaces.coded_tool import CodedTool
 from neuro_san.internals.graph.tools.abstract_callable_tool import AbstractCallableTool
 from neuro_san.internals.graph.tools.branch_tool import BranchTool
-from neuro_san.internals.interfaces.context_type_base_tool_factory import ContextTypeBaseToolFactory
+from neuro_san.internals.interfaces.context_type_toolbox_factory import ContextTypeToolboxFactory
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.agent_message import AgentMessage
@@ -95,10 +95,10 @@ class ClassTool(AbstractCallableTool):
         if full_class_ref is None:
             # If there is no class in tool spec, then it is defined in base tool info file.
             # Use get_shared_coded_tool_class method to get the class info.
-            tool_name: str = self.agent_tool_spec.get("base_tool")
+            tool_name: str = self.agent_tool_spec.get("toolbox")
             invocation_context: InvocationContext = self.run_context.get_invocation_context()
-            base_tool_factory: ContextTypeBaseToolFactory = invocation_context.get_base_tool_factory()
-            full_class_ref = base_tool_factory.get_shared_coded_tool_class(tool_name)
+            toolbox_factory: ContextTypeToolboxFactory = invocation_context.get_toolbox_factory()
+            full_class_ref = toolbox_factory.get_shared_coded_tool_class(tool_name)
 
         self.logger.info("Calling class %s", full_class_ref)
 
