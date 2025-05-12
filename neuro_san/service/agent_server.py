@@ -27,7 +27,7 @@ from neuro_san.session.agent_service_stub import AgentServiceStub
 from neuro_san.service.agent_server_logging import AgentServerLogging
 from neuro_san.service.agent_servicer_to_server import AgentServicerToServer
 from neuro_san.service.dynamic_agent_router import DynamicAgentRouter
-from neuro_san.service.agent_service import AgentService
+from neuro_san.service.grpc_agent_service import GrpcAgentService
 from neuro_san.service.concierge_service import ConciergeService
 
 DEFAULT_SERVER_NAME: str = 'neuro-san.Agent'
@@ -90,13 +90,13 @@ class AgentServer:
 
         self.server_lifetime = None
         self.security_cfg = None
-        self.services: List[AgentService] = []
+        self.services: List[GrpcAgentService] = []
 
         self.service_router: DynamicAgentRouter = DynamicAgentRouter()
 
         self.logger.info("tool_registries found: %s", str(list(self.tool_registries.keys())))
 
-    def get_services(self) -> List[AgentService]:
+    def get_services(self) -> List[GrpcAgentService]:
         """
         :return: A list of the AgentServices being served up by this instance
         """
@@ -118,10 +118,10 @@ class AgentServer:
         """
         tool_factory_provider: ServiceToolFactoryProvider =\
             ServiceToolFactoryProvider.get_instance()
-        service = AgentService(self.server_lifetime, self.security_cfg,
-                               agent_name,
-                               tool_factory_provider.get_agent_tool_factory_provider(agent_name),
-                               self.server_logging)
+        service = GrpcAgentService(self.server_lifetime, self.security_cfg,
+                                   agent_name,
+                                   tool_factory_provider.get_agent_tool_factory_provider(agent_name),
+                                   self.server_logging)
         self.services.append(service)
         servicer_to_server = AgentServicerToServer(service)
         agent_rpc_handlers = servicer_to_server.build_rpc_handlers()
