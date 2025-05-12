@@ -14,42 +14,22 @@ from typing import Any
 from typing import Dict
 from typing import Iterator
 
-import copy
 import json
-import uuid
-
 import grpc
 
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.json_format import Parse
 
-from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
-
-from leaf_server_common.server.atomic_counter import AtomicCounter
 from leaf_server_common.server.grpc_metadata_forwarder import GrpcMetadataForwarder
 from leaf_server_common.server.request_logger import RequestLogger
 
 from neuro_san.api.grpc import agent_pb2 as service_messages
 from neuro_san.api.grpc import agent_pb2_grpc
 from neuro_san.internals.interfaces.agent_tool_factory_provider import AgentToolFactoryProvider
-from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
-from neuro_san.internals.interfaces.context_type_base_tool_factory import ContextTypeBaseToolFactory
-from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
-from neuro_san.internals.run_context.factory.master_base_tool_factory import MasterBaseToolFactory
-from neuro_san.internals.run_context.factory.master_llm_factory import MasterLlmFactory
 from neuro_san.service.agent_server_logging import AgentServerLogging
-from neuro_san.session.direct_agent_session import DirectAgentSession
-from neuro_san.session.external_agent_session_factory import ExternalAgentSessionFactory
-from neuro_san.session.session_invocation_context import SessionInvocationContext
 from neuro_san.service.agent_service import AgentService
 
-# A list of methods to not log requests for
-# Some of these can be way too chatty
-DO_NOT_LOG_REQUESTS = [
-]
 
-
-# pylint: disable=too-many-instance-attributes
 class GrpcAgentService(agent_pb2_grpc.AgentServiceServicer):
     """
     A gRPC implementation of the Neuro-San Agent Service.
@@ -65,7 +45,7 @@ class GrpcAgentService(agent_pb2_grpc.AgentServiceServicer):
         """
         Set the gRPC interface up for health checking so that the service
         will be opened to callers when the mesh sees it operational, if this
-        is not done the mesh will treat the service instance as non functional
+        is not done the mesh will treat the service instance as non-functional
 
         :param request_logger: The instance of the RequestLogger that helps
                     keep track of stats
@@ -79,24 +59,7 @@ class GrpcAgentService(agent_pb2_grpc.AgentServiceServicer):
                         spawned asyncrhonous threads can also properly initialize
                         their logging.
         """
-        self.request_logger = request_logger
-        self.security_cfg = security_cfg
-
-        self.server_logging: AgentServerLogging = server_logging
-        self.forwarder: GrpcMetadataForwarder = self.server_logging.get_forwarder()
-
-        self.tool_registry_provider: AgentToolFactoryProvider = tool_registry_provider
-        self.agent_name: str = agent_name
-        self.request_counter = AtomicCounter()
-
-        self.llm_factory: ContextTypeLlmFactory = MasterLlmFactory.create_llm_factory()
-        self.base_tool_factory: ContextTypeBaseToolFactory = MasterBaseToolFactory.create_base_tool_factory()
-        # Load once and include "agent_llm_info_file" from agent network hocon to llm factory..
-        tool_registry: AgentToolRegistry = self.tool_registry_provider.get_agent_tool_factory()
-        agent_llm_info_file = tool_registry.get_agent_llm_info_file()
-        self.llm_factory.load(agent_llm_info_file)
-        self.base_tool_factory.load()
-
+        self.forwarder: GrpcMetadataForwarder = server_logging.get_forwarder()
         self.service: AgentService =\
             AgentService(request_logger,
                          security_cfg,
@@ -108,7 +71,7 @@ class GrpcAgentService(agent_pb2_grpc.AgentServiceServicer):
         """
         :return: The number of currently active requests
         """
-        return self.request_counter.get_count()
+        return self.service.get_request_count()
 
     # pylint: disable=no-member
     def Function(self, request: service_messages.FunctionRequest,
@@ -126,7 +89,7 @@ class GrpcAgentService(agent_pb2_grpc.AgentServiceServicer):
 
         # Get our args in order to pass to grpc-free session level
         request_dict: Dict[str, Any] = MessageToDict(request)
-        response_dict: Dict[str, Any] = self.service.Function(request_dict, request_metadata, context)
+        response_dict: Dict[str, Any] = self.service.function(request_dict, request_metadata, context)
 
         # Convert the response dictionary to a grpc message
         response_string = json.dumps(response_dict)
@@ -150,7 +113,7 @@ class GrpcAgentService(agent_pb2_grpc.AgentServiceServicer):
 
         # Get our args in order to pass to grpc-free session level
         request_dict: Dict[str, Any] = MessageToDict(request)
-        response_dict: Dict[str, Any] = self.service.Connectivity(request_dict, request_metadata, context)
+        response_dict: Dict[str, Any] = self.service.connectivity(request_dict, request_metadata, context)
 
         # Convert the response dictionary to a grpc message
         response_string = json.dumps(response_dict)
@@ -158,7 +121,6 @@ class GrpcAgentService(agent_pb2_grpc.AgentServiceServicer):
         Parse(response_string, response)
         return response
 
-    # pylint: disable=no-member,too-many-locals
     def StreamingChat(self, request: service_messages.ChatRequest,
                       context: grpc.ServicerContext) \
             -> Iterator[service_messages.ChatResponse]:
@@ -175,7 +137,7 @@ class GrpcAgentService(agent_pb2_grpc.AgentServiceServicer):
         # Get our args in order to pass to grpc-free session level
         request_dict: Dict[str, Any] = MessageToDict(request)
         response_dict_iterator: Iterator[Dict[str, Any]] =\
-            self.service.StreamingChat(request_dict, request_metadata, context)
+            self.service.streaming_chat(request_dict, request_metadata, context)
         for response_dict in response_dict_iterator:
             # Convert the response dictionary to a grpc message
             response_string = json.dumps(response_dict)

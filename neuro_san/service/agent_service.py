@@ -18,19 +18,11 @@ import copy
 import json
 import uuid
 
-import grpc
-
-from google.protobuf.json_format import MessageToDict
-from google.protobuf.json_format import Parse
-
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 
 from leaf_server_common.server.atomic_counter import AtomicCounter
-from leaf_server_common.server.grpc_metadata_forwarder import GrpcMetadataForwarder
 from leaf_server_common.server.request_logger import RequestLogger
 
-from neuro_san.api.grpc import agent_pb2 as service_messages
-from neuro_san.api.grpc import agent_pb2_grpc
 from neuro_san.internals.interfaces.agent_tool_factory_provider import AgentToolFactoryProvider
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.interfaces.context_type_base_tool_factory import ContextTypeBaseToolFactory
@@ -89,9 +81,12 @@ class AgentService:
 
         self.llm_factory: ContextTypeLlmFactory = MasterLlmFactory.create_llm_factory()
         self.base_tool_factory: ContextTypeBaseToolFactory = MasterBaseToolFactory.create_base_tool_factory()
-        # Load once.
-        self.llm_factory.load()
         self.base_tool_factory.load()
+
+        # Load once and include "agent_llm_info_file" from agent network hocon to llm factory
+        tool_registry: AgentToolRegistry = self.tool_registry_provider.get_agent_tool_factory()
+        agent_llm_info_file = tool_registry.get_agent_llm_info_file()
+        self.llm_factory.load(agent_llm_info_file)
 
     def get_request_count(self) -> int:
         """
@@ -99,8 +94,7 @@ class AgentService:
         """
         return self.request_counter.get_count()
 
-    # pylint: disable=no-member
-    def Function(self, request: Dict[str, Any],
+    def function(self, request: Dict[str, Any],
                  request_metadata: Dict[str, Any],
                  context: Any) \
             -> Dict[str, Any]:
@@ -142,8 +136,7 @@ class AgentService:
         self.request_counter.decrement()
         return response_dict
 
-    # pylint: disable=no-member
-    def Connectivity(self, request: Dict[str, Any],
+    def connectivity(self, request: Dict[str, Any],
                      request_metadata: Dict[str, Any],
                      context: Any) \
             -> Dict[str, Any]:
@@ -185,10 +178,10 @@ class AgentService:
         self.request_counter.decrement()
         return response_dict
 
-    # pylint: disable=no-member,too-many-locals
-    def StreamingChat(self, request: Dict[str, Any],
-                      request_metadata: Dict[str, Any],
-                      context: Any) \
+    # pylint: disable=too-many-locals
+    def streaming_chat(self, request: Dict[str, Any],
+                       request_metadata: Dict[str, Any],
+                       context: Any) \
             -> Iterator[Dict[str, Any]]:
         """
         Initiates or continues the agent chat with the session_id
@@ -244,7 +237,7 @@ class AgentService:
         for response_dict in response_dict_iterator:
             # Do not return the request when the filter is MINIMAL
             if chat_filter_type != "MINIMAL":
-                response_dict["request"] = request_dict
+                response_dict["request"] = request
             yield response_dict
 
         request_reporting: Dict[str, Any] = invocation_context.get_request_reporting()

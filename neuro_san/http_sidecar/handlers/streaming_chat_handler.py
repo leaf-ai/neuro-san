@@ -15,12 +15,8 @@ See class comment for details
 from typing import Any, Dict, Generator
 import json
 
-import asyncio
-
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.json_format import Parse
-
-from tornado.ioloop import IOLoop
 
 # pylint: disable=no-name-in-module
 from neuro_san.api.grpc.agent_pb2 import ChatRequest, ChatResponse
@@ -59,10 +55,6 @@ class StreamingChatHandler(BaseRequestHandler):
                 sent_out += 1
         return sent_out
 
-    def sync_stream_out(self, generator):
-        return asyncio.run(self.stream_out(generator))
-
-
     async def post(self, agent_name: str):
         """
         Implementation of POST request handler for streaming chat API call.
@@ -92,9 +84,9 @@ class StreamingChatHandler(BaseRequestHandler):
 
             # Mind the type hint:
             # here we are getting Generator of Generators of ChatResponses!
-            result_generator: Generator[Generator[ChatResponse, None, None], None, None] =\
+            result_generator: Generator[Generator[ChatResponse, None, None], None, None] = \
                 grpc_session.streaming_chat(grpc_request)
-            sent_out = await IOLoop.current().run_in_executor(self.executor, self.sync_stream_out, result_generator)
+            sent_out = await self.stream_out(result_generator)
 
         except Exception as exc:  # pylint: disable=broad-exception-caught
             self.process_exception(exc)
