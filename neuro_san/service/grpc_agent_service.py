@@ -1,0 +1,188 @@
+
+# Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
+# All Rights Reserved.
+# Issued under the Academic Public License.
+#
+# You can be released from the terms, and requirements of the Academic Public
+# License by purchasing a commercial license.
+# Purchase of a commercial license is mandatory for any use of the
+# neuro-san SDK Software in commercial settings.
+#
+# END COPYRIGHT
+
+from typing import Any
+from typing import Dict
+from typing import Iterator
+
+import copy
+import json
+import uuid
+
+import grpc
+
+from google.protobuf.json_format import MessageToDict
+from google.protobuf.json_format import Parse
+
+from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
+
+from leaf_server_common.server.atomic_counter import AtomicCounter
+from leaf_server_common.server.grpc_metadata_forwarder import GrpcMetadataForwarder
+from leaf_server_common.server.request_logger import RequestLogger
+
+from neuro_san.api.grpc import agent_pb2 as service_messages
+from neuro_san.api.grpc import agent_pb2_grpc
+from neuro_san.internals.interfaces.agent_tool_factory_provider import AgentToolFactoryProvider
+from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
+from neuro_san.internals.interfaces.context_type_base_tool_factory import ContextTypeBaseToolFactory
+from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
+from neuro_san.internals.run_context.factory.master_base_tool_factory import MasterBaseToolFactory
+from neuro_san.internals.run_context.factory.master_llm_factory import MasterLlmFactory
+from neuro_san.service.agent_server_logging import AgentServerLogging
+from neuro_san.session.direct_agent_session import DirectAgentSession
+from neuro_san.session.external_agent_session_factory import ExternalAgentSessionFactory
+from neuro_san.session.session_invocation_context import SessionInvocationContext
+from neuro_san.service.agent_service import AgentService
+
+# A list of methods to not log requests for
+# Some of these can be way too chatty
+DO_NOT_LOG_REQUESTS = [
+]
+
+
+# pylint: disable=too-many-instance-attributes
+class GrpcAgentService(agent_pb2_grpc.AgentServiceServicer):
+    """
+    A gRPC implementation of the Neuro-San Agent Service.
+    """
+
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
+    def __init__(self,
+                 request_logger: RequestLogger,
+                 security_cfg: Dict[str, Any],
+                 agent_name: str,
+                 tool_registry_provider: AgentToolFactoryProvider,
+                 server_logging: AgentServerLogging):
+        """
+        Set the gRPC interface up for health checking so that the service
+        will be opened to callers when the mesh sees it operational, if this
+        is not done the mesh will treat the service instance as non functional
+
+        :param request_logger: The instance of the RequestLogger that helps
+                    keep track of stats
+        :param security_cfg: A dictionary of parameters used to
+                        secure the TLS and the authentication of the gRPC
+                        connection.  Supplying this implies use of a secure
+                        GRPC Channel.  If None, uses insecure channel.
+        :param agent_name: The agent name for the service
+        :param tool_registry_provider: The AgentToolFactoryProvider to use for the session.
+        :param server_logging: An AgentServerLogging instance initialized so that
+                        spawned asyncrhonous threads can also properly initialize
+                        their logging.
+        """
+        self.request_logger = request_logger
+        self.security_cfg = security_cfg
+
+        self.server_logging: AgentServerLogging = server_logging
+        self.forwarder: GrpcMetadataForwarder = self.server_logging.get_forwarder()
+
+        self.tool_registry_provider: AgentToolFactoryProvider = tool_registry_provider
+        self.agent_name: str = agent_name
+        self.request_counter = AtomicCounter()
+
+        self.llm_factory: ContextTypeLlmFactory = MasterLlmFactory.create_llm_factory()
+        self.base_tool_factory: ContextTypeBaseToolFactory = MasterBaseToolFactory.create_base_tool_factory()
+        # Load once and include "agent_llm_info_file" from agent network hocon to llm factory..
+        tool_registry: AgentToolRegistry = self.tool_registry_provider.get_agent_tool_factory()
+        agent_llm_info_file = tool_registry.get_agent_llm_info_file()
+        self.llm_factory.load(agent_llm_info_file)
+        self.base_tool_factory.load()
+
+        self.service: AgentService =\
+            AgentService(request_logger,
+                         security_cfg,
+                         agent_name,
+                         tool_registry_provider,
+                         server_logging)
+
+    def get_request_count(self) -> int:
+        """
+        :return: The number of currently active requests
+        """
+        return self.request_counter.get_count()
+
+    # pylint: disable=no-member
+    def Function(self, request: service_messages.FunctionRequest,
+                 context: grpc.ServicerContext) \
+            -> service_messages.FunctionResponse:
+        """
+        Allows a client to get the outward-facing function for the agent
+        served by this service.
+
+        :param request: a FunctionRequest
+        :param context: a grpc.ServicerContext
+        :return: a FunctionResponse
+        """
+        request_metadata: Dict[str, Any] = self.forwarder.forward(context)
+
+        # Get our args in order to pass to grpc-free session level
+        request_dict: Dict[str, Any] = MessageToDict(request)
+        response_dict: Dict[str, Any] = self.service.Function(request_dict, request_metadata, context)
+
+        # Convert the response dictionary to a grpc message
+        response_string = json.dumps(response_dict)
+        response = service_messages.FunctionResponse()
+        Parse(response_string, response)
+        return response
+
+    # pylint: disable=no-member
+    def Connectivity(self, request: service_messages.ConnectivityRequest,
+                     context: grpc.ServicerContext) \
+            -> service_messages.ConnectivityResponse:
+        """
+        Allows a client to get connectivity information for the agent
+        served by this service.
+
+        :param request: a ConnectivityRequest
+        :param context: a grpc.ServicerContext
+        :return: a ConnectivityResponse
+        """
+        request_metadata: Dict[str, Any] = self.forwarder.forward(context)
+
+        # Get our args in order to pass to grpc-free session level
+        request_dict: Dict[str, Any] = MessageToDict(request)
+        response_dict: Dict[str, Any] = self.service.Connectivity(request_dict, request_metadata, context)
+
+        # Convert the response dictionary to a grpc message
+        response_string = json.dumps(response_dict)
+        response = service_messages.ConnectivityResponse()
+        Parse(response_string, response)
+        return response
+
+    # pylint: disable=no-member,too-many-locals
+    def StreamingChat(self, request: service_messages.ChatRequest,
+                      context: grpc.ServicerContext) \
+            -> Iterator[service_messages.ChatResponse]:
+        """
+        Initiates or continues the agent chat with the session_id
+        context in the request.
+
+        :param request: a ChatRequest
+        :param context: a grpc.ServicerContext
+        :return: an iterator for (eventually) returned ChatResponses
+        """
+        request_metadata: Dict[str, Any] = self.forwarder.forward(context)
+
+        # Get our args in order to pass to grpc-free session level
+        request_dict: Dict[str, Any] = MessageToDict(request)
+        response_dict_iterator: Iterator[Dict[str, Any]] =\
+            self.service.StreamingChat(request_dict, request_metadata, context)
+        for response_dict in response_dict_iterator:
+            # Convert the response dictionary to a grpc message
+            response_string = json.dumps(response_dict)
+            response = service_messages.ChatResponse()
+            Parse(response_string, response)
+            # Yield-ing a single response allows one response to be returned
+            # over the connection while keeping it open to wait for more.
+            # Grpc client code handling response streaming knows to construct an
+            # iterator on its side to do said waiting over there.
+            yield response

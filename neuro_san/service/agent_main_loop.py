@@ -15,7 +15,7 @@ See class comment for details
 from typing import Dict
 from typing import List
 
-from threading import Thread
+import multiprocessing
 import os
 
 from argparse import ArgumentParser
@@ -31,7 +31,7 @@ from neuro_san.service.agent_server import DEFAULT_SERVER_NAME_FOR_LOGS
 from neuro_san.service.agent_server import DEFAULT_MAX_CONCURRENT_REQUESTS
 from neuro_san.service.agent_server import DEFAULT_REQUEST_LIMIT
 from neuro_san.service.agent_server import DEFAULT_FORWARDED_REQUEST_METADATA
-from neuro_san.service.agent_service import AgentService
+from neuro_san.service.grpc_agent_service import GrpcAgentService
 from neuro_san.http_sidecar.http_sidecar import HttpSidecar
 from neuro_san.internals.utils.file_of_class import FileOfClass
 from neuro_san.service.registries_watcher.periodic_updater.manifest_periodic_updater import ManifestPeriodicUpdater
@@ -159,13 +159,14 @@ class AgentMainLoop(ServerLoopCallbacks):
             self.tool_registries,
             self.service_openapi_spec_file,
             forwarded_request_metadata=self.forwarded_request_metadata)
-        http_server_thread = Thread(target=http_sidecar, daemon=True)
-        http_server_thread.start()
+        http_server_process = multiprocessing.Process(target=http_sidecar)
+        http_server_process.start()
 
         try:
             self.server.serve()
         finally:
-            http_server_thread.join()
+            http_server_process.terminate()
+            http_server_process.join()
 
     def loop_callback(self) -> bool:
         """
@@ -174,7 +175,7 @@ class AgentMainLoop(ServerLoopCallbacks):
         # Report back on service activity so the ServerLifetime that calls
         # this method can properly yield/sleep depending on how many requests
         # are in motion.
-        agent_services: List[AgentService] = self.server.get_services()
+        agent_services: List[GrpcAgentService] = self.server.get_services()
         for agent_service in agent_services:
             if agent_service.get_request_count() > 0:
                 return True
