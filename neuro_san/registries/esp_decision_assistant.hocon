@@ -9,6 +9,10 @@
 # neuro-san SDK Software in commercial settings.
 #
 # END COPYRIGHT
+
+# The schema specifications for this file are documented here:
+# https://github.com/leaf-ai/neuro-san/blob/main/docs/agent_hocon_reference.md
+
 {
     "llm_config": {
         # Demonstration of the config for llm fallbacks.
