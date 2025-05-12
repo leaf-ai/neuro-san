@@ -84,7 +84,7 @@ class StreamingChatHandler(BaseRequestHandler):
 
             # Mind the type hint:
             # here we are getting Generator of Generators of ChatResponses!
-            result_generator: Generator[Generator[ChatResponse, None, None], None, None] = \
+            result_generator: Generator[Generator[ChatResponse, None, None], None, None] =\
                 grpc_session.streaming_chat(grpc_request)
             sent_out = await self.stream_out(result_generator)
 

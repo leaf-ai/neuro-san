@@ -14,7 +14,6 @@ See class comment for details
 """
 
 import copy
-from concurrent.futures import ThreadPoolExecutor
 import threading
 from typing import Any, Dict, List
 
@@ -23,7 +22,6 @@ from tornado.web import Application
 
 from neuro_san.http_sidecar.logging.http_logger import HttpLogger
 from neuro_san.service.agent_server import DEFAULT_FORWARDED_REQUEST_METADATA
-from neuro_san.service.agent_server import DEFAULT_MAX_CONCURRENT_REQUESTS
 
 from neuro_san.http_sidecar.interfaces.agent_authorizer import AgentAuthorizer
 from neuro_san.http_sidecar.interfaces.agents_updater import AgentsUpdater
@@ -64,7 +62,6 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata.split(" ")
         self.allowed_agents: Dict[str, bool] = {}
         self.lock = None
-        self.executor: ThreadPoolExecutor = None
 
     def __call__(self):
         """
@@ -72,7 +69,6 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
         to actually start serving requests.
         """
         self.lock = threading.Lock()
-        self.executor = ThreadPoolExecutor(max_workers=DEFAULT_MAX_CONCURRENT_REQUESTS)
         self.logger = HttpLogger(self.forwarded_request_metadata)
 
         app = self.make_app()
@@ -124,7 +120,6 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
         return {
             "agent_policy": self,
             "agents_updater": self,
-            "executor": self.executor,
             "port": self.port,
             "forwarded_request_metadata": self.forwarded_request_metadata,
             "openapi_service_spec_path": self.openapi_service_spec_path

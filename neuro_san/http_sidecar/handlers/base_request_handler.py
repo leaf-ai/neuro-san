@@ -18,8 +18,6 @@ from typing import Dict
 from typing import List
 from typing import Tuple
 
-from concurrent.futures import ThreadPoolExecutor
-
 import json
 import os
 
@@ -61,7 +59,6 @@ class BaseRequestHandler(RequestHandler):
     def initialize(self,
                    agent_policy: AgentAuthorizer,
                    agents_updater: AgentsUpdater,
-                   executor: ThreadPoolExecutor,
                    port: int,
                    forwarded_request_metadata: List[str],
                    openapi_service_spec_path: str):
@@ -78,7 +75,6 @@ class BaseRequestHandler(RequestHandler):
 
         self.agent_policy = agent_policy
         self.agents_updater = agents_updater
-        self.executor: ThreadPoolExecutor = executor
         self.port: int = port
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata
         self.openapi_service_spec_path: str = openapi_service_spec_path
