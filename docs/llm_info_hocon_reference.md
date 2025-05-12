@@ -236,3 +236,19 @@ Any combination of [llm_config](./agent_hocon_reference.md#llm_config) and/or [a
 can be specified here.
 
 ## Extending LLM Info Specifications
+
+You can extend the llm models offered by the neuro-san system to include your own
+llm_info.hocon file in a few different ways:
+
+### AGENT_LLM_INFO_FILE environment variable
+
+This environment variable can be set as a system-wide inclusion of you own llm_info.hocon.
+Changes here apply to all agents on the single server.
+
+### agent_llm_info_file key in specific agent hocon files
+
+It's possible to have a different llm_info.hocon file for each agent hocon file
+by pointing the value of the [agent_llm_info_file](./agent_hocon_reference.md#agent_llm_info_file) key
+to your own.
+
+Doing this will override anything set in the AGENT_LLM_INFO_FILE environment variable.
