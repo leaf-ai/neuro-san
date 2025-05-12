@@ -81,12 +81,12 @@ class AgentService:
 
         self.llm_factory: ContextTypeLlmFactory = MasterLlmFactory.create_llm_factory()
         self.base_tool_factory: ContextTypeBaseToolFactory = MasterBaseToolFactory.create_base_tool_factory()
-        self.base_tool_factory.load()
 
         # Load once and include "agent_llm_info_file" from agent network hocon to llm factory
         tool_registry: AgentToolRegistry = self.tool_registry_provider.get_agent_tool_factory()
         agent_llm_info_file = tool_registry.get_agent_llm_info_file()
         self.llm_factory.load(agent_llm_info_file)
+        self.base_tool_factory.load()
 
     def get_request_count(self) -> int:
         """
@@ -94,7 +94,7 @@ class AgentService:
         """
         return self.request_counter.get_count()
 
-    def function(self, request: Dict[str, Any],
+    def function(self, request_dict: Dict[str, Any],
                  request_metadata: Dict[str, Any],
                  context: Any) \
             -> Dict[str, Any]:
@@ -102,7 +102,7 @@ class AgentService:
         Allows a client to get the outward-facing function for the agent
         served by this service.
 
-        :param request: a FunctionRequest dictionary
+        :param request_dict: a FunctionRequest dictionary
         :param request_metadata: request metadata
         :param context: a service request context object
         :return: a FunctionResponse dictionary
@@ -128,7 +128,7 @@ class AgentService:
                                      invocation_context=None,
                                      metadata=metadata,
                                      security_cfg=self.security_cfg)
-        response_dict = session.function(request)
+        response_dict = session.function(request_dict)
 
         if request_log is not None:
             self.request_logger.finish_request(f"{self.agent_name}.Function", log_marker, request_log)
@@ -136,7 +136,7 @@ class AgentService:
         self.request_counter.decrement()
         return response_dict
 
-    def connectivity(self, request: Dict[str, Any],
+    def connectivity(self, request_dict: Dict[str, Any],
                      request_metadata: Dict[str, Any],
                      context: Any) \
             -> Dict[str, Any]:
@@ -144,7 +144,7 @@ class AgentService:
         Allows a client to get connectivity information for the agent
         served by this service.
 
-        :param request: a ChatRequest dictionary
+        :param request_dict: a ChatRequest dictionary
         :param request_metadata: request metadata
         :param context: a service request context object
         :return: a ConnectivityResponse dictionary
@@ -170,7 +170,7 @@ class AgentService:
                                      invocation_context=None,
                                      metadata=metadata,
                                      security_cfg=self.security_cfg)
-        response_dict = session.connectivity(request)
+        response_dict = session.connectivity(request_dict)
 
         if request_log is not None:
             self.request_logger.finish_request(f"{self.agent_name}.Connectivity", log_marker, request_log)
@@ -179,7 +179,7 @@ class AgentService:
         return response_dict
 
     # pylint: disable=too-many-locals
-    def streaming_chat(self, request: Dict[str, Any],
+    def streaming_chat(self, request_dict: Dict[str, Any],
                        request_metadata: Dict[str, Any],
                        context: Any) \
             -> Iterator[Dict[str, Any]]:
@@ -187,14 +187,14 @@ class AgentService:
         Initiates or continues the agent chat with the session_id
         context in the request.
 
-        :param request: a ChatRequest dictionary
+        :param request_dict: a ChatRequest dictionary
         :param request_metadata: request metadata
         :param context: a service request context object
         :return: an iterator for (eventually) returned responses dictionaries
         """
         self.request_counter.increment()
         request_log = None
-        user_text: str = request.get("user_message", {}).get("text", "")
+        user_text: str = request_dict.get("user_message", {}).get("text", "")
         log_marker = f"'{user_text}'"
         service_logging_dict: Dict[str, str] = {
             "request_id": f"server-{uuid.uuid4()}"
@@ -227,17 +227,17 @@ class AgentService:
                                      metadata=metadata,
                                      security_cfg=self.security_cfg)
         # Get our args in order to pass to grpc-free session level
-        response_dict_iterator: Iterator[Dict[str, Any]] = session.streaming_chat(request)
+        response_dict_iterator: Iterator[Dict[str, Any]] = session.streaming_chat(request_dict)
 
         # See if we want to put the request dict in the response
         chat_filter_dict: Dict[str, Any] = {}
-        chat_filter_dict = request.get("chat_filter", chat_filter_dict)
+        chat_filter_dict = request_dict.get("chat_filter", chat_filter_dict)
         chat_filter_type: str = chat_filter_dict.get("chat_filter_type", "MINIMAL")
 
         for response_dict in response_dict_iterator:
             # Do not return the request when the filter is MINIMAL
             if chat_filter_type != "MINIMAL":
-                response_dict["request"] = request
+                response_dict["request"] = request_dict
             yield response_dict
 
         request_reporting: Dict[str, Any] = invocation_context.get_request_reporting()
