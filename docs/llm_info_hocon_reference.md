@@ -214,8 +214,8 @@ value is None, indicating that the mechanism for token counting is unknown.
 
 #### factories
 
-You can list your own classes to create the BaseLanguageModel instance given a config if the
-stock llms do not suit your needs.  An example entry within the classes dictionary would
+You can list your own factory classes that create a BaseLanguageModel instance given a config if the
+stock neuro-san LLMs do not suit your needs.  An example entry within the classes dictionary would
 look like this:
 
     "factories": [ "my_package.my_module.MyLangChainLlmFactory" ],
@@ -224,6 +224,7 @@ Any classes listed must:
 
 * Exist in the PYTHONPATH of your server
 * Derive from neuro_san.internals.run_context.langchain.langchain_llm_factory.LangChainLlmFactory
+  to override the create_base_chat_model() method that creates your BaseLanguageModel instance.
 * Have a no-args constructor
 
 ### default_config
