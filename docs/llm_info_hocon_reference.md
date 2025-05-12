@@ -41,9 +41,10 @@ Sub-keys to those dictionaries will be described in the next-level down heading 
 
 ## LLM Info Specifications
 
-All parameters listed here have global scope (to the agent network) and are listed at the top of the file by convention.
+All parameters listed here have global scope and are listed at the top of the file by convention.
 
-The default file used with the system lives [here](../neuro_san/internals/run_context/langchain/default_llm_info.hocon).
+The default file used with the system is called
+[default_llm_info.hocon](../neuro_san/internals/run_context/langchain/default_llm_info.hocon).
 
 ### Model Name Keys
 
@@ -65,12 +66,14 @@ Most often, a single BaseLanguageModel class will support multiple models.
 #### model_info_url
 
 A URL string that points to the information page for details on the given model.
+
 The idea here is that agent network developers can check this URL as a reference when
 LLM performance does not match expectations.
 
 #### modalities
 
 A dictionary that describes the I/O capabilities that the LLM "speaks".
+
 The keys to this dictionary are described immediately below.
 
 ##### input
@@ -187,7 +190,9 @@ class.
 ##### extends
 
 An optional key with a string value that points to another class definition within the
-[classes](#classes) dictionary.  The idea is to allow the data-driven defaults to inherit
+[classes](#classes) dictionary. 
+
+The idea is to allow the data-driven defaults to inherit
 from previous definitions just like the Python implementations can, allowing overriding
 some values while also avoiding repetition.
 
