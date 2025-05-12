@@ -30,12 +30,14 @@ Sub-keys to those dictionaries will be described in the next-level down heading 
       - [use_model_name](#use_model_name)
     - [classes](#classes)
       - [Class Name Keys](#class-name-keys)
-        - [token_counting](#token_counting)
         - [extends](#extends)
         - [args](#args)
+        - [token_counting](#token_counting)
       - [factories](#factories)
     - [default_config](#default_config)
   - [Extending LLM Info Specifications](#extending-llm-info-specifications)
+    - [AGENT_LLM_INFO_FILE environment variable](#agent_llm_info_file-environment-variable)
+    - [agent_llm_info_file key in specific agent hocon files](#agent_llm_info_file-key-in-specific-agent-hocon-files)
 
 <!--TOC-->
 
