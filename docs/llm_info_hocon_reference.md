@@ -55,7 +55,7 @@ will describe.
 
 #### class
 
-The class is a string descriptor that refers to an entry in the (classes)[#classes] table below.
+The class is a string descriptor that refers to an entry in the [classes](#classes) table below.
 Nominally each class corresponds to a single LLM provider that has its own instance of langchain's
 BaseLanguageModel, and therefore its own class to construct upon initiating a new LLM-powered agent
 for use in the agent network.
@@ -107,7 +107,7 @@ A list of strings describing the capabilities the LLM has been trained on.
 
 Currently the only capability that matters to neuro-san is an LLM's capability
 to use tools. Any intermediate LLM-powered agent in neuro-san requires the use of tools
-in order to be able to call its downstream agents. Normally a model's (model_info_url)[#model-info-url]
+in order to be able to call its downstream agents. Normally a model's [model_info_url](#model-info-url)
 will say whether or not a given model is tool-using or not.  If it doesn't say that it
 is trained to use tools, it typically does not.
 
@@ -123,7 +123,7 @@ The maximum number of tokens allowed by the model as input.
 This number typically includes chat history for the LLM as well as any new user input,
 and/or RAG document.
 
-While it is possible to specify a smaller context_window_size in a given (classes)[#classes]
+While it is possible to specify a smaller context_window_size in a given [classes](#classes)
 configuration, it is not possible to simply list a new larger value and have it
 magically manifest itself.  This is a matter of how the LLM was trained.
 
@@ -132,7 +132,7 @@ magically manifest itself.  This is a matter of how the LLM was trained.
 The maximum number of tokens allowed by the model as output for any given answer.
 This number typically excludes chat history for the LLM.
 
-While it is possible to specify a smaller max_output_tokens in a given (classes)[#classes]
+While it is possible to specify a smaller max_output_tokens in a given [classes](#classes)
 configuration, it is not possible to simply list a new larger value and have it
 magically manifest itself.  This is a matter of how the LLM was trained.
 
@@ -174,20 +174,20 @@ langchain BaseLanguageModel with a combination of data-driven and coded manners.
 
 The data-driven keys in this dictionary are described below.
 
-See the entry for (factories)[#factories] below for further instructions as to how
+See the entry for [factories](#factories) below for further instructions as to how
 to extend neuro-san with new BaseLanguageModel implementations.
 
 #### Class Name Keys
 
 In general, the keys in the classes dictionary are the names of the classes themselves,
-and it is these keys which are used in the model definition's (class)[#class] key described above.
+and it is these keys which are used in the model definition's [class](#class) key described above.
 The values are dictionaries that describe configurable data associated with each BaseLanguageModel
 class.
 
 ##### extends
 
 An optional key with a string value that points to another class definition within the
-(classes)[#classes] dictionary.  The idea is to allow the data-driven defaults to inherit
+[classes](#classes) dictionary.  The idea is to allow the data-driven defaults to inherit
 from previous definitions just like the Python implementations can, allowing overriding
 some values while also avoiding repetition.
 
@@ -226,7 +226,7 @@ Any classes listed must:
 A dictionary that describes the default configuration for any agent's llm_config, allowing
 you to tweak the default to your own preferred least common denominator.
 
-Any combination of (llm_config)[./agent_hocon_reference.md#llm_config] and/or (args)[#args]
+Any combination of [llm_config](./agent_hocon_reference.md#llm_config) and/or [args](#args)
 can be specified here.
 
 ## Extending LLM Info Specifications
