@@ -14,6 +14,8 @@
     # Describes what agent to test against.
     "agent": "music_nerd_pro",
 
+    "connections": ["grpc"]
+
     # Interactions are a series of dictionaries with request elements paired with
     # descriptions of response checks.
     "interactions": [
@@ -30,7 +32,7 @@
                     # Keywords says we are going to look for exact matches for each
                     # element in a list of strings.  All elements need to show up
                     # in order to pass.
-                    "keywords": ["Beatles", "\"running_cost"\": \"3.0\"]
+                    "keywords": ["Beatles", "\"running_cost"\": 3.0]
                 }
 
 
@@ -44,7 +46,7 @@
             "text": "Where were they from?",
             "response": {
                 "text": {
-                    "keywords": ["Liverpool", "\"running_cost"\": \"6.0\"]
+                    "keywords": ["Liverpool", "\"running_cost"\": 6.0]
                 }
             }
         }

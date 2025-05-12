@@ -51,11 +51,21 @@ This service comes for a fee. For each question you're about to answer, use your
 running fees. 
 
 This service comes at a cost. For every question:
-1. Use your Accountant tool to calculate the updated running cost.
-2. Return your response in **two parts**:
-   - First, give your full music answer as plain text.
-   - Then, on a **separate line**, return a **valid JSON object** with the updated cost only.
-   - The cost value should be as a string enclosed in double quotes and keep a "single decimal number", e.g
+
+    1. "Use your Accountant tool to calculate the updated running cost."
+
+    2. "Return your response in two parts:"
+
+        - "First, give your full music answer as plain text."
+
+        - "Then, on a separate line, return a valid JSON object with:"  
+
+            - "the key "running_cost" (with double quotes), and:
+
+            - "the value as a number with exactly one decimal place, without double quotes."
+
+    For example:
+    {"running_cost": 1.0}
 """,
             "tools": ["Accountant"]
         },
