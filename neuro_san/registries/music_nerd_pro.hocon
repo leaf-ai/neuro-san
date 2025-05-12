@@ -55,6 +55,7 @@ This service comes at a cost. For every question:
 2. Return your response in **two parts**:
    - First, give your full music answer as plain text.
    - Then, on a **separate line**, return a **valid JSON object** with the updated cost only.
+   - The cost value should be as a string enclosed in double quotes and keep a "single decimal number", e.g
 """,
             "tools": ["Accountant"]
         },
