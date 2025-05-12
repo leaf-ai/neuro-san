@@ -175,12 +175,13 @@ to expose secrets by checking them in.
 If your favorite model, or new hotness is not listed in default_llm_info.hocon,
 you can extend the list in two ways:
 
-(1) Set the absolute path to your extension HOCON file using the **agent_llm_info_file** key in the agent network HOCON file.
+(1) Set the absolute path to your extension HOCON file using the [agent_llm_info_file](#agent_llm_info_file]
+key in the agent network HOCON file.
 
-(2) Set the extension HOCON file to the environment variable **AGENT_LLM_INFO_FILE**.
+(2) Set the extension HOCON file to the environment variable
+[AGENT_LLM_INFO_FILE](./llm_info_hocon_reference.md#AGENT_LLM_INFO_FILE-environment-variable).
 
-For more information on adding your
-own llms, see the [llm_info_hocon_reference](./llm_info_hocon_reference.md).
+For complete information on adding your own llms, see the [llm_info_hocon_reference](./llm_info_hocon_reference.md).
 
 #### fallbacks
 
