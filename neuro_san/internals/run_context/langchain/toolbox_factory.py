@@ -36,13 +36,17 @@ from neuro_san.internals.run_context.langchain.toolbox_info_restorer import Tool
 
 class ToolboxFactory(ContextTypeToolboxFactory):
     """
-    A factory class for creating instances of various prebuilt tools.
+    A factory class for creating instances of various tools defined in the toolbox.
 
-    This class provides an interface to instantiate different tools based on the specified "base_tool".
-    The available tools include web search utilities and HTTP request utilities. This approach standardizes
-    tool creation and simplifies integration with agents requiring predefined tools.
+    This class provides an interface to instantiate different tools based on the specified langchain base tools
+    and predefined coded tools.
+
+    This approach standardizes tool creation and simplifies integration with agents requiring predefined tools.
 
     ### Supported Tools:
+
+    #### Langchain Tools:
+
     - **Search Tools:**
         - "bing_search": Returns a "BingSearchResults" instance for performing Bing search queries.
         - "tavily_search": Returns a "TavilySearchResults" instance for performing Tavily search queries.
@@ -56,37 +60,34 @@ class ToolboxFactory(ContextTypeToolboxFactory):
         - "requests_delete": For making DELETE requests.
         - "requests_toolkit": For all of the above request tools.
 
-    ### Arguments:
-    - "tool_name" (str): The name of the tool to instantiate. It determines which tool will be created.
-    - "user_args" (Dict): A dictionary of keyword arguments passed to the tool's constructor.
-                     The accepted arguments depend on the tool being instantiated. Some common ones include:
-        - **Search Tools:**
-          - "num_results" (int): Number of results to return (for Bing search).
-          - "max_results" (int): Maximum number of results (for Tavily search).
-        - **HTTP Request Tools:**
-          - "headers" (Dict[str, str], optional): HTTP headers to include in the request.
-          - "aiosession" (ClientSession, optional): Async session for making requests.
-          - "auth" (Any, optional): Authentication credentials if required.
-          - "response_content_type" (Literal["text", "json"], default="text"): Expected response format.
+    #### Coded Tools:
+        - "website_search": Internet search based on DuckDuckGo Search
+        - "rag_retriever": Perfrom retrieval-augmented generation on given urls
 
     ### Extending the Class
 
         To integrate additional tools, add a tool configuration file in JSON or HOCON format
-        and set its path to the environment variable "AGENT_BASE_TOOL_INFO_FILE".
+        and set its path to the environment variable "AGENT_TOOLBOX_INFO_FILE".
 
-        The configuration should follow this structure:
+        The configuration should follow this structure
+
+        for langchain's tools:
         - The tool name serves as a key.
         - The corresponding value should be a dictionary with:
         - "class": The fully qualified class name of the tool.
         - "args": A dictionary of arguments required for the tool's initialization,
             which may include nested class configurations.
 
-        The default prebuilt tool config file can be seen at
-        "neuro_san/internals/run_context/langchain/base_tool_info.hocon"
+        for coded tools:
+        - The tool name serves as a key.
+        - The corresponding value should be a dictionary with:
+        - "class": Module and class in the format of tool_module.ClassName.
+        - "description": When and how to use the tool.
+        - "parameters": Information on arguments of the tool.
+            See "parameters" in https://github.com/leaf-ai/neuro-san/blob/main/docs/agent_hocon_reference.md
 
-    **Note:**
-    Future updates will introduce support for integrating custom "CodedTool"
-    implementations into this factory.
+        The default toolbox config file can be seen at
+        "neuro_san/internals/run_context/langchain/toolbox_info.hocon"
     """
 
     def __init__(self):
@@ -116,7 +117,7 @@ class ToolboxFactory(ContextTypeToolboxFactory):
             self,
             tool_name: str,
             user_args: Dict[str, Any] = None
-    ) -> Union[BaseTool, List[BaseTool]]:
+    ) -> Union[BaseTool, Dict[str, Any], List[BaseTool]]:
         """
         Resolves dependencies and instantiates the requested tool.
 
@@ -124,6 +125,7 @@ class ToolboxFactory(ContextTypeToolboxFactory):
         :param user_args: Arguments provided by the user, which override the config file.
         :return: - Instantiated tool if "class" of tool_name points to a BaseTool class
                  - A list of tools if "class of "tool_name points to a BaseToolkit class.
+                 - A dict of tool's "description" and "parameters" if tool_name points to a CodedTool
         """
         empty: Dict[str, Any] = {}
 
@@ -143,8 +145,8 @@ class ToolboxFactory(ContextTypeToolboxFactory):
                 "- For shared CodedTools: use 'module.Class' format (e.g., 'websearch.WebSearch')"
             )
 
-        # If the tool has description, then it is a shared coded tool.
-        # The tool info then contains args schema of the tool.
+        # If "description" in the tool info, then it is a shared coded tool.
+        # Return dictionary of tool's description and parameters.
         if "description" in tool_info:
             return tool_info
 
