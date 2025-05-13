@@ -27,17 +27,17 @@ class TestUnitTestHocons(TestCase):
     # We pass it our source file location and a relative path to the common
     # root of the test hocon files listed in the @parameterized.expand()
     # annotation below so the instance can find the hocon test cases listed.
-    DYNAMIC = DynamicHoconUnitTests(__file__, path_to_basis="../../fixtures")
+    DYNAMIC = DynamicHoconUnitTests(__file__, path_to_basis="../../../../fixtures")
 
     @parameterized.expand(DynamicHoconUnitTests.from_hocon_list([
         # These can be in any order.
         # Ideally more basic functionality will come first.
         # Barring that, try to stick to alphabetical order.
-        "music_nerd_pro/combination_responses_with_history.hocon",
+        "music_nerd_pro/combination_responses_with_history_grpc.hocon",
 
         # List more hocon files as they become available here.
     ]))
-    @pytest.mark.e2e
+    @pytest.mark.smoke
     def test_hocon(self, test_name: str, test_hocon: str):
         """
         Test method for a single parameterized test case specified by a hocon file.
