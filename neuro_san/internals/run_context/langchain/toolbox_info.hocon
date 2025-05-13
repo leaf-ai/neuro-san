@@ -73,7 +73,12 @@
         }
     },
 
+    # NOTE on Request tools and toolkit: 
+    # There are inherent risks in giving models discretion to execute real-world actions.
+    # Users must "opt-in" to these risks by setting allow_dangerous_request=True to use these tools.
+
     # ---------------- Requests Toolkit (Batch of Tools) ----------------
+
     # This defines a requests toolkit that provides multiple HTTP request utilities.
     # It initializes RequestsToolkit with:
     # - requests_wrapper: An instance of TextRequestsWrapper (used to manage headers)
