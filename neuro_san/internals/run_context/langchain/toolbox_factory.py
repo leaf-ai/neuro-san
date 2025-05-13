@@ -81,7 +81,8 @@ class ToolboxFactory(ContextTypeToolboxFactory):
         for coded tools:
         - The tool name serves as a key.
         - The corresponding value should be a dictionary with:
-        - "class": Module and class in the format of tool_module.ClassName.
+        - "class": Module and class in the format of tool_module.ClassName where tool_module is in
+                    AGENT_TOOL_PATH or neuro_san/coded_tools.
         - "description": When and how to use the tool.
         - "parameters": Information on arguments of the tool.
             See "parameters" in https://github.com/leaf-ai/neuro-san/blob/main/docs/agent_hocon_reference.md

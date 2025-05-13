@@ -193,7 +193,7 @@
 
     # --------------------------------- Shared CodedTool ------------------------------------
     # Keys:
-    # - "class" specifies the tool's implementation as module.ClassName.
+    # - "class" specifies the tool's implementation as module.ClassName where module is in AGENT_TOOL_PATH or neuro_san/coded_tools.
     # - "description" let the agent know what the tool does.
     # - "parameters" are arguments' definitions and types.
     # Note: Parameters are optional and may be omitted if not required.
