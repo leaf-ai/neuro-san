@@ -132,9 +132,9 @@ ENV AGENT_MANIFEST_FILE=${APP_SOURCE}/registries/manifest.hocon
 # in addition to the neuro-san defaults.
 ENV AGENT_LLM_INFO_FILE=""
 
-# A base_tool_info hocon file with user-provided base_tool descriptions that are to be used
-# in addition to the neuro-san defaults.
-ENV AGENT_BASE_TOOL_INFO_FILE=""
+# A toolbox_info hocon file with user-provided base tool and coded tool
+# descriptions that are to be used in addition to the neuro-san defaults.
+ENV AGENT_TOOLBOX_INFO_FILE=""
 
 # Where to find the classes for CodedTool class implementations
 # that are used by specific agent networks.
