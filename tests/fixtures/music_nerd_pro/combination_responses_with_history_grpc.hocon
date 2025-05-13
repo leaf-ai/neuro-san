@@ -14,7 +14,8 @@
     # Describes what agent to test against.
     "agent": "music_nerd_pro",
 
-    "connections": ["grpc"]
+    # Connect to the agent via a server
+    "connections": ["grpc"],
 
     # Interactions are a series of dictionaries with request elements paired with
     # descriptions of response checks.
@@ -25,18 +26,13 @@
 
             # The response block treats how we are going to test what comes back
             "response": {
-
                 # Text block says how we are going to examine the text of the response.
                 "text": {
-
                     # Keywords says we are going to look for exact matches for each
                     # element in a list of strings.  All elements need to show up
                     # in order to pass.
                     "keywords": ["Beatles", "\"running_cost"\": 3.0]
                 }
-
-
-            
             }
         },
         {
