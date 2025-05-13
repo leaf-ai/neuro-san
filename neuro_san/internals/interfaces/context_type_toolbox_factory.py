@@ -12,6 +12,10 @@
 
 from typing import Any
 from typing import Dict
+from typing import List
+from typing import Union
+
+from langchain_core.tools import BaseTool
 
 
 class ContextTypeToolboxFactory:
@@ -20,13 +24,21 @@ class ContextTypeToolboxFactory:
 
     Most methods accept a configuration dictionary, where each key is a tool name, and each value is
     a dictionary containing the corresponding tool's setup information. The configuration dictionary
-    supports the following keys for each tool:
+    supports the following keys for each tool.
 
-        - "class":   The class of the tool or toolkit.
+    Langchain's Tool:
+        - "class":  The class of the tool or toolkit.
                     This key is required. A ValueError will be raised if not provided.
 
-        - "args":    A dictionary of constructor arguments used to instantiate the tool or toolkit
-                    directly via its constructor.
+        - "args":   A dictionary of constructor or class method arguments used to instantiate the tool
+                    or toolkit.
+
+    Coded Tool:
+        - "class":  Module and class in the format of tool_module.ClassName.
+
+        - "description":  When and how to use the tool.
+
+        - "parameters":  Information on arguments of the tool.
     """
 
     def load(self):
@@ -40,7 +52,7 @@ class ContextTypeToolboxFactory:
             self,
             tool_name: str,
             user_args: Dict[str, Any]
-    ) -> Any:
+    ) -> Union[BaseTool, Dict[str, Any], List[BaseTool]]:
         """
         Create a tool instance from the fully-specified tool config.
         :param tool_name: The name of the tool to instantiate.
