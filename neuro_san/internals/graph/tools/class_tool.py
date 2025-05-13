@@ -26,8 +26,6 @@ from leaf_common.config.resolver import Resolver
 from neuro_san.interfaces.coded_tool import CodedTool
 from neuro_san.internals.graph.tools.abstract_callable_tool import AbstractCallableTool
 from neuro_san.internals.graph.tools.branch_tool import BranchTool
-from neuro_san.internals.interfaces.context_type_toolbox_factory import ContextTypeToolboxFactory
-from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.agent_message import AgentMessage
 from neuro_san.internals.messages.origination import Origination
@@ -39,6 +37,14 @@ from neuro_san.internals.run_context.interfaces.run_context import RunContext
 class ClassTool(AbstractCallableTool):
     """
     CallableTool which can invoke a CodedTool by its class name.
+
+    This is  a base class for tools that dynamically invoke a Python class based on a
+    fully qualified class reference. Subclasses must implement "get_full_class_ref"
+    method to determine the target class.
+
+    There are two main subclasses:
+    - CustomTool: retrieves the class reference directly from the tool specification.
+    - PredefinedTool: looks up the class reference from a predefined toolbox.
     """
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
@@ -80,6 +86,19 @@ class ClassTool(AbstractCallableTool):
         if self.arguments.get("origin_str") is None:
             self.arguments["origin_str"] = self.full_name
 
+    def get_full_class_ref(self) -> str:
+        """
+        Returns the full class reference path of the target tool to be invoked.
+
+        This method must be implemented by subclasses to provide the fully qualified
+        class name (e.g., "my_module.MyToolClass") of the CodedTool that should
+        be instantiated and invoked. This string will be used for dynamic instantiation
+        of the tool class.
+
+        :return: A dot-separated string representing the full class path.
+        """
+        raise NotImplementedError
+
     # pylint: disable=too-many-locals
     async def build(self) -> List[Any]:
         """
@@ -89,19 +108,8 @@ class ClassTool(AbstractCallableTool):
         """
         messages: List[Any] = []
 
-        # Get the python module with the class name containing a CodedTool reference.
-        # Will need some exception safety in here eventually.
-        full_class_ref: str = self.agent_tool_spec.get("class")
-        if full_class_ref is None:
-            # If there is no class in tool spec, then it is defined in base tool info file.
-            # Use get_shared_coded_tool_class method to get the class info.
-            tool_name: str = self.agent_tool_spec.get("toolbox")
-            invocation_context: InvocationContext = self.run_context.get_invocation_context()
-            toolbox_factory: ContextTypeToolboxFactory = invocation_context.get_toolbox_factory()
-            full_class_ref = toolbox_factory.get_shared_coded_tool_class(tool_name)
-
+        full_class_ref: str = self.get_full_class_ref()
         self.logger.info("Calling class %s", full_class_ref)
-
         class_split = full_class_ref.split(".")
         class_name = class_split[-1]
         # Remove the class name from the end to get the module name
