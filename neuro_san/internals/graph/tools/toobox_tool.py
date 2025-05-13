@@ -10,14 +10,16 @@
 #
 # END COPYRIGHT
 
-from neuro_san.internals.graph.tools.class_tool import ClassTool
+from neuro_san.internals.graph.tools.abstract_class_tool import AbstractClassTool
 from neuro_san.internals.interfaces.context_type_toolbox_factory import ContextTypeToolboxFactory
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 
 
-class PredefinedTool(ClassTool):
+class ToolboxTool(AbstractClassTool):
     """
-    A ClassTool that resolves the full class reference from a predefined toolbox.
+    A ClassTool that resolves the full class reference from a predefined coded tool in the toolbox.
+
+    Note that this class does not apply to Langchain's base tools.
     """
 
     def get_full_class_ref(self) -> str:
