@@ -23,6 +23,7 @@ from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 from neuro_san.internals.graph.tools.branch_tool import BranchTool
 from neuro_san.internals.graph.tools.class_tool import ClassTool
 from neuro_san.internals.graph.tools.external_tool import ExternalTool
+from neuro_san.internals.graph.tools.toobox_tool import ToolboxTool
 from neuro_san.internals.graph.tools.front_man import FrontMan
 from neuro_san.internals.graph.tools.sly_data_redactor import SlyDataRedactor
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
@@ -222,11 +223,18 @@ Some things to try:
         # in the hocon file for the agent.
         use_args: Dict[str, Any] = self.merge_args(arguments, agent_tool_spec)
 
+        if agent_tool_spec.get("toolbox") is not None:
+            # If a toolbox is in the spec, this is a shared coded tool where tool's description and
+            # args schema are defined in either AGENT_TOOLBOX_INFO_FILE or toolbox_info.hocon.
+            agent_tool = ToolboxTool(parent_run_context, factory, use_args, agent_tool_spec, sly_data)
+            return agent_tool
+
         if agent_tool_spec.get("function") is not None:
             # If we have a function in the spec, the agent has arguments
             # it wants to be called with.
             if agent_tool_spec.get("class") is not None:
-                # Agent specifically requested a python class to be run.
+                # Agent specifically requested a python class to be run,
+                # and tool's description and args schema are defined in agent network hocon.
                 agent_tool = ClassTool(parent_run_context, factory, use_args, agent_tool_spec, sly_data)
             else:
                 agent_tool = BranchTool(parent_run_context, factory, use_args, agent_tool_spec, sly_data)

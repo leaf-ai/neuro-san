@@ -17,7 +17,7 @@ from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 
 from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
-from neuro_san.internals.interfaces.context_type_base_tool_factory import ContextTypeBaseToolFactory
+from neuro_san.internals.interfaces.context_type_toolbox_factory import ContextTypeToolboxFactory
 from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.origination import Origination
@@ -94,8 +94,8 @@ class InvocationContext:
         """
         raise NotImplementedError
 
-    def get_base_tool_factory(self) -> ContextTypeBaseToolFactory:
+    def get_toolbox_factory(self) -> ContextTypeToolboxFactory:
         """
-        :return: The ContextTypeBaseToolFactory instance for the session
+        :return: The ContextTypeToolboxFactory instance for the session
         """
         raise NotImplementedError

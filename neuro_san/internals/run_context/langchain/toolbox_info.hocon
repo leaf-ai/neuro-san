@@ -13,22 +13,21 @@
 {
     # ------------------------------------------------------------------------------------------
     # Overview:
-    # - This file defines configurations for tools and toolkits compatible with LangChain.
+    # - This file defines configurations for langchain's tools and toolkits as well as shared coded tools.
     # - More details about LangChain tools and toolkits can be found at:
     #   https://python.langchain.com/docs/integrations/tools/
-    #
-    # Requirements:
-    # - Each tool or toolkit must have a "class" key.
-    # - The specified class must be available in the server's PYTHONPATH.
-    # - Depending on the Tools, Toolkits are instantiate either via a constructor or a class method.
-    # - Additional dependencies (outside of langchain_community) must be installed separately.
+    # - See https://github.com/leaf-ai/neuro-san/blob/main/docs/agent_hocon_reference.md for more informations on coded tools.
     #
     # Customization via Agent HOCON File:
     # - In the agent HOCON file, users can define an "args" section to **add or override** 
     #   arguments from this tool configuration file dynamically at runtime.
-    # - Users can override or add **only the constructor or method arguments** via the agent HOCON file.
-    # - Users cannot override or inject args into nested classes like wrappers (e.g. ToolAPIWrapper).
     # ------------------------------------------------------------------------------------------
+
+    # --------------------------- Langchain's Tools and Toolkits -------------------------------
+    # Requirements:
+    # - Each tool or toolkit must have a "class" key.
+    # - The specified class must be available in the server's PYTHONPATH.
+    # - Additional dependencies (outside of langchain_community) must be installed separately.
 
     # ---------------- Bing Search Tool ----------------
     # This configuration defines the Bing Search tool.
@@ -74,7 +73,12 @@
         }
     },
 
+    # NOTE on Request tools and toolkit: 
+    # There are inherent risks in giving models discretion to execute real-world actions.
+    # Users must "opt-in" to these risks by setting allow_dangerous_request=True to use these tools.
+
     # ---------------- Requests Toolkit (Batch of Tools) ----------------
+
     # This defines a requests toolkit that provides multiple HTTP request utilities.
     # It initializes RequestsToolkit with:
     # - requests_wrapper: An instance of TextRequestsWrapper (used to manage headers)
@@ -190,5 +194,50 @@
         "args": {
             "allow_dangerous_requests": true
         }
+    },
+
+    # --------------------------------- Shared CodedTool ------------------------------------
+    # Keys:
+    # - "class" specifies the tool's implementation as module.ClassName where module is in AGENT_TOOL_PATH or neuro_san/coded_tools.
+    # - "description" let the agent know what the tool does.
+    # - "parameters" are arguments' definitions and types.
+    # Note: Parameters are optional and may be omitted if not required.
+    # See "parameters" section in https://github.com/leaf-ai/neuro-san/blob/main/docs/agent_hocon_reference.md
+
+    "website_search": {
+        "class": "web_search.WebSearch",
+        "description": "Assist caller with searching an url on the web by using your tool.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "search_terms": {
+                    "type": "string",
+                    "description": "Search terms to return options."
+                },
+            },
+            "required": ["search_terms"]
+        },
+    },
+
+    "rag_retriever": {
+        "class": "rag.Rag",
+        "description": "Retrieve information on the given urls",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "urls": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "List of url to retrieve info from"
+                },
+                "query": {
+                    "type": "string",
+                    "description": "Query for retrieval"
+                }
+            },
+            "required": ["urls", "query"]
+        },
     }
 }

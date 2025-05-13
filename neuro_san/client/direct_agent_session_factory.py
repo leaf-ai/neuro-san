@@ -12,10 +12,10 @@
 from typing import Dict
 
 from neuro_san.interfaces.agent_session import AgentSession
-from neuro_san.internals.interfaces.context_type_base_tool_factory import ContextTypeBaseToolFactory
+from neuro_san.internals.interfaces.context_type_toolbox_factory import ContextTypeToolboxFactory
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
-from neuro_san.internals.run_context.factory.master_base_tool_factory import MasterBaseToolFactory
+from neuro_san.internals.run_context.factory.master_toolbox_factory import MasterToolboxFactory
 from neuro_san.internals.run_context.factory.master_llm_factory import MasterLlmFactory
 from neuro_san.internals.graph.persistence.agent_tool_registry_restorer import AgentToolRegistryRestorer
 from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
@@ -63,15 +63,15 @@ class DirectAgentSessionFactory:
         tool_registry: AgentToolRegistry = self.get_agent_tool_registry(agent_name)
 
         llm_factory: ContextTypeLlmFactory = MasterLlmFactory.create_llm_factory()
-        base_tool_factory: ContextTypeBaseToolFactory = MasterBaseToolFactory.create_base_tool_factory()
+        toolbox_factory: ContextTypeToolboxFactory = MasterToolboxFactory.create_toolbox_factory()
         # Load once now that we know what tool registry to use.
         # Include "agent_llm_info_file" from agent network hocon to llm factory.
         agent_llm_info_file = tool_registry.get_agent_llm_info_file()
         llm_factory.load(agent_llm_info_file)
-        base_tool_factory.load()
+        toolbox_factory.load()
 
         factory = ExternalAgentSessionFactory(use_direct=use_direct)
-        invocation_context = SessionInvocationContext(factory, llm_factory, base_tool_factory, metadata)
+        invocation_context = SessionInvocationContext(factory, llm_factory, toolbox_factory, metadata)
         invocation_context.start()
         session: DirectAgentSession = DirectAgentSession(tool_registry=tool_registry,
                                                          invocation_context=invocation_context,
