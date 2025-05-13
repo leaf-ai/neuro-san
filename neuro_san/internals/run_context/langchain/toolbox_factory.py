@@ -30,19 +30,23 @@ from pydantic import BaseModel
 from leaf_common.config.dictionary_overlay import DictionaryOverlay
 from leaf_common.config.resolver import Resolver
 
-from neuro_san.internals.interfaces.context_type_base_tool_factory import ContextTypeBaseToolFactory
-from neuro_san.internals.run_context.langchain.base_tool_info_restorer import BaseToolInfoRestorer
+from neuro_san.internals.interfaces.context_type_toolbox_factory import ContextTypeToolboxFactory
+from neuro_san.internals.run_context.langchain.toolbox_info_restorer import ToolboxInfoRestorer
 
 
-class BaseToolFactory(ContextTypeBaseToolFactory):
+class ToolboxFactory(ContextTypeToolboxFactory):
     """
-    A factory class for creating instances of various prebuilt tools.
+    A factory class for creating instances of various tools defined in the toolbox.
 
-    This class provides an interface to instantiate different tools based on the specified "base_tool".
-    The available tools include web search utilities and HTTP request utilities. This approach standardizes
-    tool creation and simplifies integration with agents requiring predefined tools.
+    This class provides an interface to instantiate different tools based on the specified langchain base tools
+    and predefined coded tools.
+
+    This approach standardizes tool creation and simplifies integration with agents requiring predefined tools.
 
     ### Supported Tools:
+
+    #### Langchain Tools:
+
     - **Search Tools:**
         - "bing_search": Returns a "BingSearchResults" instance for performing Bing search queries.
         - "tavily_search": Returns a "TavilySearchResults" instance for performing Tavily search queries.
@@ -56,63 +60,65 @@ class BaseToolFactory(ContextTypeBaseToolFactory):
         - "requests_delete": For making DELETE requests.
         - "requests_toolkit": For all of the above request tools.
 
-    ### Arguments:
-    - "tool_name" (str): The name of the tool to instantiate. It determines which tool will be created.
-    - "user_args" (Dict): A dictionary of keyword arguments passed to the tool's constructor.
-                     The accepted arguments depend on the tool being instantiated. Some common ones include:
-        - **Search Tools:**
-          - "num_results" (int): Number of results to return (for Bing search).
-          - "max_results" (int): Maximum number of results (for Tavily search).
-        - **HTTP Request Tools:**
-          - "headers" (Dict[str, str], optional): HTTP headers to include in the request.
-          - "aiosession" (ClientSession, optional): Async session for making requests.
-          - "auth" (Any, optional): Authentication credentials if required.
-          - "response_content_type" (Literal["text", "json"], default="text"): Expected response format.
+    #### Coded Tools:
+        - "website_search": Internet search based on DuckDuckGo Search
+        - "rag_retriever": Perfrom retrieval-augmented generation on given urls
 
     ### Extending the Class
 
         To integrate additional tools, add a tool configuration file in JSON or HOCON format
-        and set its path to the environment variable "AGENT_BASE_TOOL_INFO_FILE".
+        and set its path to the environment variable "AGENT_TOOLBOX_INFO_FILE".
 
-        The configuration should follow this structure:
+        The configuration should follow this structure
+
+        for langchain's tools:
         - The tool name serves as a key.
         - The corresponding value should be a dictionary with:
         - "class": The fully qualified class name of the tool.
         - "args": A dictionary of arguments required for the tool's initialization,
             which may include nested class configurations.
 
-        The default prebuilt tool config file can be seen at
-        "neuro_san/internals/run_context/langchain/base_tool_info.hocon"
+        for coded tools:
+        - The tool name serves as a key.
+        - The corresponding value should be a dictionary with:
+        - "class": Module and class in the format of tool_module.ClassName where tool_module is in
+                    AGENT_TOOL_PATH or neuro_san/coded_tools.
+        - "description": When and how to use the tool.
+        - "parameters": Information on arguments of the tool.
+            See "parameters" in https://github.com/leaf-ai/neuro-san/blob/main/docs/agent_hocon_reference.md
 
-    **Note:**
-    Future updates will introduce support for integrating custom "CodedTool"
-    implementations into this factory.
+        The default toolbox config file can be seen at
+        "neuro_san/internals/run_context/langchain/toolbox_info.hocon"
     """
 
     def __init__(self):
         """
         Constructor
         """
-        self.base_tool_infos: Dict[str, Any] = {}
+        self.toolbox_infos: Dict[str, Any] = {}
         self.overlayer = DictionaryOverlay()
-        self.base_tool_info_file: str = None
+        self.toolbox_info_file: str = None
 
     def load(self):
         """
         Loads the base tool information from hocon files.
         """
-        restorer = BaseToolInfoRestorer()
-        self.base_tool_infos = restorer.restore()
+        restorer = ToolboxInfoRestorer()
+        self.toolbox_infos = restorer.restore()
 
-        # Mix in user-specified base_tool info, if available.
-        base_tool_info_file: str = os.getenv("AGENT_BASE_TOOL_INFO_FILE")
-        if base_tool_info_file is not None and len(base_tool_info_file) > 0:
-            extra_base_tool_infos: Dict[str, Any] = restorer.restore(file_reference=base_tool_info_file)
-            self.base_tool_infos = self.overlayer.overlay(self.base_tool_infos, extra_base_tool_infos)
+        # Mix in user-specified toolbox info, if available.
+        toolbox_info_file: str = os.getenv("AGENT_TOOLBOX_INFO_FILE")
+        if toolbox_info_file is not None and len(toolbox_info_file) > 0:
+            extra_toolbox_infos: Dict[str, Any] = restorer.restore(file_reference=toolbox_info_file)
+            self.toolbox_infos = self.overlayer.overlay(self.toolbox_infos, extra_toolbox_infos)
 
-            self.base_tool_info_file = base_tool_info_file
+            self.toolbox_info_file = toolbox_info_file
 
-    def create_base_tool(self, tool_name: str, user_args: Dict[str, Any] = None) -> Union[BaseTool, List[BaseTool]]:
+    def create_tool_from_toolbox(
+            self,
+            tool_name: str,
+            user_args: Dict[str, Any] = None
+    ) -> Union[BaseTool, Dict[str, Any], List[BaseTool]]:
         """
         Resolves dependencies and instantiates the requested tool.
 
@@ -120,12 +126,13 @@ class BaseToolFactory(ContextTypeBaseToolFactory):
         :param user_args: Arguments provided by the user, which override the config file.
         :return: - Instantiated tool if "class" of tool_name points to a BaseTool class
                  - A list of tools if "class of "tool_name points to a BaseToolkit class.
+                 - A dict of tool's "description" and "parameters" if tool_name points to a CodedTool
         """
         empty: Dict[str, Any] = {}
 
-        tool_info: Dict[str, Any] = self.base_tool_infos.get(tool_name)
+        tool_info: Dict[str, Any] = self.toolbox_infos.get(tool_name)
         if not tool_info:
-            raise ValueError(f"Tool '{tool_name}' is not defined in {self.base_tool_info_file}.")
+            raise ValueError(f"Tool '{tool_name}' is not defined in {self.toolbox_info_file}.")
 
         if not isinstance(tool_info, Dict):
             raise ValueError(f"The value for the {tool_name} key must be a dictionary.")
@@ -133,9 +140,16 @@ class BaseToolFactory(ContextTypeBaseToolFactory):
         if "class" not in tool_info:
             raise ValueError(
                 "Missing required key: 'class'.\n"
-                "Each tool configuration must include a 'class' key specifying the fully qualified class name.\n"
-                "Example: 'class': 'langchain_community.tools.bing_search.BingSearchResults'."
+                "Each tool must include a 'class' key:\n"
+                "- For Langchain base tools: use the full class path "
+                "(e.g., 'langchain_community.tools.bing_search.BingSearchResults')\n"
+                "- For shared CodedTools: use 'module.Class' format (e.g., 'websearch.WebSearch')"
             )
+
+        # If "description" in the tool info, then it is a shared coded tool.
+        # Return dictionary of tool's description and parameters.
+        if "description" in tool_info:
+            return tool_info
 
         # Instantiate the main tool or toolkit class
         tool_class: Type[Any] = self._resolve_class(tool_info.get("class"))
@@ -192,7 +206,7 @@ class BaseToolFactory(ContextTypeBaseToolFactory):
         class_split: List[str] = class_path.split(".")
         if len(class_split) <= 2:
             raise ValueError(
-                f"Value in 'class' in {self.base_tool_info_file} must be of the form "
+                f"Value in 'class' in {self.toolbox_info_file} must be of the form "
                 "'<package_name>.<module_name>.<ClassName>'"
             )
 
@@ -239,3 +253,13 @@ class BaseToolFactory(ContextTypeBaseToolFactory):
                 if callable(attr):
                     return attr
         return None
+
+    def get_shared_coded_tool_class(self, tool_name: str) -> str:
+        """
+        Get class of the shared coded tool
+
+        :param tool_name: The name of the tool
+        :return: The class of the coded tool
+        """
+        tool_info: Dict[str, Any] = self.toolbox_infos.get(tool_name)
+        return tool_info.get("class")

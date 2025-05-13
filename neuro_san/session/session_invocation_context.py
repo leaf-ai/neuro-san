@@ -19,7 +19,7 @@ from leaf_server_common.logging.logging_setup import setup_extra_logging_fields
 
 from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
-from neuro_san.internals.interfaces.context_type_base_tool_factory import ContextTypeBaseToolFactory
+from neuro_san.internals.interfaces.context_type_toolbox_factory import ContextTypeToolboxFactory
 from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.message_journal import MessageJournal
@@ -37,7 +37,7 @@ class SessionInvocationContext(InvocationContext):
 
     def __init__(self, async_session_factory: AsyncAgentSessionFactory,
                  llm_factory: ContextTypeLlmFactory,
-                 base_tool_factory: ContextTypeBaseToolFactory = None,
+                 toolbox_factory: ContextTypeToolboxFactory = None,
                  metadata: Dict[str, str] = None):
         """
         Constructor
@@ -59,7 +59,7 @@ class SessionInvocationContext(InvocationContext):
         self.metadata: Dict[str, str] = metadata
         self.request_reporting: Dict[str, Any] = {}
         self.llm_factory: ContextTypeLlmFactory = llm_factory
-        self.base_tool_factory: ContextTypeBaseToolFactory = base_tool_factory
+        self.toolbox_factory: ContextTypeToolboxFactory = toolbox_factory
 
     def start(self):
         """
@@ -134,11 +134,11 @@ class SessionInvocationContext(InvocationContext):
         """
         return self.llm_factory
 
-    def get_base_tool_factory(self) -> ContextTypeBaseToolFactory:
+    def get_toolbox_factory(self) -> ContextTypeToolboxFactory:
         """
-        :return: The ContextTypeBaseToolFactory instance for the session
+        :return: The ContextTypeToolboxFactory instance for the session
         """
-        return self.base_tool_factory
+        return self.toolbox_factory
 
     def reset(self):
         """

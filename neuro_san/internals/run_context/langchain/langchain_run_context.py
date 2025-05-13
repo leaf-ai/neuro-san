@@ -42,6 +42,7 @@ from langchain_core.tools import BaseTool
 
 from neuro_san.internals.errors.error_detector import ErrorDetector
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
+from neuro_san.internals.interfaces.context_type_toolbox_factory import ContextTypeToolboxFactory
 from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
@@ -64,7 +65,6 @@ from neuro_san.internals.run_context.langchain.langchain_run import LangChainRun
 from neuro_san.internals.run_context.langchain.langchain_token_counter import LangChainTokenCounter
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 from neuro_san.internals.run_context.utils.external_tool_adapter import ExternalToolAdapter
-from neuro_san.internals.run_context.langchain.base_tool_factory import BaseToolFactory
 
 
 MINUTES: float = 60.0
@@ -316,20 +316,30 @@ class LangChainRunContext(RunContext):
                 await self.journal.write_message(agent_message)
                 self.logger.info(message)
         else:
-            base_tool: str = agent_spec.get('base_tool')
-            if base_tool:
-                base_tool_factory: BaseToolFactory = self.invocation_context.get_base_tool_factory()
+            toolbox: str = agent_spec.get("toolbox")
+            if toolbox:
+                toolbox_factory: ContextTypeToolboxFactory = self.invocation_context.get_toolbox_factory()
                 try:
-                    return base_tool_factory.create_base_tool(base_tool, agent_spec.get('args'))
-                except ValueError as base_tool_creation_exception:
-                    # There are errors in BaseTool creation process
-                    message: str = f"Failed to create Agent/tool '{name}': {base_tool_creation_exception}"
+                    tool_from_toolbox = toolbox_factory.create_tool_from_toolbox(toolbox, agent_spec.get("args"))
+                    # If the tool from toolbox is base tool or list of base tool, return the tool as is
+                    # since tool's definition and args schema are predefined in these the class of the tool.
+                    if isinstance(tool_from_toolbox, BaseTool) or (
+                        isinstance(tool_from_toolbox, list) and
+                        all(isinstance(tool, BaseTool) for tool in tool_from_toolbox)
+                    ):
+                        return tool_from_toolbox
+                    # Otherwise, it is a shared coded tool.
+                    function_json = tool_from_toolbox
+
+                except ValueError as tool_creation_exception:
+                    # There are errors in tool creation process
+                    message: str = f"Failed to create Agent/tool '{name}': {tool_creation_exception}"
                     agent_message = AgentMessage(content=message)
                     await self.journal.write_message(agent_message)
                     self.logger.info(message)
                     return None
-
-            function_json = agent_spec.get("function")
+            else:
+                function_json = agent_spec.get("function")
 
         if function_json is None:
             return None
@@ -337,7 +347,7 @@ class LangChainRunContext(RunContext):
         # In the case of an internal agent, the name passed in for lookup should be the
         # same as what is in the spec.
         if agent_spec is not None and name != agent_spec.get("name"):
-            raise ValueError(f"Tool name mismatch.  name={name}  agent_spec.name={agent_spec.get('name')}")
+            raise ValueError(f"Tool name mismatch.  name={name}  agent_spec.name={agent_spec.get("name")}")
 
         # In the case of external agents, if they report a name at all, they will
         # report something different that does not identify them as external.

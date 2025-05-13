@@ -12,35 +12,35 @@
 from typing import Any
 from typing import Dict
 
-from neuro_san.internals.interfaces.context_type_base_tool_factory import ContextTypeBaseToolFactory
+from neuro_san.internals.interfaces.context_type_toolbox_factory import ContextTypeToolboxFactory
 from neuro_san.internals.run_context.factory.master_llm_factory import MasterLlmFactory
-from neuro_san.internals.run_context.langchain.base_tool_factory import BaseToolFactory
+from neuro_san.internals.run_context.langchain.toolbox_factory import ToolboxFactory
 
 
-class MasterBaseToolFactory:
+class MasterToolboxFactory:
     """
-    Creates the correct kind of ContextTypeBaseToolFactory
+    Creates the correct kind of ContextTypeToolboxFactory
     """
 
     @staticmethod
-    def create_base_tool_factory(config: Dict[str, Any] = None) -> ContextTypeBaseToolFactory:
+    def create_toolbox_factory(config: Dict[str, Any] = None) -> ContextTypeToolboxFactory:
         """
-        Creates an appropriate ContextTypeBaseToolFactory
+        Creates an appropriate ContextTypeToolboxFactory
 
         :param config: The config dictionary which may or may not contain
-                       keys for the context_type and default base_tool_config
-        :return: A ContextTypeBaseToolFactory appropriate for the context_type in the config.
+                       keys for the context_type and default toolbox_config
+        :return: A ContextTypeToolboxFactory appropriate for the context_type in the config.
         """
 
-        base_tool_factory: ContextTypeBaseToolFactory = None
+        toolbox_factory: ContextTypeToolboxFactory = None
         context_type: str = MasterLlmFactory.get_context_type(config)
 
         if context_type.startswith("openai"):
-            base_tool_factory = None
+            toolbox_factory = None
         elif context_type.startswith("langchain"):
-            base_tool_factory = BaseToolFactory()
+            toolbox_factory = ToolboxFactory()
         else:
             # Default case
-            base_tool_factory = BaseToolFactory()
+            toolbox_factory = ToolboxFactory()
 
-        return base_tool_factory
+        return toolbox_factory

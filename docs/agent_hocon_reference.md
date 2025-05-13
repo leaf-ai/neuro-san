@@ -46,6 +46,7 @@ Sub-keys to those dictionaries will be described in the next-level down heading 
     - [External Agents](#external-agents)
   - [llm_config](#llm_config-1)
   - [class](#class)
+  - [toolbox](#toolbox)
   - [args](#args)
   - [allow](#allow)
     - [connectivity](#connectivity)
@@ -433,6 +434,23 @@ Note that the CodedTool also has a synchronous invoke() method, but we discourag
 as neuro-san is expected to run in an asynchronous multi-threaded environment.
 Using synchronous I/O calls within CodedTool implementations will result in loss of per-request
 agent parallelism and performance problems at scale.
+
+### toolbox
+
+An optional string that refers to a predefined tool listed in a toolbox configuration file.
+Currently supported tool types include:
+- langchain's base tools
+- coded tools.
+
+The default toolbox configuration is located at [toolbox_info.hocon](../neuro_san/internals/run_context/langchain/toolbox_info.hocon).
+
+To use your own tools, create a custom toolbox .hocon file and point to it by setting the AGENT_TOOLBOX_INFO_FILE environment variable.
+
+Example networks using tools from toolbox:
+- [langchain_search_tool.hocon](../neuro_san/registries/langchain_search_tool.hocon)
+which uses a langchain's base tool
+- [website_rag.hocon](../neuro_san/registries/website_rag.hocon) which uses predefined
+coded tools.
 
 ### args
 
