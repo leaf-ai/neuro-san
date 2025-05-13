@@ -65,9 +65,9 @@ class ContextTypeToolboxFactory:
 
     def get_shared_coded_tool_class(self, tool_name: str) -> str:
         """
-        Get class of the shared coded tool
+        Get class of the shared coded tool from toolbox
 
         :param tool_name: The name of the tool
-        :return: The class of the coded tool
+        :return: The class of the coded tool from toolbox
         """
         raise NotImplementedError
