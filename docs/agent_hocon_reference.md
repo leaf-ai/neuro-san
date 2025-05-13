@@ -444,7 +444,7 @@ Currently supported tool types include:
 
 The default toolbox configuration is located at [toolbox_info.hocon](../neuro_san/internals/run_context/langchain/toolbox_info.hocon).
 
-TTo use your own tools, create a custom toolbox .hocon file and point to it by setting the AGENT_TOOLBOX_INFO_FILE environment variable.
+To use your own tools, create a custom toolbox .hocon file and point to it by setting the AGENT_TOOLBOX_INFO_FILE environment variable.
 
 Example networks using tools from toolbox:
 - [langchain_search_tool.hocon](../neuro_san/registries/langchain_search_tool.hocon)
