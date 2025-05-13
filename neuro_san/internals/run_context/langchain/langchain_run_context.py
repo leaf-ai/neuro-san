@@ -321,8 +321,12 @@ class LangChainRunContext(RunContext):
                 toolbox_factory: ContextTypeToolboxFactory = self.invocation_context.get_toolbox_factory()
                 try:
                     tool_from_toolbox = toolbox_factory.create_tool_from_toolbox(toolbox, agent_spec.get('args'))
-                    # If the prebuilt tool is base tool, return the tool as is.
-                    if isinstance(tool_from_toolbox, BaseTool):
+                    # If the tool from toolbox is base tool or list of base tool, return the tool as is
+                    # since tool's definition and args schema are predefined in these the class of the tool.
+                    if isinstance(tool_from_toolbox, BaseTool) or (
+                        isinstance(tool_from_toolbox, list) and
+                        all(isinstance(tool, BaseTool) for tool in tool_from_toolbox)
+                    ):
                         return tool_from_toolbox
                     # Otherwise, it is a shared coded tool.
                     function_json = tool_from_toolbox
