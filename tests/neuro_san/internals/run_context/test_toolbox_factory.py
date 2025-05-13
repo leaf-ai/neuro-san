@@ -65,7 +65,7 @@ class TestBaseToolFactory:
             # Ensure the returned tool is an instance of the mocked class
             assert tool is mock_instance
 
-    def test_create_base_tool_with_toolkit_constructor(self, factory):
+    def test_create_toolbox_with_toolkit_constructor(self, factory):
         """Test the toolkit instantiates with constructor."""
         factory.toolbox_infos = {
             "test_toolkit": {
@@ -104,7 +104,7 @@ class TestBaseToolFactory:
             assert tool == mock_tools
             mock_instance.get_tools.assert_called_once()
 
-    def test_create_base_tool_with_toolkit_class_method(self, factory):
+    def test_create_toolbox_with_toolkit_class_method(self, factory):
         """Test the toolkit that instantiates with class method"""
         factory.toolbox_infos = {
             "method_toolkit": {
