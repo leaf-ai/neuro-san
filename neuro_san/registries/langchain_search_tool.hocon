@@ -35,17 +35,17 @@
         },
         {
             "name": "search_tool",
-            # The "base_tool" specifies which prebuilt tool should be instantiated.
+            # The "toolbox" specifies which tool in the toolbox should be instantiated.
             # In this case, "bing_search" is chosen, which allows querying Bing for search results.
+
+            # Note that tools in toolbox can be either langchain tools or coded tools
             
             # Documentation on the Bing search tool:
             # - LangChain's Bing Search Tool: https://python.langchain.com/docs/integrations/tools/bing_search
             # - Microsoft Bing Search API: https://learn.microsoft.com/en-us/bing/search-apis/
             
-            # This tool is registered by subclass BaseTool in LangChain, which converts it into a callable function.
-            # More about function specifications and custom langchain tools:
-            # - LangChain Function Specification: https://python.langchain.com/docs/how_to/custom_tools/
             "toolbox": "bing_search",
+
             # "args" contains the parameters that will be passed to the selected tool.
             # These arguments must align with the tool’s expected function signature.
             # 
@@ -57,9 +57,12 @@
             "args": {
                 "num_results": 3
             }
+
             # -------------------------------------------------------------------------------
             # CURRENTLY AVAILABLE TOOLS
-            # The following tools can be used as values for "base_tool":
+            # The following tools can be used as values for "toolbox":
+            #
+            # Langchain Tools
             #
             # 1️) "bing_search"      - Uses Bing to perform web searches.
             # 2️) "tavily_search"    - Uses Tavily for search queries.
@@ -68,7 +71,12 @@
             # 5️) "requests_patch"   - Makes an HTTP PATCH request.
             # 6️) "requests_put"     - Makes an HTTP PUT request.
             # 7️) "requests_delete"  - Makes an HTTP DELETE request.
-            # 8) "requests_toolkit" - Contains all of the request tools.
+            # 8 ) "requests_toolkit" - Contains all of the request tools.
+            #
+            # Coded Tools
+            #
+            # 9 ) "website_search"   - Search internet with DuckduckgoSearch.
+            # 10 ) "rag_retriever"   - Perform retrival-augmented generation on given urls.
             #
             # Each of these tools may require specific arguments in the "args" section.
             # Refer to the tool's documentation for more details.
@@ -77,18 +85,11 @@
             # -------------------------------------------------------------------------------
             # EXTENSIBILITY
             # - Tool registration can be done without modifying core code by specifying the 
-            #   tool configuration file (HOCON format) via the AGENT_BASE_TOOL_INFO_FILE environment variable.
+            #   tool configuration file (HOCON format) via the AGENT_TOOLBOX_INFO_FILE environment variable.
             # - The default tool configuration file is located at: 
-            #   neuro_san/internals/run_context/langchain/base_tool_info.hocon
-            # - An example tool configuration can be found at:
-            #   tests/neuro_san/test_base_tool_info.hocon
+            #   neuro_san/internals/run_context/langchain/toolbox_info.hocon
             # -------------------------------------------------------------------------------
 
-            # -------------------------------------------------------------------------------
-            # Future Plans
-            # - Instead of using the AGENT_BASE_TOOL_INFO_FILE environment variable, 
-            #   integrating the tool configuration directly within the agent network HOCON file.
-            # -------------------------------------------------------------------------------
         }
     ]
 }
