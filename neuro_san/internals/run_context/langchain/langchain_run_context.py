@@ -316,11 +316,11 @@ class LangChainRunContext(RunContext):
                 await self.journal.write_message(agent_message)
                 self.logger.info(message)
         else:
-            toolbox: str = agent_spec.get('toolbox')
+            toolbox: str = agent_spec.get("toolbox")
             if toolbox:
                 toolbox_factory: ContextTypeToolboxFactory = self.invocation_context.get_toolbox_factory()
                 try:
-                    tool_from_toolbox = toolbox_factory.create_tool_from_toolbox(toolbox, agent_spec.get('args'))
+                    tool_from_toolbox = toolbox_factory.create_tool_from_toolbox(toolbox, agent_spec.get("args"))
                     # If the tool from toolbox is base tool or list of base tool, return the tool as is
                     # since tool's definition and args schema are predefined in these the class of the tool.
                     if isinstance(tool_from_toolbox, BaseTool) or (
