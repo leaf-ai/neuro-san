@@ -20,6 +20,7 @@ Sub-keys to those dictionaries will be described in the next-level down heading 
   - [commondefs](#commondefs)
     - [replacement_strings](#replacement_strings)
     - [replacement_values](#replacement_values)
+  - [agent_llm_info_file](#agent_llm_info_file)
   - [llm_config](#llm_config)
     - [model_name](#model_name)
     - [fallbacks](#fallbacks)
@@ -129,6 +130,13 @@ This results in a final interpretation where the "function" value is:
 Value replacement only happens once, but you can have replacement_strings references within
 your string values within your replacement_values and things will work out as you might expect.
 
+### agent_llm_info_file
+
+The agent_llm_info_file key allows you to specify a custom HOCON file that extends the default list of available LLMs used by agents in a neuro-san network. This is especially useful if you're using models that are not included in the default configuration (e.g., newly released models or organization-specific endpoints).
+
+For more information on selecting and customizing models, see the [model_name](#model_name) section below.
+
+
 ### llm_config
 
 An optional dictionary describing the default settings for agent LLMs when specifics
@@ -167,12 +175,13 @@ to expose secrets by checking them in.
 If your favorite model, or new hotness is not listed in default_llm_info.hocon,
 you can extend the list in two ways:
 
-(1) Set the absolute path to your extension HOCON file using the **agent_llm_info_file** key in the agent network HOCON file.
+(1) Set the absolute path to your extension HOCON file using the [agent_llm_info_file](#agent_llm_info_file]
+key in the agent network HOCON file.
 
-(2) Set the extension HOCON file to the environment variable **AGENT_LLM_INFO_FILE**.
+(2) Set the extension HOCON file to the environment variable
+[AGENT_LLM_INFO_FILE](./llm_info_hocon_reference.md#AGENT_LLM_INFO_FILE-environment-variable).
 
-For more information on adding your
-own llms, see the [llm_info_hocon_reference](./llm_info_hocon_reference.md).
+For complete information on adding your own llms, see the [llm_info_hocon_reference](./llm_info_hocon_reference.md).
 
 #### fallbacks
 
