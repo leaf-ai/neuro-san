@@ -18,19 +18,11 @@ import copy
 import json
 import uuid
 
-import grpc
-
-from google.protobuf.json_format import MessageToDict
-from google.protobuf.json_format import Parse
-
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 
 from leaf_server_common.server.atomic_counter import AtomicCounter
-from leaf_server_common.server.grpc_metadata_forwarder import GrpcMetadataForwarder
 from leaf_server_common.server.request_logger import RequestLogger
 
-from neuro_san.api.grpc import agent_pb2 as service_messages
-from neuro_san.api.grpc import agent_pb2_grpc
 from neuro_san.internals.interfaces.agent_tool_factory_provider import AgentToolFactoryProvider
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.interfaces.context_type_base_tool_factory import ContextTypeBaseToolFactory
@@ -49,9 +41,10 @@ DO_NOT_LOG_REQUESTS = [
 
 
 # pylint: disable=too-many-instance-attributes
-class AgentService(agent_pb2_grpc.AgentServiceServicer):
+class AgentService:
     """
-    A gRPC implementation of the Neuro-San Agent Service.
+    A base implementation of the Neuro-San Agent Service,
+    independent of target transport protocol.
     """
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
@@ -80,9 +73,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         """
         self.request_logger = request_logger
         self.security_cfg = security_cfg
-
         self.server_logging: AgentServerLogging = server_logging
-        self.forwarder: GrpcMetadataForwarder = self.server_logging.get_forwarder()
 
         self.tool_registry_provider: AgentToolFactoryProvider = tool_registry_provider
         self.agent_name: str = agent_name
@@ -90,7 +81,8 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
 
         self.llm_factory: ContextTypeLlmFactory = MasterLlmFactory.create_llm_factory()
         self.base_tool_factory: ContextTypeBaseToolFactory = MasterBaseToolFactory.create_base_tool_factory()
-        # Load once and include "agent_llm_info_file" from agent network hocon to llm factory..
+
+        # Load once and include "agent_llm_info_file" from agent network hocon to llm factory
         tool_registry: AgentToolRegistry = self.tool_registry_provider.get_agent_tool_factory()
         agent_llm_info_file = tool_registry.get_agent_llm_info_file()
         self.llm_factory.load(agent_llm_info_file)
@@ -102,17 +94,18 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         """
         return self.request_counter.get_count()
 
-    # pylint: disable=no-member
-    def Function(self, request: service_messages.FunctionRequest,
-                 context: grpc.ServicerContext) \
-            -> service_messages.FunctionResponse:
+    def function(self, request_dict: Dict[str, Any],
+                 request_metadata: Dict[str, Any],
+                 context: Any) \
+            -> Dict[str, Any]:
         """
         Allows a client to get the outward-facing function for the agent
         served by this service.
 
-        :param request: a FunctionRequest
-        :param context: a grpc.ServicerContext
-        :return: a FunctionResponse
+        :param request_dict: a FunctionRequest dictionary
+        :param request_metadata: request metadata
+        :param context: a service request context object
+        :return: a FunctionResponse dictionary
         """
         self.request_counter.increment()
         request_log = None
@@ -127,10 +120,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
 
         # Get the metadata to forward on to another service
         metadata: Dict[str, str] = copy.copy(service_logging_dict)
-        metadata.update(self.forwarder.forward(context))
-
-        # Get our args in order to pass to grpc-free session level
-        request_dict: Dict[str, Any] = MessageToDict(request)
+        metadata.update(request_metadata)
 
         # Delegate to Direct*Session
         tool_registry: AgentToolRegistry = self.tool_registry_provider.get_agent_tool_factory()
@@ -140,28 +130,24 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
                                      security_cfg=self.security_cfg)
         response_dict = session.function(request_dict)
 
-        # Convert the response dictionary to a grpc message
-        response_string = json.dumps(response_dict)
-        response = service_messages.FunctionResponse()
-        Parse(response_string, response)
-
         if request_log is not None:
             self.request_logger.finish_request(f"{self.agent_name}.Function", log_marker, request_log)
 
         self.request_counter.decrement()
-        return response
+        return response_dict
 
-    # pylint: disable=no-member
-    def Connectivity(self, request: service_messages.ConnectivityRequest,
-                     context: grpc.ServicerContext) \
-            -> service_messages.ConnectivityResponse:
+    def connectivity(self, request_dict: Dict[str, Any],
+                     request_metadata: Dict[str, Any],
+                     context: Any) \
+            -> Dict[str, Any]:
         """
         Allows a client to get connectivity information for the agent
         served by this service.
 
-        :param request: a ConnectivityRequest
-        :param context: a grpc.ServicerContext
-        :return: a ConnectivityResponse
+        :param request_dict: a ChatRequest dictionary
+        :param request_metadata: request metadata
+        :param context: a service request context object
+        :return: a ConnectivityResponse dictionary
         """
         self.request_counter.increment()
         request_log = None
@@ -176,10 +162,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
 
         # Get the metadata to forward on to another service
         metadata: Dict[str, str] = copy.copy(service_logging_dict)
-        metadata.update(self.forwarder.forward(context))
-
-        # Get our args in order to pass to grpc-free session level
-        request_dict: Dict[str, Any] = MessageToDict(request)
+        metadata.update(request_metadata)
 
         # Delegate to Direct*Session
         tool_registry: AgentToolRegistry = self.tool_registry_provider.get_agent_tool_factory()
@@ -189,32 +172,30 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
                                      security_cfg=self.security_cfg)
         response_dict = session.connectivity(request_dict)
 
-        # Convert the response dictionary to a grpc message
-        response_string = json.dumps(response_dict)
-        response = service_messages.ConnectivityResponse()
-        Parse(response_string, response)
-
         if request_log is not None:
             self.request_logger.finish_request(f"{self.agent_name}.Connectivity", log_marker, request_log)
 
         self.request_counter.decrement()
-        return response
+        return response_dict
 
-    # pylint: disable=no-member,too-many-locals
-    def StreamingChat(self, request: service_messages.ChatRequest,
-                      context: grpc.ServicerContext) \
-            -> Iterator[service_messages.ChatResponse]:
+    # pylint: disable=too-many-locals
+    def streaming_chat(self, request_dict: Dict[str, Any],
+                       request_metadata: Dict[str, Any],
+                       context: Any) \
+            -> Iterator[Dict[str, Any]]:
         """
         Initiates or continues the agent chat with the session_id
         context in the request.
 
-        :param request: a ChatRequest
-        :param context: a grpc.ServicerContext
-        :return: an iterator for (eventually) returned ChatResponses
+        :param request_dict: a ChatRequest dictionary
+        :param request_metadata: request metadata
+        :param context: a service request context object
+        :return: an iterator for (eventually) returned responses dictionaries
         """
         self.request_counter.increment()
         request_log = None
-        log_marker = f"'{request.user_message.text}'"
+        user_text: str = request_dict.get("user_message", {}).get("text", "")
+        log_marker = f"'{user_text}'"
         service_logging_dict: Dict[str, str] = {
             "request_id": f"server-{uuid.uuid4()}"
         }
@@ -225,7 +206,7 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
 
         # Get the metadata to forward on to another service
         metadata: Dict[str, str] = copy.copy(service_logging_dict)
-        metadata.update(self.forwarder.forward(context))
+        metadata.update(request_metadata)
         if metadata.get("request_id") is None:
             metadata["request_id"] = service_logging_dict.get("request_id")
 
@@ -246,7 +227,6 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
                                      metadata=metadata,
                                      security_cfg=self.security_cfg)
         # Get our args in order to pass to grpc-free session level
-        request_dict: Dict[str, Any] = MessageToDict(request)
         response_dict_iterator: Iterator[Dict[str, Any]] = session.streaming_chat(request_dict)
 
         # See if we want to put the request dict in the response
@@ -255,21 +235,10 @@ class AgentService(agent_pb2_grpc.AgentServiceServicer):
         chat_filter_type: str = chat_filter_dict.get("chat_filter_type", "MINIMAL")
 
         for response_dict in response_dict_iterator:
-
             # Do not return the request when the filter is MINIMAL
             if chat_filter_type != "MINIMAL":
                 response_dict["request"] = request_dict
-
-            # Convert the response dictionary to a grpc message
-            response_string = json.dumps(response_dict)
-            response = service_messages.ChatResponse()
-            Parse(response_string, response)
-
-            # Yield-ing a single response allows one response to be returned
-            # over the connection while keeping it open to wait for more.
-            # Grpc client code handling response streaming knows to construct an
-            # iterator on its side to do said waiting over there.
-            yield response
+            yield response_dict
 
         request_reporting: Dict[str, Any] = invocation_context.get_request_reporting()
         invocation_context.close()
