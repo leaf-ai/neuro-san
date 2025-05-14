@@ -44,8 +44,6 @@ class StreamingChatHandler(BaseRequestHandler):
         await self.flush()
 
         sent_out: int = 0
-        # async for result_message in result_generator:
-        # result_generator = self.async_generator()
         async for sub_generator in generator:
             async for result_message in sub_generator:
                 result_dict: Dict[str, Any] = MessageToDict(result_message)
@@ -59,8 +57,6 @@ class StreamingChatHandler(BaseRequestHandler):
         """
         Implementation of POST request handler for streaming chat API call.
         """
-        self.set_header("Connection", "close")
-        # Force to close this connection without trying to reuse it.
 
         metadata: Dict[str, Any] = self.get_metadata()
         update_done: bool = await self.update_agents(metadata)

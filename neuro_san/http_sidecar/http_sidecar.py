@@ -18,10 +18,10 @@ import threading
 from typing import Any, Dict, List
 
 from tornado.ioloop import IOLoop
-from tornado.web import Application
 
 from neuro_san.http_sidecar.logging.http_logger import HttpLogger
 from neuro_san.service.agent_server import DEFAULT_FORWARDED_REQUEST_METADATA
+from neuro_san.http_sidecar.http_server_app import HttpServerApp
 
 from neuro_san.http_sidecar.interfaces.agent_authorizer import AgentAuthorizer
 from neuro_san.http_sidecar.interfaces.agents_updater import AgentsUpdater
@@ -97,7 +97,7 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
         handlers.append((r"/api/v1/([^/]+)/connectivity", ConnectivityHandler, request_data))
         handlers.append((r"/api/v1/([^/]+)/streaming_chat", StreamingChatHandler, request_data))
 
-        return Application(handlers)
+        return HttpServerApp(handlers)
 
     def allow(self, agent_name) -> bool:
         return self.allowed_agents.get(agent_name, False)
