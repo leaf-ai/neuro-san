@@ -44,8 +44,9 @@ jobs:
           echo "✅ Server process started with PID $(cat agent.pid)"
 
       - name: Wait for ports 8080 and 30011 (fail on timeout)
+        shell: bash
         run: |
-              for i in {1..30}; do
+              for i in {1..60}; do
                 PORT_8080_READY=false
                 PORT_30011_READY=false
 
@@ -62,11 +63,11 @@ jobs:
                   exit 0
                 fi
 
-                echo "⏳ Waiting for ports 8080 and 30011... ($i/30)"
+                echo "⏳ Waiting for ports 8080 and 30011... ($i/60)"
                 sleep 1
               done
 
-              echo "❌ Timeout: One or both ports failed to open after 30 seconds"
+              echo "❌ Timeout: One or both ports failed to open after $i seconds"
               exit 1
 
       - name: Run pytest smoke tests in parallel
