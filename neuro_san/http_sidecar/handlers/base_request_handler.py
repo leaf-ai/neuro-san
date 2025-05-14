@@ -200,6 +200,13 @@ class BaseRequestHandler(RequestHandler):
         """
         return
 
+    def prepare(self):
+        self.logger.info(self.get_metadata(), f"[REQUEST RECEIVED] {self.request.method} {self.request.uri}")
+
+    def set_default_headers(self):
+        # Force to close this connection without trying to reuse it.
+        self.set_header("Connection", "close")
+
     async def options(self, *_args, **_kwargs):
         """
         Handles OPTIONS requests for CORS support
