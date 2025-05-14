@@ -67,8 +67,6 @@ This service comes at a cost. For every question:
             - "the key "running_cost" (with double quotes), and:
 
             - "the value as a number with exactly one decimal place, without double quotes."
-        
-        example: "running_cost": 1.0
 """,
             "tools": ["Accountant"]
         },

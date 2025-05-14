@@ -46,7 +46,7 @@ jobs:
       - name: Wait for ports 8080 and 30011 (fail on timeout)
         shell: bash
         run: |
-              for i in {1..60}; do
+              for i in {1..30}; do
                 PORT_8080_READY=false
                 PORT_30011_READY=false
 
@@ -59,11 +59,11 @@ jobs:
                 fi
 
                 if [ "$PORT_8080_READY" = true ] && [ "$PORT_30011_READY" = true ]; then
-                  echo "✅ Both ports are ready"
+                  echo "✅ Both ports are ready after awaiting $i seconds"
                   exit 0
                 fi
 
-                echo "⏳ Waiting for ports 8080 and 30011... ($i/60)"
+                echo "⏳ Waiting for ports 8080 and 30011... ($i/30)"
                 sleep 1
               done
 
