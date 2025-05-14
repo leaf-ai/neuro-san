@@ -86,6 +86,16 @@ class HttpServiceAgentSession(AgentSession):
 
         return f"{scheme}://{self.use_host}:{self.use_port}/api/v1/{self.agent_name}/{function}"
 
+    def _get_headers(self) -> Dict[str, Any]:
+        """
+        Get headers for any outgoing request
+        """
+        headers: Dict[str, Any] = self.metadata
+        if headers is None:
+            headers = {}
+        headers["Connection"] = "close"
+        return headers
+
     def help_message(self, path: str) -> str:
         """
         Method returning general help message for http connectivity problems.
@@ -128,7 +138,7 @@ class HttpServiceAgentSession(AgentSession):
         """
         path: str = self._get_request_path("function")
         try:
-            response = requests.get(path, json=request_dict, headers=self.metadata,
+            response = requests.get(path, json=request_dict, headers=self._get_headers(),
                                     timeout=self.timeout_in_seconds)
             result_dict = json.loads(response.text)
             return result_dict
@@ -148,7 +158,7 @@ class HttpServiceAgentSession(AgentSession):
         """
         path: str = self._get_request_path("connectivity")
         try:
-            response = requests.get(path, json=request_dict, headers=self.metadata,
+            response = requests.get(path, json=request_dict, headers=self._get_headers(),
                                     timeout=self.timeout_in_seconds)
             result_dict = json.loads(response.text)
             return result_dict
@@ -171,7 +181,7 @@ class HttpServiceAgentSession(AgentSession):
         """
         path: str = self._get_request_path("streaming_chat")
         try:
-            with requests.post(path, json=request_dict, headers=self.metadata,
+            with requests.post(path, json=request_dict, headers=self._get_headers(),
                                stream=True,
                                timeout=self.timeout_in_seconds) as response:
                 response.raise_for_status()
