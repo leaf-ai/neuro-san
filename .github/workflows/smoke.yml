@@ -1,6 +1,9 @@
 name: Smoke Tests
 
 on:
+  push: 
+    branches:
+      un-3143_add_smoketest_to_test_infrastructure
   schedule:
     - cron: '0 12 * * *'  # 12:00 PM UTC = 4:00 AM PT (standard)
   workflow_dispatch:      # enables manual triggering
