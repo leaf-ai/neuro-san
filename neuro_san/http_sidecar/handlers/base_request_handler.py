@@ -23,6 +23,7 @@ import os
 
 import grpc
 
+import tornado
 from tornado.web import RequestHandler
 
 from neuro_san.http_sidecar.logging.http_logger import HttpLogger
@@ -79,6 +80,8 @@ class BaseRequestHandler(RequestHandler):
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata
         self.openapi_service_spec_path: str = openapi_service_spec_path
         self.logger = HttpLogger(forwarded_request_metadata)
+        # Set default request_id for this request handler in case we will need it:
+        BaseRequestHandler.request_id += 1
 
         if os.environ.get("AGENT_ALLOW_CORS_HEADERS") is not None:
             self.set_header("Access-Control-Allow-Origin", "*")
@@ -99,7 +102,6 @@ class BaseRequestHandler(RequestHandler):
             elif item_name == "request_id":
                 # Generate unique id so we have some way to track this request:
                 result[item_name] = f"request-{BaseRequestHandler.request_id}"
-                BaseRequestHandler.request_id += 1
             else:
                 result[item_name] = "None"
         return result
@@ -176,7 +178,7 @@ class BaseRequestHandler(RequestHandler):
             # Handle invalid JSON input
             self.set_status(400)
             self.write({"error": "Invalid JSON format"})
-            self.logger.error({}, "error: Invalid JSON format")
+            self.logger.error(self.get_metadata(), "error: Invalid JSON format")
             return
 
         if isinstance(exc, grpc.aio.AioRpcError):
@@ -185,13 +187,13 @@ class BaseRequestHandler(RequestHandler):
             self.set_status(http_status)
             err_msg: str = f"status: {http_status} grpc: {err_name} details: {err_details}"
             self.write({"error": err_msg})
-            self.logger.error({}, "Http server error: %s", err_msg)
+            self.logger.error(self.get_metadata(), "Http server error: %s", err_msg)
             return
 
         # General exception case:
         self.set_status(500)
         self.write({"error": "Internal server error"})
-        self.logger.error({}, "Internal server error: %s", str(exc))
+        self.logger.error(self.get_metadata(), "Internal server error: %s", str(exc))
 
     def data_received(self, chunk):
         """
@@ -203,9 +205,27 @@ class BaseRequestHandler(RequestHandler):
     def prepare(self):
         self.logger.info(self.get_metadata(), f"[REQUEST RECEIVED] {self.request.method} {self.request.uri}")
 
-    def set_default_headers(self):
-        # Force to close this connection without trying to reuse it.
-        self.set_header("Connection", "close")
+    def do_finish(self):
+        """
+        Wrapper for finish() call
+        with check for closed client connection.
+        """
+        try:
+            self.finish()
+        except tornado.iostream.StreamClosedError:
+            self.logger.warning(self.get_metadata(), "Finish: client closed connection unexpectedly.")
+
+    async def do_flush(self) -> bool:
+        """
+        Wrapper for flush() call
+        with check for closed client connection.
+        """
+        try:
+            await self.flush()
+            return True
+        except tornado.iostream.StreamClosedError:
+            self.logger.warning(self.get_metadata(), "Flush: client closed connection unexpectedly.")
+            return False
 
     async def options(self, *_args, **_kwargs):
         """
@@ -213,4 +233,4 @@ class BaseRequestHandler(RequestHandler):
         """
         # No body needed. Tornado will return a 204 No Content by default
         self.set_status(http.HTTPStatus.NO_CONTENT)
-        await self.finish()
+        self.do_finish()

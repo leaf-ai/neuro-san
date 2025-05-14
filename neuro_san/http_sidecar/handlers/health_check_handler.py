@@ -38,7 +38,7 @@ class HealthCheckHandler(RequestHandler):
             self.set_status(500)
             self.write({"error": "Internal server error"})
         finally:
-            await self.flush()
+            self.finish()
 
     def data_received(self, chunk):
         """

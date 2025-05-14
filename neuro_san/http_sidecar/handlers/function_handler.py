@@ -35,7 +35,7 @@ class FunctionHandler(BaseRequestHandler):
         if not self.agent_policy.allow(agent_name):
             self.set_status(404)
             self.logger.error({}, "error: Invalid request path %s", self.request.path)
-            await self.flush()
+            self.do_finish()
             return
 
         self.logger.info(metadata, "Start GET %s/function", agent_name)
@@ -52,5 +52,5 @@ class FunctionHandler(BaseRequestHandler):
         except Exception as exc:  # pylint: disable=broad-exception-caught
             self.process_exception(exc)
         finally:
-            await self.flush()
+            self.do_finish()
             self.logger.info(metadata, "Finish GET %s/function", agent_name)

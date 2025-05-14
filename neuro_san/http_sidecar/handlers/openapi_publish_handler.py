@@ -39,5 +39,5 @@ class OpenApiPublishHandler(BaseRequestHandler):
         except Exception as exc:  # pylint: disable=broad-exception-caught
             self.process_exception(exc)
         finally:
-            self.flush()
+            self.do_finish()
             self.logger.info(metadata, "Finish GET /api/v1/docs")
