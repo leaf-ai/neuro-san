@@ -18,7 +18,7 @@ from parameterized import parameterized
 from neuro_san.test.unittest.dynamic_hocon_unit_tests import DynamicHoconUnitTests
 
 
-class TestSmokeTestHocons(TestCase):
+class TestIntegrationTestHocons(TestCase):
     """
     Data-driven dynamic test cases where each test case is specified by a single hocon file.
     """
