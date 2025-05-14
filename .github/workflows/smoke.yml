@@ -76,7 +76,7 @@ jobs:
         with:
           payload: |
             {
-              "text": "✅ *Integration Tests Passed* for `${{ github.repository }}` on `${{ github.ref_name }}`"
+              "text": "✅ *Smoke Tests Passed* for `${{ github.repository }}` on `${{ github.ref_name }}`"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -87,7 +87,7 @@ jobs:
         with:
           payload: |
             {
-              "text": "❌ *Integration Tests Failed* for `${{ github.repository }}` on `${{ github.ref_name }}`"
+              "text": "❌ *Smoke Tests Failed* for `${{ github.repository }}` on `${{ github.ref_name }}`"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
