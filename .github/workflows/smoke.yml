@@ -27,7 +27,7 @@ jobs:
       - name: Show installed packages
         run: pip freeze
 
-      - name: Start agent server service and run smoke tests
+      - name: Start agent server service AND run smoke test cases in parallel
         shell: bash
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
