@@ -46,30 +46,41 @@ jobs:
       - name: Wait for ports 8080 and 30011 (fail on timeout)
         shell: bash
         run: |
-              for i in {1..30}; do
-                PORT_8080_READY=false
-                PORT_30011_READY=false
+          for i in {1..30}; do
+            PORT_8080_READY=false
+            PORT_30011_READY=false
 
-                if nc -z localhost 8080; then
-                  PORT_8080_READY=true
-                fi
+            if nc -z localhost 8080; then
+              PORT_8080_READY=true
+            fi
 
-                if nc -z localhost 30011; then
-                  PORT_30011_READY=true
-                fi
+            if nc -z localhost 30011; then
+              PORT_30011_READY=true
+            fi
 
-                if [ "$PORT_8080_READY" = true ] && [ "$PORT_30011_READY" = true ]; then
-                  echo "✅ Both ports are ready after awaiting $i seconds"
-                  exit 0
-                fi
+            if [ "$PORT_8080_READY" = true ] && [ "$PORT_30011_READY" = true ]; then
+              echo "✅ Both ports are ready after awaiting $i seconds"
+              exit 0
+            fi
 
-                echo "⏳ Waiting for ports 8080 and 30011... ($i/30)"
-                sleep 1
-              done
+            echo "⏳ Waiting for ports 8080 and 30011... ($i/30)"
+            sleep 1
+          done
 
-              echo "❌ Timeout: One or both ports failed to open after $i seconds"
-              exit 1
+          echo "❌ Timeout: One or both ports failed to open after $i seconds"
+          exit 1
+     
+      - name: Check server is ready
+        shell: bash
+        run: |
+          until curl -s http://localhost:8080/health > /dev/null; do
+            echo "Waiting for server..."
+            sleep 1
+          done
 
+          echo "✅ Server is up"
+      
+      
       - name: Run pytest smoke tests in parallel
         shell: bash
         run: pytest -s --verbose -m "smoke" --timer-top-n 100
