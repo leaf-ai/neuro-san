@@ -39,40 +39,10 @@ jobs:
           if ! ps -p $(cat agent.pid) > /dev/null; then
             echo "❌ Server process failed to start"
             echo "----- agent.log -----"
-            cat agent.log
+            cat agent.log            
             exit 1
-          fi
       
           echo "✅ Server process started with PID $(cat agent.pid)"
-          
-          for i in {1..30}; do
-            PORT_8080_READY=false
-            PORT_30011_READY=false
-
-            if nc -z localhost 8080; then
-              PORT_8080_READY=true
-            fi
-
-            if nc -z localhost 30011; then
-              PORT_30011_READY=true
-            fi
-
-            if [ "$PORT_8080_READY" = true ] && [ "$PORT_30011_READY" = true ]; then
-              echo "✅ Both ports are ready after awaiting $i seconds"
-              exit 0
-            fi
-
-            echo "⏳ Waiting for ports 8080 and 30011... ($i/30)"
-            sleep 1
-          done
-
-          until curl -s http://localhost:8080/health > /dev/null; do
-            echo "Waiting for server..."
-            sleep 1
-          done
-
-          echo "✅ Server is up"
-
           pytest -s --verbose -m "smoke" --timer-top-n 100
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
