@@ -82,6 +82,8 @@ jobs:
 
           echo "✅ Server is healthy and ready"
 
+          netstat -tuln | grep -E '8080|30011'
+
           pytest -s --verbose -m "smoke" --timer-top-n 100 -n auto
 
       - name: Notify Slack on success
