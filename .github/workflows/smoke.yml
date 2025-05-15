@@ -49,6 +49,29 @@ jobs:
       
           echo "✅ Server process started with PID $(cat agent.pid)"
 
+      - name: check status 1
+        run: |
+          for i in {1..30}; do
+            PORT_8080_READY=false
+            PORT_30011_READY=false
+
+            if nc -z localhost 8080; then
+              PORT_8080_READY=true
+            fi
+
+            if nc -z localhost 30011; then
+              PORT_30011_READY=true
+            fi
+
+            if [ "$PORT_8080_READY" = true ] && [ "$PORT_30011_READY" = true ]; then
+              echo "✅ Both ports are ready after awaiting $i seconds"
+              break
+            fi
+
+            echo "⏳ Waiting for ports 8080 and 30011... ($i/30)"
+            sleep 1
+          done
+      
       - name: Check status
         run: netstat -tuln | grep -E '8080|30011'
       
