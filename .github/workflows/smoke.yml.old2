@@ -1,4 +1,4 @@
-ame: Smoke Tests
+name: Smoke Tests
 
 on:
   push: 
@@ -20,18 +20,20 @@ jobs:
 
       - name: Install dependencies
         run: |
-          apt-get update && apt-get install -y shellcheck
+          apt-get update && apt-get install -y shellcheck procps netcat-openbsd
           pip install -r requirements-build.txt
           pip install -r requirements.txt
 
       - name: Show installed packages
         run: pip freeze
 
-      - name: Start agent server service
+      - name: Start agent server service and run smoke tests
         shell: bash
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          AGENT_TOOL_PATH: "./neuro_san/coded_tools"
+          PYTHONPATH: ${{ env.PYTHONPATH }}:.
         run: |
-          apt-get update && apt-get install -y netcat-openbsd procps curl
-
           nohup python -m neuro_san.service.agent_main_loop > agent.log 2>&1 &
           echo $! > agent.pid
           sleep 2  # Give it a moment to crash if it's going to
@@ -39,57 +41,13 @@ jobs:
           if ! ps -p $(cat agent.pid) > /dev/null; then
             echo "❌ Server process failed to start"
             echo "----- agent.log -----"
-            cat agent.log
+            cat agent.log            
             exit 1
           fi
       
           echo "✅ Server process started with PID $(cat agent.pid)"
-
-      - name: Wait for ports 8080 and 30011 (fail on timeout)
-        shell: bash
-        run: |
-          for i in {1..30}; do
-            PORT_8080_READY=false
-            PORT_30011_READY=false
-
-            if nc -z localhost 8080; then
-              PORT_8080_READY=true
-            fi
-
-            if nc -z localhost 30011; then
-              PORT_30011_READY=true
-            fi
-
-            if [ "$PORT_8080_READY" = true ] && [ "$PORT_30011_READY" = true ]; then
-              echo "✅ Both ports are ready after awaiting $i seconds"
-              exit 0
-            fi
-
-            echo "⏳ Waiting for ports 8080 and 30011... ($i/30)"
-            sleep 1
-          done
-
-          echo "❌ Timeout: One or both ports failed to open after $i seconds"
-          exit 1
-     
-      - name: Check server is ready
-        shell: bash
-        run: |
-          until curl -s http://localhost:8080/health > /dev/null; do
-            echo "Waiting for server..."
-            sleep 1
-          done
-
-          echo "✅ Server is up"
       
-      
-      - name: Run pytest smoke tests in parallel
-        shell: bash
-        run: pytest -s --verbose -m "smoke" --timer-top-n 100
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          AGENT_TOOL_PATH: "./neuro_san/coded_tools"
-          PYTHONPATH: ${{ env.PYTHONPATH }}:"."
+          pytest -s --verbose -m "smoke" --timer-top-n 100 -n auto
 
       - name: Notify Slack on success
         if: success()
