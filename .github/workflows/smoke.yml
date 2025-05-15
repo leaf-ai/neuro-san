@@ -34,7 +34,7 @@ jobs:
           AGENT_TOOL_PATH: "./neuro_san/coded_tools"
           PYTHONPATH: ${{ env.PYTHONPATH }}:.
         run: |
-          apt-get update && apt-get install -y netcat-openbsd procps curl
+          apt-get update && apt-get install -y netcat-openbsd procps curl net-tools
 
           nohup python -m neuro_san.service.agent_main_loop > agent.log 2>&1 &
           echo $! > agent.pid
