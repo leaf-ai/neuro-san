@@ -20,7 +20,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          apt-get update && apt-get install -y shellcheck
+          apt-get update && apt-get install -y shellcheck procps netcat-openbsd
           pip install -r requirements-build.txt
           pip install -r requirements.txt
 
@@ -30,8 +30,6 @@ jobs:
       - name: Start agent server service
         shell: bash
         run: |
-          apt-get update && apt-get install -y procps netcat-openbsd
-
           nohup python -m neuro_san.service.agent_main_loop > agent.log 2>&1 &
           echo $! > agent.pid
           sleep 2  # Give it a moment to crash if it's going to
