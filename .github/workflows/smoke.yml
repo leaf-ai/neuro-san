@@ -71,6 +71,7 @@ jobs:
               exit 1
 
       - name: Run pytest smoke tests in parallel
+        shell: bash
         run: pytest -s --verbose -m "smoke" --timer-top-n 100
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
