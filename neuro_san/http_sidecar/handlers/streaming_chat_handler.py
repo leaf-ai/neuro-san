@@ -41,7 +41,9 @@ class StreamingChatHandler(BaseRequestHandler):
         self.set_header("Content-Type", "application/json-lines")
         self.set_header("Transfer-Encoding", "chunked")
         # Flush headers immediately
-        await self.flush()
+        flush_ok: bool = await self.do_flush()
+        if not flush_ok:
+            return 0
 
         sent_out: int = 0
         async for sub_generator in generator:
@@ -49,7 +51,9 @@ class StreamingChatHandler(BaseRequestHandler):
                 result_dict: Dict[str, Any] = MessageToDict(result_message)
                 result_str: str = json.dumps(result_dict) + "\n"
                 self.write(result_str)
-                await self.flush()
+                flush_ok = await self.do_flush()
+                if not flush_ok:
+                    return sent_out
                 sent_out += 1
         return sent_out
 
@@ -66,7 +70,7 @@ class StreamingChatHandler(BaseRequestHandler):
         if not self.agent_policy.allow(agent_name):
             self.set_status(404)
             self.logger.error({}, "error: Invalid request path %s", self.request.path)
-            await self.flush()
+            self.do_finish()
             return
 
         self.logger.info(metadata, "Start POST %s/streaming_chat", agent_name)
@@ -87,7 +91,6 @@ class StreamingChatHandler(BaseRequestHandler):
         except Exception as exc:  # pylint: disable=broad-exception-caught
             self.process_exception(exc)
         finally:
-            await self.flush()
             # We are done with response stream:
-            await self.finish()
+            self.do_finish()
             self.logger.info(metadata, "Finish POST %s/streaming_chat %d responses", agent_name, sent_out)
