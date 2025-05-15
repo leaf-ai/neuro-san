@@ -91,7 +91,6 @@ to the API to get the updated running cost. If no running cost it known, pass 0.
                 }
             },
             "class": "accounting.Accountant",
-            "command": "Call the API to compute the new running cost."
         },
     ]
 }
