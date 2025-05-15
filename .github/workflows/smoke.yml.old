@@ -1,4 +1,4 @@
-name: Smoke Tests
+ame: Smoke Tests
 
 on:
   push: 
@@ -44,7 +44,10 @@ jobs:
           fi
       
           echo "✅ Server process started with PID $(cat agent.pid)"
-          
+
+      - name: Wait for ports 8080 and 30011 (fail on timeout)
+        shell: bash
+        run: |
           for i in {1..30}; do
             PORT_8080_READY=false
             PORT_30011_READY=false
@@ -66,14 +69,23 @@ jobs:
             sleep 1
           done
 
+          echo "❌ Timeout: One or both ports failed to open after $i seconds"
+          exit 1
+     
+      - name: Check server is ready
+        shell: bash
+        run: |
           until curl -s http://localhost:8080/health > /dev/null; do
             echo "Waiting for server..."
             sleep 1
           done
 
           echo "✅ Server is up"
-
-          pytest -s --verbose -m "smoke" --timer-top-n 100
+      
+      
+      - name: Run pytest smoke tests in parallel
+        shell: bash
+        run: pytest -s --verbose -m "smoke" --timer-top-n 100
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           AGENT_TOOL_PATH: "./neuro_san/coded_tools"
