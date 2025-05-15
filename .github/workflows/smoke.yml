@@ -51,6 +51,7 @@ jobs:
 
       - name: check status 1
         run: |
+          sleep 30
           for i in {1..30}; do
             PORT_8080_READY=false
             PORT_30011_READY=false
