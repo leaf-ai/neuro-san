@@ -93,7 +93,6 @@ class HttpServiceAgentSession(AgentSession):
         headers: Dict[str, Any] = self.metadata
         if headers is None:
             headers = {}
-        headers["Connection"] = "close"
         return headers
 
     def help_message(self, path: str) -> str:
