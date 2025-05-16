@@ -15,7 +15,8 @@ import threading
 from typing import Dict
 
 from neuro_san.internals.tool_factories.service_tool_factory_provider import ServiceToolFactoryProvider
-from neuro_san.service.registries_watcher.periodic_updater.registry_observer import RegistryObserver
+from neuro_san.service.registries_watcher.periodic_updater.registry_event_observer import RegistryEventObserver
+from neuro_san.service.registries_watcher.periodic_updater.registry_polling_observer import RegistryPollingObserver
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
 
@@ -25,6 +26,7 @@ class ManifestPeriodicUpdater:
     Class implementing periodic manifest directory updates
     by watching agent files and manifest file itself.
     """
+    use_polling: bool = True
 
     def __init__(self, manifest_path: str, update_period_seconds: int):
         """
@@ -36,7 +38,11 @@ class ManifestPeriodicUpdater:
         self.update_period_seconds: int = update_period_seconds
         self.logger = logging.getLogger(self.__class__.__name__)
         self.updater = threading.Thread(target=self._run, daemon=True)
-        self.observer: RegistryObserver = RegistryObserver(self.manifest_path)
+        if self.use_polling:
+            poll_interval: int = self.compute_polling_interval(update_period_seconds)
+            self.observer = RegistryPollingObserver(self.manifest_path, poll_interval)
+        else:
+            self.observer = RegistryEventObserver(self.manifest_path)
         self.tool_factory: ServiceToolFactoryProvider = \
             ServiceToolFactoryProvider.get_instance()
         self.go_run: bool = True
@@ -62,6 +68,15 @@ class ManifestPeriodicUpdater:
             registries: Dict[str, AgentToolRegistry] = \
                 RegistryManifestRestorer().restore(self.manifest_path)
             self.tool_factory.setup_tool_registries(registries)
+
+    def compute_polling_interval(self, update_period_seconds: int) -> int:
+        """
+        Compute polling interval for polling observer
+        given requested manifest update period
+        """
+        if update_period_seconds <= 5:
+            return 1
+        return int(round(update_period_seconds / 4))
 
     def start(self):
         """
