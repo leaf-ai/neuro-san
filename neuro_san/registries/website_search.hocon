@@ -76,7 +76,6 @@ Assist caller with searching an url on the web by using your tool.
                 }
             },
             "class": "website_search.WebsiteSearch",
-            "command": "Call the API to get a list of URLs for available options."
         },
     ]
 }
