@@ -17,7 +17,7 @@ from watchdog.observers import Observer
 from neuro_san.service.registries_watcher.periodic_updater.registry_change_handler import RegistryChangeHandler
 
 
-class RegistryObserver:
+class RegistryEventObserver:
     """
     Observer class for manifest file and its directory.
     """
