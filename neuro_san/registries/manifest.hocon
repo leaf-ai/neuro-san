@@ -11,7 +11,7 @@
 # END COPYRIGHT
 
 # The schema specifications for this file are documented here:
-# https://github.com/leaf-ai/neuro-san/blob/main/docs/manifest_hocon_reference.md
+# https://github.com/cognizant-ai-lab/neuro-san/blob/main/docs/manifest_hocon_reference.md
 
 {
     # Currently we list each hocon file we want to serve as a key with a boolean value.
@@ -70,5 +70,5 @@
     # Use the AGENT_MANIFEST_FILE and AGENT_TOOL_PATH env vars to direct a generic neuro-san
     # server to your own repo's agents and CodedTools, respectively.
     #
-    # See https://github.com/leaf-ai/neuro-san-demos for an example of how to do this.
+    # See https://github.com/cognizant-ai-lab/neuro-san-studio for an example of how to do this.
 }
