@@ -18,7 +18,7 @@ from neuro_san.interfaces.coded_tool import CodedTool
 
 class Calculator(CodedTool):
     """
-    CodedTool implemetation of a calculator for the math_guy test.
+    CodedTool implementation of a calculator for the math_guy test.
 
     Upon activation by the agent hierarchy, a CodedTool will have its
     invoke() call called by the system.

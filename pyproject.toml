@@ -53,8 +53,8 @@ exclude = ["tests*"]
 fallback_version = "0.0.1"
 
 [project.urls]
-Homepage = "https://github.com/leaf-ai/neuro-san"
-Repository = "https://github.com/leaf-ai/neuro-san"
-Documentation = "https://github.com/leaf-ai/neuro-san#readme"
+Homepage = "https://github.com/cognizant-ai-lab/neuro-san"
+Repository = "https://github.com/cognizant-ai-lab/neuro-san"
+Documentation = "https://github.com/cognizant-ai-lab/neuro-san#readme"
 # If we move issue tracking to github 
-# Issues = "https://github.com/leaf-ai/neuro-san/issues"
+# Issues = "https://github.com/cognizant-ai-lab/neuro-san/issues"

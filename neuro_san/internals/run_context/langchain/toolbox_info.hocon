@@ -16,7 +16,7 @@
     # - This file defines configurations for langchain's tools and toolkits as well as shared coded tools.
     # - More details about LangChain tools and toolkits can be found at:
     #   https://python.langchain.com/docs/integrations/tools/
-    # - See https://github.com/leaf-ai/neuro-san/blob/main/docs/agent_hocon_reference.md for more informations on coded tools.
+    # - See https://github.com/cognizant-ai-lab/neuro-san/blob/main/docs/agent_hocon_reference.md for more informations on coded tools.
     #
     # Customization via Agent HOCON File:
     # - In the agent HOCON file, users can define an "args" section to **add or override** 
@@ -202,7 +202,7 @@
     # - "description" let the agent know what the tool does.
     # - "parameters" are arguments' definitions and types.
     # Note: Parameters are optional and may be omitted if not required.
-    # See "parameters" section in https://github.com/leaf-ai/neuro-san/blob/main/docs/agent_hocon_reference.md
+    # See "parameters" section in https://github.com/cognizant-ai-lab/neuro-san/blob/main/docs/agent_hocon_reference.md
 
     "website_search": {
         "class": "web_search.WebSearch",

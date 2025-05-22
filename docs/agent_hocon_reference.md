@@ -2,7 +2,7 @@
 
 This document describes the neuro-san specifications for a single agent network .hocon file
 as used for each [registry](../neuro_san/registries)
-in the [neuro-san](https://github.com/leaf-ai/neuro-san) and [neuro-san-demos](https://github.com/leaf-ai/neuro-san-demos)
+in the [neuro-san](https://github.com/cognizant-ai-lab/neuro-san) and [neuro-san-studio](https://github.com/cognizant-ai-lab/neuro-san-studio)
 repos.
 
 The neuro-san system uses the HOCON (Human-Optimized Config Object Notation) file format

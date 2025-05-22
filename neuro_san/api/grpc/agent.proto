@@ -25,7 +25,7 @@ import "google/api/annotations.proto";
 
 import "neuro_san/api/grpc/chat.proto";
 
-option go_package = "github.com/leaf-ai/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/agent/v1;agent";
+option go_package = "github.com/cognizant-ai-lab/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/agent/v1;agent";
 
 
 // The service comprises all the exchanges to the backend in support of a single agent's

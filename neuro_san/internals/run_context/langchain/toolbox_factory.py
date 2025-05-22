@@ -85,7 +85,7 @@ class ToolboxFactory(ContextTypeToolboxFactory):
                     AGENT_TOOL_PATH or neuro_san/coded_tools.
         - "description": When and how to use the tool.
         - "parameters": Information on arguments of the tool.
-            See "parameters" in https://github.com/leaf-ai/neuro-san/blob/main/docs/agent_hocon_reference.md
+            See "parameters" in https://github.com/cognizant-ai-lab/neuro-san/blob/main/docs/agent_hocon_reference.md
 
         The default toolbox config file can be seen at
         "neuro_san/internals/run_context/langchain/toolbox_info.hocon"
