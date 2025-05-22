@@ -1,6 +1,6 @@
-# Neuro-San Data-Driven Agents
+# Neuro SAN Data-Driven Agents
 
-Neuro-San (System of Agent Networks) is a library for building data-driven multi-agent networks
+**Neuro AI system of agent networks (Neuro SAN)** is a library for building data-driven multi-agent networks
 which can be run as a library, or served up via an HTTP/gRPC server.
 
 Motivation: People come with all their hopes and dreams to lay them at the altar
@@ -11,19 +11,19 @@ equivalent of an adult PhD to be at their disposal, but what you really get is a
 Solution: Allow these problems to be broken up into smaller pieces so that multiple LLM-enabled
 agents can communicate with each other to solve a single problem.
 
-Neuro-San agent networks can be entirely specified in a data-only
+Neuro SAN agent networks can be entirely specified in a data-only
 [HOCON](https://github.com/lightbend/config/blob/main/HOCON.md)
 file format (think: JSON with comments, among other things), enabling subject matter experts
 to be the authors of complex agent networks, not just programmers.
 
-Neuro-San agent networks can also call CodedTools (langchain or our own interface) which do things
+Neuro SAN agent networks can also call CodedTools (langchain or our own interface) which do things
 that LLMs can't on their own like: Query a web service, effectuate change via a web API, handle
 private data correctly, do complex math operations, copy large bits of data without error.
-While this aspect _does_ require programming skills, what the savvy gain with Neuro-San is a new way
+While this aspect _does_ require programming skills, what the savvy gain with Neuro SAN is a new way
 to think about your problems that involves a weave between natural language tasks that LLMs are good at
 and traditional computing tasks which deterministic Python code gives you.
 
-Neuro-San also offers:
+Neuro SAN also offers:
 
 * channels for private data (aka sly_data) that should be kept out of LLM chat streams
 * LLM-provider agnosticism and extensibility of data-only-configured LLMs when new hotness arrives.
@@ -169,7 +169,7 @@ Note that the .hocon files in this repo are more spartan for testing and simple
 demonstration purposes.
 
 For more examples of agent networks, documentation and tutorials,
-see the [neuro-san-demos repo.](https://github.com/leaf-ai/neuro-san-demos)
+see the [neuro-san-studio repo.](https://github.com/cognizant-ai-lab/neuro-san-studio)
 
 For a complete list of agent networks keys, see the [agent hocon file reference](docs/agent_hocon_reference.md)
 
@@ -188,7 +188,7 @@ at your own manifest file, set a new environment variable:
 
 The agent infrastructure is run as a gRPC service.
 That gRPC service is implemented (client and server) using the
-[AgentSession](https://github.com/leaf-ai/neuro-san/blob/main/neuro_san/session/agent_session.py)
+[AgentSession](https://github.com/cognizant-ai-lab/neuro-san/blob/main/neuro_san/session/agent_session.py)
 interface:
 
 It has 2 main methods:
