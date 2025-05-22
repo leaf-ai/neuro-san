@@ -11,7 +11,7 @@
 # END COPYRIGHT
 
 # The schema specifications for this file are documented here:
-# https://github.com/leaf-ai/neuro-san/blob/main/docs/llm_info_hocon_reference.md
+# https://github.com/cognizant-ai-lab/neuro-san/blob/main/docs/llm_info_hocon_reference.md
 
 {
     # OpenAI models

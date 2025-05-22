@@ -7,7 +7,7 @@ steps:
         image: alpine:3.13.1
         commands:
             - cf_export REPO_NAME=neuro-san
-            - cf_export REPO_OWNER=leaf-ai
+            - cf_export REPO_OWNER=cognizant-ai-lab
             # The revision can be overridden from a pipeline variable
             # when we want to integration test a specific branch.
             - cf_export REVISION=main

@@ -20,7 +20,7 @@ syntax = "proto3";
 
 package dev.cognizant_ai.neuro_san.api.grpc.mime_data;
 
-option go_package = "github.com/leaf-ai/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/mime_data/v1;mime_data";
+option go_package = "github.com/cognizant-ai-lab/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/mime_data/v1;mime_data";
 
 // A Message identifying image data
 message MimeData {

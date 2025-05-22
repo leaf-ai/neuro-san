@@ -11,7 +11,7 @@
 
 # This file defines everything necessary for a data-driven test.
 # The schema specifications for this file are documented here:
-# https://github.com/leaf-ai/neuro-san/blob/main/docs/test_case_hocon_reference.md
+# https://github.com/cognizant-ai-lab/neuro-san/blob/main/docs/test_case_hocon_reference.md
 
 {
     # Describes what agent to test against.
