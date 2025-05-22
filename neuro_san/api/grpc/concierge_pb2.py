@@ -26,14 +26,14 @@ _sym_db = _symbol_database.Default()
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\"neuro_san/api/grpc/concierge.proto\x12-dev.cognizant_ai.neuro_san.api.grpc.concierge\x1a\x1cgoogle/api/annotations.proto\"\x12\n\x10\x43onciergeRequest\"M\n\tAgentInfo\x12\x1e\n\nagent_name\x18\x01 \x01(\tR\nagent_name\x12 \n\x0b\x64\x65scription\x18\x02 \x01(\tR\x0b\x64\x65scription\"e\n\x11\x43onciergeResponse\x12P\n\x06\x61gents\x18\x01 \x03(\x0b\x32\x38.dev.cognizant_ai.neuro_san.api.grpc.concierge.AgentInfoR\x06\x61gents2\xb4\x01\n\x10\x43onciergeService\x12\x9f\x01\n\x04List\x12?.dev.cognizant_ai.neuro_san.api.grpc.concierge.ConciergeRequest\x1a@.dev.cognizant_ai.neuro_san.api.grpc.concierge.ConciergeResponse\"\x14\x82\xd3\xe4\x93\x02\x0e\x12\x0c/api/v1/listBfZdgithub.com/leaf-ai/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/concierge/v1;conciergeb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\"neuro_san/api/grpc/concierge.proto\x12-dev.cognizant_ai.neuro_san.api.grpc.concierge\x1a\x1cgoogle/api/annotations.proto\"\x12\n\x10\x43onciergeRequest\"M\n\tAgentInfo\x12\x1e\n\nagent_name\x18\x01 \x01(\tR\nagent_name\x12 \n\x0b\x64\x65scription\x18\x02 \x01(\tR\x0b\x64\x65scription\"e\n\x11\x43onciergeResponse\x12P\n\x06\x61gents\x18\x01 \x03(\x0b\x32\x38.dev.cognizant_ai.neuro_san.api.grpc.concierge.AgentInfoR\x06\x61gents2\xb4\x01\n\x10\x43onciergeService\x12\x9f\x01\n\x04List\x12?.dev.cognizant_ai.neuro_san.api.grpc.concierge.ConciergeRequest\x1a@.dev.cognizant_ai.neuro_san.api.grpc.concierge.ConciergeResponse\"\x14\x82\xd3\xe4\x93\x02\x0e\x12\x0c/api/v1/listBoZmgithub.com/cognizant-ai-lab/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/concierge/v1;conciergeb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'neuro_san.api.grpc.concierge_pb2', _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['DESCRIPTOR']._options = None
-  _globals['DESCRIPTOR']._serialized_options = b'Zdgithub.com/leaf-ai/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/concierge/v1;concierge'
+  _globals['DESCRIPTOR']._serialized_options = b'Zmgithub.com/cognizant-ai-lab/neuro_san/internal/gen/dev.cognizant_ai/neuro_san/api/grpc/concierge/v1;concierge'
   _globals['_CONCIERGESERVICE'].methods_by_name['List']._options = None
   _globals['_CONCIERGESERVICE'].methods_by_name['List']._serialized_options = b'\202\323\344\223\002\016\022\014/api/v1/list'
   _globals['_CONCIERGEREQUEST']._serialized_start=115
