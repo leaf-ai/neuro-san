@@ -1,4 +1,3 @@
-
 # Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
 # All Rights Reserved.
 # Issued under the Academic Public License.
@@ -12,6 +11,8 @@
 """
 See class comment for details
 """
+import http
+import os
 from typing import Any, Dict
 
 from tornado.web import RequestHandler
@@ -21,6 +22,17 @@ class HealthCheckHandler(RequestHandler):
     """
     Handler class for API endpoint health check.
     """
+
+    def initialize(self):
+        """
+        This method is called by Tornado framework to allow
+        injecting service-specific data into local handler context.
+        Here we use it to inject CORS headers if so configured.
+        """
+        if os.environ.get("AGENT_ALLOW_CORS_HEADERS") is not None:
+            self.set_header("Access-Control-Allow-Origin", "*")
+            self.set_header("Access-Control-Allow-Methods", "GET, OPTIONS")
+            self.set_header("Access-Control-Allow-Headers", "Content-Type, Transfer-Encoding")
 
     async def get(self):
         """
@@ -46,3 +58,11 @@ class HealthCheckHandler(RequestHandler):
         with no-op implementation.
         """
         return
+
+    async def options(self, *_args, **_kwargs):
+        """
+        Handles OPTIONS requests for CORS support
+        """
+        # No body needed. Just return a 204 No Content
+        self.set_status(http.HTTPStatus.NO_CONTENT)
+        self.finish()
