@@ -57,6 +57,26 @@ class AgentCli:
         """
         self.parse_args()
         self.open_session()
+        if self.args.connectivity:
+            self.connectivity()
+        else:
+            self.chat()
+
+    def connectivity(self):
+        """
+        Perform connectivity function
+        """
+        empty: Dict[str, Any] = {}
+        response: Dict[str, Any] = self.session.connectivity(empty)
+
+        empty_list: List[Dict[str, Any]] = []
+        for connectivity_info in response.get("connectivity_info", empty_list):
+            print(f"{json.dumps(connectivity_info, indent=4, sort_keys=True)}")
+
+    def chat(self):
+        """
+        Perform chat function
+        """
 
         # Get initial user input
         user_input: str = None
@@ -296,6 +316,12 @@ Have external tools that can be found in the local agent manifest use a service 
                                 "Only available when streaming (which is the default).")
         group.add_argument("--response_output_file", type=str,
                            help="File that captures the response to the user input")
+        self.arg_groups[group.title] = group
+
+        # How are we capturing output?
+        group = arg_parser.add_argument_group(title="Other Modes of Operation")
+        group.add_argument("--connectivity", default=False, dest="connectivity", action="store_true",
+                           help="List the connectivity of agent network nodes")
         self.arg_groups[group.title] = group
 
     def open_session(self):
