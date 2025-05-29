@@ -264,8 +264,7 @@ class DefaultLlmFactory(ContextTypeLlmFactory, LangChainLlmFactory):
                 message: str = ApiKeyErrorCheck.check_for_api_key_exception(exception)
                 if message is not None:
                     raise ValueError(message) from exception
-                else:
-                    found_exception = exception
+                found_exception = exception
 
             except ValueError as exception:
                 # Let the next model have a crack

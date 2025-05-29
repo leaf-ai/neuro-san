@@ -505,12 +505,11 @@ class LangChainRunContext(RunContext):
                 message: str = ApiKeyErrorCheck.check_for_api_key_exception(api_error)
                 if message is not None:
                     raise ValueError(message) from api_error
-                    retries = 0
-                else:
-                    self.logger.warning("retrying from {api_error.__class__.__name__}")
-                    retries = retries - 1
-                    exception = api_error
-                    backtrace = traceback.format_exc()
+
+                self.logger.warning("retrying from {api_error.__class__.__name__}")
+                retries = retries - 1
+                exception = api_error
+                backtrace = traceback.format_exc()
             except KeyError as key_error:
                 self.logger.warning("retrying from KeyError")
                 retries = retries - 1

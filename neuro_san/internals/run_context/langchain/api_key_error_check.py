@@ -35,7 +35,7 @@ class ApiKeyErrorCheck:
         """
 
         exception_message: str = str(exception)
-        print(f"message={exception_message}")
+        api_key: str = None
 
         # Search for strings in the exception message
         found = False
