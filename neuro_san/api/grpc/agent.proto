@@ -176,6 +176,17 @@ message ConnectivityInfo {
     // implementation detail.  That is, connectivity reported is only
     // as much as the server wants a client to know.
     repeated string tools = 2 [json_name="tools"];
+
+    // A string describing the nature of the agent so that a client UI can
+    // add an indication of its differences between other nodes in the graph.
+    // Values from the neuro-san include:
+    //  * llm_agent  (default)
+    //  * coded_tool
+    //  * langchain_tool
+    //  * external_agent
+    // ... however individual agent networks can define their own strings on
+    // a per-node basis to customize their own visualizations.
+    string display_as = 3 [json_name="display_as"];
 }
 
 
