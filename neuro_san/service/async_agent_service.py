@@ -12,17 +12,14 @@
 
 from typing import Any
 from typing import Dict
-from typing import Iterator
 from typing import Generator
 
-import copy
 import json
 import uuid
 
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 
 from leaf_server_common.server.atomic_counter import AtomicCounter
-from leaf_server_common.server.request_logger import RequestLogger
 
 from neuro_san.interfaces.event_loop_logger import EventLoopLogger
 from neuro_san.internals.interfaces.agent_tool_factory_provider import AgentToolFactoryProvider
@@ -110,7 +107,8 @@ class AsyncAgentService:
         }
         metadata.update(request_metadata)
         if do_log:
-            self.request_logger.info(metadata,
+            self.request_logger.info(
+                metadata,
                 "Received a %s request for %s",
                 f"{self.agent_name}.Function", log_marker)
 
@@ -125,7 +123,8 @@ class AsyncAgentService:
         response_dict = await session.function(request_dict)
 
         if do_log:
-            self.request_logger.info(metadata,
+            self.request_logger.info(
+                metadata,
                 "Done with %s request for %s",
                 f"{self.agent_name}.Function", log_marker)
 
@@ -152,7 +151,8 @@ class AsyncAgentService:
         metadata.update(request_metadata)
 
         if do_log:
-            self.request_logger.info(metadata,
+            self.request_logger.info(
+                metadata,
                 "Received a %s request for %s",
                 f"{self.agent_name}.Connectivity", log_marker)
 
@@ -167,7 +167,8 @@ class AsyncAgentService:
         response_dict = await session.connectivity(request_dict)
 
         if do_log:
-            self.request_logger.info(metadata,
+            self.request_logger.info(
+                metadata,
                 "Done with %s request for %s",
                 f"{self.agent_name}.Connectivity", log_marker)
 
@@ -197,7 +198,8 @@ class AsyncAgentService:
         metadata.update(request_metadata)
 
         if do_log:
-            self.request_logger.info(metadata,
+            self.request_logger.info(
+                metadata,
                 "Received a %s request for %s",
                 f"{self.agent_name}.StreamingChat", log_marker)
 
@@ -243,8 +245,9 @@ class AsyncAgentService:
             if request_reporting is not None:
                 reporting = json.dumps(request_reporting, indent=4, sort_keys=True)
             self.request_logger.info(metadata, "Request reporting: %s", reporting)
-            self.request_logger.info(metadata,
-                                     "Done with %s request for %s",
-                                     f"{self.agent_name}.StreamingChat", log_marker)
+            self.request_logger.info(
+                metadata,
+                "Done with %s request for %s",
+                f"{self.agent_name}.StreamingChat", log_marker)
 
         self.request_counter.decrement()
