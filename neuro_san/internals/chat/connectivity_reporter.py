@@ -93,6 +93,7 @@ class ConnectivityReporter:
 
         connectivity_list: List[Dict[str, Any]] = []
         agent_spec: Dict[str, Any] = None
+        display_as: str = None
 
         if not ExternalAgentParsing.is_external_agent(agent_name):
 
@@ -111,16 +112,23 @@ class ConnectivityReporter:
 
                 # We are not allowing connectivity reporting from here on down
                 agent_spec = None
+        else:
+            display_as = "external_agent"
 
         # Compile a tool list of what is referred to by the agent_spec.
         # For many reasons, this list could be empty.
         tool_list: List[str] = self.assemble_tool_list(agent_spec)
 
+        if display_as is None:
+            display_as = self.determine_display_as(agent_spec)
+
         connectivity_dict: Dict[str, Any] = {
             # Report the origin as the agent itself, so any client that receives
             "origin": agent_name,
             # Report the content of the tools list
-            "tools": tool_list
+            "tools": tool_list,
+            # Report how the node wishes to be displayed
+            "display_as": display_as
         }
 
         # the message has the correct context about the tools listed in the content.
@@ -183,3 +191,34 @@ class ConnectivityReporter:
                     tool_list.append(tool)
 
         return tool_list
+
+    @staticmethod
+    def determine_display_as(agent_spec: Dict[str, Any]) -> str:
+        """
+        :param agent_spec: The agent spec to determine display_as from.
+        :return: A string describing how the node wants to be seen.
+        """
+        # Attempt to get something node-specific from the spec.
+        display_as: str = agent_spec.get("display_as")
+        if display_as is not None:
+            display_as = str(display_as)
+            return display_as
+
+        tool_name: str = agent_spec.get("toolbox")
+        if tool_name is not None:
+            # Unclear how deep into the toolbox stuff we have to go for this.
+            # For now, assume something from the toolbox is a lanchain_tool.
+            display_as = "langchain_tool"
+
+        elif agent_spec.get("function") is not None:
+            # If we have a function in the spec, the agent has arguments
+            # it wants to be called with.
+            if agent_spec.get("class") is not None:
+                display_as = "coded_tool"
+            else:
+                display_as = "llm_agent"
+        else:
+            # Front-man
+            display_as = "llm_agent"
+
+        return display_as
