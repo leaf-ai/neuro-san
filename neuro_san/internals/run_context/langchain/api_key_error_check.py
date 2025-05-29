@@ -16,7 +16,8 @@ from typing import List
 
 # Dictionary with provider key env var -> strings to look for
 API_KEY_EXCEPTIONS: Dict[str, List] = {
-    "OPENAI_API_KEY": ["OPENAI_API_KEY", "Incorrect API key provided"]
+    "OPENAI_API_KEY": ["OPENAI_API_KEY", "Incorrect API key provided"],
+    "ANTHROPIC_API_KEY": ["ANTHROPIC_API_KEY", "anthropic_api_key", "invalid x-api-key", "credit balance"],
 }
 
 
@@ -54,7 +55,9 @@ server or run-time enviroment in order to use this agent network.
 Some things to try:
 1) Double check that your value for {api_key} is set correctly
 2) If you do not have a value for {api_key}, visit the LLM provider's website to get one.
-3) Sometimes these errors happen because of firewall blockages to the site that hosts the LLM.
+3) It's possible that your credit balance on your account with the LLM provider is too low
+   to make the request.  Check that.
+4) Sometimes these errors happen because of firewall blockages to the site that hosts the LLM.
    Try checking that you can reach the regular UI for the LLM from a web browser
    on the same machine making this request.
 """

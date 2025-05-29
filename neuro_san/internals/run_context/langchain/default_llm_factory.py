@@ -18,6 +18,7 @@ from typing import Type
 import os
 
 from openai import OpenAIError
+from pydantic_core._pydantic_core import ValidationError
 
 from langchain_core.callbacks.base import BaseCallbackHandler
 from langchain_core.language_models.base import BaseLanguageModel
@@ -255,20 +256,20 @@ class DefaultLlmFactory(ContextTypeLlmFactory, LangChainLlmFactory):
                     found_exception = None
                     break
 
-            except ValueError as exception:
-                # Let the next model have a crack
-                found_exception = exception
-
             # Catch some common wrong or missing API key errors in a single place
             # with some verbose error messaging.
-            except OpenAIError as exception:
+            except (OpenAIError, ValidationError) as exception:
                 # Will re-raise but with the right exception text it will
                 # also provide some more helpful failure text.
                 message: str = ApiKeyErrorCheck.check_for_api_key_exception(exception)
                 if message is not None:
                     raise ValueError(message) from exception
                 else:
-                    raise exception
+                    found_exception = exception
+
+            except ValueError as exception:
+                # Let the next model have a crack
+                found_exception = exception
 
         if found_exception is not None:
             raise found_exception
