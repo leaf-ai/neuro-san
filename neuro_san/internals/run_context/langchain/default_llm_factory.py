@@ -18,7 +18,7 @@ from typing import Type
 import os
 
 from openai import OpenAIError
-from pydantic_core._pydantic_core import ValidationError
+from pydantic_core import ValidationError
 
 from langchain_core.callbacks.base import BaseCallbackHandler
 from langchain_core.language_models.base import BaseLanguageModel
