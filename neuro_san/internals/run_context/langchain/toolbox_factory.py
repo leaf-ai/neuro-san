@@ -43,27 +43,6 @@ class ToolboxFactory(ContextTypeToolboxFactory):
 
     This approach standardizes tool creation and simplifies integration with agents requiring predefined tools.
 
-    ### Supported Tools:
-
-    #### Langchain Tools:
-
-    - **Search Tools:**
-        - "bing_search": Returns a "BingSearchResults" instance for performing Bing search queries.
-        - "tavily_search": Returns a "TavilySearchResults" instance for performing Tavily search queries.
-
-    - **HTTP Request Tools:** These allow making different types of HTTP requests using the "RequestsToolkit"
-      with a "TextRequestsWrapper". The following tool names are available:
-        - "requests_get": For making GET requests.
-        - "requests_post": For making POST requests.
-        - "requests_patch": For making PATCH requests.
-        - "requests_put": For making PUT requests.
-        - "requests_delete": For making DELETE requests.
-        - "requests_toolkit": For all of the above request tools.
-
-    #### Coded Tools:
-        - "website_search": Internet search based on DuckDuckGo Search
-        - "rag_retriever": Perfrom retrieval-augmented generation on given urls
-
     ### Extending the Class
 
         To integrate additional tools, add a tool configuration file in JSON or HOCON format
@@ -263,3 +242,11 @@ class ToolboxFactory(ContextTypeToolboxFactory):
         """
         tool_info: Dict[str, Any] = self.toolbox_infos.get(tool_name)
         return tool_info.get("class")
+
+    def get_tool_info(self, tool_name: str) -> Dict[str, Any]:
+        """
+        :param tool_name: The name of the tool.
+        :return: The toolbox dictionary entry for the tool name
+        """
+        tool_info: Dict[str, Any] = self.toolbox_infos.get(tool_name)
+        return tool_info

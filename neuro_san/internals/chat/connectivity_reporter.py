@@ -17,6 +17,8 @@ from typing import Set
 from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
+from neuro_san.internals.interfaces.context_type_toolbox_factory import ContextTypeToolboxFactory
+from neuro_san.internals.run_context.factory.master_toolbox_factory import MasterToolboxFactory
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 
 
@@ -57,6 +59,9 @@ class ConnectivityReporter:
 
         self.registry: AgentToolRegistry = registry
 
+        config: Dict[str, Any] = self.registry.get_config()
+        self.toolbox_factory: ContextTypeToolboxFactory = MasterToolboxFactory.create_toolbox_factory(config)
+
     def report_network_connectivity(self) -> List[Dict[str, Any]]:
         """
         Share the connectivity information of the agent network in question
@@ -74,6 +79,10 @@ class ConnectivityReporter:
                         implementation detail.  That is, connectivity reported is only
                         as much as the server wants a client to know.
         """
+        # Load the toolbox factory once
+        if self.toolbox_factory is not None:
+            self.toolbox_factory.load()
+
         # Find the name of the front-man as a root node
         front_man: str = self.registry.find_front_man()
 
@@ -192,8 +201,7 @@ class ConnectivityReporter:
 
         return tool_list
 
-    @staticmethod
-    def determine_display_as(agent_spec: Dict[str, Any]) -> str:
+    def determine_display_as(self, agent_spec: Dict[str, Any]) -> str:
         """
         :param agent_spec: The agent spec to determine display_as from.
         :return: A string describing how the node wants to be seen.
@@ -206,9 +214,17 @@ class ConnectivityReporter:
 
         tool_name: str = agent_spec.get("toolbox")
         if tool_name is not None:
-            # Unclear how deep into the toolbox stuff we have to go for this.
-            # For now, assume something from the toolbox is a lanchain_tool.
+            # As a default, assume something from the toolbox is a lanchain_tool.
             display_as = "langchain_tool"
+            tool_info: Dict[str, Any] = self.toolbox_factory.get_tool_info(tool_name)
+            if tool_info is not None:
+                if tool_info.get("display_as") is not None:
+                    # Tool infos in a toolbox hocon can have their own display_as for potential branding
+                    display_as = tool_info.get("display_as")
+                if tool_info.get("parameters") is not None:
+                    # Shared coded tools need to specify parameters,
+                    # whereas langchain_tools get the parameters from their @tool annotation
+                    display_as = "coded_tool"
 
         elif agent_spec.get("function") is not None:
             # If we have a function in the spec, the agent has arguments

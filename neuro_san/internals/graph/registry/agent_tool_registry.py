@@ -42,7 +42,7 @@ class AgentToolRegistry(AgentToolFactory):
         """
         Constructor
 
-        :param agent_specs: A list of agents to pre-register
+        :param config: The dictionary describing the entire agent network
         :param name: The name of the registry
         :param agent_tool_path: Optional path to specify where source gets resolved.
                     If None, the value comes from the env var AGENT_TOOL_PATH.
