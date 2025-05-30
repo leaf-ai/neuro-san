@@ -97,7 +97,6 @@ class AgentServer:
         self.notify_started: threading.Event = threading.Event()
         self.logger.info("tool_registries found: %s", str(list(self.tool_registries.keys())))
 
-
     def get_services(self) -> List[GrpcAgentService]:
         """
         :return: A list of the AgentServices being served up by this instance

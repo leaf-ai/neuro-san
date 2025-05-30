@@ -13,7 +13,6 @@
 See class comment for details
 """
 
-import copy
 import threading
 from typing import Any, Dict, List
 
@@ -40,11 +39,11 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
     Class provides simple http endpoint for neuro-san API,
     working as a client to neuro-san gRPC service.
     """
+    # pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
 
     TIMEOUT_TO_START_SECONDS: int = 10
 
-    # pylint: disable=too-many-arguments, too-many-positional-arguments
-    # pylint: disable=too-many-instance-attributes
     def __init__(self, start_event: threading.Event,
                  port: int, http_port: int,
                  openapi_service_spec_path: str,

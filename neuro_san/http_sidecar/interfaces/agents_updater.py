@@ -12,7 +12,6 @@
 """
 See class comment for details
 """
-from typing import List
 
 
 class AgentsUpdater:
