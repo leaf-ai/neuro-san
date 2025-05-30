@@ -56,6 +56,7 @@ Sub-keys to those dictionaries will be described in the next-level down heading 
       - [sly_data](#sly_data-1)
     - [to_upstream](#to_upstream)
       - [sly_data](#sly_data-2)
+  - [display_as](#display_as)
   - [max_message_history](#max_message_history)
   - [error_formatter](#error_formatter-1)
   - [error_fragments](#error_fragments-1)
@@ -549,6 +550,19 @@ is allowed to go back to the client in the final message.
 A string value in the dictionary represents a translation to a new key.
 
 The same dictionary/list specification described in [to_downstream](#sly_data) also applies here.
+
+### display_as
+
+An optional string that describes how the agent node wishes to appear to a client
+that can visualize the network's connectivity.
+
+When not present, the system determines the value given the configuration of the node
+and will return one of the following strings:
+
+* external_agent - for [External Agents](#external-agents)
+* coded_tool - for a [CodedTool](../neuro_san/interfaces/coded_tool.py)
+* langchain_tool - for a langchain tool
+* llm_agent - for LLM-powered agents
 
 ### max_message_history
 

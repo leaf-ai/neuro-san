@@ -23,7 +23,7 @@ from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 from neuro_san.internals.graph.tools.branch_tool import BranchTool
 from neuro_san.internals.graph.tools.class_tool import ClassTool
 from neuro_san.internals.graph.tools.external_tool import ExternalTool
-from neuro_san.internals.graph.tools.toobox_tool import ToolboxTool
+from neuro_san.internals.graph.tools.toolbox_tool import ToolboxTool
 from neuro_san.internals.graph.tools.front_man import FrontMan
 from neuro_san.internals.graph.tools.sly_data_redactor import SlyDataRedactor
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
@@ -42,7 +42,7 @@ class AgentToolRegistry(AgentToolFactory):
         """
         Constructor
 
-        :param agent_specs: A list of agents to pre-register
+        :param config: The dictionary describing the entire agent network
         :param name: The name of the registry
         :param agent_tool_path: Optional path to specify where source gets resolved.
                     If None, the value comes from the env var AGENT_TOOL_PATH.

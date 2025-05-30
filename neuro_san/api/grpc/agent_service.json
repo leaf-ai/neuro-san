@@ -350,6 +350,10 @@
               "type": "string"
             },
             "description": "A list of tool nodes that are possible to reach from the origin This might include references into external agent networks, perhaps hosted on other servers.  Separate calls to those guys will need to be made in order to gain information about their own connectivity, if this is actually desired by the client. Worth noting that server-side agent descriptions are allowed to withhold connectivity info they deem private, or too much of an implementation detail.  That is, connectivity reported is only as much as the server wants a client to know."
+          },
+          "display_as": {
+            "type": "string",
+            "description": "A string describing the nature of the agent so that a client UI can add an indication of its differences between other nodes in the graph. Values from the neuro-san include:  * llm_agent  (default)  * coded_tool  * langchain_tool  * external_agent ... however individual agent networks can define their own strings on a per-node basis to customize their own visualizations."
           }
         }
       },
