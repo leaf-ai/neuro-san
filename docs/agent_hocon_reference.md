@@ -446,6 +446,8 @@ The default toolbox configuration is located at [toolbox_info.hocon](../neuro_sa
 
 To use your own tools, create a custom toolbox .hocon file and point to it by setting the AGENT_TOOLBOX_INFO_FILE environment variable.
 
+For more information on tool schema, see the [toolbox_info_hocon_reference](./toolbox_info_hocon_reference.md).
+
 Example networks using tools from toolbox:
 - [langchain_search_tool.hocon](../neuro_san/registries/langchain_search_tool.hocon)
 which uses a langchain's base tool
