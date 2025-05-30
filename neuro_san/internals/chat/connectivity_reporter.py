@@ -221,7 +221,7 @@ class ConnectivityReporter:
                 if tool_info.get("display_as") is not None:
                     # Tool infos in a toolbox hocon can have their own display_as for potential branding
                     display_as = tool_info.get("display_as")
-                if tool_info.get("parameters") is not None:
+                elif tool_info.get("parameters") is not None:
                     # Shared coded tools need to specify parameters,
                     # whereas langchain_tools get the parameters from their @tool annotation
                     display_as = "coded_tool"
