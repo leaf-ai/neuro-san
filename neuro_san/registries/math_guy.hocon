@@ -56,10 +56,10 @@ on the secret numbers.
                     "required": ["operator"]
                 },
 
-                # You can also optionally specify the schema needed for any sly_data.
+                # You can also optionally specify the schema needed for any sly_data input.
                 # This is to allow generic clients to prompt for private-data inputs
                 # that do not belong in the chat stream.
-                "sly_data": {
+                "sly_data_schema": {
                     "type": "object",
                     "properties": {
                         "x": {

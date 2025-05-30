@@ -40,7 +40,7 @@ Sub-keys to those dictionaries will be described in the next-level down heading 
       - [type](#type)
       - [properties](#properties)
       - [required](#required)
-    - [sly_data](#sly_data)
+    - [sly_data_schema](#sly_data_schema)
   - [instructions](#instructions)
   - [command](#command)
   - [tools (agents)](#tools-agents)
@@ -52,11 +52,11 @@ Sub-keys to those dictionaries will be described in the next-level down heading 
   - [allow](#allow)
     - [connectivity](#connectivity)
     - [to_downstream](#to_downstream)
-      - [sly_data](#sly_data-1)
+      - [sly_data](#sly_data)
     - [from_downstream](#from_downstream)
-      - [sly_data](#sly_data-2)
+      - [sly_data](#sly_data-1)
     - [to_upstream](#to_upstream)
-      - [sly_data](#sly_data-3)
+      - [sly_data](#sly_data-2)
   - [display_as](#display_as)
   - [max_message_history](#max_message_history)
   - [error_formatter](#error_formatter-1)
@@ -351,7 +351,7 @@ This is an optional list of string keys in the [properties](#properties) diction
 to be required whenever an upstream agent calls the one being described.
 Note that it's possible to specify a default value for any property that is not listed as required.
 
-#### sly_data
+#### sly_data_schema
 
 The optional [JSON Schema](https://json-schema.org) dictionary describing what
 specific information the agent needs as input arguments over the private sly_data dictionary
@@ -360,15 +360,15 @@ that does not belong in the chat stream, for example: credential information.
 
 The sly_data schema specification here has the same format as the [parameters](#parameters)
 schema definition above.  Ideally there should be one [properties](#properties) entry per
-sly_data dictionary key, and any absolutely necessary keys should be listed in the [required](#required)
+sly_data dictionary input key, and any absolutely necessary keys should be listed in the [required](#required)
 list.
 
-Note that it is not strictly necessary to advertise to the outside world the sly_data that
+Note that it is not strictly necessary to advertise to the outside world the sly_data_schema that
 your agent network requires, but doing so does allow generic clients to prompt for this extra
 information before sending any chat input.
 
 The front-man is the only agent node that ever needs to specify this aspect of the [function](#function)
-definition, as sly_data is already visible to all other internal agents of the network.
+definition, as sly_data itself is already visible to all other internal agents of the network.
 
 Example networks that advertise their sly_data schema:
 - [math_guy.hocon](../neuro_san/registries/math_guy.hocon)
@@ -554,7 +554,7 @@ Boolean values for each key tell whether or not that data from any external agen
 is allowed to be accepted and merged into this agent's sly_data.
 A string value in the dictionary represents a translation to a new key.
 
-The same dictionary/list specification described in [to_downstream](#sly_data-1) also applies here.
+The same dictionary/list specification described in [to_downstream](#sly_data) also applies here.
 
 #### to_upstream
 
@@ -573,7 +573,7 @@ Boolean values for each key tell whether or not that data internal to the agent 
 is allowed to go back to the client in the final message.
 A string value in the dictionary represents a translation to a new key.
 
-The same dictionary/list specification described in [to_downstream](#sly_data-1) also applies here.
+The same dictionary/list specification described in [to_downstream](#sly_data) also applies here.
 
 ### display_as
 
