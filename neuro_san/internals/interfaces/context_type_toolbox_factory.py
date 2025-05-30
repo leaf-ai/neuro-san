@@ -71,3 +71,10 @@ class ContextTypeToolboxFactory:
         :return: The class of the coded tool from toolbox
         """
         raise NotImplementedError
+
+    def get_tool_info(self, tool_name: str) -> Dict[str, Any]:
+        """
+        :param tool_name: The name of the tool.
+        :return: The toolbox dictionary entry for the tool name
+        """
+        raise NotImplementedError
