@@ -12,6 +12,7 @@
 
 from typing import Dict
 from typing import List
+import threading
 
 import logging
 
@@ -91,16 +92,23 @@ class AgentServer:
         self.server_lifetime = None
         self.security_cfg = None
         self.services: List[GrpcAgentService] = []
-
         self.service_router: DynamicAgentRouter = DynamicAgentRouter()
-
+        # Event to notify that we have started serving
+        self.notify_started: threading.Event = threading.Event()
         self.logger.info("tool_registries found: %s", str(list(self.tool_registries.keys())))
+
 
     def get_services(self) -> List[GrpcAgentService]:
         """
         :return: A list of the AgentServices being served up by this instance
         """
         return self.services
+
+    def get_starting_event(self) -> threading.Event:
+        """
+        Get event signalling that server has started work.
+        """
+        return self.notify_started
 
     def setup_tool_factory_provider(self):
         """
@@ -186,4 +194,5 @@ class AgentServer:
             concierge_service,
             server)
 
+        self.notify_started.set()
         self.server_lifetime.run()

@@ -19,8 +19,10 @@ from typing import Any, Dict, List
 
 from tornado.ioloop import IOLoop
 
-from neuro_san.http_sidecar.logging.http_logger import HttpLogger
+from neuro_san.interfaces.concierge_session import ConciergeSession
+from neuro_san.session.direct_concierge_session import DirectConciergeSession
 from neuro_san.service.agent_server import DEFAULT_FORWARDED_REQUEST_METADATA
+from neuro_san.http_sidecar.logging.http_logger import HttpLogger
 from neuro_san.http_sidecar.http_server_app import HttpServerApp
 
 from neuro_san.http_sidecar.interfaces.agent_authorizer import AgentAuthorizer
@@ -38,25 +40,28 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
     Class provides simple http endpoint for neuro-san API,
     working as a client to neuro-san gRPC service.
     """
+
+    TIMEOUT_TO_START_SECONDS: int = 10
+
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     # pylint: disable=too-many-instance-attributes
-    def __init__(self, port: int, http_port: int,
-                 agents: Dict[str, Any],
+    def __init__(self, start_event: threading.Event,
+                 port: int, http_port: int,
                  openapi_service_spec_path: str,
                  forwarded_request_metadata: str = DEFAULT_FORWARDED_REQUEST_METADATA):
         """
         Constructor:
+        :param start_event: event to await before starting actual service;
         :param port: port for gRPC neuro-san service;
         :param http_port: port for http neuro-san service;
-        :param agents: dictionary of registered agents;
         :param openapi_service_spec_path: path to a file with OpenAPI service specification;
         :param forwarded_request_metadata: A space-delimited list of http metadata request keys
                to forward to logs/other requests
         """
         self.server_name_for_logs: str = "Http Server"
+        self.start_event: threading.Event = start_event
         self.port = port
         self.http_port = http_port
-        self.agents = copy.deepcopy(agents)
         self.logger = None
         self.openapi_service_spec_path: str = openapi_service_spec_path
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata.split(" ")
@@ -65,20 +70,24 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
 
     def __call__(self):
         """
-        Method to be called by a process running tornado HTTP server
+        Method to be called by a thread running tornado HTTP server
         to actually start serving requests.
         """
         self.lock = threading.Lock()
         self.logger = HttpLogger(self.forwarded_request_metadata)
-
         app = self.make_app()
+
+        event_set = self.start_event.wait(timeout=self.TIMEOUT_TO_START_SECONDS)
+        if not event_set:
+            self.logger.error({}, "Timeout (%d sec) waiting for HTTP server to start", self.TIMEOUT_TO_START_SECONDS)
+            return
+
         app.listen(self.http_port)
         self.logger.info({}, "HTTP server is running on port %d", self.http_port)
-        self.logger.debug({}, "Serving agents: %s", repr(self.agents.keys()))
-        # Put agent names into "allowed" list:
-        self.allowed_agents = {}
-        for agent_name, _ in self.agents.items():
-            self.allowed_agents[agent_name] = True
+        # Construct initial "allowed" list of agents:
+        self.update_agents()
+        self.logger.debug({}, "Serving agents: %s", repr(self.allowed_agents.keys()))
+
         IOLoop.current().start()
 
     def make_app(self):
@@ -102,9 +111,16 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
     def allow(self, agent_name) -> bool:
         return self.allowed_agents.get(agent_name, False)
 
-    def update_agents(self, agents: List[str]):
+    def update_agents(self):
+        data: Dict[str, Any] = {}
+        session: ConciergeSession = DirectConciergeSession(metadata={})
+        agents_dict: Dict[str, List[Dict[str, str]]] = session.list(data)
+        agents_list: List[Dict[str, str]] = agents_dict["agents"]
+        agents: List[str] = []
+        for agent_dict in agents_list:
+            agents.append(agent_dict["agent_name"])
         with self.lock:
-            # We assume all agents from "agents" dictionary are enabled:
+            # We assume all agents from "agents" list are enabled:
             for agent_name in agents:
                 self.allowed_agents[agent_name] = True
             # All other agents are disabled:

@@ -16,6 +16,7 @@ from typing import Any, Dict
 
 from neuro_san.http_sidecar.handlers.base_request_handler import BaseRequestHandler
 from neuro_san.interfaces.concierge_session import ConciergeSession
+from neuro_san.session.direct_concierge_session import DirectConciergeSession
 
 
 class ConciergeHandler(BaseRequestHandler):
@@ -31,8 +32,8 @@ class ConciergeHandler(BaseRequestHandler):
         self.logger.info(metadata, "Start GET /api/v1/list")
         try:
             data: Dict[str, Any] = {}
-            grpc_session: ConciergeSession = self.get_concierge_grpc_session(metadata)
-            result_dict: Dict[str, Any] = grpc_session.list(data)
+            session: ConciergeSession = DirectConciergeSession(metadata=metadata)
+            result_dict: Dict[str, Any] = session.list(data)
 
             # Return gRPC response to the HTTP client
             self.set_header("Content-Type", "application/json")

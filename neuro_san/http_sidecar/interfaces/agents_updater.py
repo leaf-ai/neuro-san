@@ -21,9 +21,9 @@ class AgentsUpdater:
     being served.
     """
 
-    def update_agents(self, agents: List[str]):
+    def update_agents(self):
         """
-        :param agents: list of agents names which should be served currently.
+        Update list of agents for which serving is allowed.
         :return: nothing
         """
         raise NotImplementedError
