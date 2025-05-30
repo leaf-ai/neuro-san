@@ -15,7 +15,7 @@ See class comment for details
 from typing import Dict
 from typing import List
 
-import multiprocessing
+import threading
 import os
 
 from argparse import ArgumentParser
@@ -154,19 +154,15 @@ class AgentMainLoop(ServerLoopCallbacks):
 
         # Start HTTP server side-car:
         http_sidecar = HttpSidecar(
+            self.server.get_starting_event(),
             self.port,
             self.http_port,
-            self.tool_registries,
             self.service_openapi_spec_file,
             forwarded_request_metadata=self.forwarded_request_metadata)
-        http_server_process = multiprocessing.Process(target=http_sidecar)
-        http_server_process.start()
+        http_server_thread = threading.Thread(target=http_sidecar, daemon=True)
+        http_server_thread.start()
 
-        try:
-            self.server.serve()
-        finally:
-            http_server_process.terminate()
-            http_server_process.join()
+        self.server.serve()
 
     def loop_callback(self) -> bool:
         """

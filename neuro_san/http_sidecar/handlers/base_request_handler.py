@@ -121,35 +121,15 @@ class BaseRequestHandler(RequestHandler):
                 agent_name=agent_name)
         return grpc_session
 
-    def get_concierge_grpc_session(self, metadata: Dict[str, Any]) -> ConciergeSession:
-        """
-        Build gRPC session to talk to "concierge" service
-        :return: ConciergeSession to use
-        """
-        grpc_session: ConciergeSession = \
-            GrpcConciergeSession(
-                host="localhost",
-                port=self.port,
-                metadata=metadata)
-        return grpc_session
-
-    async def update_agents(self, metadata: Dict[str, Any]) -> bool:
+    async def update_agents(self) -> bool:
         """
         Update internal agents table by executing request
         to underlying gRPC service.
-        :param metadata: metadata for request from caller context.
         :return: True if update was successful
                  False otherwise
         """
         try:
-            data: Dict[str, Any] = {}
-            grpc_session: ConciergeSession = self.get_concierge_grpc_session(metadata)
-            agents_dict: Dict[str, Any] = grpc_session.list(data)
-            agents_list = agents_dict.get("agents", [])
-            agents_names: List[str] = []
-            for agent_dict in agents_list:
-                agents_names.append(agent_dict["agent_name"])
-            self.agents_updater.update_agents(agents_names)
+            self.agents_updater.update_agents()
             return True
         except Exception as exc:  # pylint: disable=broad-exception-caught
             self.process_exception(exc)
