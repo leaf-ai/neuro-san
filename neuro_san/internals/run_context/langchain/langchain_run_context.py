@@ -23,6 +23,8 @@ from logging import Logger
 from logging import getLogger
 
 from openai import APIError
+from anthropic import BadRequestError
+from anthropic import AuthenticationError
 
 from pydantic_core import ValidationError
 
@@ -56,6 +58,7 @@ from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentT
 from neuro_san.internals.run_context.interfaces.run import Run
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 from neuro_san.internals.run_context.interfaces.tool_caller import ToolCaller
+from neuro_san.internals.run_context.langchain.api_key_error_check import ApiKeyErrorCheck
 from neuro_san.internals.run_context.langchain.journaling_callback_handler import JournalingCallbackHandler
 from neuro_san.internals.run_context.langchain.journaling_tools_agent_output_parser \
     import JournalingToolsAgentOutputParser
@@ -498,8 +501,12 @@ class LangChainRunContext(RunContext):
         while return_dict is None and retries > 0:
             try:
                 return_dict: Dict[str, Any] = await agent_executor.ainvoke(inputs, invoke_config)
-            except APIError as api_error:
-                self.logger.warning("retrying from openai.APIError")
+            except (APIError, BadRequestError, AuthenticationError) as api_error:
+                message: str = ApiKeyErrorCheck.check_for_api_key_exception(api_error)
+                if message is not None:
+                    raise ValueError(message) from api_error
+
+                self.logger.warning("retrying from {api_error.__class__.__name__}")
                 retries = retries - 1
                 exception = api_error
                 backtrace = traceback.format_exc()

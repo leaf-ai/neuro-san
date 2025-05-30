@@ -17,6 +17,9 @@ from typing import Type
 
 import os
 
+from openai import OpenAIError
+from pydantic_core import ValidationError
+
 from langchain_core.callbacks.base import BaseCallbackHandler
 from langchain_core.language_models.base import BaseLanguageModel
 
@@ -25,6 +28,7 @@ from leaf_common.config.resolver import Resolver
 from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
 from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
+from neuro_san.internals.run_context.langchain.api_key_error_check import ApiKeyErrorCheck
 from neuro_san.internals.run_context.langchain.langchain_llm_factory import LangChainLlmFactory
 from neuro_san.internals.run_context.langchain.llm_info_restorer import LlmInfoRestorer
 from neuro_san.internals.run_context.langchain.standard_langchain_llm_factory import StandardLangChainLlmFactory
@@ -251,6 +255,17 @@ class DefaultLlmFactory(ContextTypeLlmFactory, LangChainLlmFactory):
                     # We found what we were looking for
                     found_exception = None
                     break
+
+            # Catch some common wrong or missing API key errors in a single place
+            # with some verbose error messaging.
+            except (OpenAIError, ValidationError) as exception:
+                # Will re-raise but with the right exception text it will
+                # also provide some more helpful failure text.
+                message: str = ApiKeyErrorCheck.check_for_api_key_exception(exception)
+                if message is not None:
+                    raise ValueError(message) from exception
+                found_exception = exception
+
             except ValueError as exception:
                 # Let the next model have a crack
                 found_exception = exception
