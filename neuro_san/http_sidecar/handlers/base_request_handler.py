@@ -30,9 +30,7 @@ from neuro_san.http_sidecar.logging.http_logger import HttpLogger
 from neuro_san.http_sidecar.interfaces.agent_authorizer import AgentAuthorizer
 from neuro_san.http_sidecar.interfaces.agents_updater import AgentsUpdater
 from neuro_san.interfaces.async_agent_session import AsyncAgentSession
-from neuro_san.interfaces.concierge_session import ConciergeSession
 from neuro_san.session.async_grpc_service_agent_session import AsyncGrpcServiceAgentSession
-from neuro_san.session.grpc_concierge_session import GrpcConciergeSession
 
 
 class BaseRequestHandler(RequestHandler):
