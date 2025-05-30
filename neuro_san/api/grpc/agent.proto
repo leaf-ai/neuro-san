@@ -74,7 +74,7 @@ message Function {
     // Outward-facing description of what the agent does.
     string description = 1 [json_name="description"];
 
-    // Optional map of parameters passed in via the natural-language chat channel
+    // Optional map of parameters passed in via the natural-language chat text channel
     // that the agent needs in order to work.
     // This is really a pydantic/OpenAI function description, which is
     // a bit too complex to specify directly in protobuf.
