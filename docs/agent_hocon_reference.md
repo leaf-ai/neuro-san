@@ -356,7 +356,7 @@ Note that it's possible to specify a default value for any property that is not 
 The optional [JSON Schema](https://json-schema.org) dictionary describing what
 specific information the agent needs as input arguments over the private sly_data dictionary
 channel when it is called.  The sly_data itself is generally considered to be private information
-that does not belong in the chat stream, i.e. credential information.
+that does not belong in the chat stream, for example: credential information.
 
 The sly_data schema specification here has the same format as the [parameters](#parameters)
 schema definition above.  Ideally there should be one [properties](#properties) entry per
