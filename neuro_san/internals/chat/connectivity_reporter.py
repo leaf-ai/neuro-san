@@ -17,6 +17,8 @@ from typing import Set
 from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
+from neuro_san.internals.interfaces.context_type_toolbox_factory import ContextTypeToolboxFactory
+from neuro_san.internals.run_context.factory.master_toolbox_factory import MasterToolboxFactory
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 
 
@@ -56,6 +58,11 @@ class ConnectivityReporter:
         """
 
         self.registry: AgentToolRegistry = registry
+        self.toolbox_factory: ContextTypeToolboxFactory = None
+
+        if self.registry is not None:
+            config: Dict[str, Any] = self.registry.get_config()
+            self.toolbox_factory = MasterToolboxFactory.create_toolbox_factory(config)
 
     def report_network_connectivity(self) -> List[Dict[str, Any]]:
         """
@@ -74,6 +81,10 @@ class ConnectivityReporter:
                         implementation detail.  That is, connectivity reported is only
                         as much as the server wants a client to know.
         """
+        # Load the toolbox factory once
+        if self.toolbox_factory is not None:
+            self.toolbox_factory.load()
+
         # Find the name of the front-man as a root node
         front_man: str = self.registry.find_front_man()
 
@@ -93,6 +104,7 @@ class ConnectivityReporter:
 
         connectivity_list: List[Dict[str, Any]] = []
         agent_spec: Dict[str, Any] = None
+        display_as: str = None
 
         if not ExternalAgentParsing.is_external_agent(agent_name):
 
@@ -111,16 +123,23 @@ class ConnectivityReporter:
 
                 # We are not allowing connectivity reporting from here on down
                 agent_spec = None
+        else:
+            display_as = "external_agent"
 
         # Compile a tool list of what is referred to by the agent_spec.
         # For many reasons, this list could be empty.
         tool_list: List[str] = self.assemble_tool_list(agent_spec)
 
+        if display_as is None:
+            display_as = self.determine_display_as(agent_spec)
+
         connectivity_dict: Dict[str, Any] = {
             # Report the origin as the agent itself, so any client that receives
             "origin": agent_name,
             # Report the content of the tools list
-            "tools": tool_list
+            "tools": tool_list,
+            # Report how the node wishes to be displayed
+            "display_as": display_as
         }
 
         # the message has the correct context about the tools listed in the content.
@@ -183,3 +202,45 @@ class ConnectivityReporter:
                     tool_list.append(tool)
 
         return tool_list
+
+    def determine_display_as(self, agent_spec: Dict[str, Any]) -> str:
+        """
+        :param agent_spec: The agent spec to determine display_as from.
+        :return: A string describing how the node wants to be seen.
+        """
+        # Attempt to get something node-specific from the spec.
+        display_as: str = agent_spec.get("display_as")
+        if display_as is not None:
+            display_as = str(display_as)
+            return display_as
+
+        tool_name: str = agent_spec.get("toolbox")
+        if tool_name is not None:
+            # As a default, assume something from the toolbox is a lanchain_tool.
+            display_as = "langchain_tool"
+
+            tool_info: Dict[str, Any] = None
+            if self.toolbox_factory is not None:
+                tool_info = self.toolbox_factory.get_tool_info(tool_name)
+
+            if tool_info is not None:
+                if tool_info.get("display_as") is not None:
+                    # Tool infos in a toolbox hocon can have their own display_as for potential branding
+                    display_as = tool_info.get("display_as")
+                elif tool_info.get("description") is not None:
+                    # Shared coded tools need to at least specify their description,
+                    # whereas langchain_tools get the description from their @tool annotation
+                    display_as = "coded_tool"
+
+        elif agent_spec.get("function") is not None:
+            # If we have a function in the spec, the agent has arguments
+            # it wants to be called with.
+            if agent_spec.get("class") is not None:
+                display_as = "coded_tool"
+            else:
+                display_as = "llm_agent"
+        else:
+            # Front-man
+            display_as = "llm_agent"
+
+        return display_as

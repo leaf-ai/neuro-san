@@ -57,6 +57,7 @@ class TestConnectivityReporter(TestCase):
         # First guy is the front-man and he only has a single tool
         connectivity: Dict[str, Any] = messages[0]
         self.assertIsNotNone(connectivity)
+        self.assertEqual(connectivity.get("display_as"), "llm_agent")
 
         tools: List[str] = connectivity.get("tools")
         self.assertIsNotNone(tools)
@@ -66,6 +67,7 @@ class TestConnectivityReporter(TestCase):
         # Next guy is the synonymizer and has no tools
         connectivity: Dict[str, Any] = messages[1]
         self.assertIsNotNone(connectivity)
+        self.assertEqual(connectivity.get("display_as"), "llm_agent")
 
         tools: List[str] = connectivity.get("tools")
         self.assertIsNotNone(tools)
