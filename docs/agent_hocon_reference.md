@@ -358,7 +358,7 @@ specific information the agent needs as input arguments over the private sly_dat
 channel when it is called.  The sly_data itself is generally considered to be private information
 that does not belong in the chat stream, for example: credential information.
 
-The sly_data schema specification here has the same format as the [parameters](#parameters)
+The sly_data_schema specification here has the same format as the [parameters](#parameters)
 schema definition above.  Ideally there should be one [properties](#properties) entry per
 sly_data dictionary input key, and any absolutely necessary keys should be listed in the [required](#required)
 list.
@@ -370,7 +370,7 @@ information before sending any chat input.
 The front-man is the only agent node that ever needs to specify this aspect of the [function](#function)
 definition, as sly_data itself is already visible to all other internal agents of the network.
 
-Example networks that advertise their sly_data schema:
+Example networks that advertise their sly_data_schema:
 - [math_guy.hocon](../neuro_san/registries/math_guy.hocon)
 
 
