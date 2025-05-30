@@ -28,7 +28,7 @@ class FunctionHandler(BaseRequestHandler):
         Implementation of GET request handler for "function" API call.
         """
         metadata: Dict[str, Any] = self.get_metadata()
-        update_done: bool = await self.update_agents(metadata)
+        update_done: bool = await self.update_agents()
         if not update_done:
             return
 
