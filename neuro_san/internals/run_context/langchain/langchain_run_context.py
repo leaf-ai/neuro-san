@@ -350,7 +350,7 @@ class LangChainRunContext(RunContext):
         # In the case of an internal agent, the name passed in for lookup should be the
         # same as what is in the spec.
         if agent_spec is not None and name != agent_spec.get("name"):
-            raise ValueError(f"Tool name mismatch.  name={name}  agent_spec.name={agent_spec.get("name")}")
+            raise ValueError(f"Tool name mismatch.  name={name}  agent_spec.name={agent_spec.get('name')}")
 
         # In the case of external agents, if they report a name at all, they will
         # report something different that does not identify them as external.
