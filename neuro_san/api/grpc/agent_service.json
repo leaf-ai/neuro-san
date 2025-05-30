@@ -379,7 +379,11 @@
           },
           "parameters": {
             "type": "object",
-            "description": "Optional map of parameters that the agent needs in order to work. This is really a pydantic/OpenAI function description, which is a bit too complex to specify directly in protobuf."
+            "description": "Optional map of parameters passed in via the natural-language chat text channel that the agent needs in order to work. This is really a pydantic/OpenAI function description, which is a bit too complex to specify directly in protobuf."
+          },
+          "sly_data_schema": {
+            "type": "object",
+            "description": "Optional map of parameters passed in via the sly_data dictionary private data channel that the agent needs in order to work.  Just like the parameters above, this is really a pydantic/OpenAI function description, which is a bit too complex to specify directly in protobuf."
           }
         },
         "description": "Description of an agent's function"
