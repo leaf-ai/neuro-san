@@ -58,9 +58,11 @@ class ConnectivityReporter:
         """
 
         self.registry: AgentToolRegistry = registry
+        self.toolbox_factory: ContextTypeToolboxFactory = None
 
-        config: Dict[str, Any] = self.registry.get_config()
-        self.toolbox_factory: ContextTypeToolboxFactory = MasterToolboxFactory.create_toolbox_factory(config)
+        if self.registry is not None:
+            config: Dict[str, Any] = self.registry.get_config()
+            self.toolbox_factory = MasterToolboxFactory.create_toolbox_factory(config)
 
     def report_network_connectivity(self) -> List[Dict[str, Any]]:
         """
@@ -216,7 +218,11 @@ class ConnectivityReporter:
         if tool_name is not None:
             # As a default, assume something from the toolbox is a lanchain_tool.
             display_as = "langchain_tool"
-            tool_info: Dict[str, Any] = self.toolbox_factory.get_tool_info(tool_name)
+
+            tool_info: Dict[str, Any] = None
+            if self.toolbox_factory is not None:
+                tool_info = self.toolbox_factory.get_tool_info(tool_name)
+
             if tool_info is not None:
                 if tool_info.get("display_as") is not None:
                     # Tool infos in a toolbox hocon can have their own display_as for potential branding
