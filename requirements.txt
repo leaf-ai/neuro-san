@@ -53,6 +53,9 @@ httpx==0.27.2
 # HTTP server part
 tornado>=6.4.2
 
+# Sync/async queue
+janus >= 2.0.0
+
 # Local filesystem watchdog
 watchdog>=6.0.0
 

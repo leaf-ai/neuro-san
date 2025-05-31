@@ -121,6 +121,8 @@ class SessionInvocationContext(InvocationContext):
         if self.asyncio_executor is not None:
             self.asyncio_executor.shutdown()
             self.asyncio_executor = None
+        if self.queue is not None:
+            self.queue.close()
 
     def get_request_reporting(self) -> Dict[str, Any]:
         """

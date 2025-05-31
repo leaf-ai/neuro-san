@@ -14,7 +14,7 @@ from typing import Any
 from typing import AsyncIterator
 from typing import Dict
 
-from asyncio.queues import Queue
+from janus import Queue
 
 from neuro_san.internals.interfaces.async_hopper import AsyncHopper
 
@@ -60,7 +60,7 @@ class AsyncCollatingQueue(AsyncIterator, AsyncHopper):
                 Will throw StopAsyncIteration when the final item is detected
                 via the is_final_item() method..
         """
-        message = await self.queue.get()
+        message = await self.queue.async_q.get()
         if self.is_final_item(message):
             raise StopAsyncIteration
 
@@ -72,7 +72,7 @@ class AsyncCollatingQueue(AsyncIterator, AsyncHopper):
 
         :param item: The item to put on the queue.
         """
-        await self.queue.put(item)
+        self.queue.sync_q.put(item)
 
     async def put_final_item(self):
         """
@@ -89,3 +89,9 @@ class AsyncCollatingQueue(AsyncIterator, AsyncHopper):
                  end of data. False otherwise.
         """
         return isinstance(item, Dict) and item.get(self.END_KEY) is not None
+
+    def close(self):
+        """
+        Close this queue
+        """
+        self.queue.close()
