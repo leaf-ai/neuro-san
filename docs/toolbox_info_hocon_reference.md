@@ -85,15 +85,15 @@ These tools extend from the Langchain's `BaseTool` class.
     A dictionary of arguments for tool initialization. 
     
     Example:
-    ```json
-        "args": {
+    ```hocon
+    "args": {
             "max_results": 5
-        }
+    }
     ```
 
     May include nested configurations.
     Example:
-    ```json
+    ```hocon
     "args": {
         "api_wrapper": {
             "class": "langchain_community.utilities.BingSearchAPIWrapper",
@@ -124,7 +124,7 @@ These tools extend from the `CodedTool` class.
     Fully qualified class name in the format `tool_module.ToolClass`. The `class` must point to a module available in your `AGENT_TOOL_PATH` and server `PYTHONPATH`.
 
     Example:
-    ```json
+    ```hocon
     "class": "web_search.WebSearch"
     ```
 
@@ -135,7 +135,7 @@ These tools extend from the `CodedTool` class.
     JSON schema-like structure describing the expected input arguments, types, and which are required.
 
     Example:
-    ```json
+    ```hocon
     "parameters": {
         "type": "object",
         "properties": {
