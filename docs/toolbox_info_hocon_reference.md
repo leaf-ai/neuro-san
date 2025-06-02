@@ -73,9 +73,8 @@ The value for each key is a dictionary describing the tool's properties. The sch
 These tools extend from the Langchain's `BaseTool` class.
 - #### `class`
     Fully qualified class name of the tool. It must exist in the server's `PYTHONPATH`. 
-    
-    Example:
 
+    Example:
     ```json
     "class": "langchain_community.tools.bing_search.BingSearchResults"
     ```
