@@ -78,7 +78,6 @@ These tools extend from the Langchain's `BaseTool` class.
     ```json
     "class": "langchain_community.tools.bing_search.BingSearchResults"
     ```
-
     If the class is a Langchain **toolkit** (such as `RequestsToolkit`), it must implement a `get_tools()` method. When instantiated, the toolkit returns a list of individual tools via this method — each of which will be available for the agent to call.
 
 - #### `args`
