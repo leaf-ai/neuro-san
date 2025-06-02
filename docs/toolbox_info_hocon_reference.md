@@ -86,9 +86,9 @@ These tools extend from the Langchain's `BaseTool` class.
     
     Example:
     ```json
-    "args": {
-        "max_results": 5
-    }
+        "args": {
+            "max_results": 5
+        }
     ```
 
     May include nested configurations.
