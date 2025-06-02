@@ -484,7 +484,7 @@ coded tools.
 Args is an optional dictionary for agents representing CodedTools to pass other
 key/value pairs when the agent is invoked.  This allows for greater code sharing
 for a single CodedTool implementation when it is referenced by multiple agents
-and called in multiple contexts.
+and called in multiple contexts. It can also be used to supply or override arguments of Langchain tools defined in the [toolbox](#toolbox).
 
 ### allow
 

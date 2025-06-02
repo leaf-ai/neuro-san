@@ -8,11 +8,23 @@ Specifications in this document are organized hierarchically, with header levels
 
 <!--TOC-->
 
-- [Toolbox Info Specifications](#toolbox-info-specifications)
-- [Tool Definition Schema](#tool-definition-schema)
-  - [Langchain Tools](#langchain-tools)
-  - [Coded Tools](#coded-tools)
-- [Extending Toolbox Info](#extending-toolbox-info)
+- [Toolbox Info HOCON File Reference](#toolbox-info-hocon-file-reference)
+    - [Toolbox Info Specifications](#toolbox-info-specifications)
+        - [Default Supported Tools](#default-supported-tools)
+            - [Langchain Tools](#langchain-tools)
+            - [Coded Tools](#coded-tools)
+    - [Tool Definition Schema](#tool-definition-schema)
+        - [Langchain Tools](#langchain-tools-1)
+            - [class](#class)
+            - [args](#args)
+            - [base_tool_info_url](#base_tool_info_url-optional)
+            - [display_as](#display_as-optional)
+        - [Coded Tools](#coded-tools-1)
+            - [class](#class-1)
+            - [description](#description)
+            - [parameters](#parameters-optional)
+            - [display_as](#display_as-optional-1)
+    - [Extending Toolbox Info](#extending-toolbox-info)
 
 <!--TOC-->
 
@@ -36,7 +48,7 @@ This file defines all tools that the system can recognize. Currently supported t
   - `bing_search`: Uses `BingSearchResults` to perform Bing queries.
   - `tavily_search`: Uses `TavilySearchResults` to perform Tavily queries.
 
-- **HTTP Request Tools** (using `RequestsToolkit` with a `TextRequestsWrapper`):
+- **HTTP Request Tools**:
   - `requests_get`: Sends GET requests.
   - `requests_post`: Sends POST requests.
   - `requests_patch`: Sends PATCH requests.
@@ -55,25 +67,95 @@ This file defines all tools that the system can recognize. Currently supported t
 
 Each top-level key in the `toolbox_info.hocon` file represents a usable tool name. These names can be referenced in the agent network’s [`toolbox`](./agent_hocon_reference.md#toolbox).
 
-The value for each key is a dictionary describing the tool's properties. The schema differs slightly between `langchain` tools and coded tools, as detailed below.
+The value for each key is a dictionary describing the tool's properties. The schema differs slightly between `langchain tools` and `coded tools`, as detailed below.
 
 ### Langchain Tools
+These tools extend from the Langchain's `BaseTool` class.
+- #### `class`
+    Fully qualified class name of the tool. It must exist in the server's `PYTHONPATH`. 
+    
+    Example:  
+    ```json
+    "class": "langchain_community.tools.bing_search.BingSearchResults"
+    ```
 
-| Field | Description |
-|-------|-------------|
-| `class` | Fully qualified class name of the tool. |
-| `args` | Dictionary of arguments required for tool initialization. May include nested configurations. |
-| `base_tool_info_url` | *(Optional)* URL to reference documentation for the tool. |
-| `display_as` | *(Optional)* Display type for the client. Options: `"coded_tool"`, `"external_agent"`, `"langchain_tool"` (default), or `"llm_agent"`. |
+    If the class is a Langchain **toolkit** (such as `RequestsToolkit`), it must implement a `get_tools()` method. When instantiated, the toolkit returns a list of individual tools via this method — each of which will be available for the agent to call.
+
+- #### `args`
+    A dictionary of arguments for tool initialization. 
+    
+    Example:
+    ```json
+    "args": {
+        "max_results": 5
+    }
+    ```
+
+    May include nested configurations.
+    Example:
+    ```json
+    "args": {
+        "api_wrapper": {
+            "class": "langchain_community.utilities.BingSearchAPIWrapper",
+            "args": {
+                "k": 3
+            }
+        }
+    }
+    ```
+    This instantiates `BingSearchResults(api_wrapper=BingSearchAPIWrapper(k=3))`
+
+- #### `base_tool_info_url` *(optional)*
+    Reference URL pointing to Langchain’s documentation for the specific tool.
+
+- #### `display_as` *(optional)*
+    Display type for clients. Options:
+  - `"coded_tool"`
+  - `"external_agent"`
+  - `"langchain_tool"` (default)
+  - `"llm_agent"`
+    
+  If not provided, the tool is inferred as `"langchain_tool"` unless it contains a [`description`](#coded-description).
 
 ### Coded Tools
+These tools extend from the `CodedTool` class.
 
-| Field | Description |
-|-------|-------------|
-| [`class`](./agent_hocon_reference.md#class) | Fully qualified class name in the format `tool_module.ClassName`. `tool_module` must be in the `AGENT_TOOL_PATH`. |
-| [`description`](./agent_hocon_reference.md#description) | Description of when and how to use the tool. |
-| [`parameters`](./agent_hocon_reference.md#parameters) | *(Optional)* Details about the tool's parameters. |
-| `display_as` | *(Optional)* Display type for the client. Options: `"coded_tool"` (default), `"external_agent"`, `"langchain_tool"`, or `"llm_agent"`. |
+- #### [`class`](./agent_hocon_reference.md#class)
+    Fully qualified class name in the format `tool_module.ToolClass`. The `class` must point to a module available in your `AGENT_TOOL_PATH` and server `PYTHONPATH`.
+
+    Example:
+    ```json
+    "class": "web_search.WebSearch"
+    ```
+
+- #### [`description`](./agent_hocon_reference.md#description)
+    A plain-language explanation of the tool’s behavior. This is essential for agents to understand how and when to use the tool.
+
+- #### [`parameters`](./agent_hocon_reference.md#parameters) *(optional)*
+    JSON schema-like structure describing the expected input arguments, types, and which are required.
+
+    Example:
+    ```json
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "The search query"
+            }
+        },
+        "required": ["query"]
+    }
+    ```
+
+- #### `display_as` *(optional)*
+    Display type for clients. Options:
+  - `"coded_tool"` (default)
+  - `"external_agent"`
+  - `"langchain_tool"`
+  - `"llm_agent"`
+
+  If omitted, tools with a `description` are treated as `"coded_tool"`; otherwise, `"langchain_tool"`.
 
 ---
 
