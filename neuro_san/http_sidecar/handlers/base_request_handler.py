@@ -119,15 +119,16 @@ class BaseRequestHandler(RequestHandler):
                 agent_name=agent_name)
         return grpc_session
 
-    async def update_agents(self) -> bool:
+    async def update_agents(self, metadata: Dict[str, Any]) -> bool:
         """
         Update internal agents table by executing request
         to underlying gRPC service.
+        :param metadata: metadata to be used for logging if necessary.
         :return: True if update was successful
                  False otherwise
         """
         try:
-            self.agents_updater.update_agents()
+            self.agents_updater.update_agents(metadata=metadata)
             return True
         except Exception as exc:  # pylint: disable=broad-exception-caught
             self.process_exception(exc)
