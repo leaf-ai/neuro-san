@@ -28,7 +28,7 @@ class ConnectivityHandler(BaseRequestHandler):
         Implementation of GET request handler for "connectivity" API call.
         """
         metadata: Dict[str, Any] = self.get_metadata()
-        update_done: bool = await self.update_agents()
+        update_done: bool = await self.update_agents(metadata=metadata)
         if not update_done:
             return
 

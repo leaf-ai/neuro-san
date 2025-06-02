@@ -76,6 +76,8 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
         self.logger = HttpLogger(self.forwarded_request_metadata)
         app = self.make_app()
 
+        # Wait for "go" signal which will be set by gRPC server and corresponding machinery
+        # when everything is ready for servicing.
         event_set = self.start_event.wait(timeout=self.TIMEOUT_TO_START_SECONDS)
         if not event_set:
             self.logger.error({}, "Timeout (%d sec) waiting for HTTP server to start", self.TIMEOUT_TO_START_SECONDS)
@@ -84,7 +86,8 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
         app.listen(self.http_port)
         self.logger.info({}, "HTTP server is running on port %d", self.http_port)
         # Construct initial "allowed" list of agents:
-        self.update_agents()
+        # no metadata to use here yet.
+        self.update_agents(metadata={})
         self.logger.debug({}, "Serving agents: %s", repr(self.allowed_agents.keys()))
 
         IOLoop.current().start()
@@ -110,9 +113,14 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
     def allow(self, agent_name) -> bool:
         return self.allowed_agents.get(agent_name, False)
 
-    def update_agents(self):
+    def update_agents(self, metadata: Dict[str, Any]):
+        """
+        Update list of agents for which serving is allowed.
+        :param metadata: metadata to be used for logging if necessary.
+        :return: nothing
+        """
         data: Dict[str, Any] = {}
-        session: ConciergeSession = DirectConciergeSession(metadata={})
+        session: ConciergeSession = DirectConciergeSession(metadata=metadata)
         agents_dict: Dict[str, List[Dict[str, str]]] = session.list(data)
         agents_list: List[Dict[str, str]] = agents_dict["agents"]
         agents: List[str] = []
