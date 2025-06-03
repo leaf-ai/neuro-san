@@ -10,18 +10,18 @@
 #
 # END COPYRIGHT
 
-from neuro_san.internals.graph.tools.abstract_class_tool import AbstractClassTool
+from neuro_san.internals.graph.activations.abstract_class_activation import AbstractClassActivation
 
 
-class ClassTool(AbstractClassTool):
+class ClassActivation(AbstractClassActivation):
     """
-    A ClassTool that retrieves the full class reference directly from the tool specification
+    A ClassActivation that retrieves the full class reference directly from the class specification
     in agent network hocon.
     """
 
     def get_full_class_ref(self) -> str:
         """
-        Returns the full class reference path directly from the tool specification.
+        Returns the full class reference path directly from the class specification.
 
         This implementation expects the fully qualified class name to be provided
         in the "class" field of the `agent_tool_spec` dictionary.

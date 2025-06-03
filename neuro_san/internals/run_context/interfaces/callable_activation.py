@@ -16,9 +16,9 @@ from typing import List
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 
 
-class CallableTool:
+class CallableActivation:
     """
-    Interface describing what a CallingTool can access
+    Interface describing what a CallingActivation can access
     when invoking LLM function calls.
     """
 

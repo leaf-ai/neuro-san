@@ -12,7 +12,7 @@
 from typing import Any
 from typing import Dict
 
-from neuro_san.internals.run_context.interfaces.callable_tool import CallableTool
+from neuro_san.internals.run_context.interfaces.callable_activation import CallableActivation
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 
 
@@ -23,12 +23,12 @@ class AgentToolFactory:
     """
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
-    def create_agent_tool(self,
-                          parent_run_context: RunContext,
-                          parent_agent_spec: Dict[str, Any],
-                          name: str,
-                          sly_data: Dict[str, Any],
-                          arguments: Dict[str, Any]) -> CallableTool:
+    def create_agent_activation(self,
+                                parent_run_context: RunContext,
+                                parent_agent_spec: Dict[str, Any],
+                                name: str,
+                                sly_data: Dict[str, Any],
+                                arguments: Dict[str, Any]) -> CallableActivation:
         """
         Create an active node for an agent from its spec.
 
@@ -38,7 +38,7 @@ class AgentToolFactory:
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be an empty dictionary.
         :param arguments: A dictionary of arguments for the newly constructed agent
-        :return: The CallableTool agent referred to by the name.
+        :return: The CallableActivation agent referred to by the name.
         """
         raise NotImplementedError
 

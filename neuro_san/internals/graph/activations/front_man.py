@@ -12,19 +12,19 @@
 from typing import Any
 from typing import List
 
-from neuro_san.internals.graph.tools.calling_tool import CallingTool
+from neuro_san.internals.graph.activations.calling_activation import CallingActivation
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.run_context.interfaces.run import Run
 
 
-class FrontMan(CallingTool):
+class FrontMan(CallingActivation):
     """
-    A CallingTool implementation which is the root of the call graph.
+    A CallingActivation implementation which is the root of the call graph.
     """
 
     async def submit_message(self, user_input: str) -> List[Any]:
         """
-        Entry-point method for callers of the root of the Tool tree.
+        Entry-point method for callers of the root of the Activation tree.
 
         :param user_input: An input string from the user.
         :return: A list of response messages for the run

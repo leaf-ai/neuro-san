@@ -14,19 +14,19 @@ from typing import Dict
 from typing import List
 
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
-from neuro_san.internals.run_context.interfaces.callable_tool import CallableTool
+from neuro_san.internals.run_context.interfaces.callable_activation import CallableActivation
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 
 
-class AbstractCallableTool(CallableTool):
+class AbstractCallableActivation(CallableActivation):
     """
-    An abstract implementation of the CallableTool interface
+    An abstract implementation of the CallableActivation interface
     containing common policy for all tools.
 
     Worth noting that this is used as a base implementation for:
-        * ClassTool
-        * ExternalTool
-        * CallingTool
+        * ClassActivation
+        * ExternalActivation
+        * CallingActivation
     """
 
     def __init__(self,
@@ -86,7 +86,7 @@ class AbstractCallableTool(CallableTool):
         """
         Cleans up after any allocated resources on their server side.
         :param parent_run_context: The RunContext which contains the scope
-                    of operation of this CallableTool
+                    of operation of this CallableActivation
         """
         if self.run_context is not None:
             await self.run_context.delete_resources(parent_run_context)

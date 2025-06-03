@@ -10,14 +10,14 @@
 #
 # END COPYRIGHT
 
-from neuro_san.internals.graph.tools.abstract_class_tool import AbstractClassTool
+from neuro_san.internals.graph.activations.abstract_class_activation import AbstractClassActivation
 from neuro_san.internals.interfaces.context_type_toolbox_factory import ContextTypeToolboxFactory
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 
 
-class ToolboxTool(AbstractClassTool):
+class ToolboxActivation(AbstractClassActivation):
     """
-    A ClassTool that resolves the full class reference from a predefined coded tool in the toolbox.
+    A ClassActivation that resolves the full class reference from a predefined coded tool in the toolbox.
 
     Note that this class does not apply to Langchain's base tools.
     """
