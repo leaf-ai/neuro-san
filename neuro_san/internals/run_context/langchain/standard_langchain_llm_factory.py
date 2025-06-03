@@ -110,6 +110,10 @@ class StandardLangChainLlmFactory(LangChainLlmFactory):
             llm = AzureChatOpenAI(
                             model_name=model_name,
                             temperature=config.get("temperature"),
+                            # Automatically inferred from env var AZURE_OPENAI_API_KEY then OPENAI_API_KEY
+                            # if open_api_key is not provided.
+                            # However, OPENAI_API_KEY support is soon to be removed.
+                            # https://python.langchain.com/api_reference/_modules/langchain_openai/chat_models/azure.html#AzureChatOpenAI
                             openai_api_key=self.get_value_or_env(config, "openai_api_key",
                                                                  "AZURE_OPENAI_API_KEY"),
                             openai_api_base=self.get_value_or_env(config, "openai_api_base",
@@ -134,6 +138,7 @@ class StandardLangChainLlmFactory(LangChainLlmFactory):
                             stop=config.get("stop"),
 
                             # Azure-specific
+                            # These 3 args are required. Users need to get these from Azure.
                             azure_endpoint=self.get_value_or_env(config, "azure_endpoint",
                                                                  "AZURE_OPENAI_ENDPOINT"),
                             deployment_name=self.get_value_or_env(config, "deployment_name",
