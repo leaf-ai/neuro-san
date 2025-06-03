@@ -68,7 +68,7 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
         self.logger = None
         self.openapi_service_spec_path: str = openapi_service_spec_path
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata.split(" ")
-        self.allowed_agents: Dict[str, bool] = {}
+        self.allowed_agents: Dict[str, AsyncAgentService] = {}
         self.lock = None
 
     def __call__(self):
