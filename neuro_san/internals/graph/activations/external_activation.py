@@ -22,9 +22,9 @@ from logging import Logger
 from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
 from neuro_san.interfaces.async_agent_session import AsyncAgentSession
-from neuro_san.internals.graph.tools.abstract_callable_tool import AbstractCallableTool
-from neuro_san.internals.graph.tools.external_message_processor import ExternalMessageProcessor
-from neuro_san.internals.graph.tools.sly_data_redactor import SlyDataRedactor
+from neuro_san.internals.graph.activations.abstract_callable_activation import AbstractCallableActivation
+from neuro_san.internals.graph.activations.external_message_processor import ExternalMessageProcessor
+from neuro_san.internals.graph.activations.sly_data_redactor import SlyDataRedactor
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
@@ -38,9 +38,9 @@ from neuro_san.message_processing.basic_message_processor import BasicMessagePro
 
 
 # pylint: disable=too-many-instance-attributes
-class ExternalTool(AbstractCallableTool):
+class ExternalActivation(AbstractCallableActivation):
     """
-    CallableTool implementation that handles using a service to call
+    CallableActivation implementation that handles using a service to call
     another agent hierarchy as a tool.
     """
 

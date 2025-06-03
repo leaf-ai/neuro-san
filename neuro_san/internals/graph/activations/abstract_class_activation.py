@@ -24,8 +24,8 @@ from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 from leaf_common.config.resolver import Resolver
 
 from neuro_san.interfaces.coded_tool import CodedTool
-from neuro_san.internals.graph.tools.abstract_callable_tool import AbstractCallableTool
-from neuro_san.internals.graph.tools.branch_tool import BranchTool
+from neuro_san.internals.graph.activations.abstract_callable_activation import AbstractCallableActivation
+from neuro_san.internals.graph.activations.branch_activation import BranchActivation
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.agent_message import AgentMessage
 from neuro_san.internals.messages.origination import Origination
@@ -34,17 +34,17 @@ from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentT
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 
 
-class AbstractClassTool(AbstractCallableTool):
+class AbstractClassActivation(AbstractCallableActivation):
     """
-    CallableTool which can invoke a CodedTool by its class name.
+    CallableActivation which can invoke a CodedTool by its class name.
 
     This is a base class for tools that dynamically invoke a Python class based on a
     fully qualified class reference. Subclasses must implement "get_full_class_ref"
     method to determine the target class.
 
     There are two main subclasses:
-    - ClassTool: retrieves the class reference directly from the tool specification.
-    - ToolboxTool: looks up the class reference from a predefined toolbox.
+    - ClassActivation: retrieves the class reference directly from the tool specification.
+    - ToolboxActivation: looks up the class reference from a predefined toolbox.
     """
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
@@ -166,8 +166,8 @@ class AbstractClassTool(AbstractCallableTool):
         # Instantiate the CodedTool
         coded_tool: CodedTool = None
         try:
-            if issubclass(python_class, BranchTool):
-                # Allow for a combination of BranchTool + CodedTool to allow
+            if issubclass(python_class, BranchActivation):
+                # Allow for a combination of BranchActivation + CodedTool to allow
                 # for easier invocation of agents within code.
                 coded_tool = python_class(self.run_context, self.factory,
                                           self.arguments, self.agent_tool_spec, self.sly_data)

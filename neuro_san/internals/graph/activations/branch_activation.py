@@ -18,18 +18,18 @@ import uuid
 
 from leaf_common.parsers.field_extractor import FieldExtractor
 
-from neuro_san.internals.graph.tools.argument_assigner import ArgumentAssigner
-from neuro_san.internals.graph.tools.calling_tool import CallingTool
+from neuro_san.internals.graph.activations.argument_assigner import ArgumentAssigner
+from neuro_san.internals.graph.activations.calling_activation import CallingActivation
 from neuro_san.internals.messages.message_utils import generate_response
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
-from neuro_san.internals.run_context.interfaces.callable_tool import CallableTool
+from neuro_san.internals.run_context.interfaces.callable_activation import CallableActivation
 from neuro_san.internals.run_context.interfaces.run import Run
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 
 
-class BranchTool(CallingTool, CallableTool):
+class BranchActivation(CallingActivation, CallableActivation):
     """
-    A CallingTool subclass which can also be a CallableTool.
+    A CallingActivation subclass which can also be a CallableActivation.
     Thus, instances are able to be branch nodes in the tool call graph.
     Leaf nodes in the call graph are also these guys, they just happen to
     not call anyone else.
@@ -167,7 +167,7 @@ class BranchTool(CallingTool, CallableTool):
 
         # Use the tool
         our_agent_spec = self.get_agent_tool_spec()
-        callable_tool: CallableTool = self.factory.create_agent_tool(self.run_context,
+        callable_tool: CallableActivation = self.factory.create_agent_tool(self.run_context,
                                                                      our_agent_spec,
                                                                      tool_name,
                                                                      sly_data,

@@ -17,11 +17,11 @@ import json
 
 from leaf_common.config.dictionary_overlay import DictionaryOverlay
 
-from neuro_san.internals.graph.tools.abstract_callable_tool import AbstractCallableTool
+from neuro_san.internals.graph.activations.abstract_callable_activation import AbstractCallableActivation
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.run_context.factory.run_context_factory import RunContextFactory
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
-from neuro_san.internals.run_context.interfaces.callable_tool import CallableTool
+from neuro_san.internals.run_context.interfaces.callable_activation import CallableActivation
 from neuro_san.internals.run_context.interfaces.run import Run
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 from neuro_san.internals.run_context.interfaces.tool_call import ToolCall
@@ -29,13 +29,13 @@ from neuro_san.internals.run_context.interfaces.tool_caller import ToolCaller
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 
 
-class CallingTool(AbstractCallableTool, ToolCaller):
+class CallingActivation(AbstractCallableActivation, ToolCaller):
     """
     An implementation of the ToolCaller interface which actually does
     the calling of the other tools.
 
     Worth noting that this is used as a base implementation for:
-        * BranchTool - which can both call other tools and be called as a tool
+        * BranchActivation - which can both call other tools and be called as a tool
         * FrontMan - which can only call other tools but has other specialized
             logic for interacting with user input, it being the root node of a tool graph.
     """
@@ -189,7 +189,7 @@ context with which it will proces input, essentially telling it what to do.
             tool_outputs.append(tool_output)
 
         # Submit all tool outputs at once after the loop has gathered all
-        # outputs of all CallableTool' functions.
+        # outputs of all CallableActivation' functions.
         component_run = await self.run_context.submit_tool_outputs(component_run, tool_outputs)
 
         return component_run
@@ -219,7 +219,7 @@ context with which it will proces input, essentially telling it what to do.
         # Note: This is not a BaseTool. This is our own construct within graph
         #       that we can build().
         our_agent_spec = self.get_agent_tool_spec()
-        callable_component: CallableTool = \
+        callable_component: CallableActivation = \
             self.factory.create_agent_tool(self.run_context, our_agent_spec, use_tool_name,
                                            self.sly_data, tool_arguments)
         callable_component_response: List[Any] = await callable_component.build()
@@ -237,11 +237,11 @@ context with which it will proces input, essentially telling it what to do.
             "sly_data": callable_component.sly_data
         }
 
-        # Clean up after this CallableTool.
+        # Clean up after this CallableActivation.
         # Note that the run_context passed here is used as a comparison to be sure
-        # that the CallableTool's cleanup does not accidentally clean up
+        # that the CallableActivation's cleanup does not accidentally clean up
         # any resources that should still remain open for this
-        # CallingTool's purposes.
+        # CallingActivation's purposes.
         await callable_component.delete_resources(self.run_context)
 
         return tool_output

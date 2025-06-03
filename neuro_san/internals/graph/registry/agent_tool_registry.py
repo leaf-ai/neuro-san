@@ -20,14 +20,14 @@ from pathlib import Path
 from leaf_common.config.dictionary_overlay import DictionaryOverlay
 from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
-from neuro_san.internals.graph.tools.branch_tool import BranchTool
-from neuro_san.internals.graph.tools.class_tool import ClassTool
-from neuro_san.internals.graph.tools.external_tool import ExternalTool
-from neuro_san.internals.graph.tools.toolbox_tool import ToolboxTool
-from neuro_san.internals.graph.tools.front_man import FrontMan
-from neuro_san.internals.graph.tools.sly_data_redactor import SlyDataRedactor
+from neuro_san.internals.graph.activations.branch_activation import BranchActivation
+from neuro_san.internals.graph.activations.class_activation import ClassActivation
+from neuro_san.internals.graph.activations.external_activation import ExternalActivation
+from neuro_san.internals.graph.activations.toolbox_activation import ToolboxActivation
+from neuro_san.internals.graph.activations.front_man import FrontMan
+from neuro_san.internals.graph.activations.sly_data_redactor import SlyDataRedactor
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
-from neuro_san.internals.run_context.interfaces.callable_tool import CallableTool
+from neuro_san.internals.run_context.interfaces.callable_activation import CallableActivation
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 from neuro_san.internals.utils.file_of_class import FileOfClass
@@ -185,7 +185,7 @@ Some things to try:
                           parent_agent_spec: Dict[str, Any],
                           name: str,
                           sly_data: Dict[str, Any],
-                          arguments: Dict[str, Any] = None) -> CallableTool:
+                          arguments: Dict[str, Any] = None) -> CallableActivation:
         """
         Create an active node for an agent from its spec.
 
@@ -195,9 +195,9 @@ Some things to try:
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be an empty dictionary.
         :param arguments: A dictionary of arguments for the newly constructed agent
-        :return: The CallableTool agent referred to by the name.
+        :return: The CallableActivation agent referred to by the name.
         """
-        agent_tool: CallableTool = None
+        agent_tool: CallableActivation = None
         factory: AgentToolFactory = self
 
         agent_tool_spec: Dict[str, Any] = self.get_agent_tool_spec(name)
@@ -215,8 +215,8 @@ Some things to try:
             empty = {}
             allow_from_downstream: Dict[str, Any] = extractor.get("allow.from_downstream", empty)
 
-            agent_tool = ExternalTool(parent_run_context, factory, name, arguments, redacted_sly_data,
-                                      allow_from_downstream)
+            agent_tool = ExternalActivation(parent_run_context, factory, name, arguments, redacted_sly_data,
+                                            allow_from_downstream)
             return agent_tool
 
         # Merge the arguments coming in from the LLM with those that were specified
@@ -226,7 +226,7 @@ Some things to try:
         if agent_tool_spec.get("toolbox") is not None:
             # If a toolbox is in the spec, this is a shared coded tool where tool's description and
             # args schema are defined in either AGENT_TOOLBOX_INFO_FILE or toolbox_info.hocon.
-            agent_tool = ToolboxTool(parent_run_context, factory, use_args, agent_tool_spec, sly_data)
+            agent_tool = ToolboxActivation(parent_run_context, factory, use_args, agent_tool_spec, sly_data)
             return agent_tool
 
         if agent_tool_spec.get("function") is not None:
@@ -235,9 +235,9 @@ Some things to try:
             if agent_tool_spec.get("class") is not None:
                 # Agent specifically requested a python class to be run,
                 # and tool's description and args schema are defined in agent network hocon.
-                agent_tool = ClassTool(parent_run_context, factory, use_args, agent_tool_spec, sly_data)
+                agent_tool = ClassActivation(parent_run_context, factory, use_args, agent_tool_spec, sly_data)
             else:
-                agent_tool = BranchTool(parent_run_context, factory, use_args, agent_tool_spec, sly_data)
+                agent_tool = BranchActivation(parent_run_context, factory, use_args, agent_tool_spec, sly_data)
         else:
             # Get the tool to call from the spec.
             agent_tool = FrontMan(parent_run_context, factory, agent_tool_spec, sly_data)
