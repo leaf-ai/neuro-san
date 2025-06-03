@@ -167,12 +167,12 @@ class BranchActivation(CallingActivation, CallableActivation):
 
         # Use the tool
         our_agent_spec = self.get_agent_tool_spec()
-        callable_tool: CallableActivation = self.factory.create_agent_activation(self.run_context,
-                                                                                 our_agent_spec,
-                                                                                 tool_name,
-                                                                                 sly_data,
-                                                                                 tool_args)
-        message: str = await callable_tool.build()
+        callable_activation: CallableActivation = self.factory.create_agent_activation(self.run_context,
+                                                                                       our_agent_spec,
+                                                                                       tool_name,
+                                                                                       sly_data,
+                                                                                       tool_args)
+        message: str = await callable_activation.build()
 
         # We got a list of messages back as a string. Take the last.
         message_list: List[Dict[str, Any]] = json.loads(message)
