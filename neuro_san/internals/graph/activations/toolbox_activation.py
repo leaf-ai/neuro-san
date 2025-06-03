@@ -15,7 +15,7 @@ from neuro_san.internals.interfaces.context_type_toolbox_factory import ContextT
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 
 
-class ToolboxTool(AbstractClassActivation):
+class ToolboxActivation(AbstractClassActivation):
     """
     A ClassActivation that resolves the full class reference from a predefined coded tool in the toolbox.
 
