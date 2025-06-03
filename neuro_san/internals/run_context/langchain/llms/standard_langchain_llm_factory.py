@@ -22,7 +22,7 @@ from langchain_core.language_models.base import BaseLanguageModel
 from langchain_openai.chat_models.azure import AzureChatOpenAI
 from langchain_openai.chat_models.base import ChatOpenAI
 
-from neuro_san.internals.run_context.langchain.langchain_llm_factory import LangChainLlmFactory
+from neuro_san.internals.run_context.langchain.llms.langchain_llm_factory import LangChainLlmFactory
 
 
 class StandardLangChainLlmFactory(LangChainLlmFactory):

@@ -554,11 +554,10 @@
         #
         # Any classes listed must:
         #   * Exist in the PYTHONPATH of your server
-        #   * Derive from neuro_san.internals.run_context.langchain.langchain_llm_factory.LangChainLlmFactory
+        #   * Derive from neuro_san.internals.run_context.langchain.llms.langchain_llm_factory.LangChainLlmFactory
         #   * Have a no-args constructor
 
         "openai": {
-            "token_counting": "callback",   # Uses OpenAICallbackHandler
             "args": {
                 # Note that we can only supply arguments that are "Just Data" in nature.
                 # See https://python.langchain.com/api_reference/openai/chat_models/langchain_openai.chat_models.base.ChatOpenAI.html
@@ -586,7 +585,6 @@
             }
         },
         "azure-openai": {
-            "token_counting": "callback",   # Uses OpenAICallbackHandler
             "extends": "openai",
             "args": {
                 # Note that we can only supply arguments that are "Just Data" in nature.
@@ -606,7 +604,6 @@
             }
         },
         "anthropic": {
-            "token_counting": "callback",   # Uses BedrockAnthropicTokenUsageCallbackHandler
             "args": {
                 # Note that we can only supply arguments that are "Just Data" in nature.
                 # See https://python.langchain.com/api_reference/anthropic/chat_models/langchain_anthropic.chat_models.ChatAnthropic.html#langchain_anthropic.chat_models.ChatAnthropic
@@ -624,7 +621,6 @@
             }
         },
         "ollama": {
-            "token_counting": null,
             "args": {
                 # Note that we can only supply arguments that are "Just Data" in nature.
                 # See https://python.langchain.com/api_reference/ollama/chat_models/langchain_ollama.chat_models.ChatOllama.html#langchain_ollama.chat_models.ChatOllama
@@ -648,7 +644,6 @@
             }
         },
         "nvidia": {
-            "token_counting": null,     # For now. Seems there is hope.
             "args": {
                 # Note that we can only supply arguments that are "Just Data" in nature.
                 # See https://python.langchain.com/api_reference/nvidia_ai_endpoints/chat_models/langchain_nvidia_ai_endpoints.chat_models.ChatNVIDIA.html#langchain_nvidia_ai_endpoints.chat_models.ChatNVIDIA

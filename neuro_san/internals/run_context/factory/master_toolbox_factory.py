@@ -14,7 +14,7 @@ from typing import Dict
 
 from neuro_san.internals.interfaces.context_type_toolbox_factory import ContextTypeToolboxFactory
 from neuro_san.internals.run_context.factory.master_llm_factory import MasterLlmFactory
-from neuro_san.internals.run_context.langchain.toolbox_factory import ToolboxFactory
+from neuro_san.internals.run_context.langchain.toolbox.toolbox_factory import ToolboxFactory
 
 
 class MasterToolboxFactory:

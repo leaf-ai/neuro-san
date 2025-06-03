@@ -16,7 +16,7 @@ from langchain.schema import BaseMessage
 
 from neuro_san.internals.run_context.interfaces.run import Run
 from neuro_san.internals.run_context.interfaces.tool_call import ToolCall
-from neuro_san.internals.run_context.langchain.langchain_tool_call import LangChainToolCall
+from neuro_san.internals.run_context.langchain.core.langchain_tool_call import LangChainToolCall
 
 
 class LangChainRun(Run):

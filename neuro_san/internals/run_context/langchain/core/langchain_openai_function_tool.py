@@ -23,10 +23,10 @@ from pydantic_core import ValidationError
 from langchain_core.tools import BaseTool
 
 from neuro_san.internals.run_context.interfaces.tool_caller import ToolCaller
-from neuro_san.internals.run_context.langchain.langchain_run import LangChainRun
-from neuro_san.internals.run_context.langchain.base_model_dictionary_converter \
+from neuro_san.internals.run_context.langchain.core.langchain_run import LangChainRun
+from neuro_san.internals.run_context.langchain.core.base_model_dictionary_converter \
     import BaseModelDictionaryConverter
-from neuro_san.internals.run_context.langchain.pydantic_argument_dictionary_converter \
+from neuro_san.internals.run_context.langchain.core.pydantic_argument_dictionary_converter \
     import PydanticArgumentDictionaryConverter
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 

@@ -28,10 +28,10 @@ from leaf_common.config.resolver import Resolver
 from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
 from neuro_san.internals.interfaces.context_type_llm_factory import ContextTypeLlmFactory
-from neuro_san.internals.run_context.langchain.api_key_error_check import ApiKeyErrorCheck
-from neuro_san.internals.run_context.langchain.langchain_llm_factory import LangChainLlmFactory
-from neuro_san.internals.run_context.langchain.llm_info_restorer import LlmInfoRestorer
-from neuro_san.internals.run_context.langchain.standard_langchain_llm_factory import StandardLangChainLlmFactory
+from neuro_san.internals.run_context.langchain.llms.langchain_llm_factory import LangChainLlmFactory
+from neuro_san.internals.run_context.langchain.llms.llm_info_restorer import LlmInfoRestorer
+from neuro_san.internals.run_context.langchain.llms.standard_langchain_llm_factory import StandardLangChainLlmFactory
+from neuro_san.internals.run_context.langchain.util.api_key_error_check import ApiKeyErrorCheck
 
 
 class DefaultLlmFactory(ContextTypeLlmFactory, LangChainLlmFactory):

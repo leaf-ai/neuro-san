@@ -31,7 +31,7 @@ from leaf_common.config.dictionary_overlay import DictionaryOverlay
 from leaf_common.config.resolver import Resolver
 
 from neuro_san.internals.interfaces.context_type_toolbox_factory import ContextTypeToolboxFactory
-from neuro_san.internals.run_context.langchain.toolbox_info_restorer import ToolboxInfoRestorer
+from neuro_san.internals.run_context.langchain.toolbox.toolbox_info_restorer import ToolboxInfoRestorer
 
 
 class ToolboxFactory(ContextTypeToolboxFactory):
@@ -67,7 +67,7 @@ class ToolboxFactory(ContextTypeToolboxFactory):
             See "parameters" in https://github.com/cognizant-ai-lab/neuro-san/blob/main/docs/agent_hocon_reference.md
 
         The default toolbox config file can be seen at
-        "neuro_san/internals/run_context/langchain/toolbox_info.hocon"
+        "neuro_san/internals/run_context/langchain/toolbox/toolbox_info.hocon"
     """
 
     def __init__(self):
