@@ -167,11 +167,11 @@ class BranchActivation(CallingActivation, CallableActivation):
 
         # Use the tool
         our_agent_spec = self.get_agent_tool_spec()
-        callable_tool: CallableActivation = self.factory.create_agent_tool(self.run_context,
-                                                                           our_agent_spec,
-                                                                           tool_name,
-                                                                           sly_data,
-                                                                           tool_args)
+        callable_tool: CallableActivation = self.factory.create_agent_activation(self.run_context,
+                                                                                 our_agent_spec,
+                                                                                 tool_name,
+                                                                                 sly_data,
+                                                                                 tool_args)
         message: str = await callable_tool.build()
 
         # We got a list of messages back as a string. Take the last.

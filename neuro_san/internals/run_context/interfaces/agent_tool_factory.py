@@ -23,12 +23,12 @@ class AgentToolFactory:
     """
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
-    def create_agent_tool(self,
-                          parent_run_context: RunContext,
-                          parent_agent_spec: Dict[str, Any],
-                          name: str,
-                          sly_data: Dict[str, Any],
-                          arguments: Dict[str, Any]) -> CallableActivation:
+    def create_agent_activation(self,
+                                parent_run_context: RunContext,
+                                parent_agent_spec: Dict[str, Any],
+                                name: str,
+                                sly_data: Dict[str, Any],
+                                arguments: Dict[str, Any]) -> CallableActivation:
         """
         Create an active node for an agent from its spec.
 
