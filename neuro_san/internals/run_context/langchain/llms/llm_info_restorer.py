@@ -43,7 +43,7 @@ class LlmInfoRestorer(Restorer):
 
         if file_reference is None or len(file_reference) == 0:
             # Read from the default
-            file_of_class = FileOfClass(__file__, "../../../../neuro_san/internals/run_context/langchain")
+            file_of_class = FileOfClass(__file__, "../../../../neuro_san/internals/run_context/langchain/llms")
             use_file = file_of_class.get_file_in_basis("default_llm_info.hocon")
 
         try:

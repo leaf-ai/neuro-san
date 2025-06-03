@@ -152,7 +152,7 @@ The string model name to use for an agent in the network.
 When this is not present, the default model is "gpt-4o" which is a decent all-purpose tool-using agent
 which gets job done but doesn't cost a ton.
 
-You can use any model listed in the [default_llm_info.hocon](../neuro_san/internals/run_context/langchain/default_llm_info.hocon)
+You can use any model listed in the [default_llm_info.hocon](../neuro_san/internals/run_context/langchain/llms/default_llm_info.hocon)
 file included with the neuro-san distribution without any further modification.
 
 While you can use any model you like for any agent within a neuro-san agent network,
@@ -221,7 +221,7 @@ in answers provided by the LLM.  By default this value is 0.7.
 
 LLMs all come with various parameters like temperature that can be set on them.
 As long as a parameter is a scalar listed in the args section for your LLM's class in the
-[llm_info hocon file](../neuro_san/internals/run_context/langchain/default_llm_info.hocon)
+[llm_info hocon file](../neuro_san/internals/run_context/langchain/llms/default_llm_info.hocon)
 file, you can set that parameter in any llm_config within its own technical limits however you like.
 
 Note: _We strongly recommend to **not** set secrets as values within any source file, including hocon files._
@@ -467,7 +467,7 @@ Currently supported tool types include:
 - langchain's base tools
 - coded tools.
 
-The default toolbox configuration is located at [toolbox_info.hocon](../neuro_san/internals/run_context/langchain/toolbox_info.hocon).
+The default toolbox configuration is located at [toolbox_info.hocon](../neuro_san/internals/run_context/langchain/toolbox/toolbox_info.hocon).
 
 To use your own tools, create a custom toolbox .hocon file and point to it by setting the AGENT_TOOLBOX_INFO_FILE environment variable.
 
