@@ -14,6 +14,7 @@ See class comment for details
 """
 from neuro_san.service.async_agent_service import AsyncAgentService
 
+
 class AgentAuthorizer:
     """
     Abstract interface implementing some policy

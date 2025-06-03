@@ -15,7 +15,6 @@ See class comment for details
 from typing import Any, Dict
 
 from neuro_san.http_sidecar.handlers.base_request_handler import BaseRequestHandler
-from neuro_san.interfaces.async_agent_session import AsyncAgentSession
 from neuro_san.service.async_agent_service import AsyncAgentService
 
 
