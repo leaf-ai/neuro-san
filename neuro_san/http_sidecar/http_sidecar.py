@@ -97,8 +97,11 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
         Construct tornado HTTP "application" to run.
         """
         request_data: Dict[str, Any] = self.build_request_data()
+        health_request_data: Dict[str, Any] = {
+            "forwarded_request_metadata": self.forwarded_request_metadata
+        }
         handlers = []
-        handlers.append(("/", HealthCheckHandler))
+        handlers.append(("/", HealthCheckHandler, health_request_data))
         handlers.append(("/api/v1/list", ConciergeHandler, request_data))
         handlers.append(("/api/v1/docs", OpenApiPublishHandler, request_data))
 
