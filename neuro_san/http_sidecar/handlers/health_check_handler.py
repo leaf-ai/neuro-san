@@ -13,9 +13,10 @@ See class comment for details
 """
 import http
 import os
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from tornado.web import RequestHandler
+from neuro_san.http_sidecar.logging.http_logger import HttpLogger
 
 
 class HealthCheckHandler(RequestHandler):
@@ -23,12 +24,14 @@ class HealthCheckHandler(RequestHandler):
     Handler class for API endpoint health check.
     """
 
-    def initialize(self):
+    # pylint: disable=attribute-defined-outside-init
+    def initialize(self, forwarded_request_metadata: List[str]):
         """
         This method is called by Tornado framework to allow
         injecting service-specific data into local handler context.
         Here we use it to inject CORS headers if so configured.
         """
+        self.logger = HttpLogger(forwarded_request_metadata)
         if os.environ.get("AGENT_ALLOW_CORS_HEADERS") is not None:
             self.set_header("Access-Control-Allow-Origin", "*")
             self.set_header("Access-Control-Allow-Methods", "GET, OPTIONS")
@@ -51,6 +54,12 @@ class HealthCheckHandler(RequestHandler):
             self.write({"error": "Internal server error"})
         finally:
             self.finish()
+
+    def get_metadata(self) -> Dict[str, Any]:
+        """
+        Get request metadata
+        """
+        return {}
 
     def data_received(self, chunk):
         """
