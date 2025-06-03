@@ -111,7 +111,7 @@ class StandardLangChainLlmFactory(LangChainLlmFactory):
                             model_name=model_name,
                             temperature=config.get("temperature"),
                             openai_api_key=self.get_value_or_env(config, "openai_api_key",
-                                                                 "OPENAI_API_KEY"),
+                                                                 "AZURE_OPENAI_API_KEY"),
                             openai_api_base=self.get_value_or_env(config, "openai_api_base",
                                                                   "OPENAI_API_BASE"),
                             openai_organization=self.get_value_or_env(config, "openai_organization",
@@ -136,7 +136,8 @@ class StandardLangChainLlmFactory(LangChainLlmFactory):
                             # Azure-specific
                             azure_endpoint=self.get_value_or_env(config, "azure_endpoint",
                                                                  "AZURE_OPENAI_ENDPOINT"),
-                            deployment_name=config.get("deployment_name"),
+                            deployment_name=self.get_value_or_env(config, "deployment_name",
+                                                                  "AZURE_DEPLOYMENT"),
                             openai_api_version=self.get_value_or_env(config, "openai_api_version",
                                                                      "OPENAI_API_VERSION"),
 
