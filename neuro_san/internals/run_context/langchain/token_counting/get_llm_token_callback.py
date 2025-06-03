@@ -17,7 +17,8 @@ from typing import Optional
 
 from langchain_core.tracers.context import register_configure_hook
 
-from neuro_san.internals.run_context.langchain.llm_token_callback_handler import LlmTokenCallbackHandler
+from neuro_san.internals.run_context.langchain.token_counting.llm_token_callback_handler \
+    import LlmTokenCallbackHandler
 
 
 llm_token_callback_var: ContextVar[Optional[LlmTokenCallbackHandler]] = (

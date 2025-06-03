@@ -16,7 +16,7 @@ from langchain.tools import BaseTool
 from langchain_community.agent_toolkits.base import BaseToolkit
 import pytest
 
-from neuro_san.internals.run_context.langchain.toolbox_factory import ToolboxFactory
+from neuro_san.internals.run_context.langchain.toolbox.toolbox_factory import ToolboxFactory
 
 
 class TestBaseToolFactory:
