@@ -32,7 +32,6 @@ Sub-keys to those dictionaries will be described in the next-level down heading 
       - [Class Name Keys](#class-name-keys)
         - [extends](#extends)
         - [args](#args)
-        - [token_counting](#token_counting)
       - [factories](#factories)
     - [default_config](#default_config)
   - [Extending LLM Info Specifications](#extending-llm-info-specifications)
@@ -208,11 +207,6 @@ but it is possible to have your own extensions provide their own defaults.  This
 especially useful in combination with model aliasing when privately hosted LLMs
 need to specify specific endpoints that are used over and over again in your agent
 definitions.
-
-##### token_counting
-
-A string describing the means of token counting.  If not included, the default
-value is None, indicating that the mechanism for token counting is unknown.
 
 #### factories
 
