@@ -21,6 +21,7 @@ from tornado.ioloop import IOLoop
 from neuro_san.interfaces.concierge_session import ConciergeSession
 from neuro_san.session.direct_concierge_session import DirectConciergeSession
 from neuro_san.service.agent_server import DEFAULT_FORWARDED_REQUEST_METADATA
+from neuro_san.interfaces.event_loop_logger import EventLoopLogger
 from neuro_san.http_sidecar.logging.http_logger import HttpLogger
 from neuro_san.http_sidecar.http_server_app import HttpServerApp
 
@@ -61,6 +62,7 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
         self.start_event: threading.Event = start_event
         self.port = port
         self.http_port = http_port
+        self.requests_limit: int = 10
         self.logger = None
         self.openapi_service_spec_path: str = openapi_service_spec_path
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata.split(" ")
@@ -74,7 +76,7 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
         """
         self.lock = threading.Lock()
         self.logger = HttpLogger(self.forwarded_request_metadata)
-        app = self.make_app()
+        app = self.make_app(self.requests_limit, self.logger)
 
         # Wait for "go" signal which will be set by gRPC server and corresponding machinery
         # when everything is ready for servicing.
@@ -92,7 +94,7 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
 
         IOLoop.current().start()
 
-    def make_app(self):
+    def make_app(self, requests_limit: int, logger: EventLoopLogger):
         """
         Construct tornado HTTP "application" to run.
         """
@@ -111,7 +113,7 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
         handlers.append((r"/api/v1/([^/]+)/connectivity", ConnectivityHandler, request_data))
         handlers.append((r"/api/v1/([^/]+)/streaming_chat", StreamingChatHandler, request_data))
 
-        return HttpServerApp(handlers)
+        return HttpServerApp(handlers, requests_limit, logger)
 
     def allow(self, agent_name) -> bool:
         return self.allowed_agents.get(agent_name, False)
