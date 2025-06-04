@@ -79,13 +79,13 @@ def generate_response(the_messages: List[Any]) -> str:
     """
     response_list = []
     for i, m in enumerate(the_messages):
-        # Duplicate the assistant role message before every tool response role message
+        # Duplicate the role message before every tool response role message
         if get_role(m) == "tool" and i > 0 and get_role(the_messages[i - 1]) == "assistant":
-            assistant_message = {
+            new_message = {
                 "role": get_role(the_messages[i - 1]),
                 "content": get_content(the_messages[i - 1])
             }
-            response_list.append(assistant_message)
+            response_list.append(new_message)
 
         message_dict = {
             "role": get_role(m),

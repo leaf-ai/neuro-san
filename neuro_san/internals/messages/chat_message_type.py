@@ -67,6 +67,9 @@ class ChatMessageType(IntEnum):
         if isinstance(response_type, ChatMessageType):
             return response_type
 
+        if isinstance(response_type, int):
+            return ChatMessageType(response_type)
+
         try:
             # Normal case: We have a 1:1 mapping of ChatMessageType to what is in grpc def
             message_type = ChatMessageType[response_type]

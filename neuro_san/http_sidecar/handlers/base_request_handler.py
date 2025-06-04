@@ -29,8 +29,6 @@ from tornado.web import RequestHandler
 from neuro_san.http_sidecar.logging.http_logger import HttpLogger
 from neuro_san.http_sidecar.interfaces.agent_authorizer import AgentAuthorizer
 from neuro_san.http_sidecar.interfaces.agents_updater import AgentsUpdater
-from neuro_san.interfaces.async_agent_session import AsyncAgentSession
-from neuro_san.session.async_grpc_service_agent_session import AsyncGrpcServiceAgentSession
 
 
 class BaseRequestHandler(RequestHandler):
@@ -103,21 +101,6 @@ class BaseRequestHandler(RequestHandler):
             else:
                 result[item_name] = "None"
         return result
-
-    def get_agent_grpc_session(self,
-                               metadata: Dict[str, Any],
-                               agent_name: str) -> AsyncAgentSession:
-        """
-        Build gRPC session to talk to "main" service
-        :return: AgentSession to use
-        """
-        grpc_session: AsyncAgentSession = \
-            AsyncGrpcServiceAgentSession(
-                host="localhost",
-                port=self.port,
-                metadata=metadata,
-                agent_name=agent_name)
-        return grpc_session
 
     async def update_agents(self, metadata: Dict[str, Any]) -> bool:
         """

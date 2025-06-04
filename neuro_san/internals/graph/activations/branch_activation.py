@@ -57,15 +57,6 @@ class BranchActivation(CallingActivation, CallableActivation):
         super().__init__(parent_run_context, factory, agent_tool_spec, sly_data)
         self.arguments: Dict[str, Any] = arguments
 
-    def get_decision_name(self) -> str:
-        """
-        :return: The string name of the decision the user is trying to make
-        """
-        decision_name = self.arguments.get("name")
-        if decision_name is None:
-            decision_name = str(uuid.uuid4())
-        return decision_name
-
     def get_assignments(self) -> str:
         """
         :return: The string prompt for assigning values to the arguments to the agent.
@@ -126,10 +117,10 @@ class BranchActivation(CallingActivation, CallableActivation):
         assignments = self.get_assignments()
         instructions = self.get_instructions()
 
-        decision_name = self.get_decision_name()
+        uuid_str = str(uuid.uuid4())
         component_name = self.get_name()
-        assistant_name = f"{decision_name}_{component_name}"
-        await self.create_resources(assistant_name, instructions, assignments)
+        unique_name = f"{uuid_str}_{component_name}"
+        await self.create_resources(unique_name, instructions, assignments)
 
         command = self.get_command()
         run: Run = await self.run_context.submit_message(command)

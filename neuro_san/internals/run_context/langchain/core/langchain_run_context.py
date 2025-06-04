@@ -147,7 +147,7 @@ class LangChainRunContext(RunContext):
             base_journal: Journal = self.invocation_context.get_journal()
             self.journal = OriginatingJournal(base_journal, self.origin, self.chat_history)
 
-    async def create_resources(self, assistant_name: str,
+    async def create_resources(self, agent_name: str,
                                instructions: str,
                                assignments: str,
                                tool_names: List[str] = None):
@@ -158,15 +158,15 @@ class LangChainRunContext(RunContext):
         Note that even though this method is labeled as async, we don't
         really do any async method calls in here for this implementation.
 
-        :param assistant_name: String name of the assistant
+        :param agent_name: String name of the agent
         :param instructions: string instructions that are used
-                    to create the assistant/agent
+                    to create the agent
         :param assignments: string assignments of function parameters that are used as input
         :param tool_names: The list of registered tool names to use.
                     Default is None implying no tool is to be called.
         """
         # DEF - Remove the arg if possible
-        _ = assistant_name
+        _ = agent_name
 
         # Create the list of callbacks to pass to the LLM ChatModel
         callbacks: List[BaseCallbackHandler] = [
@@ -421,7 +421,7 @@ class LangChainRunContext(RunContext):
         really do any async method calls in here for this implementation.
 
         :param user_message: The message to submit
-        :return: The run which is processing the assistant's message
+        :return: The run which is processing the agent's message
         """
         # Contruct a human message out of the text of the user message
         # Don't add this to the chat history yet.
@@ -560,7 +560,7 @@ class LangChainRunContext(RunContext):
 
     async def submit_tool_outputs(self, run: Run, tool_outputs: List[Any]) -> Run:
         """
-        :param run: The run handling the execution of the assistant
+        :param run: The Run handling the execution of the agent
         :param tool_outputs: The tool outputs to submit
         :return: A potentially updated run handle
         """

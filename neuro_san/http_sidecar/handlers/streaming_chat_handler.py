@@ -15,14 +15,8 @@ See class comment for details
 from typing import Any, Dict, Generator
 import json
 
-from google.protobuf.json_format import MessageToDict
-from google.protobuf.json_format import Parse
-
-# pylint: disable=no-name-in-module
-from neuro_san.api.grpc.agent_pb2 import ChatRequest, ChatResponse
-
 from neuro_san.http_sidecar.handlers.base_request_handler import BaseRequestHandler
-from neuro_san.interfaces.async_agent_session import AsyncAgentSession
+from neuro_san.service.async_agent_service import AsyncAgentService
 
 
 class StreamingChatHandler(BaseRequestHandler):
@@ -31,10 +25,10 @@ class StreamingChatHandler(BaseRequestHandler):
     """
 
     async def stream_out(self,
-                         generator: Generator[Generator[ChatResponse, None, None], None, None]) -> int:
+                         generator: Generator[Dict[str, Any], None, None]) -> int:
         """
         Process streaming out generator output to HTTP connection.
-        :param generator: async gRPC generator
+        :param generator: async chat response generator
         :return: number of chat responses streamed out.
         """
         # Set up headers for chunked response
@@ -46,15 +40,13 @@ class StreamingChatHandler(BaseRequestHandler):
             return 0
 
         sent_out: int = 0
-        async for sub_generator in generator:
-            async for result_message in sub_generator:
-                result_dict: Dict[str, Any] = MessageToDict(result_message)
-                result_str: str = json.dumps(result_dict) + "\n"
-                self.write(result_str)
-                flush_ok = await self.do_flush()
-                if not flush_ok:
-                    return sent_out
-                sent_out += 1
+        async for result_dict in generator:
+            result_str: str = json.dumps(result_dict) + "\n"
+            self.write(result_str)
+            flush_ok = await self.do_flush()
+            if not flush_ok:
+                return sent_out
+            sent_out += 1
         return sent_out
 
     async def post(self, agent_name: str):
@@ -67,7 +59,8 @@ class StreamingChatHandler(BaseRequestHandler):
         if not update_done:
             return
 
-        if not self.agent_policy.allow(agent_name):
+        service: AsyncAgentService = self.agent_policy.allow(agent_name)
+        if service is None:
             self.set_status(404)
             self.logger.error({}, "error: Invalid request path %s", self.request.path)
             self.do_finish()
@@ -78,14 +71,7 @@ class StreamingChatHandler(BaseRequestHandler):
         try:
             # Parse JSON body
             data = json.loads(self.request.body)
-
-            grpc_request = Parse(json.dumps(data), ChatRequest())
-            grpc_session: AsyncAgentSession = self.get_agent_grpc_session(metadata, agent_name)
-
-            # Mind the type hint:
-            # here we are getting Generator of Generators of ChatResponses!
-            result_generator: Generator[Generator[ChatResponse, None, None], None, None] =\
-                grpc_session.streaming_chat(grpc_request)
+            result_generator = service.streaming_chat(data, metadata)
             sent_out = await self.stream_out(result_generator)
 
         except Exception as exc:  # pylint: disable=broad-exception-caught
