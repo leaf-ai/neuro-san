@@ -30,9 +30,9 @@ class FrontMan(CallingActivation):
         :return: A list of response messages for the run
         """
         # Initialize our return value
-        decision_messages: List[Any] = []
+        messages: List[Any] = []
 
-        decision_run: Run = await self.run_context.submit_message(user_input)
+        current_run: Run = await self.run_context.submit_message(user_input)
 
         terminate = False
         while not terminate:
@@ -41,21 +41,21 @@ class FrontMan(CallingActivation):
                 # run_context
                 break
 
-            decision_run = await self.run_context.wait_on_run(decision_run, self.journal)
+            current_run = await self.run_context.wait_on_run(current_run, self.journal)
 
-            if decision_run.requires_action():
-                decision_run = await self.make_tool_function_calls(decision_run)
+            if current_run.requires_action():
+                current_run = await self.make_tool_function_calls(current_run)
             else:
                 # Needs to get more information from the user on the basic task
-                # of collecting information from the user about the decision.
+                # of collecting information from the user about the current run.
                 if self.run_context is None:
                     # Breaking from inside a container during cleanup can yield a None
                     # run_context
                     break
-                decision_messages = await self.run_context.get_response()
+                messages = await self.run_context.get_response()
                 terminate = True
 
-        return decision_messages
+        return messages
 
     def update_invocation_context(self, invocation_context: InvocationContext):
         """
