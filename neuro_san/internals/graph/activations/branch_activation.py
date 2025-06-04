@@ -126,8 +126,8 @@ class BranchActivation(CallingActivation, CallableActivation):
 
         uuid_str = self.get_uuid_str()
         component_name = self.get_name()
-        assistant_name = f"{uuid_str}_{component_name}"
-        await self.create_resources(assistant_name, instructions, assignments)
+        unique_name = f"{uuid_str}_{component_name}"
+        await self.create_resources(unique_name, instructions, assignments)
 
         command = self.get_command()
         run: Run = await self.run_context.submit_message(command)

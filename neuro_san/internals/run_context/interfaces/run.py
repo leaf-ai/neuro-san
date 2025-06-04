@@ -16,7 +16,7 @@ from neuro_san.internals.run_context.interfaces.tool_call import ToolCall
 
 class Run:
     """
-    An interface describing a run of an assistant.
+    An interface describing a run of an agent.
     """
 
     def get_id(self) -> str:
