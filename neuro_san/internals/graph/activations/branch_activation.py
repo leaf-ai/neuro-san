@@ -57,13 +57,6 @@ class BranchActivation(CallingActivation, CallableActivation):
         super().__init__(parent_run_context, factory, agent_tool_spec, sly_data)
         self.arguments: Dict[str, Any] = arguments
 
-    def get_uuid_str(self) -> str:
-        """
-        :return: A uuid string string for the branch
-        """
-        uuid_str = str(uuid.uuid4())
-        return uuid_str
-
     def get_assignments(self) -> str:
         """
         :return: The string prompt for assigning values to the arguments to the agent.
@@ -124,7 +117,7 @@ class BranchActivation(CallingActivation, CallableActivation):
         assignments = self.get_assignments()
         instructions = self.get_instructions()
 
-        uuid_str = self.get_uuid_str()
+        uuid_str = str(uuid.uuid4())
         component_name = self.get_name()
         unique_name = f"{uuid_str}_{component_name}"
         await self.create_resources(unique_name, instructions, assignments)
