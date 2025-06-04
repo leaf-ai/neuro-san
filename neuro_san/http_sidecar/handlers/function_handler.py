@@ -15,7 +15,7 @@ See class comment for details
 from typing import Any, Dict
 
 from neuro_san.http_sidecar.handlers.base_request_handler import BaseRequestHandler
-from neuro_san.interfaces.async_agent_session import AsyncAgentSession
+from neuro_san.service.async_agent_service import AsyncAgentService
 
 
 class FunctionHandler(BaseRequestHandler):
@@ -32,7 +32,8 @@ class FunctionHandler(BaseRequestHandler):
         if not update_done:
             return
 
-        if not self.agent_policy.allow(agent_name):
+        service: AsyncAgentService = self.agent_policy.allow(agent_name)
+        if service is None:
             self.set_status(404)
             self.logger.error({}, "error: Invalid request path %s", self.request.path)
             self.do_finish()
@@ -41,11 +42,9 @@ class FunctionHandler(BaseRequestHandler):
         self.logger.info(metadata, "Start GET %s/function", agent_name)
         try:
             data: Dict[str, Any] = {}
-            grpc_session: AsyncAgentSession =\
-                self.get_agent_grpc_session(metadata, agent_name)
-            result_dict: Dict[str, Any] = await grpc_session.function(data)
+            result_dict: Dict[str, Any] = await service.function(data, metadata)
 
-            # Return gRPC response to the HTTP client
+            # Return service response to the HTTP client
             self.set_header("Content-Type", "application/json")
             self.write(result_dict)
 
