@@ -11,8 +11,8 @@
 
 from typing import Dict
 
+from neuro_san.internals.graph.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.interfaces.agent_tool_factory_provider import AgentToolFactoryProvider
-from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 
 
 class SingleAgentToolFactoryProvider(AgentToolFactoryProvider):
@@ -33,6 +33,7 @@ class SingleAgentToolFactoryProvider(AgentToolFactoryProvider):
 
     def get_agent_tool_factory(self) -> AgentToolFactory:
         """
-        Return current Agent tool factory instance for specific agent name.
+        :return: Current Agent tool factory instance for specific agent name.
+                None if this does not exist for the instance's agent_name.
         """
-        return self.agents_table.get(self.agent_name, None)
+        return self.agents_table.get(self.agent_name)

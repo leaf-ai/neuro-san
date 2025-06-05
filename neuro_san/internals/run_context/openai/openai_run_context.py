@@ -25,7 +25,7 @@ from leaf_common.config.dictionary_overlay import DictionaryOverlay
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.message_utils import get_last_message_with_content
-from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
+from neuro_san.internals.run_context.interfaces.agent_network_inspector import AgentNetworkInspector
 from neuro_san.internals.run_context.interfaces.run import Run
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 from neuro_san.internals.run_context.interfaces.tool_caller import ToolCaller
@@ -106,8 +106,8 @@ class OpenAIRunContext(RunContext):
             # We can only use the first tool name in this implementation for now
             tool_name = tool_names[0]
 
-        factory: AgentToolFactory = self.tool_caller.get_factory()
-        tool_spec: Dict[str, Any] = factory.get_agent_tool_spec(tool_name)
+        inspector: AgentNetworkInspector = self.tool_caller.get_inspector()
+        tool_spec: Dict[str, Any] = inspector.get_agent_tool_spec(tool_name)
 
         if tool_spec is not None:
             tool_llm_config = tool_spec.get("llm_config")

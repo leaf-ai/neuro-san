@@ -26,11 +26,11 @@ from leaf_common.config.resolver import Resolver
 from neuro_san.interfaces.coded_tool import CodedTool
 from neuro_san.internals.graph.activations.abstract_callable_activation import AbstractCallableActivation
 from neuro_san.internals.graph.activations.branch_activation import BranchActivation
+from neuro_san.internals.graph.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.agent_message import AgentMessage
 from neuro_san.internals.messages.origination import Origination
 from neuro_san.internals.run_context.factory.run_context_factory import RunContextFactory
-from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 
 
