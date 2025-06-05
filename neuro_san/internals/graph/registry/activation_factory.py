@@ -117,7 +117,8 @@ Check to be sure your value for PYTHONPATH includes where you expect where your 
                                 parent_agent_spec: Dict[str, Any],
                                 name: str,
                                 sly_data: Dict[str, Any],
-                                arguments: Dict[str, Any] = None) -> CallableActivation:
+                                arguments: Dict[str, Any] = None,
+                                factory: AgentToolFactory = None) -> CallableActivation:
         """
         Create an active node for an agent from its spec.
 
@@ -129,8 +130,10 @@ Check to be sure your value for PYTHONPATH includes where you expect where your 
         :param arguments: A dictionary of arguments for the newly constructed agent
         :return: The CallableActivation agent referred to by the name.
         """
+        if factory is None:
+            factory = self
+
         agent_activation: CallableActivation = None
-        factory: AgentToolFactory = self
 
         agent_tool_spec: Dict[str, Any] = self.agent_network.get_agent_tool_spec(name)
         if agent_tool_spec is None:
@@ -178,14 +181,18 @@ Check to be sure your value for PYTHONPATH includes where you expect where your 
 
     def create_front_man(self,
                          sly_data: Dict[str, Any] = None,
-                         parent_run_context: RunContext = None) -> FrontMan:
+                         parent_run_context: RunContext = None,
+                         factory: AgentToolFactory = None) -> FrontMan:
         """
         Find and create the FrontMan for chat
         """
+        if factory is None:
+            factory = self
+
         front_man_name: str = self.agent_network.find_front_man()
 
         agent_tool_spec: Dict[str, Any] = self.agent_network.get_agent_tool_spec(front_man_name)
-        front_man = FrontMan(parent_run_context, self, agent_tool_spec, sly_data)
+        front_man = FrontMan(parent_run_context, factory, agent_tool_spec, sly_data)
         return front_man
 
     def get_config(self) -> Dict[str, Any]:

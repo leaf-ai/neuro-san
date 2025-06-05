@@ -55,13 +55,7 @@ class AgentToolRegistry(AgentNetworkInspector, AgentToolFactory):
         :return: The CallableActivation agent referred to by the name.
         """
         return self.factory.create_agent_activation(parent_run_context, parent_agent_spec,
-                                                    name, sly_data, arguments)
-
-    def get_agent_tool_path(self) -> str:
-        """
-        :return: The path under which tools for this registry should be looked for.
-        """
-        return self.factory.get_agent_tool_path()
+                                                    name, sly_data, arguments, self)
 
     def create_front_man(self,
                          sly_data: Dict[str, Any] = None,
@@ -69,7 +63,13 @@ class AgentToolRegistry(AgentNetworkInspector, AgentToolFactory):
         """
         Find and create the FrontMan for chat
         """
-        return self.factory.create_front_man(sly_data, parent_run_context)
+        return self.factory.create_front_man(sly_data, parent_run_context, self)
+
+    def get_agent_tool_path(self) -> str:
+        """
+        :return: The path under which tools for this registry should be looked for.
+        """
+        return self.factory.get_agent_tool_path()
 
     def get_config(self) -> Dict[str, Any]:
         """
