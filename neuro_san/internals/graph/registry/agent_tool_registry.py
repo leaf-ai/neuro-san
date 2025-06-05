@@ -11,7 +11,6 @@
 # END COPYRIGHT
 from typing import Any
 from typing import Dict
-from typing import List
 
 import os
 
@@ -23,9 +22,10 @@ from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 from neuro_san.internals.graph.activations.branch_activation import BranchActivation
 from neuro_san.internals.graph.activations.class_activation import ClassActivation
 from neuro_san.internals.graph.activations.external_activation import ExternalActivation
-from neuro_san.internals.graph.activations.toolbox_activation import ToolboxActivation
 from neuro_san.internals.graph.activations.front_man import FrontMan
 from neuro_san.internals.graph.activations.sly_data_redactor import SlyDataRedactor
+from neuro_san.internals.graph.activations.toolbox_activation import ToolboxActivation
+from neuro_san.internals.graph.registry.agent_network_keeper import AgentNetworkKeeper
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.callable_activation import CallableActivation
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
@@ -33,7 +33,7 @@ from neuro_san.internals.run_context.utils.external_agent_parsing import Externa
 from neuro_san.internals.utils.file_of_class import FileOfClass
 
 
-class AgentToolRegistry(AgentToolFactory):
+class AgentToolRegistry(AgentNetworkKeeper, AgentToolFactory):
     """
     A place where agent tools are registered.
     """
@@ -48,17 +48,9 @@ class AgentToolRegistry(AgentToolFactory):
                     If None, the value comes from the env var AGENT_TOOL_PATH.
                     If that is not set, if defaults to a path relative to this file.
         """
-        self.config = config
-        self.name = name
-        self.agent_spec_map: Dict[str, Dict[str, Any]] = {}
+        super().__init__(config, name)
 
         self.agent_tool_path = self.determine_agent_tool_path(agent_tool_path)
-        self.first_agent: str = None
-
-        agent_specs = self.config.get("tools")
-        if agent_specs is not None:
-            for agent_spec in agent_specs:
-                self.register(agent_spec)
 
     def determine_agent_tool_path(self, agent_tool_path: str) -> str:
         """
@@ -120,65 +112,11 @@ Check to be sure your value for PYTHONPATH includes where you expect where your 
 
         return agent_tool_path
 
-    def get_config(self) -> Dict[str, Any]:
-        """
-        :return: The config dictionary passed into the constructor
-        """
-        return self.config
-
     def get_agent_tool_path(self) -> str:
         """
         :return: The path under which tools for this registry should be looked for.
         """
         return self.agent_tool_path
-
-    def register(self, agent_spec: Dict[str, Any]):
-        """
-        :param agent_spec: A single agent to register
-        """
-        if agent_spec is None:
-            return
-
-        name: str = self.get_name_from_spec(agent_spec)
-        if self.first_agent is None:
-            self.first_agent = name
-
-        if name in self.agent_spec_map:
-            message: str = f"""
-The agent named "{name}" appears to have a duplicate entry in its hocon file.
-Agent names must be unique within the scope of a single hocon file.
-
-Some things to try:
-1. Rename one of the agents named "{name}". Don't forget to scrutinize all the
-   tools references from other agents connecting to it.
-2. If one definition is an alternate implementation, consider commenting out
-   one of them with "#"-style comments.  (Yes, you can do that in a hocon file).
-"""
-            raise ValueError(message)
-
-        self.agent_spec_map[name] = agent_spec
-
-    def get_name_from_spec(self, agent_spec: Dict[str, Any]) -> str:
-        """
-        :param agent_spec: A single agent to register
-        :return: The agent name as per the spec
-        """
-        extractor = DictionaryExtractor(agent_spec)
-        name = extractor.get("function.name")
-        if name is None:
-            name = agent_spec.get("name")
-
-        return name
-
-    def get_agent_tool_spec(self, name: str) -> Dict[str, Any]:
-        """
-        :param name: The name of the agent tool to get out of the registry
-        :return: The dictionary representing the spec registered agent
-        """
-        if name is None:
-            return None
-
-        return self.agent_spec_map.get(name)
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
     def create_agent_activation(self, parent_run_context: RunContext,
@@ -256,38 +194,6 @@ Some things to try:
         front_man = FrontMan(parent_run_context, self, agent_tool_spec, sly_data)
         return front_man
 
-    def find_front_man(self) -> str:
-        """
-        :return: A single tool name to use as the root of the chat agent.
-                 This guy will be user facing.  If there are none or > 1,
-                 an exception will be raised.
-        """
-        front_men: List[str] = []
-
-        # Identify the "front-man" agent.
-        # Primary heuristic: an agent with defined instructions and a function that takes no parameters.
-        # The presence of instructions ensures it was explicitly defined, since users may add parameters
-        # to front-men, making function signature alone unreliable.
-        for name, agent_spec in self.agent_spec_map.items():
-            instructions: str = agent_spec.get("instructions")
-            function: Dict[str, Any] = agent_spec.get("function")
-            if instructions is not None and function is not None and function.get("parameters") is None:
-                front_men.append(name)
-
-        if len(front_men) == 0:
-            # The next way to find a front man is to see which agent was registered first
-            front_men.append(self.first_agent)
-
-        if len(front_men) == 0:
-            raise ValueError("No front man for chat found. "
-                             "One entry's function must not have any parameters defined to be the front man")
-
-        if len(front_men) > 1:
-            raise ValueError(f"Found > 1 front man for chat. Possibilities: {front_men}")
-
-        front_man = front_men[0]
-        return front_man
-
     def merge_args(self, llm_args: Dict[str, Any], agent_tool_spec: Dict[str, Any]) -> Dict[str, Any]:
         """
         Merges the args specified by the llm with "hard-coded" args specified in the agent spec.
@@ -322,9 +228,3 @@ Some things to try:
         redactor = SlyDataRedactor(parent_spec, config_keys=["allow.sly_data", "allow.to_downstream.sly_data"])
         redacted: Dict[str, Any] = redactor.filter_config(sly_data)
         return redacted
-
-    def get_agent_llm_info_file(self) -> str:
-        """
-        :return: The absolute path of agent llm info file for llm extension.
-        """
-        return self.config.get("agent_llm_info_file")
