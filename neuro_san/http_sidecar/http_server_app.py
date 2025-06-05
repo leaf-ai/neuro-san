@@ -13,6 +13,10 @@
 See class comment for details
 """
 from typing import Any, Dict
+import time
+import sys
+from threading import Lock, Thread
+
 from tornado.web import Application
 
 from neuro_san.interfaces.event_loop_logger import EventLoopLogger
@@ -23,6 +27,8 @@ class HttpServerApp(Application):
     Class provides customized Tornado application for neuro-san service -
     with redefined internal logger so we can include custom request metadata.
     """
+    SHUTDOWN_TIMEOUT_SECONDS: int = 20
+
     def __init__(self, handlers, requests_limit: int, logger: EventLoopLogger):
         """
         Constructor:
@@ -37,19 +43,79 @@ class HttpServerApp(Application):
         self.logger: EventLoopLogger = logger
         self.serving: bool = True
         self.shutdown_initiated: bool = False
+        self.lock: Lock = Lock()
+        self.shutdown_thread = None
 
     def is_serving(self) -> bool:
-        print(">>>>>>>>>>>>> CHECK SERVING.")
         return self.serving
 
-    def start_client_request(self, caller: str):
-        pass
+    def start_client_request(self, metadata: Dict[str, Any], caller: str):
+        """
+        Register start of client request.
+        :param metadata: request metadata
+        :param caller: name of request client to be used for stats
+        """
+        self.logger.info(metadata, "Start %s", caller)
+        with self.lock:
+            self.num_processing += 1
+            self.requests_stats[caller] = self.requests_stats.get(caller, 0) + 1
 
-    def finish_client_request(self, metadata: Dict[str, Any], caller: str):
-        pass
+    def finish_client_request(self, metadata: Dict[str, Any],
+                              caller: str, get_stats: bool = False):
+        """
+        Register finishing of client request.
+        :param metadata: request metadata
+        :param caller: name of request client to be used for stats
+        :param get_stats: True if we need to log requests statistics,
+                          False otherwise.
+        """
+        limit_reached: bool = False
+        with self.lock:
+            self.num_processing -= 1
+            self.total += 1
+            limit_reached = 0 <= self.requests_limit < self.total
+        self.logger.info(metadata, "Finish %s", caller)
+        if get_stats:
+            self.logger.info(metadata, "Stats: %s", self.get_stats())
+        # Now check if we reached requests limit:
+        if limit_reached:
+            self.serving = False
+            self.initiate_shutdown()
+
+    def do_shutdown(self):
+        """
+        Poll for state with no executing requests
+        or till we hit timeout:
+        """
+        time_waited_seconds: int = 0
+        wait_period_seconds = 2
+        while time_waited_seconds < self.SHUTDOWN_TIMEOUT_SECONDS:
+            print(f"======================== {time_waited_seconds}")
+            time.sleep(wait_period_seconds)
+            if self.num_processing <= 0:
+                break
+            time_waited_seconds += wait_period_seconds
+        self.logger.info({}, "SERVER EXITING")
+        sys.exit(-1)
+
+    def initiate_shutdown(self):
+        """
+        Initiate server shutdown process
+        """
+        if self.shutdown_initiated:
+            return
+        self.shutdown_initiated = True
+        self.logger.info({}, "Server request limit %d reached. Shutting down...", self.requests_limit)
+        self.shutdown_thread = Thread(target=self.do_shutdown, daemon=True)
+        self.shutdown_thread.start()
 
     def get_stats(self) -> str:
-        return ""
+        stats_dict: Dict[str, Any] = {
+            "NumProcessing": self.num_processing,
+            "Total": self.total
+        }
+        stats_dict.update(self.requests_stats)
+        return str(stats_dict)
 
     def log_request(self, handler):
         request = handler.request

@@ -66,7 +66,7 @@ class StreamingChatHandler(BaseRequestHandler):
             self.do_finish()
             return
 
-        self.logger.info(metadata, "Start POST %s/streaming_chat", agent_name)
+        self.application.start_client_request(metadata, f"{agent_name}/streaming_chat")
         sent_out = 0
         try:
             # Parse JSON body
@@ -79,4 +79,4 @@ class StreamingChatHandler(BaseRequestHandler):
         finally:
             # We are done with response stream:
             self.do_finish()
-            self.logger.info(metadata, "Finish POST %s/streaming_chat %d responses", agent_name, sent_out)
+            self.application.finish_client_request(metadata, f"{agent_name}/streaming_chat", get_stats=True)

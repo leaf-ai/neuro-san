@@ -66,7 +66,7 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
         self.start_event: threading.Event = start_event
         self.port = port
         self.http_port = http_port
-        self.requests_limit: int = 10
+        self.requests_limit: int = 4
         self.logger = None
         self.openapi_service_spec_path: str = openapi_service_spec_path
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata.split(" ")
