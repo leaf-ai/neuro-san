@@ -25,7 +25,7 @@ from neuro_san.internals.graph.activations.external_activation import ExternalAc
 from neuro_san.internals.graph.activations.front_man import FrontMan
 from neuro_san.internals.graph.activations.sly_data_redactor import SlyDataRedactor
 from neuro_san.internals.graph.activations.toolbox_activation import ToolboxActivation
-from neuro_san.internals.graph.registry.agent_network_keeper import AgentNetworkKeeper
+from neuro_san.internals.graph.registry.agent_network import AgentNetwork
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.callable_activation import CallableActivation
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
@@ -33,7 +33,7 @@ from neuro_san.internals.run_context.utils.external_agent_parsing import Externa
 from neuro_san.internals.utils.file_of_class import FileOfClass
 
 
-class AgentToolRegistry(AgentNetworkKeeper, AgentToolFactory):
+class AgentToolRegistry(AgentNetwork, AgentToolFactory):
     """
     A place where agent tools are registered.
     """

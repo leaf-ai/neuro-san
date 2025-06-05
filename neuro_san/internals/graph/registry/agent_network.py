@@ -18,9 +18,9 @@ from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 from neuro_san.internals.run_context.interfaces.agent_network_inspector import AgentNetworkInspector
 
 
-class AgentNetworkKeeper(AgentNetworkInspector):
+class AgentNetwork(AgentNetworkInspector):
     """
-    A place where agent tools are registered.
+    AgentNetworkInspector implementation for a single agent network spec.
     """
 
     def __init__(self, config: Dict[str, Any], name: str):
