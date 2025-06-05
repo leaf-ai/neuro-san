@@ -14,21 +14,13 @@ from typing import Any
 from typing import Dict
 from typing import Generator
 
-from neuro_san.interfaces.agent_session import AgentSession
+from neuro_san.interfaces.agent_session_constants import AgentSessionConstants
 
 
-class AsyncAgentSession:
+class AsyncAgentSession(AgentSessionConstants):
     """
     Asynchronous interface for the initiation and continuity of a single Agent session.
     """
-
-    # Default port for the Agent Service
-    # This port number will also be mentioned in its Dockerfile
-    DEFAULT_PORT: int = AgentSession.DEFAULT_PORT
-
-    # Default port for the Agent HTTP Service
-    # This port number will also be mentioned in its Dockerfile
-    DEFAULT_HTTP_PORT: int = AgentSession.DEFAULT_HTTP_PORT
 
     async def function(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
         """

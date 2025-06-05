@@ -28,8 +28,6 @@ class HttpServiceAgentSession(AgentSession):
     This is largely only used by command-line tests.
     """
 
-    DEFAULT_AGENT_NAME: str = "esp_decision_assistant"
-
     # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, host: str = None,
                  port: str = None,
@@ -38,7 +36,7 @@ class HttpServiceAgentSession(AgentSession):
                  security_cfg: Dict[str, Any] = None,
                  umbrella_timeout: Timeout = None,
                  streaming_timeout_in_seconds: int = None,
-                 agent_name: str = DEFAULT_AGENT_NAME):
+                 agent_name: str = None):
         """
         Creates a AgentSession that connects to the
         Agent Service and delegates its implementations to the service.
@@ -75,7 +73,10 @@ class HttpServiceAgentSession(AgentSession):
         if port is not None:
             self.use_port = port
 
+        if agent_name is None:
+            raise ValueError("agent_name is None")
         self.agent_name: str = agent_name
+
         self.timeout_in_seconds = timeout_in_seconds
         self.metadata: Dict[str, str] = metadata
 
