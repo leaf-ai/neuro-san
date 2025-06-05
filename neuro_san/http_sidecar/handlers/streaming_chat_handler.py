@@ -67,12 +67,11 @@ class StreamingChatHandler(BaseRequestHandler):
             return
 
         self.application.start_client_request(metadata, f"{agent_name}/streaming_chat")
-        sent_out = 0
         try:
             # Parse JSON body
             data = json.loads(self.request.body)
             result_generator = service.streaming_chat(data, metadata)
-            sent_out = await self.stream_out(result_generator)
+            await self.stream_out(result_generator)
 
         except Exception as exc:  # pylint: disable=broad-exception-caught
             self.process_exception(exc)

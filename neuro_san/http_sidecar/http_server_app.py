@@ -14,7 +14,6 @@ See class comment for details
 """
 from typing import Any, Dict
 import time
-import sys
 from threading import Lock, Thread
 
 from tornado.web import Application
@@ -28,7 +27,8 @@ class HttpServerApp(Application):
     Class provides customized Tornado application for neuro-san service -
     with redefined internal logger so we can include custom request metadata.
     """
-    SHUTDOWN_TIMEOUT_SECONDS: int = 20
+    # pylint: disable=too-many-instance-attributes
+    SHUTDOWN_TIMEOUT_SECONDS: int = 30
 
     def __init__(self, handlers, requests_limit: int, logger: EventLoopLogger):
         """
@@ -48,6 +48,10 @@ class HttpServerApp(Application):
         self.shutdown_thread = None
 
     def is_serving(self) -> bool:
+        """
+        Return True if server continues to serve requests,
+        False otherwise.
+        """
         return self.serving
 
     def start_client_request(self, metadata: Dict[str, Any], caller: str):
@@ -83,28 +87,28 @@ class HttpServerApp(Application):
             self.serving = False
             self.initiate_shutdown()
 
-    def do_shutdown(self):
+    def do_shutdown(self, loop):
         """
         Poll for state with no executing requests
         or till we hit timeout:
+        :param loop: event loop to stop
         """
         time_waited_seconds: int = 0
         wait_period_seconds = 2
         while time_waited_seconds < self.SHUTDOWN_TIMEOUT_SECONDS:
-            print(f"======================== {time_waited_seconds}")
-            time.sleep(wait_period_seconds)
             if self.num_processing <= 0:
                 break
+            time.sleep(wait_period_seconds)
             time_waited_seconds += wait_period_seconds
         self.logger.info({}, "SERVER EXITING")
-        self.stop_server()
+        self.stop_server(loop)
 
-    def stop_server(self):
+    def stop_server(self, loop):
         """
         Stop Tornado server event loop
+        :param loop: event loop to stop
         """
-        print(">>>>>>>>>>>>>>>> LOOP STOP")
-        IOLoop.current().add_callback(IOLoop.current().stop)
+        loop.add_callback(loop.stop)
 
     def initiate_shutdown(self):
         """
@@ -114,10 +118,13 @@ class HttpServerApp(Application):
             return
         self.shutdown_initiated = True
         self.logger.info({}, "Server request limit %d reached. Shutting down...", self.requests_limit)
-        self.shutdown_thread = Thread(target=self.do_shutdown, daemon=True)
+        self.shutdown_thread = Thread(target=self.do_shutdown, args=(IOLoop.current(),), daemon=True)
         self.shutdown_thread.start()
 
     def get_stats(self) -> str:
+        """
+        Construct a string with current server requests statistics.
+        """
         stats_dict: Dict[str, Any] = {
             "NumProcessing": self.num_processing,
             "Total": self.total

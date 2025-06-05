@@ -195,3 +195,10 @@ class AgentServer:
 
         self.notify_started.set()
         self.server_lifetime.run()
+
+    def stop(self):
+        """
+        Stop the server.
+        """
+        # pylint: disable=protected-access
+        self.server_lifetime._stop_serving()
