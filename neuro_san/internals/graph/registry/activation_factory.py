@@ -46,9 +46,9 @@ class ActivationFactory(AgentToolFactory):
         :param agent_network: The AgentNetwork this factory will be basing its information on
         """
         self.agent_network: AgentNetwork = agent_network
-        self.agent_tool_path: str = self.determine_agent_tool_path()
+        self.agent_tool_path: str = self._determine_agent_tool_path()
 
-    def determine_agent_tool_path(self) -> str:
+    def _determine_agent_tool_path(self) -> str:
         """
         Policy for determining where tool source should be looked for
         when resolving references to coded tools.
@@ -144,7 +144,7 @@ Check to be sure your value for PYTHONPATH includes where you expect where your 
 
             # For external tools, we want to redact the sly data based on
             # the calling/parent's agent specs.
-            redacted_sly_data: Dict[str, Any] = self.redact_sly_data(parent_run_context, sly_data)
+            redacted_sly_data: Dict[str, Any] = self._redact_sly_data(parent_run_context, sly_data)
 
             # Get the spec for allowing upstream data
             extractor = DictionaryExtractor(parent_agent_spec)
@@ -157,7 +157,7 @@ Check to be sure your value for PYTHONPATH includes where you expect where your 
 
         # Merge the arguments coming in from the LLM with those that were specified
         # in the hocon file for the agent.
-        use_args: Dict[str, Any] = self.merge_args(arguments, agent_tool_spec)
+        use_args: Dict[str, Any] = self._merge_args(arguments, agent_tool_spec)
 
         if agent_tool_spec.get("toolbox") is not None:
             # If a toolbox is in the spec, this is a shared coded tool where tool's description and
@@ -209,7 +209,7 @@ Check to be sure your value for PYTHONPATH includes where you expect where your 
         """
         return self.agent_network.get_name_from_spec(agent_spec)
 
-    def merge_args(self, llm_args: Dict[str, Any], agent_tool_spec: Dict[str, Any]) -> Dict[str, Any]:
+    def _merge_args(self, llm_args: Dict[str, Any], agent_tool_spec: Dict[str, Any]) -> Dict[str, Any]:
         """
         Merges the args specified by the llm with "hard-coded" args specified in the agent spec.
         Hard-coded args win over llm-specified args if both are defined.
@@ -228,7 +228,7 @@ Check to be sure your value for PYTHONPATH includes where you expect where your 
         merged_args: Dict[str, Any] = overlay.overlay(llm_args, config_args)
         return merged_args
 
-    def redact_sly_data(self, parent_run_context: RunContext, sly_data: Dict[str, Any]) -> Dict[str, Any]:
+    def _redact_sly_data(self, parent_run_context: RunContext, sly_data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Redact the sly_data based on the agent spec associated with the parent run context
 
