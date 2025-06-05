@@ -132,3 +132,9 @@ Some things to try:
         :return: The absolute path of agent llm info file for llm extension.
         """
         return self.config.get("agent_llm_info_file")
+
+    def get_network_name(self) -> str:
+        """
+        :return: The network name of this AgentNetwork
+        """
+        return self.name
