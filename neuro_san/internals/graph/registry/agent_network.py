@@ -20,7 +20,8 @@ from neuro_san.internals.run_context.interfaces.agent_network_inspector import A
 
 class AgentNetwork(AgentNetworkInspector):
     """
-    AgentNetworkInspector implementation for a single agent network spec.
+    AgentNetworkInspector implementation for handling queries about a single
+    agent network spec.  The data from the hocon file essentially lives here.
     """
 
     def __init__(self, config: Dict[str, Any], name: str):
