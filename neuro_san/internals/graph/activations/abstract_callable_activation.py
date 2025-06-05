@@ -13,6 +13,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 
+from neuro_san.internals.run_context.interfaces.agent_network_inspector import AgentNetworkInspector
 from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.run_context.interfaces.callable_activation import CallableActivation
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
@@ -61,14 +62,14 @@ class AbstractCallableActivation(CallableActivation):
         :return: the name of the data-driven agent as it comes from the spec
         """
         agent_spec: Dict[str, Any] = self.get_agent_tool_spec()
-        factory: AgentToolFactory = self.get_factory()
-        agent_name: str = factory.get_name_from_spec(agent_spec)
+        agent_name: str = self.factory.get_name_from_spec(agent_spec)
         return agent_name
 
-    def get_factory(self) -> AgentToolFactory:
+    def get_inspector(self) -> AgentNetworkInspector:
         """
         :return: The factory containing all the tool specs
         """
+        # For now, our inspector is an AgentToolFactory
         return self.factory
 
     def get_origin(self) -> List[Dict[str, Any]]:

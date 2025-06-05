@@ -12,13 +12,14 @@
 from typing import Any
 from typing import Dict
 
+from neuro_san.internals.run_context.interfaces.agent_network_inspector import AgentNetworkInspector
 from neuro_san.internals.run_context.interfaces.callable_activation import CallableActivation
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 
 
-class AgentToolFactory:
+class AgentToolFactory(AgentNetworkInspector):
     """
-    Interface describing a factory that creates agent tools.
+    AgentNetworkInspector Interface extension describing a factory that creates agent tools.
     Having this interface breaks some circular dependencies.
     """
 
@@ -42,28 +43,8 @@ class AgentToolFactory:
         """
         raise NotImplementedError
 
-    def get_agent_tool_spec(self, name: str) -> Dict[str, Any]:
-        """
-        :param name: The name of the agent tool to get out of the registry
-        :return: The dictionary representing the spec registered agent
-        """
-        raise NotImplementedError
-
-    def get_config(self) -> Dict[str, Any]:
-        """
-        :return: The config dictionary given to the constructor.
-        """
-        raise NotImplementedError
-
     def get_agent_tool_path(self) -> str:
         """
         :return: The path under which tools for this registry should be looked for.
-        """
-        raise NotImplementedError
-
-    def get_name_from_spec(self, agent_spec: Dict[str, Any]) -> str:
-        """
-        :param agent_spec: A single agent to register
-        :return: The agent name as per the spec
         """
         raise NotImplementedError
