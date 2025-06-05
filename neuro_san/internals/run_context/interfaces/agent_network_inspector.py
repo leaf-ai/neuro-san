@@ -39,3 +39,11 @@ class AgentNetworkInspector:
         :return: The agent name as per the spec
         """
         raise NotImplementedError
+
+    def find_front_man(self) -> str:
+        """
+        :return: A single tool name to use as the root of the chat agent.
+                 This guy will be user facing.  If there are none or > 1,
+                 an exception will be raised.
+        """
+        raise NotImplementedError
