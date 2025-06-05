@@ -38,19 +38,16 @@ class AgentToolRegistry(AgentNetwork, AgentToolFactory):
     A place where agent tools are registered.
     """
 
-    def __init__(self, config: Dict[str, Any], name: str, agent_tool_path: str = None):
+    def __init__(self, config: Dict[str, Any], name: str):
         """
         Constructor
 
         :param config: The dictionary describing the entire agent network
         :param name: The name of the registry
-        :param agent_tool_path: Optional path to specify where source gets resolved.
-                    If None, the value comes from the env var AGENT_TOOL_PATH.
-                    If that is not set, if defaults to a path relative to this file.
         """
         super().__init__(config, name)
 
-        self.agent_tool_path = self.determine_agent_tool_path(agent_tool_path)
+        self.agent_tool_path: str = self.determine_agent_tool_path(agent_tool_path)
 
     def determine_agent_tool_path(self, agent_tool_path: str) -> str:
         """
