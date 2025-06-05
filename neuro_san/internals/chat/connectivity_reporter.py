@@ -16,7 +16,7 @@ from typing import Set
 
 from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 
-from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
+from neuro_san.internals.graph.registry.agent_network import AgentNetwork
 from neuro_san.internals.interfaces.context_type_toolbox_factory import ContextTypeToolboxFactory
 from neuro_san.internals.run_context.factory.master_toolbox_factory import MasterToolboxFactory
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
@@ -50,18 +50,18 @@ class ConnectivityReporter:
         Maybe someday.
     """
 
-    def __init__(self, registry: AgentToolRegistry):
+    def __init__(self, agent_network: AgentNetwork):
         """
         Constructor
 
-        :param registry: The AgentToolRegistry to use.
+        :param agent_network: The AgentNetwork to use.
         """
 
-        self.registry: AgentToolRegistry = registry
+        self.agent_network: AgentNetwork = agent_network
         self.toolbox_factory: ContextTypeToolboxFactory = None
 
-        if self.registry is not None:
-            config: Dict[str, Any] = self.registry.get_config()
+        if self.agent_network is not None:
+            config: Dict[str, Any] = self.agent_network.get_config()
             self.toolbox_factory = MasterToolboxFactory.create_toolbox_factory(config)
 
     def report_network_connectivity(self) -> List[Dict[str, Any]]:
@@ -86,7 +86,7 @@ class ConnectivityReporter:
             self.toolbox_factory.load()
 
         # Find the name of the front-man as a root node
-        front_man: str = self.registry.find_front_man()
+        front_man: str = self.agent_network.find_front_man()
 
         # Do a breadth-first traversal starting with the front-man
         reported_agents: Set[str] = set()
@@ -109,9 +109,9 @@ class ConnectivityReporter:
         if not ExternalAgentParsing.is_external_agent(agent_name):
 
             # This is not an external agent, so get its spec to report on
-            agent_spec: Dict[str, Any] = self.registry.get_agent_tool_spec(agent_name)
+            agent_spec: Dict[str, Any] = self.agent_network.get_agent_tool_spec(agent_name)
             if agent_spec is None:
-                # The agent referred to by the caller is not actually in the registry.
+                # The agent referred to by the caller is not actually in the agent_network.
                 # As a hint, don't report anything, not even an empty tool list.
                 return connectivity_list
 
