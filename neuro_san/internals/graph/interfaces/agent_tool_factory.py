@@ -42,15 +42,15 @@ class AgentToolFactory:
         """
         raise NotImplementedError
 
-    def get_agent_tool_path(self) -> str:
-        """
-        :return: The path under which tools for this registry should be looked for.
-        """
-        raise NotImplementedError
-
     def get_config(self) -> Dict[str, Any]:
         """
         :return: The entire config dictionary given to the instance.
+        """
+        raise NotImplementedError
+
+    def get_agent_tool_path(self) -> str:
+        """
+        :return: The path under which tools for this registry should be looked for.
         """
         raise NotImplementedError
 
