@@ -23,7 +23,7 @@ from neuro_san.internals.interfaces.agent_tool_factory_provider import AgentTool
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 from neuro_san.session.async_direct_agent_session import AsyncDirectAgentSession
-from neuro_san.session.async_grpc_service_agent_session import AsyncGrpcServiceAgentSession
+from neuro_san.session.async_http_service_agent_session import AsyncHttpServiceAgentSession
 
 
 class ExternalAgentSessionFactory(AsyncAgentSessionFactory):
@@ -90,7 +90,7 @@ class ExternalAgentSessionFactory(AsyncAgentSessionFactory):
             session = AsyncDirectAgentSession(tool_registry, invocation_context, metadata=metadata)
 
         if session is None:
-            session = AsyncGrpcServiceAgentSession(host, port, agent_name=agent_name,
+            session = AsyncHttpServiceAgentSession(host, port, agent_name=agent_name,
                                                    metadata=metadata)
 
         # Quiet any logging from leaf-common grpc stuff.
