@@ -35,7 +35,8 @@ from neuro_san.internals.utils.file_of_class import FileOfClass
 
 class ActivationFactory(AgentToolFactory):
     """
-    A place where agent tools are registered.
+    A factory class for creating Activations of tools within the agent network graph.
+    That is, this is where neuro-san tools are made real.
     """
 
     def __init__(self, agent_network: AgentNetwork):
