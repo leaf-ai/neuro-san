@@ -97,6 +97,7 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
         self.logger.debug({}, "Serving agents: %s", repr(self.allowed_agents.keys()))
 
         IOLoop.current().start()
+        self.logger.info({}, "Http server stopped.")
 
     def make_app(self, requests_limit: int, logger: EventLoopLogger):
         """

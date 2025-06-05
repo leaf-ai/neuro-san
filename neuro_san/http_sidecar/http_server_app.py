@@ -18,6 +18,7 @@ import sys
 from threading import Lock, Thread
 
 from tornado.web import Application
+from tornado.ioloop import IOLoop
 
 from neuro_san.interfaces.event_loop_logger import EventLoopLogger
 
@@ -96,7 +97,14 @@ class HttpServerApp(Application):
                 break
             time_waited_seconds += wait_period_seconds
         self.logger.info({}, "SERVER EXITING")
-        sys.exit(-1)
+        self.stop_server()
+
+    def stop_server(self):
+        """
+        Stop Tornado server event loop
+        """
+        print(">>>>>>>>>>>>>>>> LOOP STOP")
+        IOLoop.current().add_callback(IOLoop.current().stop)
 
     def initiate_shutdown(self):
         """
