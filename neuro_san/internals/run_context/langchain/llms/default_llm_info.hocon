@@ -19,9 +19,9 @@
     # Model context and output tokens: https://platform.openai.com/docs/models
     # Model compatibility: https://platform.openai.com/docs/models#model-endpoint-compatibility
     "o3-mini": {
-        "use_model_name": "o3-mini-2025-01-31-17",
+        "use_model_name": "o3-mini-2025-01-31",
     },
-    "o3-mini-2025-01-31-17": {
+    "o3-mini-2025-01-31": {
         "class": "openai",
         "model_info_url": "https://platform.openai.com/docs/models/o3-mini",
         "modalities": {

@@ -5,7 +5,7 @@
 RCFILE=./.pylintrc
 UP_TO_SNUFF_DIRS=$(ls -1)
 DEPENDENCY_DIRS=""
-IGNORE="${DEPENDENCY_DIRS} build build_scripts dist neuro_san.egg-info venv"
+IGNORE="${DEPENDENCY_DIRS} build build_scripts dist docs neuro_san.egg-info venv"
 
 dirs=$1
 if [ "${dirs}" == "" ]

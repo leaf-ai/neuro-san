@@ -14,9 +14,9 @@ import threading
 from typing import Dict
 from typing import List
 
+from neuro_san.internals.graph.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.interfaces.tool_factory_provider import ToolFactoryProvider
 from neuro_san.internals.interfaces.agent_state_listener import AgentStateListener
-from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.tool_factories.single_agent_tool_factory_provider import SingleAgentToolFactoryProvider
 
 

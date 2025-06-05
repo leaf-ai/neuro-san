@@ -25,13 +25,13 @@ from leaf_common.config.config_filter_chain import ConfigFilterChain
 from leaf_common.persistence.easy.easy_hocon_persistence import EasyHoconPersistence
 from leaf_common.persistence.interface.restorer import Restorer
 
-from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
-from neuro_san.internals.graph.registry.defaults_config_filter import DefaultsConfigFilter
-from neuro_san.internals.graph.registry.dictionary_common_defs_config_filter \
+from neuro_san.internals.graph.filters.defaults_config_filter import DefaultsConfigFilter
+from neuro_san.internals.graph.filters.dictionary_common_defs_config_filter \
     import DictionaryCommonDefsConfigFilter
-from neuro_san.internals.graph.registry.name_correction_config_filter import NameCorrectionConfigFilter
-from neuro_san.internals.graph.registry.string_common_defs_config_filter \
+from neuro_san.internals.graph.filters.name_correction_config_filter import NameCorrectionConfigFilter
+from neuro_san.internals.graph.filters.string_common_defs_config_filter \
     import StringCommonDefsConfigFilter
+from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 
 
 class AgentToolRegistryRestorer(Restorer):

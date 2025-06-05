@@ -12,7 +12,7 @@
 from typing import Any
 from typing import Dict
 
-from neuro_san.internals.graph.registry.abstract_common_defs_config_filter \
+from neuro_san.internals.graph.filters.abstract_common_defs_config_filter \
     import AbstractCommonDefsConfigFilter
 
 

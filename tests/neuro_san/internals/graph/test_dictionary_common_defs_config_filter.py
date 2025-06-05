@@ -17,7 +17,7 @@ import json
 from unittest import TestCase
 
 from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
-from neuro_san.internals.graph.registry.dictionary_common_defs_config_filter \
+from neuro_san.internals.graph.filters.dictionary_common_defs_config_filter \
     import DictionaryCommonDefsConfigFilter
 
 

@@ -15,19 +15,19 @@ from typing import Dict
 from typing import Generator
 
 import json
-import requests
 
-from neuro_san.interfaces.agent_session import AgentSession
+from aiohttp import ClientSession
+
+from neuro_san.interfaces.async_agent_session import AsyncAgentSession
 from neuro_san.session.abstract_http_service_agent_session import AbstractHttpServiceAgentSession
 
 
-class HttpServiceAgentSession(AbstractHttpServiceAgentSession, AgentSession):
+class AsyncHttpServiceAgentSession(AbstractHttpServiceAgentSession, AsyncAgentSession):
     """
-    Implementation of AgentSession that talks to an HTTP service.
-    This is largely only used by command-line tests.
+    Implementation of AsyncAgentSession that talks to an HTTP service.
     """
 
-    def function(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
+    async def function(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
         """
         :param request_dict: A dictionary version of the FunctionRequest
                     protobufs structure. Has the following keys:
@@ -37,15 +37,19 @@ class HttpServiceAgentSession(AbstractHttpServiceAgentSession, AgentSession):
                 "function" - the dictionary description of the function
         """
         path: str = self.get_request_path("function")
+        result_dict: Dict[str, Any] = None
         try:
-            response = requests.get(path, json=request_dict, headers=self.get_headers(),
-                                    timeout=self.timeout_in_seconds)
-            result_dict = json.loads(response.text)
-            return result_dict
+            async with ClientSession(headers=self.get_headers(),
+                                     conn_timeout=self.timeout_in_seconds,
+                                     read_timeout=self.timeout_in_seconds,
+                                     ) as session:
+                async with session.get(path, json=request_dict) as response:
+                    result_dict = await response.json()
+                    return result_dict
         except Exception as exc:  # pylint: disable=broad-exception-caught
             raise ValueError(self.help_message(path)) from exc
 
-    def connectivity(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
+    async def connectivity(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
         """
         :param request_dict: A dictionary version of the ConnectivityRequest
                     protobufs structure. Has the following keys:
@@ -57,15 +61,19 @@ class HttpServiceAgentSession(AbstractHttpServiceAgentSession, AgentSession):
                                     wants the client ot know about.
         """
         path: str = self.get_request_path("connectivity")
+        result_dict: Dict[str, Any] = None
         try:
-            response = requests.get(path, json=request_dict, headers=self.get_headers(),
-                                    timeout=self.timeout_in_seconds)
-            result_dict = json.loads(response.text)
-            return result_dict
+            async with ClientSession(headers=self.get_headers(),
+                                     conn_timeout=self.timeout_in_seconds,
+                                     read_timeout=self.timeout_in_seconds,
+                                     ) as session:
+                async with session.get(path, json=request_dict) as response:
+                    result_dict = await response.json()
+                    return result_dict
         except Exception as exc:  # pylint: disable=broad-exception-caught
             raise ValueError(self.help_message(path)) from exc
 
-    def streaming_chat(self, request_dict: Dict[str, Any]) -> Generator[Dict[str, Any], None, None]:
+    async def streaming_chat(self, request_dict: Dict[str, Any]) -> Generator[Dict[str, Any], None, None]:
         """
         :param request_dict: A dictionary version of the ChatRequest
                     protobufs structure. Has the following keys:
@@ -81,14 +89,19 @@ class HttpServiceAgentSession(AbstractHttpServiceAgentSession, AgentSession):
         """
         path: str = self.get_request_path("streaming_chat")
         try:
-            with requests.post(path, json=request_dict, headers=self.get_headers(),
-                               stream=True,
-                               timeout=self.timeout_in_seconds) as response:
-                response.raise_for_status()
+            async with ClientSession(headers=self.get_headers(),
+                                     conn_timeout=self.timeout_in_seconds,
+                                     read_timeout=self.timeout_in_seconds,
+                                     ) as session:
+                async with session.post(path, json=request_dict) as response:
+                    # Check for successful response status
+                    response.raise_for_status()
 
-                for line in response.iter_lines(decode_unicode=True):
-                    if line.strip():  # Skip empty lines
-                        result_dict = json.loads(line)
-                        yield result_dict
+                    # Iterate over the content stream line by line
+                    async for line in response.content:
+                        unicode_line = line.decode('utf-8')
+                        if unicode_line.strip():    # Skip empty lines
+                            result_dict = json.loads(unicode_line)
+                            yield result_dict
         except Exception as exc:  # pylint: disable=broad-exception-caught
             raise ValueError(self.help_message(path)) from exc

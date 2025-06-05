@@ -12,7 +12,7 @@
 from typing import Any
 from typing import Dict
 
-from neuro_san.internals.run_context.interfaces.callable_activation import CallableActivation
+from neuro_san.internals.graph.interfaces.callable_activation import CallableActivation
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 
 
@@ -42,16 +42,9 @@ class AgentToolFactory:
         """
         raise NotImplementedError
 
-    def get_agent_tool_spec(self, name: str) -> Dict[str, Any]:
-        """
-        :param name: The name of the agent tool to get out of the registry
-        :return: The dictionary representing the spec registered agent
-        """
-        raise NotImplementedError
-
     def get_config(self) -> Dict[str, Any]:
         """
-        :return: The config dictionary given to the constructor.
+        :return: The entire config dictionary given to the instance.
         """
         raise NotImplementedError
 

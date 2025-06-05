@@ -27,9 +27,6 @@ class AsyncGrpcServiceAgentSession(AsyncAbstractServiceSession, AsyncAgentSessio
     Implementation of AsyncAgentSession that talks to a gRPC service asynchronously.
     """
 
-    DEFAULT_PORT: int = AsyncAgentSession.DEFAULT_PORT
-    DEFAULT_AGENT_NAME: str = "esp_decision_assistant"
-
     # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, host: str = None,
                  port: str = None,
@@ -38,7 +35,7 @@ class AsyncGrpcServiceAgentSession(AsyncAbstractServiceSession, AsyncAgentSessio
                  security_cfg: Dict[str, Any] = None,
                  umbrella_timeout: Timeout = None,
                  streaming_timeout_in_seconds: int = None,
-                 agent_name: str = DEFAULT_AGENT_NAME):
+                 agent_name: str = None):
         """
         Creates an AsyncAgentSession that connects to the
         Agent Service and delegates its implementations to the service.
@@ -74,6 +71,8 @@ class AsyncGrpcServiceAgentSession(AsyncAbstractServiceSession, AsyncAgentSessio
         # Normally we pass around the service_stub like a class,
         # but AgentServiceStub has a __call__() method to intercept
         # constructor-like behavior.
+        if agent_name is None:
+            raise ValueError("agent_name is None")
         service_stub = AgentServiceStub(agent_name)
         AsyncAbstractServiceSession.__init__(self, "Agent Server",
                                              service_stub,

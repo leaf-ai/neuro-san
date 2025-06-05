@@ -54,7 +54,7 @@ from neuro_san.internals.messages.agent_message import AgentMessage
 from neuro_san.internals.messages.agent_tool_result_message import AgentToolResultMessage
 from neuro_san.internals.messages.message_utils import convert_to_base_message
 from neuro_san.internals.messages.message_utils import convert_to_message_tuple
-from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
+from neuro_san.internals.run_context.interfaces.agent_network_inspector import AgentNetworkInspector
 from neuro_san.internals.run_context.interfaces.run import Run
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 from neuro_san.internals.run_context.interfaces.tool_caller import ToolCaller
@@ -290,11 +290,11 @@ class LangChainRunContext(RunContext):
         :return: The BaseTool associated with the name
         """
 
-        factory: AgentToolFactory = self.tool_caller.get_factory()
+        inspector: AgentNetworkInspector = self.tool_caller.get_inspector()
         function_json: Dict[str, Any] = None
 
-        # Check our own local factory. Most tools live in the neighborhood.
-        agent_spec: Dict[str, Any] = factory.get_agent_tool_spec(name)
+        # Check our own local inspector. Most tools live in the neighborhood.
+        agent_spec: Dict[str, Any] = inspector.get_agent_tool_spec(name)
         if agent_spec is None:
 
             # See if the agent name given could reference an external agent.
