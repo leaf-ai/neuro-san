@@ -11,8 +11,8 @@
 
 from typing import Dict
 
+from neuro_san.internals.graph.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.interfaces.agent_tool_factory_provider import AgentToolFactoryProvider
-from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
 
 
 class SingleAgentToolFactoryProvider(AgentToolFactoryProvider):

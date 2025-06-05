@@ -13,9 +13,9 @@ from typing import Any
 from typing import Dict
 from typing import List
 
+from neuro_san.internals.graph.interfaces.agent_tool_factory import AgentToolFactory
+from neuro_san.internals.graph.interfaces.callable_activation import CallableActivation
 from neuro_san.internals.run_context.interfaces.agent_network_inspector import AgentNetworkInspector
-from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
-from neuro_san.internals.run_context.interfaces.callable_activation import CallableActivation
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 
 
