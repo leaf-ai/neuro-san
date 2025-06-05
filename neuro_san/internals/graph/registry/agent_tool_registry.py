@@ -47,9 +47,9 @@ class AgentToolRegistry(AgentNetwork, AgentToolFactory):
         """
         super().__init__(config, name)
 
-        self.agent_tool_path: str = self.determine_agent_tool_path(agent_tool_path)
+        self.agent_tool_path: str = self.determine_agent_tool_path()
 
-    def determine_agent_tool_path(self, agent_tool_path: str) -> str:
+    def determine_agent_tool_path(self) -> str:
         """
         Policy for determining where tool source should be looked for
         when resolving references to coded tools.
@@ -57,8 +57,7 @@ class AgentToolRegistry(AgentNetwork, AgentToolFactory):
         :return: the agent tool path to use for source resolution.
         """
         # Try the env var first if nothing to start with
-        if agent_tool_path is None:
-            agent_tool_path = os.environ.get("AGENT_TOOL_PATH")
+        agent_tool_path: str = os.environ.get("AGENT_TOOL_PATH")
 
         # Try reach-around directory if still nothing to start with
         if agent_tool_path is None:
