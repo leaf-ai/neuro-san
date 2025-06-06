@@ -29,7 +29,7 @@ class OpenApiPublishHandler(BaseRequestHandler):
         for "publish my OpenAPI specification document" call.
         """
         metadata: Dict[str, Any] = self.get_metadata()
-        self.logger.info(metadata, "Start GET /api/v1/docs")
+        self.application.start_client_request(metadata, "/api/v1/docs")
         try:
             with open(self.openapi_service_spec_path, "r", encoding='utf-8') as f_out:
                 result_dict: Dict[str, Any] = json.load(f_out)
@@ -40,4 +40,4 @@ class OpenApiPublishHandler(BaseRequestHandler):
             self.process_exception(exc)
         finally:
             self.do_finish()
-            self.logger.info(metadata, "Finish GET /api/v1/docs")
+            self.application.finish_client_request(metadata, "/api/v1/docs")

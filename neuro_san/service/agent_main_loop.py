@@ -158,8 +158,9 @@ class AgentMainLoop(ServerLoopCallbacks):
             self.port,
             self.http_port,
             self.service_openapi_spec_file,
+            self.request_limit,
             forwarded_request_metadata=self.forwarded_request_metadata)
-        http_server_thread = threading.Thread(target=http_sidecar, daemon=True)
+        http_server_thread = threading.Thread(target=http_sidecar, args=(self.server,), daemon=True)
         http_server_thread.start()
 
         self.server.serve()

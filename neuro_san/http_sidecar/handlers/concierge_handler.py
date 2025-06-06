@@ -29,7 +29,7 @@ class ConciergeHandler(BaseRequestHandler):
         Implementation of GET request handler for "concierge" API call.
         """
         metadata: Dict[str, Any] = self.get_metadata()
-        self.logger.info(metadata, "Start GET /api/v1/list")
+        self.application.start_client_request(metadata, "/api/v1/list")
         try:
             data: Dict[str, Any] = {}
             session: ConciergeSession = DirectConciergeSession(metadata=metadata)
@@ -43,4 +43,4 @@ class ConciergeHandler(BaseRequestHandler):
             self.process_exception(exc)
         finally:
             self.do_finish()
-            self.logger.info(metadata, "Finish GET /api/v1/list")
+            self.application.finish_client_request(metadata, "/api/v1/list")
