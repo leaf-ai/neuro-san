@@ -51,7 +51,7 @@ The value for each key is a dictionary describing the tool's properties. The sch
 
 ### Langchain Tools
 These tools extend from the Langchain's `BaseTool` class.
-- #### `class`
+#### `class`
     Fully qualified class name of the tool. It must exist in the server's `PYTHONPATH`. 
 
     Example:
@@ -61,7 +61,7 @@ These tools extend from the Langchain's `BaseTool` class.
 
     If the class is a Langchain **toolkit** (such as `RequestsToolkit`), it must implement a `get_tools()` method. When instantiated, the toolkit returns a list of individual tools via this method — each of which will be available for the agent to call.
 
-- #### `args` *(optional)*
+#### `args` *(optional)*
     A dictionary of arguments for tool initialization.
 
     If **omitted**, the tool class will be instantiated with its default constructor (i.e., no arguments).
@@ -87,12 +87,12 @@ These tools extend from the Langchain's `BaseTool` class.
     ```
     This instantiates `BingSearchResults(api_wrapper=BingSearchAPIWrapper(k=3))`
 
-- #### `base_tool_info_url` *(optional)*
+#### `base_tool_info_url` *(optional)*
     Reference URL pointing to Langchain’s documentation for the specific tool.
 
     This field is for user reference only—**it is not used by the system** during tool loading or execution.
 
-- #### `display_as` *(optional)*
+#### `display_as` *(optional)*
     Display type for clients. Options:
   - `"coded_tool"`
   - `"external_agent"`
@@ -104,7 +104,7 @@ These tools extend from the Langchain's `BaseTool` class.
 ### Coded Tools
 These tools extend from the `CodedTool` class.
 
-- #### [`class`](./agent_hocon_reference.md#class)
+#### [`class`](./agent_hocon_reference.md#class)
     Fully qualified class name in the format `tool_module.ToolClass`. The `class` must point to a module available in your `AGENT_TOOL_PATH` and server `PYTHONPATH`.
 
     Example:
@@ -112,10 +112,10 @@ These tools extend from the `CodedTool` class.
     "class": "web_search.WebSearch"
     ```
 
-- #### [`description`](./agent_hocon_reference.md#description)
+#### [`description`](./agent_hocon_reference.md#description)
     A plain-language explanation of the tool’s behavior. This is essential for agents to understand how and when to use the tool.
 
-- #### [`parameters`](./agent_hocon_reference.md#parameters) *(optional)*
+#### [`parameters`](./agent_hocon_reference.md#parameters) *(optional)*
     JSON schema-like structure describing the expected input arguments, types, and which are required.
 
     If this field is **absent**, the LLM will simply call the tool **without providing any arguments**.
@@ -134,7 +134,7 @@ These tools extend from the `CodedTool` class.
     }
     ```
 
-- #### `display_as` *(optional)*
+#### `display_as` *(optional)*
     Display type for clients. Options:
   - `"coded_tool"` (default)
   - `"external_agent"`
