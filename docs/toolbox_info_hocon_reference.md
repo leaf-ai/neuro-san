@@ -10,16 +10,13 @@ Specifications in this document are organized hierarchically, with header levels
 
 - [Toolbox Info HOCON File Reference](#toolbox-info-hocon-file-reference)
     - [Toolbox Info Specifications](#toolbox-info-specifications)
-        - [Default Supported Tools](#default-supported-tools)
-            - [Langchain Tools](#langchain-tools)
-            - [Coded Tools](#coded-tools)
     - [Tool Definition Schema](#tool-definition-schema)
-        - [Langchain Tools](#langchain-tools-1)
+        - [Langchain Tools](#langchain-tools)
             - [class](#class)
-            - [args](#args)
+            - [args](#args-optional)
             - [base_tool_info_url](#base_tool_info_url-optional)
             - [display_as](#display_as-optional)
-        - [Coded Tools](#coded-tools-1)
+        - [Coded Tools](#coded-tools)
             - [class](#class-1)
             - [description](#description)
             - [parameters](#parameters-optional)
@@ -33,33 +30,16 @@ Specifications in this document are organized hierarchically, with header levels
 ## Toolbox Info Specifications
 
 The default configuration file used by the system is:
-[toolbox_info.hocon](../neuro_san/internals/run_context/langchain/toolbox_info.hocon).
+[toolbox_info.hocon](../neuro_san/internals/run_context/langchain/toolbox/toolbox_info.hocon).
 
-This file defines all tools that the system can recognize. Currently supported tool types include:
+This file defines all tools that the system can recognize and use at runtime. It supports two primary categories:
 
-- **Langchain tools** (based on `langchain` library)
-- **Coded tools** (custom Python tools)
+- **Langchain tools** – Based on LangChain's `BaseTool`, typically prebuilt utilities like search and HTTP tools.
+- **Coded tools** – Custom Python tools implemented using the `CodedTool` interface.
 
-### Default Supported Tools
+The specific tools included by default may change over time. For the most up-to-date list, refer directly to the source file above
 
-#### Langchain Tools
-
-- **Search Tools:**
-  - `bing_search`: Uses `BingSearchResults` to perform Bing queries.
-  - `tavily_search`: Uses `TavilySearchResults` to perform Tavily queries.
-
-- **HTTP Request Tools**:
-  - `requests_get`: Sends GET requests.
-  - `requests_post`: Sends POST requests.
-  - `requests_patch`: Sends PATCH requests.
-  - `requests_put`: Sends PUT requests.
-  - `requests_delete`: Sends DELETE requests.
-  - `requests_toolkit`: A wrapper for all the above request methods.
-
-#### Coded Tools
-
-- `website_search`: Performs DuckDuckGo-based internet search.
-- `rag_retriever`: Performs retrieval-augmented generation (RAG) over given URLs.
+The next section documents the schema and expected structure of each tool definition so you can define or override tools in your own configuration files.
 
 ---
 
@@ -81,8 +61,10 @@ These tools extend from the Langchain's `BaseTool` class.
 
     If the class is a Langchain **toolkit** (such as `RequestsToolkit`), it must implement a `get_tools()` method. When instantiated, the toolkit returns a list of individual tools via this method — each of which will be available for the agent to call.
 
-- #### `args`
-    A dictionary of arguments for tool initialization. 
+- #### `args` *(optional)*
+    A dictionary of arguments for tool initialization.
+
+    If **omitted**, the tool class will be instantiated with its default constructor (i.e., no arguments).
     
     Example:
     ```hocon
@@ -108,6 +90,8 @@ These tools extend from the Langchain's `BaseTool` class.
 - #### `base_tool_info_url` *(optional)*
     Reference URL pointing to Langchain’s documentation for the specific tool.
 
+    This field is for user reference only—**it is not used by the system** during tool loading or execution.
+
 - #### `display_as` *(optional)*
     Display type for clients. Options:
   - `"coded_tool"`
@@ -115,7 +99,7 @@ These tools extend from the Langchain's `BaseTool` class.
   - `"langchain_tool"` (default)
   - `"llm_agent"`
     
-  If not provided, the tool is inferred as `"langchain_tool"` unless it contains a [`description`](#coded-description).
+  If **not provided**, the tool is inferred as `"langchain_tool"` unless it contains a [`description`](#coded-description).
 
 ### Coded Tools
 These tools extend from the `CodedTool` class.
@@ -133,6 +117,8 @@ These tools extend from the `CodedTool` class.
 
 - #### [`parameters`](./agent_hocon_reference.md#parameters) *(optional)*
     JSON schema-like structure describing the expected input arguments, types, and which are required.
+
+    If this field is **absent**, the LLM will simply call the tool **without providing any arguments**.
 
     Example:
     ```hocon
@@ -155,7 +141,7 @@ These tools extend from the `CodedTool` class.
   - `"langchain_tool"`
   - `"llm_agent"`
 
-  If omitted, tools with a `description` are treated as `"coded_tool"`; otherwise, `"langchain_tool"`.
+  If **omitted**, tools with a `description` are treated as `"coded_tool"`; otherwise, `"langchain_tool"`.
 
 ---
 
