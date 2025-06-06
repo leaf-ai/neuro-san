@@ -1,0 +1,699 @@
+
+# Copyright (C) 2023-2025 Cognizant Digital Business, Evolutionary AI.
+# All Rights Reserved.
+# Issued under the Academic Public License.
+#
+# You can be released from the terms, and requirements of the Academic Public
+# License by purchasing a commercial license.
+# Purchase of a commercial license is mandatory for any use of the
+# neuro-san SDK Software in commercial settings.
+#
+# END COPYRIGHT
+
+# The schema specifications for this file are documented here:
+# https://github.com/cognizant-ai-lab/neuro-san/blob/main/docs/llm_info_hocon_reference.md
+
+{
+    # OpenAI models
+
+    # Model context and output tokens: https://platform.openai.com/docs/models
+    # Model compatibility: https://platform.openai.com/docs/models#model-endpoint-compatibility
+    "o3-mini": {
+        "use_model_name": "o3-mini-2025-01-31",
+    },
+    "o3-mini-2025-01-31": {
+        "class": "openai",
+        "model_info_url": "https://platform.openai.com/docs/models/o3-mini",
+        "modalities": {
+            "input": [ "text" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [ "tools" ],
+        "context_window_size": 200000,
+        "max_output_tokens": 100000,
+        "knowledge_cutoff": "09/30/2023",
+    },
+
+    "o1": {
+        "use_model_name": "o1-2024-12-17",
+    },
+    "o1-2024-12-17": {
+        "class": "openai",
+        "model_info_url": "https://platform.openai.com/docs/models/o1",
+        "modalities": {
+            "input": [ "text", "image" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [ "tools" ],
+        "context_window_size": 200000,
+        "max_output_tokens": 100000,
+        "knowledge_cutoff": "09/30/2023",
+    },
+    "o1-preview": {
+        "use_model_name": "o1-preview-2024-09-12",
+    },
+    "o1-preview-2024-09-12": {
+        "class": "openai",
+        "model_info_url": "https://platform.openai.com/docs/models/o1",
+        "modalities": {
+            "input": [ "text" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [ "tools" ],
+        "context_window_size": 128000,
+        "max_output_tokens": 32768,
+        "knowledge_cutoff": "09/30/2023",
+    },
+
+    "gpt-4o": {
+        "use_model_name": "gpt-4o-2024-08-06",
+    },
+    "gpt-4o-2024-05-13": {
+        "class": "openai",
+        "model_info_url": "https://platform.openai.com/docs/models/gpt-4o",
+        "modalities": {
+            "input": [ "text", "image" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [ "tools" ],
+        "context_window_size": 128000,
+        "max_output_tokens": 4096,
+        "knowledge_cutoff": "09/30/2023",
+    },
+    "gpt-4o-2024-08-06": {
+        "class": "openai",
+        "model_info_url": "https://platform.openai.com/docs/models/gpt-4o",
+        "modalities": {
+            "input": [ "text", "image" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [ "tools" ],
+        "context_window_size": 128000,
+        "max_output_tokens": 16384,
+        "knowledge_cutoff": "09/30/2023",
+    },
+    "gpt-4o-2024-11-20": {
+        "class": "openai",
+        "model_info_url": "https://platform.openai.com/docs/models/gpt-4o",
+        "modalities": {
+            "input": [ "text", "image" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [ "tools" ],
+        "context_window_size": 128000,
+        "max_output_tokens": 16384,
+        "knowledge_cutoff": "09/30/2023",
+    },
+
+    "gpt-4o-mini": {
+        "use_model_name": "gpt-4o-mini-2024-07-18",
+    },
+    "gpt-4o-mini-2024-07-18": {
+        "class": "openai",
+        "model_info_url": "https://platform.openai.com/docs/models/gpt-4o-mini",
+        "modalities": {
+            "input": [ "text", "image" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [ "tools" ],
+        "context_window_size": 128000,
+        "max_output_tokens": 16384,
+        "knowledge_cutoff": "09/30/2023",
+    },
+
+    "gpt-4-turbo": {
+        "use_model_name": "gpt-4-turbo-2024-04-09",
+    },
+    "gpt-4-turbo-2024-04-09": {
+        "class": "openai",
+        "model_info_url": "https://platform.openai.com/docs/models/gpt-4-turbo",
+        "modalities": {
+            "input": [ "text", "image" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [ "tools" ],
+        "context_window_size": 128000,
+        "max_output_tokens": 4096,
+        "knowledge_cutoff": "11/30/2023",
+    },
+
+    "gpt-4-turbo-preview": {
+        # FYI: LLMs that do not support tools cannot be used as front-men or branch nodes
+        "use_model_name": "gpt-4-0125-preview",
+    },
+    "gpt-4-0125-preview": {
+        # FYI: LLMs that do not support tools cannot be used as front-men or branch nodes
+        "class": "openai",
+        "model_info_url": "https://platform.openai.com/docs/models/gpt-4-turbo",
+        "modalities": {
+            "input": [ "text" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [ ],
+        "context_window_size": 128000,
+        "max_output_tokens": 4096,
+        "knowledge_cutoff": "11/30/2023",
+    },
+
+    "gpt-4": {
+        # FYI: LLMs that do not support tools cannot be used as front-men or branch nodes
+        "use_model_name": "gpt-4-0613",
+    },
+    "gpt-4-0613": {
+        # FYI: LLMs that do not support tools cannot be used as front-men or branch nodes
+        "class": "openai",
+        "model_info_url": "https://platform.openai.com/docs/models/gpt-4",
+        "modalities": {
+            "input": [ "text" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [ ],
+        "context_window_size": 8192,
+        "max_output_tokens": 8192,
+        "knowledge_cutoff": "11/30/2023",
+    },
+    "gpt-4-0314": {
+        # FYI: LLMs that do not support tools cannot be used as front-men or branch nodes
+        "class": "openai",
+        "model_info_url": "https://platform.openai.com/docs/models/gpt-4",
+        "modalities": {
+            "input": [ "text" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [ ],
+        "context_window_size": 8192,
+        "max_output_tokens": 8192,
+        "knowledge_cutoff": "11/30/2023",
+    },
+
+    "gpt-3.5-turbo": {
+        # FYI: LLMs that do not support tools cannot be used as front-men or branch nodes
+        "use_model_name": "gpt-3.5-turbo-0125",
+    },
+    "gpt-3.5-turbo-16k": {
+        # FYI: LLMs that do not support tools cannot be used as front-men or branch nodes
+        "use_model_name": "gpt-3.5-turbo-0125",
+    },
+    "gpt-3.5-turbo-0125": {
+        # FYI: LLMs that do not support tools cannot be used as front-men or branch nodes
+        "class": "openai",
+        "model_info_url": "https://platform.openai.com/docs/models/gpt-3.5-turbo",
+        "modalities": {
+            "input": [ "text" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [],
+        "context_window_size": 16384,
+        "max_output_tokens": 4096,
+        "knowledge_cutoff": "08/31/2021",
+    },
+    "gpt-3.5-turbo-1106": {
+        # FYI: LLMs that do not support tools cannot be used as front-men or branch nodes
+        "class": "openai",
+        "model_info_url": "https://platform.openai.com/docs/models/gpt-3.5-turbo",
+        "modalities": {
+            "input": [ "text" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [],
+        "context_window_size": 16384,
+        "max_output_tokens": 4096,
+        "knowledge_cutoff": "08/31/2021",
+    },
+    "gpt-3.5-turbo-instruct": {
+        # FYI: LLMs that do not support tools cannot be used as front-men or branch nodes
+        "class": "openai",
+        "model_info_url": "https://platform.openai.com/docs/models/gpt-3.5-turbo",
+        "modalities": {
+            "input": [ "text" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [],
+        "context_window_size": 4096,
+        "max_output_tokens": 4096,
+        "knowledge_cutoff": "08/31/2021",
+    },
+
+    # Azure models
+
+    "azure-gpt-3.5-turbo": {
+        "class": "azure-openai",
+        "use_model_name": "gpt-3.5-turbo-0125",
+        "model_info_url": "https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models?tabs=global-standard%2Cstandard-chat-completions#gpt-35"
+    },
+    "azure-gpt-4": {
+        "class": "azure-openai",
+        "use_model_name": "gpt-4-0613",
+        "model_info_url": "https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models?tabs=global-standard%2Cstandard-chat-completions#gpt-4-and-gpt-4-turbo-models"
+
+    },
+    "azure-gpt-4o-mini": {
+        "class": "azure-openai",
+        "use_model_name": "gpt-4o-mini-2024-07-18"
+        "model_info_url": "https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models?tabs=global-standard%2Cstandard-chat-completions#gpt-4-and-gpt-4-turbo-models"
+
+    },
+    "azure-gpt-4o": {
+        "class": "azure-openai",
+        "use_model_name": "gpt-4o-2024-08-06",
+        "model_info_url": "https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models?tabs=global-standard%2Cstandard-chat-completions#gpt-4-and-gpt-4-turbo-models"
+
+    },
+    "azure-o1": {
+        "class": "azure-openai",
+        "use_model_name": "o1-2024-12-17",
+        "model_info_url": "https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models?tabs=global-standard%2Cstandard-chat-completions#o-series-models"
+    },
+    "azure-o3-mini": {
+        "class": "azure-openai",
+        "use_model_name": "o3-mini-2025-01-31",
+        "model_info_url": "https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models?tabs=global-standard%2Cstandard-chat-completions#o-series-models"
+    },
+
+
+    # Anthropic models
+
+    "claude-3-haiku": {
+        "use_model_name": "claude-3-haiku-20240307",
+    },
+    "claude-3-haiku-20240307": {
+        "class": "anthropic",
+        "model_info_url": "https://docs.anthropic.com/en/docs/about-claude/models/all-models#model-comparison-table",
+        "modalities": {
+            "input": [ "text", "image" ],
+            "output": [ "text" ],
+        },
+        # Tool use: https://docs.anthropic.com/en/docs/build-with-claude/tool-use/overview#pricing
+        "capabilities": [ "tools" ],
+        "context_window_size": 200000,
+        "max_output_tokens": 4096,
+        "knowledge_cutoff": "08/2023",
+    },
+
+    "claude-3-opus": {
+        "use_model_name": "claude-3-opus-20240229",
+    },
+    "claude-3-opus-20240229": {
+        "class": "anthropic",
+        "model_info_url": "https://docs.anthropic.com/en/docs/about-claude/models/all-models#model-comparison-table",
+        "modalities": {
+            "input": [ "text", "image" ],
+            "output": [ "text" ],
+        },
+        # Tool use: https://docs.anthropic.com/en/docs/build-with-claude/tool-use/overview#pricing
+        "capabilities": [ "tools" ],
+        "context_window_size": 200000,
+        "max_output_tokens": 4096,
+        "knowledge_cutoff": "08/2023",
+    },
+
+    "claude-3-5-haiku": {
+        "use_model_name": "claude-3-5-haiku-20241022",
+    },
+    "claude-3-5-haiku-20241022": {
+        "class": "anthropic",
+        "model_info_url": "https://docs.anthropic.com/en/docs/about-claude/models/all-models#model-comparison-table",
+        "modalities": {
+            "input": [ "text", "image" ],
+            "output": [ "text" ],
+        },
+        # Tool use: https://docs.anthropic.com/en/docs/build-with-claude/tool-use/overview#pricing
+        "capabilities": [ "tools" ],
+        "context_window_size": 200000,
+        "max_output_tokens": 8192,
+        "knowledge_cutoff": "07/2024",
+    },
+
+    "claude-3-5-sonnet": {
+        "use_model_name": "claude-3-5-sonnet-20241022",
+    },
+    "claude-3-5-sonnet-20241022": {
+        "class": "anthropic",
+        "model_info_url": "https://docs.anthropic.com/en/docs/about-claude/models/all-models#model-comparison-table",
+        "modalities": {
+            "input": [ "text", "image" ],
+            "output": [ "text" ],
+        },
+        # Tool use: https://docs.anthropic.com/en/docs/build-with-claude/tool-use/overview#pricing
+        "capabilities": [ "tools" ],
+        "context_window_size": 200000,
+        "max_output_tokens": 8192,
+        "knowledge_cutoff": "04/2024",
+    },
+
+    "claude-3-7-sonnet": {
+        "use_model_name": "claude-3-7-sonnet-20250219",
+    },
+    "claude-3-7-sonnet-20250219": {
+        "class": "anthropic",
+        "model_info_url": "https://docs.anthropic.com/en/docs/about-claude/models/all-models#model-comparison-table",
+        "modalities": {
+            "input": [ "text", "image" ],
+            "output": [ "text" ],
+        },
+        # Tool use: https://docs.anthropic.com/en/docs/build-with-claude/tool-use/overview#pricing
+        "capabilities": [ "tools" ],
+        "context_window_size": 200000,
+        "max_output_tokens": 8192,
+        "knowledge_cutoff": "11/2024",
+    },
+
+    # Ollama models
+    # See https://ollama.com/search?c=tools for latest in tool-supporting Ollama models
+
+    "llama2": {
+        # FYI: LLMs that do not support tools cannot be used as front-men or branch nodes
+        "class": "ollama",
+        "model_info_url": "https://ollama.com/library/llama2",
+        "modalities": {
+            "input": [ "text" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [ ],
+        "context_window_size": 4096,    # https://github.com/meta-llama/llama/issues/267
+        "max_output_tokens": 2048,      # ???
+        "knowledge_cutoff": "unknown",
+    },
+    "llama3": {
+        # FYI: LLMs that do not support tools cannot be used as front-men or branch nodes
+        "class": "ollama",
+        "model_info_url": "https://ollama.com/library/llama3",
+        "modalities": {
+            "input": [ "text" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [ ],
+        "context_window_size": 8192,    # https://kili-technology.com/large-language-models-llms/llama-3-guide-everything-you-need-to-know-about-meta-s-new-model-and-its-data
+        "max_output_tokens": 2048,      # ???
+        "knowledge_cutoff": "unknown",
+    },
+    "llama3:70b": {
+        # FYI: LLMs that do not support tools cannot be used as front-men or branch nodes
+        "class": "ollama",
+        "model_info_url": "https://ollama.com/library/llama3",
+        "modalities": {
+            "input": [ "text" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [ ],
+        "context_window_size": 8192,    # https://kili-technology.com/large-language-models-llms/llama-3-guide-everything-you-need-to-know-about-meta-s-new-model-and-its-data
+        "max_output_tokens": 2048,      # ???
+        "knowledge_cutoff": "unknown",
+    },
+    "llama3.1": {
+        "class": "ollama",
+        "model_info_url": "https://ollama.com/library/llama3.1",
+        "modalities": {
+            "input": [ "text" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [ "tools" ],
+        "context_window_size": 128000,
+        "max_output_tokens": 2048,  # https://www.reddit.com/r/LocalLLaMA/comments/1f3s0qc/why_do_llms_have_output_limit/
+        "knowledge_cutoff": "unknown",
+    },
+    "llava": {
+        # FYI: LLMs that do not support tools cannot be used as front-men or branch nodes
+        "class": "ollama",
+        "model_info_url": "https://ollama.com/library/llava",
+        "modalities": {
+            "input": [ "text", "image" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [ ],
+        "context_window_size": 4096,    # https://github.com/Mozilla-Ocho/llamafile/issues/87
+        "max_output_tokens": 2048,      # ???
+        "knowledge_cutoff": "unknown",
+    },
+    "mistral": {
+        "class": "ollama",
+        "model_info_url": "https://ollama.com/library/mistral",
+        "modalities": {
+            "input": [ "text" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [ "tools" ],
+        "context_window_size": 8192,    # https://pub.towardsai.net/mistral-7b-explained-53720dceb81e
+        "max_output_tokens": 4096,      # ???
+        "knowledge_cutoff": "unknown",
+    },
+    "mistral-nemo": {
+        "class": "ollama",
+        "model_info_url": "https://ollama.com/library/mistral-nemo",
+        "modalities": {
+            "input": [ "text" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [ "tools" ],
+        "context_window_size": 128000,
+        "max_output_tokens": 4096,      # ???
+        "knowledge_cutoff": "unknown",
+    },
+    "mixtral": {
+        "class": "ollama",
+        "model_info_url": "https://ollama.com/library/mixtral",
+        "modalities": {
+            "input": [ "text" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [ "tools" ],
+        "context_window_size": 32000,  # https://hackernoon.com/mixtrala-multilingual-language-model-trained-with-a-context-size-of-32k-tokens
+        "max_output_tokens": 4096,      # ???
+        "knowledge_cutoff": "unknown",
+    },
+    "qwen2.5:14b": {
+        "class": "ollama",
+        "model_info_url": "https://ollama.com/library/qwen2.5",
+        "modalities": {
+            "input": [ "text" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [ "tools" ],
+        "context_window_size": 128000,
+        "max_output_tokens": 8192,
+        "knowledge_cutoff": "unknown",
+    },
+    "deepseek-r1:14b": {
+        # FYI: LLMs that do not support tools cannot be used as front-men or branch nodes
+        "class": "ollama",
+        "model_info_url": "https://ollama.com/library/deepseek-r1",
+        "modalities": {
+            "input": [ "text" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [],
+        "context_window_size": 64000,  # https://www.reddit.com/r/LocalLLaMA/comments/1ialsnx/deepseek_r1_api_real_world_experience/
+        "max_output_tokens": 8192,
+        "knowledge_cutoff": "unknown",
+    },
+    "llama3.3": {
+        "class": "ollama",
+        "model_info_url": "https://ollama.com/library/llama3.3",
+        "modalities": {
+            "input": [ "text" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [ "tools" ],
+        "context_window_size": 128000,  # ???
+        "max_output_tokens": 4096,      # ???
+        "knowledge_cutoff": "unknown",
+    },
+
+    # NVIDIA models
+
+    "nvidia-llama-3.1-405b-instruct": {
+        "use_model_name": "meta/llama-3.1-405b-instruct",
+        "class": "nvidia",
+        "model_info_url": "https://ollama.com/library/llama3.1",
+        "modalities": {
+            "input": [ "text", "image" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [ "tools" ],
+        "context_window_size": 128000,  # ???
+        "max_output_tokens": 4096  # From https://python.langchain.com/docs/integrations/chat/nvidia_ai_endpoints/
+        "knowledge_cutoff": "unknown",
+    },
+    "nvidia-llama-3.3-70b-instruct": {
+        "use_model_name": "meta/llama-3.3-70b-instruct",
+        "class": "nvidia",
+        "model_info_url": "https://ollama.com/library/llama3.3",
+        "modalities": {
+            "input": [ "text", "image" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [ "tools" ],
+        "context_window_size": 128000,  # ???
+        "max_output_tokens": 4096  # From https://python.langchain.com/docs/integrations/chat/nvidia_ai_endpoints/
+        "knowledge_cutoff": "unknown",
+    },
+    "nvidia-deepseek-r1": {
+        # FYI: LLMs that do not support tools cannot be used as front-men or branch nodes
+        "use_model_name": "deepseek-ai/deepseek-r1",
+        "class": "nvidia",
+        "model_info_url": "https://ollama.com/library/deepseek-r1",
+        "modalities": {
+            "input": [ "text" ],
+            "output": [ "text" ],
+        },
+        "capabilities": [],
+        "context_window_size": 64000,  # https://www.reddit.com/r/LocalLLaMA/comments/1ialsnx/deepseek_r1_api_real_world_experience/
+        "max_output_tokens": 8192,
+        "knowledge_cutoff": "unknown",
+    },
+
+    # These are data for each LLM class, so they don't have to be repeated for each
+    # LLM info entry above.
+    "classes": {
+
+        # You can list your own classes to create the llms given a config
+        # if the stock llms do not suit your needs. An example entry would look
+        # like this:
+        #
+        #   "factories": [ "my_package.my_module.MyLangChainLlmFactory" ],
+        #
+        # Any classes listed must:
+        #   * Exist in the PYTHONPATH of your server
+        #   * Derive from neuro_san.internals.run_context.langchain.llms.langchain_llm_factory.LangChainLlmFactory
+        #   * Have a no-args constructor
+
+        "openai": {
+            "args": {
+                # Note that we can only supply arguments that are "Just Data" in nature.
+                # See https://python.langchain.com/api_reference/openai/chat_models/langchain_openai.chat_models.base.ChatOpenAI.html
+                "temperature": 0.7,
+                "openai_api_key": null,
+                "openai_api_base": null,
+                "openai_organization": null,
+                "openai_proxy": null,
+                "request_timeout": null,
+                "max_retries": 2,
+                "presence_penalty": null,
+                "frequency_penalty": null,
+                "seed": null,
+                "logprobs": null,
+                "top_logprobs": null,
+                "logit_bias": null,
+                # streaming is always on. Without it token counting will not work.
+                # n is always 1.  neuro-san will only ever consider a single chat completion.
+                "top_p": null,
+                "max_tokens": null,         # This is always for output
+                "tiktoken_model_name": null,
+                "stop": null,
+
+                # If you really need more parameters, you will likely have to create your own LlmFactory.
+            }
+        },
+        "azure-openai": {
+            "extends": "openai",
+            "args": {
+                # Note that we can only supply arguments that are "Just Data" in nature.
+                # See https://python.langchain.com/api_reference/openai/chat_models/langchain_openai.chat_models.azure.AzureChatOpenAI.html
+                "azure_endpoint": null,
+                "deployment_name": null,
+                "openai_api_version": null,
+                "openai_api_type": "azure",
+
+                # AD here means "ActiveDirectory"
+                "azure_ad_token": null,
+                "model_version": "",
+                # streaming is always on. Without it token counting will not work.
+                # n is always 1.  neuro-san will only ever consider a single chat completion.
+
+                # If you really need more parameters, you will likely have to create your own LlmFactory.
+            }
+        },
+        "anthropic": {
+            "args": {
+                # Note that we can only supply arguments that are "Just Data" in nature.
+                # See https://python.langchain.com/api_reference/anthropic/chat_models/langchain_anthropic.chat_models.ChatAnthropic.html#langchain_anthropic.chat_models.ChatAnthropic
+                "max_tokens": null,
+                "temperature": null,
+                "top_k": null,
+                "top_p": null,
+                "default_request_timeout": null,
+                "max_retries": 2,
+                "stop_sequences": null,
+                "anthropic_api_url": "https://api.anthropic.com",
+                "anthropic_api_key": null,
+                # streaming is always set to True so that ...
+                # stream_usage is always set to True so that token counting can work correctly
+            }
+        },
+        "ollama": {
+            "args": {
+                # Note that we can only supply arguments that are "Just Data" in nature.
+                # See https://python.langchain.com/api_reference/ollama/chat_models/langchain_ollama.chat_models.ChatOllama.html#langchain_ollama.chat_models.ChatOllama
+                "mirostat": null,
+                "mirostat_eta": null,
+                "mirostat_tau": null,
+                "num_ctx": null,
+                "num_gpu": null,
+                "num_thread": null,
+                "num_predict": null,        # Will use max_tokens
+                "repeat_last_n": null,
+                "repeat_penalty": null,
+                "temperature": null,
+                "seed": null,
+                "stop": null,
+                "tfs_z": null,
+                "top_k": null,
+                "top_p": null,
+                "keep_alive": null,
+                "base_url": null,
+            }
+        },
+        "nvidia": {
+            "args": {
+                # Note that we can only supply arguments that are "Just Data" in nature.
+                # See https://python.langchain.com/api_reference/nvidia_ai_endpoints/chat_models/langchain_nvidia_ai_endpoints.chat_models.ChatNVIDIA.html#langchain_nvidia_ai_endpoints.chat_models.ChatNVIDIA
+                "base_url": null,
+                "temperature": null,
+                "max_tokens": null,
+                "top_p": null,
+                "seed": null,
+                "stop": null,
+                "nvidia_api_key": null,
+                "nvidia_base_url": null,
+            }
+        }
+    }
+
+    # This is the default config used if no llm_config is present at all in
+    # an agent network hocon file.  It is also used as a basis on top of which
+    # incomplete llm_configs are overlayed.
+    "default_config":{
+
+        "model_name": "gpt-4o",             # The string name of the default model to use.
+
+        "temperature": 0.7,                 # The default LLM temperature (randomness) to use.
+                                            # Values are floats between 0.0 (least random) to
+                                            # 1.0 (most random).
+
+        "prompt_token_fraction": 1.0,       # The fraction of total tokens (not necessarily words
+                                            # or letters) to use for a prompt. Each model_name
+                                            # has a documented number of max_tokens it can handle
+                                            # which is a total count of message + response tokens
+                                            # which goes into the calculation involved in
+                                            # get_max_prompt_tokens().
+                                            # By default the value is 1.0.
+
+        "max_tokens": null,                 # The maximum number of tokens to use in
+                                            # computing prompt tokens. By default this comes from
+                                            # the model description in this class.
+
+        # The following are more agent-level control as opposed to LLM control above.
+
+        "verbose": false,                   # Default is boolean false for quiet server operation.
+                                            # When True, responses from ChatEngine are logged to stdout.
+                                            # Can be "extra" to engage even more verbose logging from agent level.
+
+        "max_iterations": 20,               # Agent control for how many iterations are done.
+                                            # People often want to increase this when there are timeouts
+                                            # and other retry-able errors due to bad network weather,
+                                            # but this is a decent default set by langchain.
+
+        "max_execution_seconds": 120,       # Amount of time an agent should keep trying in retry
+                                            # situations before giving up.
+    },
+}

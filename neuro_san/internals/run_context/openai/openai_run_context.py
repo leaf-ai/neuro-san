@@ -25,7 +25,7 @@ from leaf_common.config.dictionary_overlay import DictionaryOverlay
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.message_utils import get_last_message_with_content
-from neuro_san.internals.run_context.interfaces.agent_tool_factory import AgentToolFactory
+from neuro_san.internals.run_context.interfaces.agent_network_inspector import AgentNetworkInspector
 from neuro_san.internals.run_context.interfaces.run import Run
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 from neuro_san.internals.run_context.interfaces.tool_caller import ToolCaller
@@ -82,14 +82,14 @@ class OpenAIRunContext(RunContext):
         self.journal: Journal = self.invocation_context.get_journal()
 
     # pylint: disable=too-many-locals
-    async def create_resources(self, assistant_name: str,
+    async def create_resources(self, agent_name: str,
                                instructions: str,
                                assignments: str,
                                tool_names: List[str] = None):
         """
         Creates the thread resource on the OpenAI service side.
         The result is stored as a member in this instance for future use.
-        :param assistant_name: String name of the assistant that can show up in the
+        :param agent_name: String name of the assistant that can show up in the
                     OpenAI web API.
         :param instructions: string instructions that are used to create the OpenAI assistant
         :param assignments: string assignments of function parameters that are used as input
@@ -106,8 +106,8 @@ class OpenAIRunContext(RunContext):
             # We can only use the first tool name in this implementation for now
             tool_name = tool_names[0]
 
-        factory: AgentToolFactory = self.tool_caller.get_factory()
-        tool_spec: Dict[str, Any] = factory.get_agent_tool_spec(tool_name)
+        inspector: AgentNetworkInspector = self.tool_caller.get_inspector()
+        tool_spec: Dict[str, Any] = inspector.get_agent_tool_spec(tool_name)
 
         if tool_spec is not None:
             tool_llm_config = tool_spec.get("llm_config")
@@ -121,7 +121,7 @@ class OpenAIRunContext(RunContext):
 
         # Create the assistant
         assistant = await self.openai_client.create_assistant(
-            name=assistant_name,
+            name=agent_name,
             instructions=use_instructions,
             model=model_name,
         )

@@ -32,7 +32,6 @@ Sub-keys to those dictionaries will be described in the next-level down heading 
       - [Class Name Keys](#class-name-keys)
         - [extends](#extends)
         - [args](#args)
-        - [token_counting](#token_counting)
       - [factories](#factories)
     - [default_config](#default_config)
   - [Extending LLM Info Specifications](#extending-llm-info-specifications)
@@ -46,7 +45,7 @@ Sub-keys to those dictionaries will be described in the next-level down heading 
 All parameters listed here have global scope and are listed at the top of the file by convention.
 
 The default file used with the system is called
-[default_llm_info.hocon](../neuro_san/internals/run_context/langchain/default_llm_info.hocon).
+[default_llm_info.hocon](../neuro_san/internals/run_context/langchain/llms/default_llm_info.hocon).
 
 ### Model Name Keys
 
@@ -209,11 +208,6 @@ especially useful in combination with model aliasing when privately hosted LLMs
 need to specify specific endpoints that are used over and over again in your agent
 definitions.
 
-##### token_counting
-
-A string describing the means of token counting.  If not included, the default
-value is None, indicating that the mechanism for token counting is unknown.
-
 #### factories
 
 You can list your own factory classes that create a BaseLanguageModel instance given a config if the
@@ -225,7 +219,7 @@ look like this:
 Any classes listed must:
 
 * Exist in the PYTHONPATH of your server
-* Derive from neuro_san.internals.run_context.langchain.langchain_llm_factory.LangChainLlmFactory
+* Derive from neuro_san.internals.run_context.langchain.llms.langchain_llm_factory.LangChainLlmFactory
   to override the create_base_chat_model() method that creates your BaseLanguageModel instance.
 * Have a no-args constructor
 

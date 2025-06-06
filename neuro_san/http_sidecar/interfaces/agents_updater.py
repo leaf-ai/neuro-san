@@ -12,7 +12,8 @@
 """
 See class comment for details
 """
-from typing import List
+from typing import Any
+from typing import Dict
 
 
 class AgentsUpdater:
@@ -21,9 +22,10 @@ class AgentsUpdater:
     being served.
     """
 
-    def update_agents(self, agents: List[str]):
+    def update_agents(self, metadata: Dict[str, Any]):
         """
-        :param agents: list of agents names which should be served currently.
+        Update list of agents for which serving is allowed.
+        :param metadata: metadata to be used for logging if necessary.
         :return: nothing
         """
         raise NotImplementedError

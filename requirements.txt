@@ -28,6 +28,7 @@ idna>=3.6
 # but latest 2.0 versions have an incompatibility with the requests library
 # See UN-1190.
 urllib3>=1.26.18,<2.0
+aiohttp>=3.10.5,<4.0
 
 # These are transient dependencies needed by leaf-common
 ruamel.yaml>=0.18.6
@@ -52,6 +53,9 @@ httpx==0.27.2
 
 # HTTP server part
 tornado>=6.4.2
+
+# Sync/async queue
+janus >= 2.0.0
 
 # Local filesystem watchdog
 watchdog>=6.0.0

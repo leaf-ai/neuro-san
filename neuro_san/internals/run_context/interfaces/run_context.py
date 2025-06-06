@@ -28,15 +28,15 @@ class RunContext(AgentSpecProvider):
     Interface supporting high-level LLM usage.
     """
 
-    async def create_resources(self, assistant_name: str,
+    async def create_resources(self, agent_name: str,
                                instructions: str,
                                assignments: str,
                                tool_names: List[str] = None):
         """
-        Creates resources to be used during a run of an assistant.
+        Creates resources to be used during a run of an agent.
         The result is stored as a member in this instance for future use.
-        :param assistant_name: String name of the assistant.
-        :param instructions: string instructions that are used to create the assistant
+        :param agent_name: String name for the agent.
+        :param instructions: string instructions that are used to create the agent
         :param assignments: string assignments of function parameters that are used as input
         :param tool_names: The list of registered tool names to use.
                     Default is None implying no tool is to be called.
@@ -47,7 +47,7 @@ class RunContext(AgentSpecProvider):
         """
         Submits a message to create a run.
         :param user_message: The message to submit
-        :return: The Run instance which is processing the assistant's message
+        :return: The Run instance which is processing the agent's message
         """
         raise NotImplementedError
 
@@ -69,7 +69,7 @@ class RunContext(AgentSpecProvider):
 
     async def submit_tool_outputs(self, run: Run, tool_outputs: List[Any]) -> Run:
         """
-        :param run: The run instace handling the execution of the assistant
+        :param run: The Run instance handling the execution of the agent
         :param tool_outputs: The tool outputs to submit
         :return: A potentially updated run instance handle
         """
