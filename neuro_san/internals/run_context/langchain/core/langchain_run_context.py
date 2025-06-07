@@ -518,7 +518,6 @@ class LangChainRunContext(RunContext):
                     }
                 else:
                     self.logger.warning("retrying from ValueError")
-
                     retries = retries - 1
                     exception = value_error
                     backtrace = traceback.format_exc()
