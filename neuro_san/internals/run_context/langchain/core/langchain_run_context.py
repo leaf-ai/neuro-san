@@ -53,7 +53,6 @@ from neuro_san.internals.messages.origination import Origination
 from neuro_san.internals.messages.agent_message import AgentMessage
 from neuro_san.internals.messages.agent_tool_result_message import AgentToolResultMessage
 from neuro_san.internals.messages.message_utils import convert_to_base_message
-from neuro_san.internals.messages.message_utils import convert_to_message_tuple
 from neuro_san.internals.run_context.interfaces.agent_network_inspector import AgentNetworkInspector
 from neuro_san.internals.run_context.interfaces.run import Run
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
@@ -370,10 +369,10 @@ class LangChainRunContext(RunContext):
         # Assemble the prompt message list
         message_list: List[Tuple[str, str]] = []
 
+        system_message = SystemMessage(instructions)
         if len(self.chat_history) == 0:
             # We have not had any chat history just yet, so build it from scratch
             # Add to our own chat history which is updated in write_message()
-            system_message = SystemMessage(instructions)
             await self.journal.write_message(system_message)
             message_list.append(("system", instructions))
 
@@ -383,22 +382,10 @@ class LangChainRunContext(RunContext):
                 await self.journal.write_message(system_message)
                 message_list.append(("system", assignments))
         else:
-            # Build the prompt template from previous chat history
-            # Note that since all of these are from the chat history,
-            # we can consider them already reported so they do not
-            # need to get written to the journal.
-            for index, base_message in enumerate(self.chat_history):
-
-                message_tuple: Tuple[str, Any] = None
-
-                if index == 0:
-                    # Always use the most current instructions
-                    message_tuple = ("system", instructions)
-                else:
-                    message_tuple = convert_to_message_tuple(base_message)
-
-                if message_tuple is not None:
-                    message_list.append(message_tuple)
+            # Chat history already contains what we need and it is
+            # sent as part of the first placeholder message.
+            # However, we always want ot use the most current instructions.
+            self.chat_history[0] = system_message
 
         # Fill out the rest of the prompt per the docs for create_tooling_agent()
         # Note we are not write_message()-ing the chat history because that is redundant

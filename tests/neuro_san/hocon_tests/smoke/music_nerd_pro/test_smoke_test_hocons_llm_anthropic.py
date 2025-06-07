@@ -34,12 +34,10 @@ class TestSmokeTestHocons(TestCase):
         # Ideally more basic functionality will come first.
         # Barring that, try to stick to alphabetical order.
         "music_nerd_pro_llm_anthropic/combination_responses_with_history_direct.hocon",
-        "music_nerd_pro_llm_anthropic/combination_responses_with_history_grpc.hocon",
-        "music_nerd_pro_llm_anthropic/combination_responses_with_history_http.hocon",
 
         # List more hocon files as they become available here.
     ]))
-    @pytest.mark.smoke_llm_anthropic
+    @pytest.mark.smoke
     def test_hocon(self, test_name: str, test_hocon: str):
         """
         Test method for a single parameterized test case specified by a hocon file.

@@ -185,7 +185,10 @@ def convert_to_chat_message(message: BaseMessage, origin: List[Dict[str, Any]] =
         # If it is a list, "text" is a key of a dictionary which is the first element of
         # the list. For more details: https://python.langchain.com/docs/integrations/chat/anthropic/#content-blocks
         if src == "content" and isinstance(value, list):
-            value = value[0].get("text", "")
+            if len(value) > 0:
+                value = value[0].get("text", "")
+            else:
+                value = None
 
         if value is not None:
             chat_message[dest] = value

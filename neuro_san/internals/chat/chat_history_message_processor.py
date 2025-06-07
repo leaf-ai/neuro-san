@@ -95,7 +95,8 @@ class ChatHistoryMessageProcessor(MessageProcessor):
             # Transform the message with properly escaped text.
             transformed_message_dict = self.escape_message(chat_message_dict)
 
-        self.message_history.append(transformed_message_dict)
+        if transformed_message_dict is not None:
+            self.message_history.append(transformed_message_dict)
 
     def redact_instructions(self, chat_message_dict: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -114,6 +115,9 @@ class ChatHistoryMessageProcessor(MessageProcessor):
         """
         transformed: Dict[str, Any] = copy(chat_message_dict)
         text: str = transformed.get("text")
+
+        if text is None:
+            return None
 
         # Braces are a problem for chat history being read back into the system
         # if they are not properly escaped.
