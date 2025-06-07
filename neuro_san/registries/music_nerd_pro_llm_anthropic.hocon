@@ -9,10 +9,6 @@
 # neuro-san SDK Software in commercial settings.
 #
 # END COPYRIGHT
-
-# The schema specifications for this file are documented here:
-# https://github.com/cognizant-ai-lab/neuro-san/blob/main/docs/agent_hocon_reference.md
-
 {
     "llm_config": {
         "model_name": "claude-3-5-haiku",
@@ -26,7 +22,7 @@
         # he is the only one with no parameters in his function definition,
         # and therefore he needs to talk to the outside world to get things rolling.
         {
-            "name": "MusicNerdPro_LLM_Anthropic",
+            "name": "MusicNerdPro",
 
             # Note that there are no parameters defined for this guy's "function" key.
             # This is the primary way to identify this tool as a front-man,
@@ -54,21 +50,7 @@ You’re equal parts playlist curator, music historian, and pop culture mythbust
 This service comes for a fee. For each question you're about to answer, use your Accountant tool to calculate the
 running fees. 
 
-This service comes at a cost. For every question:
-
-    1. "Use your Accountant tool to calculate the updated running cost."
-
-    2. "Return your response in two parts:"
-
-        - "First, give your full music answer as plain text."
-
-        - "Then, on a separate line, return a valid JSON object with:"  
-
-            - "the key "running_cost" (with double quotes), and:
-
-            - "the value as a number with exactly one decimal place, without double quotes."
-        
-        example: "running_cost": 1.0
+Return your answer and the running cost in a JSON message.
 """,
             "tools": ["Accountant"]
         },
@@ -90,7 +72,7 @@ to the API to get the updated running cost. If no running cost it known, pass 0.
                     "required": ["running_cost"]
                 }
             },
-            "class": "accounting.Accountant",
+            "class": "accounting.Accountant"
         },
     ]
 }
