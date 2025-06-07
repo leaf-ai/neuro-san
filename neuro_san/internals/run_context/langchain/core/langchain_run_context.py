@@ -53,8 +53,6 @@ from neuro_san.internals.messages.origination import Origination
 from neuro_san.internals.messages.agent_message import AgentMessage
 from neuro_san.internals.messages.agent_tool_result_message import AgentToolResultMessage
 from neuro_san.internals.messages.message_utils import convert_to_base_message
-from neuro_san.internals.messages.message_utils import convert_to_chat_message
-from neuro_san.internals.messages.message_utils import convert_to_message_tuple
 from neuro_san.internals.run_context.interfaces.agent_network_inspector import AgentNetworkInspector
 from neuro_san.internals.run_context.interfaces.run import Run
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
@@ -520,13 +518,6 @@ class LangChainRunContext(RunContext):
                     }
                 else:
                     self.logger.warning("retrying from ValueError")
-
-                    print("chat_history:")
-                    for message in self.chat_history:
-                        print(f"{str(message)}")
-                    print("recent_human_message:")
-                    chat_message = convert_to_chat_message(self.recent_human_message)
-                    print(f"{str(message)}")
 
                     retries = retries - 1
                     exception = value_error
