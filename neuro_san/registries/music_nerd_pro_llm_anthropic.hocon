@@ -9,6 +9,10 @@
 # neuro-san SDK Software in commercial settings.
 #
 # END COPYRIGHT
+
+# The schema specifications for this file are documented here:
+# https://github.com/cognizant-ai-lab/neuro-san/blob/main/docs/agent_hocon_reference.md
+
 {
     "llm_config": {
         "model_name": "claude-3-5-haiku",
