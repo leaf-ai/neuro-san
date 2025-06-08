@@ -165,6 +165,13 @@ class BaseRequestHandler(RequestHandler):
         return
 
     def prepare(self):
+        if not self.application.is_serving():
+            self.set_status(503)
+            self.write({"error": "Server is shutting down"})
+            self.logger.error(self.get_metadata(), "Server is shutting down")
+            self.do_finish()
+            return
+
         self.logger.info(self.get_metadata(), f"[REQUEST RECEIVED] {self.request.method} {self.request.uri}")
 
     def do_finish(self):

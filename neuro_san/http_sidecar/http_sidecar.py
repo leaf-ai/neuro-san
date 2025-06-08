@@ -13,6 +13,7 @@
 See class comment for details
 """
 
+import random
 import threading
 from typing import Any, Dict, List
 
@@ -21,10 +22,12 @@ from tornado.ioloop import IOLoop
 from neuro_san.interfaces.concierge_session import ConciergeSession
 from neuro_san.session.direct_concierge_session import DirectConciergeSession
 from neuro_san.service.agent_server import DEFAULT_FORWARDED_REQUEST_METADATA
+from neuro_san.interfaces.event_loop_logger import EventLoopLogger
 from neuro_san.http_sidecar.logging.http_logger import HttpLogger
 from neuro_san.http_sidecar.http_server_app import HttpServerApp
 from neuro_san.service.async_agent_service import AsyncAgentService
 from neuro_san.service.agent_server_logging import AgentServerLogging
+from neuro_san.service.agent_server import AgentServer
 from neuro_san.internals.tool_factories.service_tool_factory_provider import ServiceToolFactoryProvider
 from neuro_san.internals.tool_factories.single_agent_tool_factory_provider import SingleAgentToolFactoryProvider
 
@@ -51,6 +54,7 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
     def __init__(self, start_event: threading.Event,
                  port: int, http_port: int,
                  openapi_service_spec_path: str,
+                 requests_limit: int,
                  forwarded_request_metadata: str = DEFAULT_FORWARDED_REQUEST_METADATA):
         """
         Constructor:
@@ -58,6 +62,9 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
         :param port: port for gRPC neuro-san service;
         :param http_port: port for http neuro-san service;
         :param openapi_service_spec_path: path to a file with OpenAPI service specification;
+        :param request_limit: The number of requests to service before shutting down.
+                        This is useful to be sure production environments can handle
+                        a service occasionally going down.
         :param forwarded_request_metadata: A space-delimited list of http metadata request keys
                to forward to logs/other requests
         """
@@ -65,20 +72,31 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
         self.start_event: threading.Event = start_event
         self.port = port
         self.http_port = http_port
+
+        # Randomize requests limit for this server instance.
+        # Lower and upper bounds for number of requests before shutting down
+        if requests_limit == -1:
+            # Unlimited requests
+            self.requests_limit = -1
+        else:
+            request_limit_lower = round(requests_limit * 0.90)
+            request_limit_upper = round(requests_limit * 1.10)
+            self.requests_limit = random.randint(request_limit_lower, request_limit_upper)
+
         self.logger = None
         self.openapi_service_spec_path: str = openapi_service_spec_path
         self.forwarded_request_metadata: List[str] = forwarded_request_metadata.split(" ")
         self.allowed_agents: Dict[str, AsyncAgentService] = {}
         self.lock = None
 
-    def __call__(self):
+    def __call__(self, grpc_server: AgentServer):
         """
         Method to be called by a thread running tornado HTTP server
         to actually start serving requests.
         """
         self.lock = threading.Lock()
         self.logger = HttpLogger(self.forwarded_request_metadata)
-        app = self.make_app()
+        app = self.make_app(self.requests_limit, self.logger)
 
         # Wait for "go" signal which will be set by gRPC server and corresponding machinery
         # when everything is ready for servicing.
@@ -89,14 +107,17 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
 
         app.listen(self.http_port)
         self.logger.info({}, "HTTP server is running on port %d", self.http_port)
+        self.logger.info({}, "HTTP server is shutting down after %d requests", self.requests_limit)
         # Construct initial "allowed" list of agents:
         # no metadata to use here yet.
         self.update_agents(metadata={})
         self.logger.debug({}, "Serving agents: %s", repr(self.allowed_agents.keys()))
 
         IOLoop.current().start()
+        self.logger.info({}, "Http server stopped.")
+        grpc_server.stop()
 
-    def make_app(self):
+    def make_app(self, requests_limit: int, logger: EventLoopLogger):
         """
         Construct tornado HTTP "application" to run.
         """
@@ -115,7 +136,7 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
         handlers.append((r"/api/v1/([^/]+)/connectivity", ConnectivityHandler, request_data))
         handlers.append((r"/api/v1/([^/]+)/streaming_chat", StreamingChatHandler, request_data))
 
-        return HttpServerApp(handlers)
+        return HttpServerApp(handlers, requests_limit, logger)
 
     def allow(self, agent_name) -> AsyncAgentService:
         return self.allowed_agents.get(agent_name, None)
