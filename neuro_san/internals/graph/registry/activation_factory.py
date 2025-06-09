@@ -22,12 +22,13 @@ from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 from neuro_san.internals.graph.activations.branch_activation import BranchActivation
 from neuro_san.internals.graph.activations.class_activation import ClassActivation
 from neuro_san.internals.graph.activations.external_activation import ExternalActivation
-from neuro_san.internals.graph.activations.front_man import FrontMan
+from neuro_san.internals.graph.activations.front_man_activation import FrontManActivation
 from neuro_san.internals.graph.activations.sly_data_redactor import SlyDataRedactor
 from neuro_san.internals.graph.activations.toolbox_activation import ToolboxActivation
 from neuro_san.internals.graph.interfaces.agent_tool_factory import AgentToolFactory
 from neuro_san.internals.graph.interfaces.callable_activation import CallableActivation
 from neuro_san.internals.graph.registry.agent_network import AgentNetwork
+from neuro_san.internals.interfaces.front_man import FrontMan
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
 from neuro_san.internals.utils.file_of_class import FileOfClass
@@ -176,7 +177,7 @@ Check to be sure your value for PYTHONPATH includes where you expect where your 
                 agent_activation = BranchActivation(parent_run_context, factory, use_args, agent_tool_spec, sly_data)
         else:
             # Get the tool to call from the spec.
-            agent_activation = FrontMan(parent_run_context, factory, agent_tool_spec, sly_data)
+            agent_activation = FrontManActivation(parent_run_context, factory, agent_tool_spec, sly_data)
 
         return agent_activation
 
@@ -193,7 +194,7 @@ Check to be sure your value for PYTHONPATH includes where you expect where your 
         front_man_name: str = self.agent_network.find_front_man()
 
         agent_tool_spec: Dict[str, Any] = self.agent_network.get_agent_tool_spec(front_man_name)
-        front_man = FrontMan(parent_run_context, factory, agent_tool_spec, sly_data)
+        front_man = FrontManActivation(parent_run_context, factory, agent_tool_spec, sly_data)
         return front_man
 
     def get_config(self) -> Dict[str, Any]:

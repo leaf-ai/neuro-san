@@ -13,11 +13,12 @@ from typing import Any
 from typing import List
 
 from neuro_san.internals.graph.activations.calling_activation import CallingActivation
+from neuro_san.internals.interfaces.front_man import FrontMan
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.run_context.interfaces.run import Run
 
 
-class FrontMan(CallingActivation):
+class FrontManActivation(CallingActivation, FrontMan):
     """
     A CallingActivation implementation which is the root of the call graph.
     """
