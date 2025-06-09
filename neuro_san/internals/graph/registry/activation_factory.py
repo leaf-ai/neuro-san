@@ -187,6 +187,12 @@ Check to be sure your value for PYTHONPATH includes where you expect where your 
                          factory: AgentToolFactory = None) -> FrontMan:
         """
         Find and create the FrontMan for chat
+
+        :param sly_data: A mapping whose keys might be referenceable by agents, but whose
+                 values should not appear in agent chat text. Can be an empty dictionary.
+        :param parent_run_context: A RunContext instance
+        :param factory: An optional extra parameter at this ActivationFactory level to provide
+                    the correct object reference for factory scope/lifetime issues.
         """
         if factory is None:
             factory = self

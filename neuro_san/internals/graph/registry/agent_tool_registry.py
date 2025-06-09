@@ -16,12 +16,13 @@ from neuro_san.internals.graph.interfaces.agent_tool_factory import AgentToolFac
 from neuro_san.internals.graph.interfaces.callable_activation import CallableActivation
 from neuro_san.internals.graph.registry.activation_factory import ActivationFactory
 from neuro_san.internals.graph.registry.agent_network import AgentNetwork
+from neuro_san.internals.interfaces.agent_registry import AgentRegistry
 from neuro_san.internals.interfaces.front_man import FrontMan
 from neuro_san.internals.run_context.interfaces.agent_network_inspector import AgentNetworkInspector
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 
 
-class AgentToolRegistry(AgentNetworkInspector, AgentToolFactory):
+class AgentToolRegistry(AgentRegistry, AgentNetworkInspector, AgentToolFactory):
     """
     Puts together an AgentNetwork data-only spec with an ActivationFactory
     so that a single entity can handle both interfaces.
@@ -62,6 +63,10 @@ class AgentToolRegistry(AgentNetworkInspector, AgentToolFactory):
                          parent_run_context: RunContext = None) -> FrontMan:
         """
         Find and create the FrontMan for chat
+
+        :param sly_data: A mapping whose keys might be referenceable by agents, but whose
+                 values should not appear in agent chat text. Can be an empty dictionary.
+        :param parent_run_context: A RunContext instance
         """
         return self.factory.create_front_man(sly_data, parent_run_context, self)
 
