@@ -20,17 +20,9 @@ class FrontMan:
     Interface that describes how a chat interface can interact with a FrontMan
     """
 
-    async def create_resources(self, component_name: str = None,
-                               instructions: str = None,
-                               assignments: str = ""):
+    async def create_any_resources(self):
         """
         Creates resources that will be used throughout the lifetime of the component.
-        :param component_name: Optional string for labelling the component.
-                        Defaults to the agent name if not set.
-        :param instructions: Optional string for setting more fine-grained instructions.
-                        Defaults to agent instructions if not set.
-        :param assignments: Optional string for assigning agent functional arguments.
-                        Defaults to an empty string if not set.
         """
         raise NotImplementedError
 
@@ -67,11 +59,8 @@ class FrontMan:
         """
         raise NotImplementedError
 
-    async def delete_resources(self, parent_run_context: object):
+    async def delete_any_resources(self):
         """
-        Cleans up after any allocated resources on their server side.
-        :param parent_run_context: The RunContext which contains the scope
-                    of operation of this CallableActivation.
-                    Can be None in the case of the FrontMan
+        Cleans up after any allocated resources
         """
         raise NotImplementedError

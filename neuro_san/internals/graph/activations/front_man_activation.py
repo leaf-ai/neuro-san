@@ -23,6 +23,12 @@ class FrontManActivation(CallingActivation, FrontMan):
     A CallingActivation implementation which is the root of the call graph.
     """
 
+    async def create_any_resources(self):
+        """
+        Creates resources that will be used throughout the lifetime of the component.
+        """
+        await self.create_resources()
+
     async def submit_message(self, user_input: str) -> List[Any]:
         """
         Entry-point method for callers of the root of the Activation tree.
@@ -73,4 +79,13 @@ class FrontManActivation(CallingActivation, FrontMan):
 
         :return: A List of messages produced during this process.
         """
+        # This is never called for a FrontMan, but is needed to satisfy the
+        # class heirarchy stemming from CallableActivation.
+        # A FrontMan is not Callable.
         raise NotImplementedError
+
+    async def delete_any_resources(self):
+        """
+        Cleans up after any allocated resources
+        """
+        await self.delete_resources(None)
