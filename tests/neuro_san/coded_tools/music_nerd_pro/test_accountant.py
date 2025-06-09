@@ -1,11 +1,11 @@
 from unittest import TestCase
 
-from neuro_san.coded_tools.music_nerd_pro.accounting import Accountant
+from neuro_san.coded_tools.music_nerd_pro.accountant import Accountant
 
 
-class TestAccounting(TestCase):
+class TestAccountant(TestCase):
     """
-    Unit tests for Accounting class.
+    Unit tests for Accountant class.
     """
 
     def test_invoke(self):

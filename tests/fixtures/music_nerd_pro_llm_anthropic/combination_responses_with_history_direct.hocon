@@ -14,9 +14,6 @@
     # Describes what agent to test against.
     "agent": "music_nerd_pro_llm_anthropic",
 
-    # Connect to the agent via a server
-    "connections": ["direct"],
-
     # Interactions are a series of dictionaries with request elements paired with
     # descriptions of response checks.
     "interactions": [
