@@ -39,7 +39,7 @@ class ConnectivityHandler(BaseRequestHandler):
             self.do_finish()
             return
 
-        self.logger.info(metadata, "Start GET %s/connectivity", agent_name)
+        self.application.start_client_request(metadata, f"{agent_name}/connectivity")
         try:
             data: Dict[str, Any] = {}
             result_dict: Dict[str, Any] = await service.connectivity(data, metadata)
@@ -52,4 +52,4 @@ class ConnectivityHandler(BaseRequestHandler):
             self.process_exception(exc)
         finally:
             self.do_finish()
-            self.logger.info(metadata, "Finish GET %s/connectivity request", agent_name)
+            self.application.finish_client_request(metadata, f"{agent_name}/connectivity")

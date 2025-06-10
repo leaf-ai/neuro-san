@@ -27,7 +27,6 @@ from neuro_san.internals.chat.connectivity_reporter import ConnectivityReporter
 from neuro_san.internals.chat.data_driven_chat_session import DataDrivenChatSession
 from neuro_san.internals.filters.message_filter import MessageFilter
 from neuro_san.internals.filters.message_filter_factory import MessageFilterFactory
-from neuro_san.internals.graph.activations.front_man import FrontMan
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
 from neuro_san.session.session_invocation_context import SessionInvocationContext
 
@@ -80,9 +79,9 @@ class DirectAgentSession(AgentSession):
         response_dict: Dict[str, Any] = {
         }
 
-        front_man: FrontMan = self.tool_registry.create_front_man()
+        front_man: str = self.tool_registry.find_front_man()
         if front_man is not None:
-            spec: Dict[str, Any] = front_man.get_agent_tool_spec()
+            spec: Dict[str, Any] = self.tool_registry.get_agent_tool_spec(front_man)
             empty: Dict[str, Any] = {}
             function: Dict[str, Any] = spec.get("function", empty)
             response_dict = {

@@ -15,7 +15,7 @@
 
 {
     "llm_config": {
-        "model_name": "gpt-4o",
+        "model_name": "claude-3-5-haiku",
     },
     "tools": [
         # These tool definitions do not have to be in any particular order

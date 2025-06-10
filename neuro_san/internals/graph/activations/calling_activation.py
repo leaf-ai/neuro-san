@@ -36,7 +36,7 @@ class CallingActivation(AbstractCallableActivation, ToolCaller):
 
     Worth noting that this is used as a base implementation for:
         * BranchActivation - which can both call other tools and be called as a tool
-        * FrontMan - which can only call other tools but has other specialized
+        * FrontManActivation - which can only call other tools but has other specialized
             logic for interacting with user input, it being the root node of a tool graph.
     """
 

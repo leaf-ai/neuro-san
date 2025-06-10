@@ -13,14 +13,21 @@ from typing import Any
 from typing import List
 
 from neuro_san.internals.graph.activations.calling_activation import CallingActivation
+from neuro_san.internals.interfaces.front_man import FrontMan
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.run_context.interfaces.run import Run
 
 
-class FrontMan(CallingActivation):
+class FrontManActivation(CallingActivation, FrontMan):
     """
     A CallingActivation implementation which is the root of the call graph.
     """
+
+    async def create_any_resources(self):
+        """
+        Creates resources that will be used throughout the lifetime of the component.
+        """
+        await self.create_resources()
 
     async def submit_message(self, user_input: str) -> List[Any]:
         """
@@ -72,4 +79,13 @@ class FrontMan(CallingActivation):
 
         :return: A List of messages produced during this process.
         """
+        # This is never called for a FrontMan, but is needed to satisfy the
+        # class heirarchy stemming from CallableActivation.
+        # A FrontMan is not Callable.
         raise NotImplementedError
+
+    async def delete_any_resources(self):
+        """
+        Cleans up after any allocated resources
+        """
+        await self.delete_resources(None)
