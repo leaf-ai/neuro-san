@@ -55,3 +55,13 @@ class ChatMessageConverter(DictionaryConverter):
             for chat_history in chat_context.get("chat_histories", []):
                 for chat_message in chat_history.get("messages", []):
                     self.convert_message(chat_message)
+
+    def from_dict(self, obj_dict: Dict[str, object]) -> object:
+        """
+        :param obj_dict: The data-only dictionary to be converted into an object
+        :return: An object instance created from the given dictionary.
+                If obj_dict is None, the returned object should also be None.
+                If obj_dict is not the correct type, it is also reasonable
+                to return None.
+        """
+        raise NotImplementedError
