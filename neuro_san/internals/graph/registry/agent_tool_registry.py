@@ -16,13 +16,12 @@ from neuro_san.internals.graph.interfaces.agent_tool_factory import AgentToolFac
 from neuro_san.internals.graph.interfaces.callable_activation import CallableActivation
 from neuro_san.internals.graph.registry.activation_factory import ActivationFactory
 from neuro_san.internals.graph.registry.agent_network import AgentNetwork
-from neuro_san.internals.interfaces.agent_registry import AgentRegistry
 from neuro_san.internals.interfaces.front_man import FrontMan
 from neuro_san.internals.run_context.interfaces.agent_network_inspector import AgentNetworkInspector
 from neuro_san.internals.run_context.interfaces.run_context import RunContext
 
 
-class AgentToolRegistry(AgentRegistry, AgentNetworkInspector, AgentToolFactory):
+class AgentToolRegistry(AgentNetworkInspector, AgentToolFactory):
     """
     Puts together an AgentNetwork data-only spec with an ActivationFactory
     so that a single entity can handle both interfaces.
@@ -45,6 +44,7 @@ class AgentToolRegistry(AgentRegistry, AgentNetworkInspector, AgentToolFactory):
                                 arguments: Dict[str, Any] = None) -> CallableActivation:
         """
         Create an active node for an agent from its spec.
+        This is how CallableActivations create other CallableActivations.
 
         :param parent_run_context: The RunContext of the agent calling this method
         :param parent_agent_spec: The spec of the agent calling this method.
@@ -61,7 +61,7 @@ class AgentToolRegistry(AgentRegistry, AgentNetworkInspector, AgentToolFactory):
                          sly_data: Dict[str, Any] = None,
                          parent_run_context: RunContext = None) -> FrontMan:
         """
-        Find and create the FrontMan for chat
+        Find and create the FrontMan for DataDrivenChat.
 
         :param sly_data: A mapping whose keys might be referenceable by agents, but whose
                  values should not appear in agent chat text. Can be an empty dictionary.
