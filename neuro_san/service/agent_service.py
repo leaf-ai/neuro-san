@@ -33,6 +33,7 @@ from neuro_san.service.agent_server_logging import AgentServerLogging
 from neuro_san.session.direct_agent_session import DirectAgentSession
 from neuro_san.session.external_agent_session_factory import ExternalAgentSessionFactory
 from neuro_san.session.session_invocation_context import SessionInvocationContext
+from neuro_san.service.chat_message_converter import ChatMessageConverter
 
 # A list of methods to not log requests for
 # Some of these can be way too chatty
@@ -234,6 +235,8 @@ class AgentService:
         chat_filter_type: str = chat_filter_dict.get("chat_filter_type", "MINIMAL")
 
         for response_dict in response_dict_iterator:
+            # Prepare chat message for output:
+            response_dict = ChatMessageConverter().to_dict(response_dict)
             # Do not return the request when the filter is MINIMAL
             if chat_filter_type != "MINIMAL":
                 response_dict["request"] = request_dict
