@@ -23,6 +23,7 @@ from neuro_san.internals.interfaces.agent_network_provider import AgentNetworkPr
 from neuro_san.internals.network_providers.service_agent_network_storage import ServiceAgentNetworkStorage
 from neuro_san.session.direct_agent_session import DirectAgentSession
 from neuro_san.session.external_agent_session_factory import ExternalAgentSessionFactory
+from neuro_san.session.missing_agent_check import MissingAgentCheck
 from neuro_san.session.session_invocation_context import SessionInvocationContext
 
 
@@ -100,5 +101,8 @@ class DirectAgentSessionFactory:
             agent_network_provider: AgentNetworkProvider =\
                 network_storage.get_agent_network_provider(agent_name)
             agent_network = agent_network_provider.get_agent_network()
+
+        # Common place for nice error messages when networks are not found
+        MissingAgentCheck.check_agent_network(agent_network, agent_name)
 
         return agent_network
