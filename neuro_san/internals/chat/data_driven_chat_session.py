@@ -22,8 +22,8 @@ from openai import BadRequestError
 from neuro_san.internals.chat.async_collating_queue import AsyncCollatingQueue
 from neuro_san.internals.chat.chat_history_message_processor import ChatHistoryMessageProcessor
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
-from neuro_san.internals.graph.activations.front_man import FrontMan
 from neuro_san.internals.graph.activations.sly_data_redactor import SlyDataRedactor
+from neuro_san.internals.interfaces.front_man import FrontMan
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.journals.journal import Journal
 from neuro_san.internals.messages.agent_framework_message import AgentFrameworkMessage
@@ -78,7 +78,7 @@ class DataDrivenChatSession:
 
         self.front_man = self.registry.create_front_man(self.sly_data, run_context)
 
-        await self.front_man.create_resources()
+        await self.front_man.create_any_resources()
 
     async def chat(self, user_input: str,
                    invocation_context: InvocationContext,
@@ -199,7 +199,7 @@ class DataDrivenChatSession:
         Frees up any service-side resources.
         """
         if self.front_man is not None:
-            await self.front_man.delete_resources(None)
+            await self.front_man.delete_any_resources()
             self.front_man = None
 
     def prepare_chat_context(self, chat_message_history: List[Dict[str, Any]]) -> Dict[str, Any]:
