@@ -207,6 +207,7 @@
     # Note: Parameters are optional and may be omitted if not required.
     # See "parameters" section in https://github.com/cognizant-ai-lab/neuro-san/blob/main/docs/agent_hocon_reference.md
 
+    # Tool for performing basic web searches using duckduckgo.
     "website_search": {
         "class": "web_search.WebSearch",
         "description": "Assist caller with searching an url on the web by using your tool.",
@@ -222,6 +223,7 @@
         },
     },
 
+    # Tool for retrieving contextually relevant information from a list of URLs using a retrieval-augmented generation (RAG) strategy.
     "rag_retriever": {
         "class": "rag.Rag",
         "description": "Retrieve information on the given urls",
@@ -242,5 +244,21 @@
             },
             "required": ["urls", "query"]
         },
+    },
+
+    # Tool for searching the web using the Google Serper.
+    "google_serper": {
+        "class": "google_serper.GoogleSerper",
+        "description": "Search the web using a keyword-based query.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "The search term or question to look up online."
+                }
+            },
+            "required": ["query"]
+        }
     }
 }
