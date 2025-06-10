@@ -16,8 +16,7 @@ from typing import Dict
 
 from neuro_san.internals.graph.registry.agent_network import AgentNetwork
 from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
-from neuro_san.internals.network_providers.service_agent_network_provider_provider \
-    import ServiceAgentNetworkProviderProvider
+from neuro_san.internals.network_providers.service_agent_network_storage import ServiceAgentNetworkStorage
 from neuro_san.service.registries_watcher.periodic_updater.registry_event_observer import RegistryEventObserver
 from neuro_san.service.registries_watcher.periodic_updater.registry_polling_observer import RegistryPollingObserver
 
@@ -44,8 +43,7 @@ class ManifestPeriodicUpdater:
             self.observer = RegistryPollingObserver(self.manifest_path, poll_interval)
         else:
             self.observer = RegistryEventObserver(self.manifest_path)
-        self.singleton: ServiceAgentNetworkProviderProvider = \
-            ServiceAgentNetworkProviderProvider.get_instance()
+        self.network_storage: ServiceAgentNetworkStorage = ServiceAgentNetworkStorage.get_instance()
         self.go_run: bool = True
 
     def _run(self):
@@ -68,7 +66,7 @@ class ManifestPeriodicUpdater:
             self.logger.info("Updating manifest file: %s", self.manifest_path)
             agent_networks: Dict[str, AgentNetwork] = \
                 RegistryManifestRestorer().restore(self.manifest_path)
-            self.singleton.setup_agent_networks(agent_networks)
+            self.network_storage.setup_agent_networks(agent_networks)
 
     def compute_polling_interval(self, update_period_seconds: int) -> int:
         """

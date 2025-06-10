@@ -21,8 +21,7 @@ from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgen
 from neuro_san.internals.interfaces.agent_network_provider import AgentNetworkProvider
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
-from neuro_san.internals.network_providers.service_agent_network_provider_provider \
-    import ServiceAgentNetworkProviderProvider
+from neuro_san.internals.network_providers.service_agent_network_storage import ServiceAgentNetworkStorage
 from neuro_san.session.async_direct_agent_session import AsyncDirectAgentSession
 from neuro_san.session.async_http_service_agent_session import AsyncHttpServiceAgentSession
 
@@ -83,10 +82,9 @@ class ExternalAgentSessionFactory(AsyncAgentSessionFactory):
             # Optimization: We want to create a different kind of session to minimize socket usage
             # and potentially relieve the direct user of the burden of having to start a server
 
-            singleton: ServiceAgentNetworkProviderProvider = \
-                    ServiceAgentNetworkProviderProvider.get_instance()
+            network_storage: ServiceAgentNetworkStorage = ServiceAgentNetworkStorage.get_instance()
             agent_network_provider: AgentNetworkProvider = \
-                singleton.get_agent_network_provider(agent_name)
+                network_storage.get_agent_network_provider(agent_name)
             agent_network: AgentNetwork = agent_network_provider.get_agent_network()
             session = AsyncDirectAgentSession(agent_network, invocation_context, metadata=metadata)
 

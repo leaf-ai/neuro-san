@@ -16,14 +16,13 @@ from typing import List
 
 from neuro_san.internals.graph.registry.agent_network import AgentNetwork
 from neuro_san.internals.interfaces.agent_network_provider import AgentNetworkProvider
-from neuro_san.internals.interfaces.agent_network_provider_provider import AgentNetworkProviderProvider
 from neuro_san.internals.interfaces.agent_state_listener import AgentStateListener
 from neuro_san.internals.network_providers.single_agent_network_provider import SingleAgentNetworkProvider
 
 
-class ServiceAgentNetworkProviderProvider(AgentNetworkProviderProvider):
+class ServiceAgentNetworkStorage:
     """
-    Service-wide provider of AgentNetworkProviders.
+    Service-wide storage for AgentNetworkProviders.
     This class is a global singleton containing
     a table of currently active AgentNetworks for each agent registered to the service.
     Note: a mapping from an agent to its AgentNetwork is dynamic,
@@ -43,9 +42,9 @@ class ServiceAgentNetworkProviderProvider(AgentNetworkProviderProvider):
         """
         Get a singleton instance of this class
         """
-        if not ServiceAgentNetworkProviderProvider.instance:
-            ServiceAgentNetworkProviderProvider.instance = ServiceAgentNetworkProviderProvider()
-        return ServiceAgentNetworkProviderProvider.instance
+        if not ServiceAgentNetworkStorage.instance:
+            ServiceAgentNetworkStorage.instance = ServiceAgentNetworkStorage()
+        return ServiceAgentNetworkStorage.instance
 
     def add_listener(self, listener: AgentStateListener):
         """

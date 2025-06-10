@@ -23,8 +23,7 @@ from neuro_san.api.grpc import agent_pb2
 from neuro_san.api.grpc import concierge_pb2_grpc
 
 from neuro_san.internals.graph.registry.agent_network import AgentNetwork
-from neuro_san.internals.network_providers.service_agent_network_provider_provider \
-    import ServiceAgentNetworkProviderProvider
+from neuro_san.internals.network_providers.service_agent_network_storage import ServiceAgentNetworkStorage
 from neuro_san.session.agent_service_stub import AgentServiceStub
 from neuro_san.service.agent_server_logging import AgentServerLogging
 from neuro_san.service.agent_servicer_to_server import AgentServicerToServer
@@ -115,20 +114,20 @@ class AgentServer:
         Initialize service tool factory provider with agents registries
         we have parsed in server manifest file.
         """
-        singleton: ServiceAgentNetworkProviderProvider =\
-            ServiceAgentNetworkProviderProvider.get_instance()
-        singleton.setup_tool_registries(self.agent_networks)
+        network_storage: ServiceAgentNetworkStorage =\
+            ServiceAgentNetworkStorage.get_instance()
+        network_storage.setup_tool_registries(self.agent_networks)
 
     def agent_added(self, agent_name: str):
         """
         Agent is being added to the service.
         :param agent_name: name of an agent
         """
-        singleton: ServiceAgentNetworkProviderProvider =\
-            ServiceAgentNetworkProviderProvider.get_instance()
+        network_storage: ServiceAgentNetworkStorage =\
+            ServiceAgentNetworkStorage.get_instance()
         service = GrpcAgentService(self.server_lifetime, self.security_cfg,
                                    agent_name,
-                                   singleton.get_agent_network_provider(agent_name),
+                                   network_storage.get_agent_network_provider(agent_name),
                                    self.server_logging)
         self.services.append(service)
         servicer_to_server = AgentServicerToServer(service)
@@ -175,11 +174,11 @@ class AgentServer:
         # New-style service
         self.security_cfg = None     # ... yet
 
-        singleton: ServiceAgentNetworkProviderProvider = \
-            ServiceAgentNetworkProviderProvider.get_instance()
+        network_storage: ServiceAgentNetworkStorage = \
+            ServiceAgentNetworkStorage.get_instance()
         # Add listener to handle adding per-agent gRPC services
         # to our dynamic router:
-        singleton.add_listener(self)
+        network_storage.add_listener(self)
 
         self.setup_agent_network_provider()
 

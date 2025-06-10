@@ -28,8 +28,7 @@ from neuro_san.http_sidecar.http_server_app import HttpServerApp
 from neuro_san.service.async_agent_service import AsyncAgentService
 from neuro_san.service.agent_server_logging import AgentServerLogging
 from neuro_san.service.agent_server import AgentServer
-from neuro_san.internals.network_providers.service_agent_network_provider_provider \
-    import ServiceAgentNetworkProviderProvider
+from neuro_san.internals.network_providers.service_agent_network_storage import ServiceAgentNetworkStorage
 from neuro_san.internals.network_providers.single_agent_network_provider import SingleAgentNetworkProvider
 
 from neuro_san.http_sidecar.interfaces.agent_authorizer import AgentAuthorizer
@@ -170,13 +169,13 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
         Add agent to the map of known agents
         :param agent_name: name of an agent
         """
-        agent_network_provider: SingleAgentNetworkProvider =\
-            ServiceAgentNetworkProviderProvider.get_instance().get_agent_network_provider(agent_name)
+        agent_network_provider: SingleAgentNetworkProvider = \
+            ServiceAgentNetworkStorage.get_instance().get_agent_network_provider(agent_name)
         # Convert back to a single string as required by constructor
         request_metadata_str: str = " ".join(self.forwarded_request_metadata)
-        agent_server_logging: AgentServerLogging =\
+        agent_server_logging: AgentServerLogging = \
             AgentServerLogging(self.server_name_for_logs, request_metadata_str)
-        agent_service: AsyncAgentService =\
+        agent_service: AsyncAgentService = \
             AsyncAgentService(self.logger, None, agent_name, agent_network_provider, agent_server_logging)
         self.allowed_agents[agent_name] = agent_service
 

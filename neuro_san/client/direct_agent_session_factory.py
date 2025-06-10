@@ -20,8 +20,7 @@ from neuro_san.internals.run_context.factory.master_llm_factory import MasterLlm
 from neuro_san.internals.graph.persistence.agent_network_restorer import AgentNetworkRestorer
 from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
 from neuro_san.internals.interfaces.agent_network_provider import AgentNetworkProvider
-from neuro_san.internals.network_providers.service_agent_network_provider_provider \
-    import ServiceAgentNetworkProviderProvider
+from neuro_san.internals.network_providers.service_agent_network_storage import ServiceAgentNetworkStorage
 from neuro_san.session.direct_agent_session import DirectAgentSession
 from neuro_san.session.external_agent_session_factory import ExternalAgentSessionFactory
 from neuro_san.session.session_invocation_context import SessionInvocationContext
@@ -32,7 +31,7 @@ class DirectAgentSessionFactory:
     Sets up everything needed to use a DirectAgentSession more as a library.
     This includes:
         * Some reading of AgentNetworks
-        * Setting up ServiceAgentNetworkProviderProvider with agnet networks
+        * Setting up ServiceAgentNetworkStorage with agent networks
           which were read in
         * Initializing an LlmFactory
     """
@@ -43,10 +42,9 @@ class DirectAgentSessionFactory:
         """
         manifest_restorer = RegistryManifestRestorer()
         self.manifest_networks: Dict[str, AgentNetwork] = manifest_restorer.restore()
-        singleton: ServiceAgentNetworkProviderProvider =\
-            ServiceAgentNetworkProviderProvider.get_instance()
+        network_storage: ServiceAgentNetworkStorage = ServiceAgentNetworkStorage.get_instance()
         for agent_name, agent_network in self.manifest_networks.items():
-            singleton.add_agent_network(agent_name, agent_network)
+            network_storage.add_agent_network(agent_name, agent_network)
 
     def create_session(self, agent_name: str, use_direct: bool = False,
                        metadata: Dict[str, str] = None) -> AgentSession:
@@ -97,10 +95,10 @@ class DirectAgentSessionFactory:
             agent_network = restorer.restore(file_reference=agent_name)
         else:
             # Use the standard stuff available via the manifest file.
-            singleton: ServiceAgentNetworkProviderProvider =\
-                ServiceAgentNetworkProviderProvider.get_instance()
+            network_storage: ServiceAgentNetworkStorage =\
+                ServiceAgentNetworkStorage.get_instance()
             agent_network_provider: AgentNetworkProvider =\
-                singleton.get_agent_network_provider(agent_name)
+                network_storage.get_agent_network_provider(agent_name)
             agent_network = agent_network_provider.get_agent_network()
 
         return agent_network
