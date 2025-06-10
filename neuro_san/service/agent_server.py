@@ -109,14 +109,14 @@ class AgentServer:
         """
         return self.notify_started
 
-    def setup_agent_network_provider(self):
+    def setup_agent_network_storage(self):
         """
-        Initialize service tool factory provider with agents registries
+        Initialize ServiceAgentNetworkStorage with AgentNetworks
         we have parsed in server manifest file.
         """
         network_storage: ServiceAgentNetworkStorage =\
             ServiceAgentNetworkStorage.get_instance()
-        network_storage.setup_tool_registries(self.agent_networks)
+        network_storage.setup_agent_networks(self.agent_networks)
 
     def agent_added(self, agent_name: str):
         """
@@ -180,7 +180,7 @@ class AgentServer:
         # to our dynamic router:
         network_storage.add_listener(self)
 
-        self.setup_agent_network_provider()
+        self.setup_agent_network_storage()
 
         # Add DynamicAgentRouter instance as a generic RPC handler for our server:
         server.add_generic_rpc_handlers((self.service_router,))
