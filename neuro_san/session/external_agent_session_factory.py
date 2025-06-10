@@ -16,12 +16,13 @@ from os import environ
 import logging
 
 from neuro_san.interfaces.async_agent_session import AsyncAgentSession
-from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
+from neuro_san.internals.graph.registry.agent_network import AgentNetwork
 from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgentSessionFactory
-from neuro_san.internals.tool_factories.service_tool_factory_provider import ServiceToolFactoryProvider
-from neuro_san.internals.interfaces.agent_tool_factory_provider import AgentToolFactoryProvider
+from neuro_san.internals.interfaces.agent_network_provider import AgentNetworkProvider
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
+from neuro_san.internals.tool_factories.service_agent_network_provider_provider \
+    import ServiceAgentNetworkProviderProvider
 from neuro_san.session.async_direct_agent_session import AsyncDirectAgentSession
 from neuro_san.session.async_http_service_agent_session import AsyncHttpServiceAgentSession
 
@@ -82,12 +83,12 @@ class ExternalAgentSessionFactory(AsyncAgentSessionFactory):
             # Optimization: We want to create a different kind of session to minimize socket usage
             # and potentially relieve the direct user of the burden of having to start a server
 
-            tool_factory: ServiceToolFactoryProvider =\
-                    ServiceToolFactoryProvider.get_instance()
-            tool_registry_provider: AgentToolFactoryProvider = \
-                tool_factory.get_agent_tool_factory_provider(agent_name)
-            tool_registry: AgentToolRegistry = tool_registry_provider.get_agent_tool_factory()
-            session = AsyncDirectAgentSession(tool_registry, invocation_context, metadata=metadata)
+            singleton: ServiceAgentNetworkProviderProvider = \
+                    ServiceAgentNetworkProviderProvider.get_instance()
+            agent_network_provider: AgentNetworkProvider = \
+                singleton.get_agent_network_provider(agent_name)
+            agent_network: AgentNetwork = agent_network_provider.get_agent_network()
+            session = AsyncDirectAgentSession(agent_network, invocation_context, metadata=metadata)
 
         if session is None:
             session = AsyncHttpServiceAgentSession(host, port, agent_name=agent_name,
@@ -101,14 +102,14 @@ class ExternalAgentSessionFactory(AsyncAgentSessionFactory):
 
     @staticmethod
     def get_tool_registry(agent_name: str,
-                          manifest_tool_registries: Dict[str, AgentToolRegistry]) -> AgentToolRegistry:
+                          manifest_tool_registries: Dict[str, AgentNetwork]) -> AgentNetwork:
         """
         :param agent_name: The name of the agent to use for the session.
-        :param manifest_tool_registries: Dictionary of AgentToolRegistries from the manifest
-        :return: The AgentToolRegistry corresponding to the agent_name
+        :param manifest_tool_registries: Dictionary of AgentNetworks from the manifest
+        :return: The AgentNetwork corresponding to the agent_name
         """
 
-        tool_registry: AgentToolRegistry = manifest_tool_registries.get(agent_name)
+        tool_registry: AgentNetwork = manifest_tool_registries.get(agent_name)
         if tool_registry is None:
             message = f"""
 Agent named "{agent_name}" not found in manifest file: {environ.get("AGENT_MANIFEST_FILE")}.

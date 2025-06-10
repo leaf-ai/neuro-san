@@ -28,14 +28,13 @@ class AgentToolRegistry(AgentRegistry, AgentNetworkInspector, AgentToolFactory):
     so that a single entity can handle both interfaces.
     """
 
-    def __init__(self, config: Dict[str, Any], name: str):
+    def __init__(self, agent_network: AgentNetwork):
         """
         Constructor
 
-        :param config: The dictionary describing the entire agent network
-        :param name: The name of the registry
+        :param agent_network: The AgentNetwork configuration to base all our info on
         """
-        self.agent_network = AgentNetwork(config, name)
+        self.agent_network: AgentNetwork = agent_network
         self.factory = ActivationFactory(self.agent_network)
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments

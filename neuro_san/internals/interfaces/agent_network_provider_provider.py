@@ -10,19 +10,19 @@
 #
 # END COPYRIGHT
 
-from neuro_san.internals.interfaces.agent_tool_factory_provider import AgentToolFactoryProvider
+from neuro_san.internals.interfaces.agent_network_provider import AgentNetworkProvider
 
 
-class ToolFactoryProvider:
+class AgentNetworkProviderProvider:
     """
-    Abstract interface for getting agent-specific tool factory providers
+    Abstract interface for getting agent-specific AgentNetworkProviders
     """
 
-    def get_agent_tool_factory_provider(self, agent_name: str) -> AgentToolFactoryProvider:
+    def get_agent_network_provider(self, agent_name: str) -> AgentNetworkProvider:
         """
-        Get tool factory provider for given agent.
+        Get AgentNetworkProvider for given agent.
         :param agent_name: name of an agent
-        :return: tool factory provider for this agent,
+        :return: AgentNetworkProvider provider for this agent,
                  or None if no such provider is available.
         """
         raise NotImplementedError
