@@ -99,7 +99,7 @@ class ExternalAgentSessionFactory(AsyncAgentSessionFactory):
         return session
 
     @staticmethod
-    def get_tool_registry(agent_name: str,
+    def get_agent_network(agent_name: str,
                           manifest_tool_registries: Dict[str, AgentNetwork]) -> AgentNetwork:
         """
         :param agent_name: The name of the agent to use for the session.
