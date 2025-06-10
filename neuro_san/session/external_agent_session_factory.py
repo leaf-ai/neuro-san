@@ -11,8 +11,6 @@
 # END COPYRIGHT
 from typing import Dict
 
-from os import environ
-
 import logging
 
 from neuro_san.interfaces.async_agent_session import AsyncAgentSession
