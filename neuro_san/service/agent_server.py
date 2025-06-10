@@ -23,7 +23,7 @@ from neuro_san.api.grpc import agent_pb2
 from neuro_san.api.grpc import concierge_pb2_grpc
 
 from neuro_san.internals.graph.registry.agent_network import AgentNetwork
-from neuro_san.internals.tool_factories.service_agent_network_provider_provider \
+from neuro_san.internals.network_providers.service_agent_network_provider_provider \
     import ServiceAgentNetworkProviderProvider
 from neuro_san.session.agent_service_stub import AgentServiceStub
 from neuro_san.service.agent_server_logging import AgentServerLogging

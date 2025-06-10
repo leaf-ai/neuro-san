@@ -21,7 +21,7 @@ from neuro_san.internals.interfaces.async_agent_session_factory import AsyncAgen
 from neuro_san.internals.interfaces.agent_network_provider import AgentNetworkProvider
 from neuro_san.internals.interfaces.invocation_context import InvocationContext
 from neuro_san.internals.run_context.utils.external_agent_parsing import ExternalAgentParsing
-from neuro_san.internals.tool_factories.service_agent_network_provider_provider \
+from neuro_san.internals.network_providers.service_agent_network_provider_provider \
     import ServiceAgentNetworkProviderProvider
 from neuro_san.session.async_direct_agent_session import AsyncDirectAgentSession
 from neuro_san.session.async_http_service_agent_session import AsyncHttpServiceAgentSession

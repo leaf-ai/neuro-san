@@ -20,7 +20,7 @@ from neuro_san.internals.run_context.factory.master_llm_factory import MasterLlm
 from neuro_san.internals.graph.persistence.agent_network_restorer import AgentNetworkRestorer
 from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
 from neuro_san.internals.interfaces.agent_network_provider import AgentNetworkProvider
-from neuro_san.internals.tool_factories.service_agent_network_provider_provider \
+from neuro_san.internals.network_providers.service_agent_network_provider_provider \
     import ServiceAgentNetworkProviderProvider
 from neuro_san.session.direct_agent_session import DirectAgentSession
 from neuro_san.session.external_agent_session_factory import ExternalAgentSessionFactory

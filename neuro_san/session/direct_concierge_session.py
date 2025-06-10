@@ -15,7 +15,7 @@ from typing import Dict
 from typing import List
 
 from neuro_san.interfaces.concierge_session import ConciergeSession
-from neuro_san.internals.tool_factories.service_agent_network_provider_provider \
+from neuro_san.internals.network_providers.service_agent_network_provider_provider \
     import ServiceAgentNetworkProviderProvider
 
 

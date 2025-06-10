@@ -18,7 +18,7 @@ from neuro_san.internals.graph.registry.agent_network import AgentNetwork
 from neuro_san.internals.interfaces.agent_network_provider import AgentNetworkProvider
 from neuro_san.internals.interfaces.agent_network_provider_provider import AgentNetworkProviderProvider
 from neuro_san.internals.interfaces.agent_state_listener import AgentStateListener
-from neuro_san.internals.tool_factories.single_agent_network_provider import SingleAgentNetworkProvider
+from neuro_san.internals.network_providers.single_agent_network_provider import SingleAgentNetworkProvider
 
 
 class ServiceAgentNetworkProviderProvider(AgentNetworkProviderProvider):

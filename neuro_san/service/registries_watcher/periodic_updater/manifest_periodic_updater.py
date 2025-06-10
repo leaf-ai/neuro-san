@@ -16,7 +16,7 @@ from typing import Dict
 
 from neuro_san.internals.graph.registry.agent_network import AgentNetwork
 from neuro_san.internals.graph.persistence.registry_manifest_restorer import RegistryManifestRestorer
-from neuro_san.internals.tool_factories.service_agent_network_provider_provider \
+from neuro_san.internals.network_providers.service_agent_network_provider_provider \
     import ServiceAgentNetworkProviderProvider
 from neuro_san.service.registries_watcher.periodic_updater.registry_event_observer import RegistryEventObserver
 from neuro_san.service.registries_watcher.periodic_updater.registry_polling_observer import RegistryPollingObserver

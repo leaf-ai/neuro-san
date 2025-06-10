@@ -28,9 +28,9 @@ from neuro_san.http_sidecar.http_server_app import HttpServerApp
 from neuro_san.service.async_agent_service import AsyncAgentService
 from neuro_san.service.agent_server_logging import AgentServerLogging
 from neuro_san.service.agent_server import AgentServer
-from neuro_san.internals.tool_factories.service_agent_network_provider_provider \
+from neuro_san.internals.network_providers.service_agent_network_provider_provider \
     import ServiceAgentNetworkProviderProvider
-from neuro_san.internals.tool_factories.single_agent_network_provider import SingleAgentNetworkProvider
+from neuro_san.internals.network_providers.single_agent_network_provider import SingleAgentNetworkProvider
 
 from neuro_san.http_sidecar.interfaces.agent_authorizer import AgentAuthorizer
 from neuro_san.http_sidecar.interfaces.agents_updater import AgentsUpdater
