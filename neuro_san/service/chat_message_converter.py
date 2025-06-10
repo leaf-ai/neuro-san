@@ -9,19 +9,28 @@
 # neuro-san SDK Software in commercial settings.
 #
 # END COPYRIGHT
+import copy
 from typing import Any
 from typing import Dict
+from leaf_common.serialization.interface.dictionary_converter import DictionaryConverter
 from neuro_san.internals.messages.chat_message_type import ChatMessageType
 
 
-class ChatMessageConverter:
+class ChatMessageConverter(DictionaryConverter):
     """
     Helper class to prepare chat response messages
     for external clients consumption.
     """
+    def to_dict(self, obj: object) -> Dict[str, object]:
+        """
+        :param obj: The object (chat response) to be converted into a dictionary
+        :return: chat response dictionary in format expected by clients
+        """
+        response_dict = copy.deepcopy(obj)
+        self.convert(response_dict)
+        return response_dict
 
-    @classmethod
-    def convert(cls, response_dict: Dict[str, Any]):
+    def convert(self, response_dict: Dict[str, Any]):
         """
         Convert chat response message to a format expected by external clients:
         :param response_dict: chat response message to be sent out
@@ -29,10 +38,9 @@ class ChatMessageConverter:
         # Ensure that we return ChatMessageType as a string in output json
         message_dict: Dict[str, Any] = response_dict.get('response', None)
         if message_dict is not None:
-            ChatMessageConverter.convert_message(message_dict)
+            self.convert_message(message_dict)
 
-    @classmethod
-    def convert_message(cls, message_dict: Dict[str, Any]):
+    def convert_message(self, message_dict: Dict[str, Any]):
         """
         Convert chat message to a format expected by external clients:
         :param message_dict: chat message to process
@@ -46,4 +54,4 @@ class ChatMessageConverter:
         if chat_context is not None:
             for chat_history in chat_context.get("chat_histories", []):
                 for chat_message in chat_history.get("messages", []):
-                    ChatMessageConverter.convert_message(chat_message)
+                    self.convert_message(chat_message)

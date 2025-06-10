@@ -232,7 +232,7 @@ class AsyncAgentService:
 
         async for response_dict in response_dict_generator:
             # Prepare chat message for output:
-            ChatMessageConverter.convert(response_dict)
+            response_dict = ChatMessageConverter().to_dict(response_dict)
             # Do not return the request when the filter is MINIMAL
             if chat_filter_type != "MINIMAL":
                 response_dict["request"] = request_dict
