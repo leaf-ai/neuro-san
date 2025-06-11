@@ -147,13 +147,16 @@ Need at least {num_need_success} to consider {hocon_file} test to be successful.
         # Collect other session information
         use_direct: bool = test_case.get("use_direct", False)
         metadata: Dict[str, Any] = test_case.get("metadata", None)
+        timeout_in_seconds: float = test_case.get("timeout_in_seconds", None)
 
         for connection in connections:
 
-            session: AgentSession = AgentSessionFactory().create_session(connection,
-                                                                         agent,
-                                                                         use_direct=use_direct,
-                                                                         metadata=metadata)
+            session: AgentSession = AgentSessionFactory().create_session(
+                    connection,
+                    agent,
+                    use_direct=use_direct,
+                    metadata=metadata,
+                    connect_timeout_in_seconds=timeout_in_seconds)
             chat_context: Dict[str, Any] = None
             for interaction in interactions:
                 if isinstance(session, DirectAgentSession):

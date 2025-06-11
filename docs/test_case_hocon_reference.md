@@ -22,6 +22,7 @@ Sub-keys to those dictionaries will be described in the next-level down heading 
     - [success_ratio](#success_ratio)
     - [use_direct](#use_direct)
     - [metadata](#metadata)
+    - [timeout_in_seconds](#timeout_in_seconds)
     - [interactions](#interactions)
       - [text](#text)
       - [sly_data](#sly_data)
@@ -115,6 +116,14 @@ however some servers may require this to contain bearer tokens for access,
 or extra user-identifying information for logging.
 
 By default the value for this dictionary is None.
+
+### timeout_in_seconds
+
+An optional float that describes how long the test should wait connecting to a server
+before giving up.
+
+This does not count towards active streams, only towards initial function() connection
+to an agent server.
 
 ### interactions
 
