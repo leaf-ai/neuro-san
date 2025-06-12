@@ -15,10 +15,12 @@ from typing import Generator
 from typing import List
 from typing import Union
 
+from copy import copy
 from datetime import datetime
 
 from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
 from leaf_common.persistence.easy.easy_hocon_persistence import EasyHoconPersistence
+from leaf_common.time.timeout import Timeout
 
 from neuro_san.client.agent_session_factory import AgentSessionFactory
 from neuro_san.client.streaming_input_processor import StreamingInputProcessor
@@ -147,7 +149,14 @@ Need at least {num_need_success} to consider {hocon_file} test to be successful.
         # Collect other session information
         use_direct: bool = test_case.get("use_direct", False)
         metadata: Dict[str, Any] = test_case.get("metadata", None)
+
+        # Set up any global test timeout.
+        timeouts: List[Timeout] = []
         timeout_in_seconds: float = test_case.get("timeout_in_seconds", None)
+        if timeout_in_seconds is not None:
+            test_timeout = Timeout(name=agent)
+            test_timeout.set_limit_in_seconds(timeout_in_seconds)
+            timeouts.append(test_timeout)
 
         for connection in connections:
 
@@ -159,9 +168,12 @@ Need at least {num_need_success} to consider {hocon_file} test to be successful.
                     connect_timeout_in_seconds=timeout_in_seconds)
             chat_context: Dict[str, Any] = None
             for interaction in interactions:
+
                 if isinstance(session, DirectAgentSession):
                     session.reset()
-                chat_context = self.interact(agent, session, interaction, chat_context, asserts)
+
+                chat_context = self.interact(agent, session, interaction, chat_context, asserts,
+                                             timeouts)
 
     def parse_hocon_test_case(self, hocon_file: str) -> Dict[str, Any]:
         """
@@ -178,7 +190,8 @@ Need at least {num_need_success} to consider {hocon_file} test to be successful.
 
     # pylint: disable=too-many-locals,too-many-arguments,too-many-positional-arguments
     def interact(self, agent: str, session: AgentSession, interaction: Dict[str, Any],
-                 chat_context: Dict[str, Any], asserts: AssertForwarder) -> Dict[str, Any]:
+                 chat_context: Dict[str, Any], asserts: AssertForwarder,
+                 timeouts: List[Timeout]) -> Dict[str, Any]:
         """
         Interact with an agent and evaluate its output
 
@@ -186,9 +199,13 @@ Need at least {num_need_success} to consider {hocon_file} test to be successful.
         :param interaction: The interaction dictionary to base evalaution off of.
         :param chat_context: The chat context to use with the interaction (if any)
         :param asserts: The AssertForwarder to send asserts to.
+        :param timeouts: A list of timeout objects to check
         """
         _ = agent       # For now
         empty: Dict[str, Any] = {}
+
+        # Shallow copy what we already have in timeouts
+        use_timeouts: List[Timeout] = copy(timeouts)
 
         # Prepare the processor
         now = datetime.now()
@@ -205,16 +222,26 @@ Need at least {num_need_success} to consider {hocon_file} test to be successful.
         }
         request: Dict[str, Any] = input_processor.formulate_chat_request(text, sly_data, chat_context, chat_filter)
 
+        # Prepare any interaction timeout
+        if interaction.get("timeout_in_seconds") is not None:
+            interaction_timeout = Timeout(name=text)
+            interaction_timeout.set_limit_in_seconds(interaction.get("timeout_in_seconds"))
+            use_timeouts.append(interaction_timeout)
+
         # Call streaming_chat()
         chat_responses: Generator[Dict[str, Any], None, None] = session.streaming_chat(request)
         for chat_response in chat_responses:
             message = chat_response.get("response", empty)
             processor.process_message(message, chat_response.get("type"))
+            self.check_timeouts(use_timeouts)
+
+        self.check_timeouts(use_timeouts)
 
         # Evaluate response
         response: Dict[str, Any] = interaction.get("response", empty)
         response_extractor = DictionaryExtractor(response)
-        self.test_response_keys(processor, response_extractor, self.TEST_KEYS, asserts)
+        self.test_response_keys(processor, response_extractor, self.TEST_KEYS, asserts, use_timeouts)
+        self.check_timeouts(use_timeouts)
 
         # See how we should continue the conversation
         return_chat_context: Dict[str, Any] = None
@@ -226,7 +253,8 @@ Need at least {num_need_success} to consider {hocon_file} test to be successful.
     def test_response_keys(self, processor: BasicMessageProcessor,
                            response_extractor: DictionaryExtractor,
                            keys: List[str],
-                           asserts: AssertForwarder):
+                           asserts: AssertForwarder,
+                           timeouts: List[Timeout]):
         """
         Tests the given response keys
 
@@ -234,6 +262,7 @@ Need at least {num_need_success} to consider {hocon_file} test to be successful.
         :param response_extractor: The DictionaryExtractor for the test structure from the test hocon file.
         :param keys: The response keys to test
         :param asserts: The AssertForwarder to send asserts to.
+        :param timeouts: A list of timeout objects to check
         """
         deeper_test_keys: List[str] = []
 
@@ -257,7 +286,15 @@ Need at least {num_need_success} to consider {hocon_file} test to be successful.
                                                                                    evaluator_type)
                 if evaluator is not None:
                     evaluator.evaluate(processor, verify_key, test_key_value)
+                    self.check_timeouts(timeouts)
 
         # Recurse if there are further dictionary specs to dive into
         if len(deeper_test_keys) > 0:
-            self.test_response_keys(processor, response_extractor, deeper_test_keys, asserts)
+            self.test_response_keys(processor, response_extractor, deeper_test_keys, asserts, timeouts)
+
+    def check_timeouts(self, timeouts: List[Timeout]):
+        """
+        :param timeouts: A list of timeout objects to check
+        """
+        for one_timeout in timeouts:
+            one_timeout.check_timeout()

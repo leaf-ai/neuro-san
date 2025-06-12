@@ -26,6 +26,7 @@ Sub-keys to those dictionaries will be described in the next-level down heading 
     - [interactions](#interactions)
       - [text](#text)
       - [sly_data](#sly_data)
+      - [timeout_in_seconds](#timeout_in_seconds-1)
       - [chat_filter](#chat_filter)
       - [continue_conversation](#continue_conversation)
       - [response](#response)
@@ -119,11 +120,8 @@ By default the value for this dictionary is None.
 
 ### timeout_in_seconds
 
-An optional float that describes how long the test should wait connecting to a server
-before giving up.
-
-This does not count towards active streams, only towards initial function() connection
-to an agent server.
+An optional float that describes how long the test as a whole should take before
+the test driver should give up on it.
 
 ### interactions
 
@@ -154,6 +152,10 @@ is at least documented in the agent's hocon file.
 Superfluous information is passed, taking up space, but ignored.
 
 The default value is None.
+
+#### timeout_in_seconds
+
+An optional float that describes how long the single interaction should take before giving up.
 
 #### chat_filter
 
