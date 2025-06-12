@@ -22,6 +22,7 @@ import json
 import os
 
 import grpc
+import asyncio
 
 import tornado
 from tornado.web import RequestHandler
@@ -191,6 +192,7 @@ class BaseRequestHandler(RequestHandler):
         """
         try:
             await self.flush()
+            await asyncio.sleep(0.3)
             return True
         except tornado.iostream.StreamClosedError:
             self.logger.warning(self.get_metadata(), "Flush: client closed connection unexpectedly.")
