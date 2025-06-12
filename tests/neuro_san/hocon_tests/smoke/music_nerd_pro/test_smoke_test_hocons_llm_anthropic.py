@@ -38,6 +38,8 @@ class TestSmokeTestHocons(TestCase):
         # List more hocon files as they become available here.
     ]))
     @pytest.mark.smoke
+    @pytest.mark.non_default_llm_provider
+    @pytest.mark.anthropic
     def test_hocon(self, test_name: str, test_hocon: str):
         """
         Test method for a single parameterized test case specified by a hocon file.
