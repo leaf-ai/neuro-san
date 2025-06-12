@@ -119,6 +119,7 @@ Need at least {num_need_success} to consider {hocon_file} test to be successful.
 """
                 raise AssertionError(message) from one_assert
 
+    # pylint: disable=too-many-locals
     def one_iteration(self, test_case: Dict[str, Any], asserts: AssertForwarder):
         """
         Perform a single iteration on the test case.
