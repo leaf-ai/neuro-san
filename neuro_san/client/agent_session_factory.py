@@ -75,7 +75,8 @@ class AgentSessionFactory:
                 # For now, to get the https scheme
                 security_cfg = {}
             session = HttpServiceAgentSession(host=hostname, port=use_port, agent_name=agent_name,
-                                              security_cfg=security_cfg, metadata=metadata)
+                                              security_cfg=security_cfg, metadata=metadata,
+                                              timeout_in_seconds=connect_timeout_in_seconds)
         else:
             # Incorrectly flagged as destination of Trust Boundary Violation 2
             #   Reason: This is the place where the session_type enforced-string argument is
