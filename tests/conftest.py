@@ -7,7 +7,6 @@ def configure_llm_provider_keys(request, monkeypatch):
 
     is_non_default = request.node.get_closest_marker("non_default_llm_provider")
     is_anthropic = request.node.get_closest_marker("anthropic")
-    is_openai = request.node.get_closest_marker("openai")
 
     if is_non_default:
         # For any non-default provider: clear OPENAI key to prevent accidental use
@@ -22,4 +21,3 @@ def configure_llm_provider_keys(request, monkeypatch):
         # Default case: assume OpenAI is used
         if not os.getenv("OPENAI_API_KEY"):
             pytest.skip("Missing OPENAI_API_KEY for default LLM test.")
-
