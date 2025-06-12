@@ -20,9 +20,9 @@ from typing import Tuple
 
 import json
 import os
+import asyncio
 
 import grpc
-import asyncio
 
 import tornado
 from tornado.web import RequestHandler
