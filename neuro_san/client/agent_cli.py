@@ -109,13 +109,7 @@ class AgentCli:
                 not bool(self.args.chat_filter):
             chat_filter["chat_filter_type"] = "MINIMAL"
 
-        empty: Dict[str, Any] = {}
-        try:
-            response: Dict[str, Any] = self.session.function(empty)
-        except RpcError as exception:
-            # pylint: disable=no-member
-            if exception.code() is StatusCode.UNIMPLEMENTED:
-                message = f"""
+        message = f"""
 The agent "{self.args.agent}" is not implemented on the server.
 
 Some suggestions:
@@ -124,7 +118,17 @@ Some suggestions:
 3. Is the value for the agent name key in the server manifest.hocon file set to true?
 4. Servers will skip manifest entries that have errors. They will also print out which
    agents they are actually serving.  Check your server output for each of these.
+5. Is the server itself actually running?
 """
+
+        empty: Dict[str, Any] = {}
+        try:
+            response: Dict[str, Any] = self.session.function(empty)
+            if response is None:
+                raise ValueError(message)
+        except RpcError as exception:
+            # pylint: disable=no-member
+            if exception.code() is StatusCode.UNIMPLEMENTED:
                 raise ValueError(message) from exception
 
             # If not an RpcException, then I dunno what it is.
