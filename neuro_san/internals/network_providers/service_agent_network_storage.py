@@ -84,17 +84,15 @@ class ServiceAgentNetworkStorage:
         Replace agents networks with a new collection.
         Previous state could be empty.
         """
-        prev_agents: Dict[str, AgentNetwork] = {}
-        with self.lock:
-            prev_agents = self.agents_table
-            self.agents_table = {}
-        # Notify listeners that previous set of agents is removed
-        for agent_name, _ in prev_agents.items():
-            for listener in self.listeners:
-                listener.agent_removed(agent_name)
-        # Add the new agent+netork pairs
-        for agent_name, agent_network in agent_networks.items():
-            self.add_agent_network(agent_name, agent_network)
+        current_agents = set(self.agents_table.keys())
+        new_agents = set(agent_networks.keys())
+        # Remove agents which are not in the new collection:
+        agents_to_remove = current_agents - new_agents
+        for agent_name in agents_to_remove:
+            self.remove_agent_network(agent_name)
+        # Now add (or possibly replace) agents from new collection:
+        for agent_name in new_agents:
+            self.add_agent_network(agent_name, agent_network[agent_name])
 
     def remove_agent_network(self, agent_name: str):
         """

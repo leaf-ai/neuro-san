@@ -100,10 +100,10 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
 
         # Wait for "go" signal which will be set by gRPC server and corresponding machinery
         # when everything is ready for servicing.
-        event_set = self.start_event.wait(timeout=self.TIMEOUT_TO_START_SECONDS)
-        if not event_set:
-            self.logger.error({}, "Timeout (%d sec) waiting for HTTP server to start", self.TIMEOUT_TO_START_SECONDS)
-            return
+        while not self.start_event.wait(timeout=self.TIMEOUT_TO_START_SECONDS):
+            self.logger.error({},
+                              "Timeout (%d sec) waiting for signal to HTTP server to start",
+                              self.TIMEOUT_TO_START_SECONDS)
 
         app.listen(self.http_port)
         self.logger.info({}, "HTTP server is running on port %d", self.http_port)
@@ -160,7 +160,8 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
                 if self.allowed_agents.get(agent_name, None) is None:
                     self.add_agent(agent_name)
             # All other agents are disabled:
-            for agent_name, _ in self.allowed_agents.items():
+            allowed_set = set(self.allowed_agents.keys())
+            for agent_name in allowed_set:
                 if agent_name not in agents:
                     self.remove_agent(agent_name)
 
