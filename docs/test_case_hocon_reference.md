@@ -121,7 +121,8 @@ By default the value for this dictionary is None.
 ### timeout_in_seconds
 
 An optional float that describes how long the test as a whole should take before
-the test driver should give up on it.
+the test driver should give up on it.  This includes multiple attempts when a
+[success_ratio](#success_ratio) is defined.
 
 ### interactions
 

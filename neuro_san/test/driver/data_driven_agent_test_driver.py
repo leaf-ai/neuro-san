@@ -63,7 +63,15 @@ class DataDrivenAgentTestDriver:
         agent: str = test_case.get("agent")
         self.asserts_basis.assertIsNotNone(agent)
 
-        # Get the success ration
+        # Set up any global test timeout.
+        timeouts: List[Timeout] = []
+        timeout_in_seconds: float = test_case.get("timeout_in_seconds", None)
+        if timeout_in_seconds is not None:
+            test_timeout = Timeout(name=agent)
+            test_timeout.set_limit_in_seconds(timeout_in_seconds)
+            timeouts.append(test_timeout)
+
+        # Get the success ratio
         success_ratio: str = test_case.get("success_ratio", "1/1")
         self.asserts_basis.assertIn("/", success_ratio)
 
@@ -90,7 +98,7 @@ class DataDrivenAgentTestDriver:
             iteration_asserts.append(assert_capture)
 
             # Perform a single iteration of the test.
-            self.one_iteration(test_case, assert_capture)
+            self.one_iteration(test_case, assert_capture, timeouts)
 
             # Update our counter if this iteration is successful
             asserts: List[AssertionError] = assert_capture.get_asserts()
@@ -120,12 +128,13 @@ Need at least {num_need_success} to consider {hocon_file} test to be successful.
                 raise AssertionError(message) from one_assert
 
     # pylint: disable=too-many-locals
-    def one_iteration(self, test_case: Dict[str, Any], asserts: AssertForwarder):
+    def one_iteration(self, test_case: Dict[str, Any], asserts: AssertForwarder, timeouts: List[Timeout]):
         """
         Perform a single iteration on the test case.
 
         :param test_case: The dictionary describing the data-driven test case
         :param asserts: The AssertForwarder to send asserts to.
+        :param timeouts: A list of timeout objects to check
         """
 
         # Get the agent to use
@@ -150,14 +159,6 @@ Need at least {num_need_success} to consider {hocon_file} test to be successful.
         # Collect other session information
         use_direct: bool = test_case.get("use_direct", False)
         metadata: Dict[str, Any] = test_case.get("metadata", None)
-
-        # Set up any global test timeout.
-        timeouts: List[Timeout] = []
-        timeout_in_seconds: float = test_case.get("timeout_in_seconds", None)
-        if timeout_in_seconds is not None:
-            test_timeout = Timeout(name=agent)
-            test_timeout.set_limit_in_seconds(timeout_in_seconds)
-            timeouts.append(test_timeout)
 
         for connection in connections:
 
