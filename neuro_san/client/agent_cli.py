@@ -109,13 +109,7 @@ class AgentCli:
                 not bool(self.args.chat_filter):
             chat_filter["chat_filter_type"] = "MINIMAL"
 
-        empty: Dict[str, Any] = {}
-        try:
-            response: Dict[str, Any] = self.session.function(empty)
-        except RpcError as exception:
-            # pylint: disable=no-member
-            if exception.code() is StatusCode.UNIMPLEMENTED:
-                message = f"""
+        message = f"""
 The agent "{self.args.agent}" is not implemented on the server.
 
 Some suggestions:
@@ -124,7 +118,17 @@ Some suggestions:
 3. Is the value for the agent name key in the server manifest.hocon file set to true?
 4. Servers will skip manifest entries that have errors. They will also print out which
    agents they are actually serving.  Check your server output for each of these.
+5. Is the server itself actually running?
 """
+
+        empty: Dict[str, Any] = {}
+        try:
+            response: Dict[str, Any] = self.session.function(empty)
+            if response is None:
+                raise ValueError(message)
+        except RpcError as exception:
+            # pylint: disable=no-member
+            if exception.code() is StatusCode.UNIMPLEMENTED:
                 raise ValueError(message) from exception
 
             # If not an RpcException, then I dunno what it is.
@@ -252,6 +256,9 @@ All choices require an agent name.
                            help="Use a secure HTTP service connection. "
                                 "Requires your agent server to be set up with certificates that are well known. "
                                 "This is not something that our basic server setup supports out-of-the-box.")
+        group.add_argument("--timeout", dest="timeout", type=float,
+                           help="Timeout in seconds before giving up on connecting to a server. "
+                                "By default this is None, implying we will try forever")
         self.arg_groups[group.title] = group
 
         # How will we connect to a server?
@@ -340,7 +347,7 @@ Have external tools that can be found in the local agent manifest use a service 
         }
         self.session = factory.create_session(self.args.connection, self.args.agent,
                                               hostname, self.args.port, self.args.local_externals_direct,
-                                              metadata)
+                                              metadata, self.args.timeout)
 
         # Clear out the previous thinking file/dir contents
         #
