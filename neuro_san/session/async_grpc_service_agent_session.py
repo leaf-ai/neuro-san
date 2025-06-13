@@ -97,7 +97,7 @@ class AsyncGrpcServiceAgentSession(AsyncAbstractServiceSession, AsyncAgentSessio
             request_dict,
             service_messages.FunctionRequest())
 
-        self.umbrella_timeout.check_timeout()
+        Timeout.check_if_not_none(self.umbrella_timeout)
         return response_dict
 
     async def connectivity(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
@@ -118,7 +118,7 @@ class AsyncGrpcServiceAgentSession(AsyncAbstractServiceSession, AsyncAgentSessio
             request_dict,
             service_messages.ConnectivityRequest())
 
-        self.umbrella_timeout.check_timeout()
+        Timeout.check_if_not_none(self.umbrella_timeout)
         return response_dict
 
     async def streaming_chat(self, request_dict: Dict[str, Any]) -> AsyncGenerator[Dict[str, Any], None]:

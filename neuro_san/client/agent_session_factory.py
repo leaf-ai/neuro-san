@@ -49,18 +49,19 @@ class AgentSessionFactory:
         """
         session: AgentSession = None
 
+        umbrella_timeout: Timeout = None
+        if connect_timeout_in_seconds is not None:
+            umbrella_timeout = Timeout()
+            umbrella_timeout.set_limit_in_seconds(connect_timeout_in_seconds)
+
         # Incorrectly flagged as destination of Trust Boundary Violation 1
         #   Reason: This is the place where the session_type enforced-string argument is
         #           actually checked for positive use.
         if session_type == "direct":
             factory = DirectAgentSessionFactory()
             session = factory.create_session(agent_name, use_direct=use_direct,
-                                             metadata=metadata)
+                                             metadata=metadata, umbrella_timeout=umbrella_timeout)
         elif session_type in ("service", "grpc"):
-            umbrella_timeout: Timeout = None
-            if connect_timeout_in_seconds is not None:
-                umbrella_timeout = Timeout()
-                umbrella_timeout.set_limit_in_seconds(connect_timeout_in_seconds)
             session = GrpcServiceAgentSession(host=hostname, port=port, agent_name=agent_name,
                                               metadata=metadata, umbrella_timeout=umbrella_timeout)
         elif session_type in ("http", "https"):

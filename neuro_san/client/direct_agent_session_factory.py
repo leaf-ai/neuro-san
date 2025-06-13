@@ -11,6 +11,8 @@
 # END COPYRIGHT
 from typing import Dict
 
+from leaf_common.time.timeout import Timeout
+
 from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.interfaces.context_type_toolbox_factory import ContextTypeToolboxFactory
 from neuro_san.internals.graph.registry.agent_network import AgentNetwork
@@ -47,7 +49,7 @@ class DirectAgentSessionFactory:
             network_storage.add_agent_network(agent_name, agent_network)
 
     def create_session(self, agent_name: str, use_direct: bool = False,
-                       metadata: Dict[str, str] = None) -> AgentSession:
+                       metadata: Dict[str, str] = None, umbrella_timeout: Timeout = None) -> AgentSession:
         """
         :param agent_name: The name of the agent to use for the session.
                 This name can be something in the manifest file (with no file suffix)
@@ -57,6 +59,8 @@ class DirectAgentSessionFactory:
         :param metadata: A grpc metadata of key/value pairs to be inserted into
                          the header. Default is None. Preferred format is a
                          dictionary of string keys to string values.
+        :param umbrella_timeout: A Timeout object to periodically check in loops.
+                        Default is None (no timeout).
         """
 
         agent_network: AgentNetwork = self.get_agent_network(agent_name)
@@ -74,7 +78,8 @@ class DirectAgentSessionFactory:
         invocation_context.start()
         session: DirectAgentSession = DirectAgentSession(agent_network=agent_network,
                                                          invocation_context=invocation_context,
-                                                         metadata=metadata)
+                                                         metadata=metadata,
+                                                         umbrella_timeout=umbrella_timeout)
         return session
 
     def get_agent_network(self, agent_name: str) -> AgentNetwork:
