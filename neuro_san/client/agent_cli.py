@@ -252,6 +252,9 @@ All choices require an agent name.
                            help="Use a secure HTTP service connection. "
                                 "Requires your agent server to be set up with certificates that are well known. "
                                 "This is not something that our basic server setup supports out-of-the-box.")
+        group.add_argument("--timeout", dest="timeout", type=float,
+                           help="Timeout in seconds before giving up on connecting to a server. "
+                                "By default this is None, implying we will try forever")
         self.arg_groups[group.title] = group
 
         # How will we connect to a server?
@@ -340,7 +343,7 @@ Have external tools that can be found in the local agent manifest use a service 
         }
         self.session = factory.create_session(self.args.connection, self.args.agent,
                                               hostname, self.args.port, self.args.local_externals_direct,
-                                              metadata)
+                                              metadata, self.args.timeout)
 
         # Clear out the previous thinking file/dir contents
         #

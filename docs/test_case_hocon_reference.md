@@ -22,9 +22,11 @@ Sub-keys to those dictionaries will be described in the next-level down heading 
     - [success_ratio](#success_ratio)
     - [use_direct](#use_direct)
     - [metadata](#metadata)
+    - [timeout_in_seconds](#timeout_in_seconds)
     - [interactions](#interactions)
       - [text](#text)
       - [sly_data](#sly_data)
+      - [timeout_in_seconds](#timeout_in_seconds-1)
       - [chat_filter](#chat_filter)
       - [continue_conversation](#continue_conversation)
       - [response](#response)
@@ -116,6 +118,12 @@ or extra user-identifying information for logging.
 
 By default the value for this dictionary is None.
 
+### timeout_in_seconds
+
+An optional float that describes how long the test as a whole should take before
+the test driver should give up on it.  This includes multiple attempts when a
+[success_ratio](#success_ratio) is defined.
+
 ### interactions
 
 A list of dictionaries, where each entry is an interaction with the test cases's agent
@@ -145,6 +153,10 @@ is at least documented in the agent's hocon file.
 Superfluous information is passed, taking up space, but ignored.
 
 The default value is None.
+
+#### timeout_in_seconds
+
+An optional float that describes how long the single interaction should take before giving up.
 
 #### chat_filter
 
