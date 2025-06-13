@@ -84,17 +84,32 @@ class ServiceToolFactoryProvider(ToolFactoryProvider):
         Replace agents registries with "registries" collection.
         Previous state could be empty.
         """
-        prev_agents: Dict[str, AgentToolFactory] = {}
-        with self.lock:
-            prev_agents = self.agents_table
-            self.agents_table = {}
-        # Notify listeners that previous set of agents is removed
-        for agent_name, _ in prev_agents.items():
-            for listener in self.listeners:
-                listener.agent_removed(agent_name)
-        # Add the new agent+registry pairs
-        for agent_name, tool_registry in registries.items():
-            self.add_agent_tool_registry(agent_name, tool_registry)
+        current_agents = set(self.agents_table.keys())
+        new_agents = set(registries.keys())
+        # Remove agents which are not in the new collection:
+        agents_to_remove = current_agents - new_agents
+        for agent_name in agents_to_remove:
+            self.remove_agent_tool_registry(agent_name)
+        # Now add (or possibly replace) agents from new collection:
+        for agent_name in new_agents:
+            self.add_agent_tool_registry(agent_name, registries[agent_name])
+
+    # def setup_tool_registries(self, registries: Dict[str, AgentToolFactory]):
+    #     """
+    #     Replace agents registries with "registries" collection.
+    #     Previous state could be empty.
+    #     """
+    #     prev_agents: Dict[str, AgentToolFactory] = {}
+    #     with self.lock:
+    #         prev_agents = self.agents_table
+    #         self.agents_table = {}
+    #     # Notify listeners that previous set of agents is removed
+    #     for agent_name, _ in prev_agents.items():
+    #         for listener in self.listeners:
+    #             listener.agent_removed(agent_name)
+    #     # Add the new agent+registry pairs
+    #     for agent_name, tool_registry in registries.items():
+    #         self.add_agent_tool_registry(agent_name, tool_registry)
 
     def remove_agent_tool_registry(self, agent_name: str):
         """
