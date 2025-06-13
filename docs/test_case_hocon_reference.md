@@ -100,6 +100,10 @@ By default this value is "1/1" indicating that the test case will only run once,
 and that single test sample *must* pass in order to "pass".  This is in keeping with
 standard expectations w/ non-statistically-oriented tests.
 
+Keep in mind that when using the success_ratio to define test success for an agent test,
+sometimes the failures can actually be due to the test criteria ([gist/not_gist](#gistnot_gist) prompting) and
+not the agent itself.
+
 ### use_direct
 
 Boolean value that describes how an external agent is called.
