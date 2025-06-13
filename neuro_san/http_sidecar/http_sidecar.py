@@ -160,7 +160,8 @@ class HttpSidecar(AgentAuthorizer, AgentsUpdater):
                 if self.allowed_agents.get(agent_name, None) is None:
                     self.add_agent(agent_name)
             # All other agents are disabled:
-            for agent_name, _ in self.allowed_agents.items():
+            allowed_set = set(self.allowed_agents.keys())
+            for agent_name in allowed_set:
                 if agent_name not in agents:
                     self.remove_agent(agent_name)
 
