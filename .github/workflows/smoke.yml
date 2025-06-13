@@ -20,8 +20,6 @@ jobs:
           apt-get update && apt-get install -y shellcheck
           pip install -r requirements-build.txt
           pip install -r requirements.txt
-          pip install pytest-timeout
-
 
       - name: Show installed packages
         run: pip freeze
