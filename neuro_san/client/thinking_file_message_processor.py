@@ -32,6 +32,14 @@ class ThinkingFileMessageProcessor(MessageProcessor):
     def __init__(self, thinking_file: str, thinking_dir: str):
         """
         Constructor
+
+        :param thinking_file: A string representing the path to a single file where
+                              all agent output is combined.  We no longer recommmend this
+                              now that we have ...
+        :param thinking_dir: A string representing the path to a single directory where
+                             each agent in the network gets its own history file according
+                             to its agent network origin name.  This is much easier to
+                             debug as you do not have to tease apart output from interacting agents.
         """
         self.thinking_file: Path = None
         if thinking_file is not None:
