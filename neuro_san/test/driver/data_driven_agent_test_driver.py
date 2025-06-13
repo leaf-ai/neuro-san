@@ -52,7 +52,7 @@ class DataDrivenAgentTestDriver:
         self.asserts_basis: AssertForwarder = asserts
         self.fixtures: FileOfClass = fixtures
 
-    # pylint: disable=too-many-local-variables
+    # pylint: disable=too-many-locals
     def one_test(self, hocon_file: str):
         """
         Use a single hocon file in the fixtures as a test case"
