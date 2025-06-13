@@ -98,7 +98,7 @@ class GrpcServiceAgentSession(AbstractServiceSession, AgentSession):
             request_dict,
             service_messages.FunctionRequest())
 
-        self.umbrella_timeout.check_timeout()
+        Timeout.check_if_not_none(self.umbrella_timeout)
         return response
 
     def connectivity(self, request_dict: Dict[str, Any]) -> Dict[str, Any]:
@@ -119,7 +119,7 @@ class GrpcServiceAgentSession(AbstractServiceSession, AgentSession):
             request_dict,
             service_messages.ConnectivityRequest())
 
-        self.umbrella_timeout.check_timeout()
+        Timeout.check_if_not_none(self.umbrella_timeout)
         return response
 
     def streaming_chat(self, request_dict: Dict[str, Any]) -> Generator[Dict[str, Any], None, None]:

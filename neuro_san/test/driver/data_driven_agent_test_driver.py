@@ -301,4 +301,4 @@ Need at least {num_need_success} to consider {hocon_file} test to be successful.
         :param timeouts: A list of timeout objects to check
         """
         for one_timeout in timeouts:
-            one_timeout.check_timeout()
+            Timeout.check_if_not_none(one_timeout)

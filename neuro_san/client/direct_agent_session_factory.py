@@ -11,6 +11,8 @@
 # END COPYRIGHT
 from typing import Dict
 
+from leaf_common.time.timeout import Timeout
+
 from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.interfaces.context_type_toolbox_factory import ContextTypeToolboxFactory
 from neuro_san.internals.graph.registry.agent_tool_registry import AgentToolRegistry
@@ -48,7 +50,7 @@ class DirectAgentSessionFactory:
             tool_factory.add_agent_tool_registry(agent_name, tool_registry)
 
     def create_session(self, agent_name: str, use_direct: bool = False,
-                       metadata: Dict[str, str] = None) -> AgentSession:
+                       metadata: Dict[str, str] = None, umbrella_timeout: Timeout = None) -> AgentSession:
         """
         :param agent_name: The name of the agent to use for the session.
                 This name can be something in the manifest file (with no file suffix)
@@ -58,6 +60,8 @@ class DirectAgentSessionFactory:
         :param metadata: A grpc metadata of key/value pairs to be inserted into
                          the header. Default is None. Preferred format is a
                          dictionary of string keys to string values.
+        :param umbrella_timeout: A Timeout object to periodically check in loops.
+                        Default is None (no timeout).
         """
 
         tool_registry: AgentToolRegistry = self.get_agent_tool_registry(agent_name)
@@ -75,7 +79,8 @@ class DirectAgentSessionFactory:
         invocation_context.start()
         session: DirectAgentSession = DirectAgentSession(tool_registry=tool_registry,
                                                          invocation_context=invocation_context,
-                                                         metadata=metadata)
+                                                         metadata=metadata,
+                                                         umbrella_timeout=umbrella_timeout)
         return session
 
     def get_agent_tool_registry(self, agent_name: str) -> AgentToolRegistry:

@@ -21,6 +21,7 @@ from copy import copy
 from leaf_common.asyncio.async_to_sync_generator import AsyncToSyncGenerator
 from leaf_common.asyncio.asyncio_executor import AsyncioExecutor
 from leaf_common.parsers.dictionary_extractor import DictionaryExtractor
+from leaf_common.time.timeout import Timeout
 
 from neuro_san.interfaces.agent_session import AgentSession
 from neuro_san.internals.chat.connectivity_reporter import ConnectivityReporter
@@ -42,7 +43,8 @@ class DirectAgentSession(AgentSession):
                  tool_registry: AgentToolRegistry,
                  invocation_context: SessionInvocationContext,
                  metadata: Dict[str, Any] = None,
-                 security_cfg: Dict[str, Any] = None):
+                 security_cfg: Dict[str, Any] = None,
+                 umbrella_timeout: Timeout = None):
         """
         Constructor
 
@@ -55,6 +57,8 @@ class DirectAgentSession(AgentSession):
                         secure the TLS and the authentication of the gRPC
                         connection.  Supplying this implies use of a secure
                         GRPC Channel.  If None, uses insecure channel.
+        :param umbrella_timeout: A Timeout object to periodically check in loops.
+                        Default is None (no timeout).
         """
         # These aren't used yet
         self._metadata: Dict[str, Any] = metadata
@@ -63,6 +67,7 @@ class DirectAgentSession(AgentSession):
         self.invocation_context: SessionInvocationContext = invocation_context
         self.tool_registry: AgentToolRegistry = tool_registry
         self.request_id: str = None
+        self.umbrella_timeout: Timeout = umbrella_timeout
         if metadata is not None:
             self.request_id = metadata.get("request_id")
 
@@ -171,7 +176,8 @@ class DirectAgentSession(AgentSession):
         generator = AsyncToSyncGenerator(asyncio_executor, self.request_id,
                                          generated_type=Dict,
                                          keep_alive_result=empty,
-                                         keep_alive_timeout_seconds=10.0)
+                                         keep_alive_timeout_seconds=10.0,
+                                         umbrella_timeout=self.umbrella_timeout)
         for message in generator.synchronously_iterate(self.invocation_context.get_queue()):
 
             response_dict: Dict[str, Any] = copy(template_response_dict)
