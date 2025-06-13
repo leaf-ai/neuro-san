@@ -81,7 +81,7 @@ jobs:
 
           netstat -tuln | grep -E '8080|30011'
 
-          pytest -s --verbose -m --timout=10 "smoke" --timer-top-n 100 -n auto
+          pytest -s --verbose -m "smoke" --timer-top-n 100 -n auto --timeout 10
 
       - name: Notify Slack on success
         if: success()
