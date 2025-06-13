@@ -20,6 +20,7 @@ import shutil
 import argparse
 import json
 
+from pathlib import Path
 from timedinput import timedinput
 
 from grpc import RpcError
@@ -88,7 +89,8 @@ class AgentCli:
             #           recognize pathlib as a valid library with which to resolve these kinds
             #           of issues.  Furthermore, this is a client command line tool that is never
             #           used inside servers which just happens to be part of a library offering.
-            with open(self.args.first_prompt_file, 'r', encoding="utf-8") as prompt_file:
+            prompt: Path = Path(self.args.first_prompt_file)
+            with prompt.open('r', encoding="utf-8") as prompt_file:
                 user_input = prompt_file.read()
 
         sly_data: Dict[str, Any] = None
@@ -196,7 +198,8 @@ Some suggestions:
                 print(f"Returned sly_data is: {pretty_sly}")
 
             if self.args.response_output_file is not None:
-                with open(self.args.response_output_file, 'w', encoding="utf-8") as output_file:
+                output_path: Path = Path(self.args.response_output_file)
+                with output_path.open('w', encoding="utf-8") as output_file:
                     output_file.write(state["last_chat_response"])
                     output_file.write("\n")
 
