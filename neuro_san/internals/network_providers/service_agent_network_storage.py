@@ -92,7 +92,7 @@ class ServiceAgentNetworkStorage:
             self.remove_agent_network(agent_name)
         # Now add (or possibly replace) agents from new collection:
         for agent_name in new_agents:
-            self.add_agent_network(agent_name, agent_network[agent_name])
+            self.add_agent_network(agent_name, agent_networks[agent_name])
 
     def remove_agent_network(self, agent_name: str):
         """
