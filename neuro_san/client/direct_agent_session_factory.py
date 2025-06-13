@@ -79,7 +79,8 @@ class DirectAgentSessionFactory:
         invocation_context.start()
         session: DirectAgentSession = DirectAgentSession(tool_registry=tool_registry,
                                                          invocation_context=invocation_context,
-                                                         metadata=metadata, umbrella_timeout=umbrella_timeout)
+                                                         metadata=metadata,
+                                                         umbrella_timeout=umbrella_timeout)
         return session
 
     def get_agent_tool_registry(self, agent_name: str) -> AgentToolRegistry:
