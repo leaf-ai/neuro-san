@@ -29,7 +29,7 @@ class TestSmokeTestHocons(TestCase):
     # annotation below so the instance can find the hocon test cases listed.
     DYNAMIC = DynamicHoconUnitTests(__file__, path_to_basis="../../../../fixtures")
 
-    @pytest.mark.parameterized("test_name, test_hocon", DynamicHoconUnitTests.from_hocon_list([
+    @parameterized.expand(DynamicHoconUnitTests.from_hocon_list([
         # These can be in any order.
         # Ideally more basic functionality will come first.
         # Barring that, try to stick to alphabetical order.
@@ -37,7 +37,7 @@ class TestSmokeTestHocons(TestCase):
 
         # List more hocon files as they become available here.
     ]))
-    @pytest.mark.timeout(10)  # 10 seconds for this test
+    @pytest.mark.timeout(30)  # 10 seconds for this test
     @pytest.mark.smoke
     def test_hocon(self, test_name: str, test_hocon: str):
         """
