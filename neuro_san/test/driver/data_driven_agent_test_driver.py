@@ -52,6 +52,7 @@ class DataDrivenAgentTestDriver:
         self.asserts_basis: AssertForwarder = asserts
         self.fixtures: FileOfClass = fixtures
 
+    # pylint: disable=too-many-local-variables
     def one_test(self, hocon_file: str):
         """
         Use a single hocon file in the fixtures as a test case"
@@ -159,6 +160,7 @@ Need at least {num_need_success} to consider {hocon_file} test to be successful.
         # Collect other session information
         use_direct: bool = test_case.get("use_direct", False)
         metadata: Dict[str, Any] = test_case.get("metadata", None)
+        timeout_in_seconds: float = test_case.get("timeout_in_seconds", None)
 
         for connection in connections:
 
