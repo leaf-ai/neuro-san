@@ -19,7 +19,7 @@ jobs:
         run: |
           apt-get update && apt-get install -y shellcheck
           pip install -r requirements-build.txt
-          pip install -r requirements.
+          pip install -r requirements.txt
           pip install -r pytest-timeout
 
 
