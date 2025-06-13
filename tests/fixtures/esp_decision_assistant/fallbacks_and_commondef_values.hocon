@@ -17,6 +17,10 @@
     # Describes what agent to test against.
     "agent": "esp_decision_assistant",
 
+    # Timeout for the entire test.
+    # It's also possible to have a timeout_in_seconds on a per-interaction basis.
+    "timeout_in_seconds": 45,
+
     # Interactions are a series of dictionaries with request elements paired with
     # descriptions of response checks.
     "interactions": [
