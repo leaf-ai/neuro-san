@@ -11,8 +11,6 @@
 # END COPYRIGHT
 from typing import Dict
 
-from os import environ
-
 import logging
 
 from neuro_san.interfaces.async_agent_session import AsyncAgentSession
@@ -97,33 +95,3 @@ class ExternalAgentSessionFactory(AsyncAgentSessionFactory):
         quiet_please.setLevel(logging.WARNING)
 
         return session
-
-    @staticmethod
-    def get_agent_network(agent_name: str,
-                          manifest_tool_registries: Dict[str, AgentNetwork]) -> AgentNetwork:
-        """
-        :param agent_name: The name of the agent to use for the session.
-        :param manifest_tool_registries: Dictionary of AgentNetworks from the manifest
-        :return: The AgentNetwork corresponding to the agent_name
-        """
-
-        tool_registry: AgentNetwork = manifest_tool_registries.get(agent_name)
-        if tool_registry is None:
-            message = f"""
-Agent named "{agent_name}" not found in manifest file: {environ.get("AGENT_MANIFEST_FILE")}.
-
-Some things to check:
-1. If the manifest file named above is None, know that the default points
-   to the one provided with the neuro-san library for a smoother out-of-box
-   experience.  If the agent you wanted is not part of that standard distribution,
-   you need to set the AGENT_MANIFEST_FILE environment variable to point to a
-   manifest.hocon file associated with your own project(s).
-2. Check that the environment variable AGENT_MANIFEST_FILE is pointing to
-   the manifest.hocon file that you expect and has no typos.
-3. Does your manifest.hocon file contain a key for the agent specified?
-4. Does the value for the key in the manifest file have a value of 'true'?
-5. Does your agent name have a typo either in the hocon file or on the command line?
-"""
-            raise ValueError(message)
-
-        return tool_registry
